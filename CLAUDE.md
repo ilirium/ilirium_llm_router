@@ -14,14 +14,31 @@ A router that lets a coding harness reach several model backends at once. Concre
 
 Planned later: other harnesses (OpenAI Codex, Google Antigravity, GitHub Copilot, JetBrains Junie; Pi, Hermes, OpenCode, OpenClaw) and other cloud backends (OpenAI, Gemini, OpenRouter).
 
-## The central architectural problem
+## The central architectural problem: dispatch, not translation
 
-The router sits between two *different* wire protocols, and the whole design follows from that:
+**No protocol translation is needed for LM Studio.** LM Studio (0.4.1+) natively implements the Anthropic-compatible `POST /v1/messages`, including the same SSE event sequence (`message_start` → `content_block_start` → `content_block_delta` → `content_block_stop` → `message_delta` → `message_stop`), `tools` with `input_schema`, and `tool_choice`. It accepts both `x-api-key` and `Authorization: Bearer`. Claude Code can already point straight at it:
 
-- **North side (what the router must serve):** Claude Code speaks the **Anthropic Messages API** — `POST /v1/messages`, headers `x-api-key` and `anthropic-version: 2023-06-01`, streaming as SSE (`message_start` → `content_block_start` → `content_block_delta` → `content_block_stop` → `message_delta` → `message_stop`). A harness is pointed at a custom router by setting `ANTHROPIC_BASE_URL` (and an auth token). Content is a **list of typed blocks** (`text`, `thinking`, `tool_use`, `tool_result`), not a single string; `system` is a top-level field, not a message.
-- **South side (what backends speak):** LM Studio serves an **OpenAI-compatible** API — `POST /v1/chat/completions`, `data: {...}` / `data: [DONE]` SSE, flat string content, `system` as `messages[0]`, tools as `tool_calls`.
+```
+ANTHROPIC_BASE_URL=http://localhost:1234
+ANTHROPIC_AUTH_TOKEN=lmstudio
+CLAUDE_CODE_ATTRIBUTION_HEADER=0
+claude --model <lmstudio-model-id>
+```
 
-So the router is: Anthropic-shaped ingress → route by model name → either **pass through** to `api.anthropic.com` for Anthropic model IDs, or **translate both directions** (request and streaming response) for OpenAI-compatible local models. The translation layer — especially streaming and tool-call round-tripping — is the hard part and the thing worth designing first.
+So both sides of the router speak the *same* protocol, and the router is a **model-name dispatcher / reverse proxy**, not a translator:
+
+- `claude-*` model IDs → forward to `api.anthropic.com` with the real API key
+- everything else → forward to LM Studio at `localhost:1234`
+
+This is why the router exists at all: **Claude Code accepts exactly one `ANTHROPIC_BASE_URL`.** Pointing it at LM Studio gives up the Anthropic models; pointing it at Anthropic gives up the local ones. Something has to sit in front and route per-request to have both at once. Because the protocol matches on both sides, the request body can likely be forwarded unmodified and the response stream relayed as bytes, rather than parsed and re-emitted.
+
+The second real job is **credential injection**: the local side wants a dummy token, the cloud side needs the real key. The router picks the right credential per route, so the developer configures one endpoint.
+
+Known gaps to design around (not translation work — LM Studio's own surface):
+
+- The Anthropic-compat namespace exposes **only `/v1/messages`** — there is no `/v1/models` under it. To advertise a merged model list, enumerate local models via LM Studio's native `GET /api/v1/models` (or its OpenAI-compat `GET /v1/models`).
+- LM Studio publishes **no feature-parity matrix**. Its `/v1/messages` docs don't spell out handling of `system`, `tool_result`, `thinking` blocks, or images. Verify these empirically against a loaded model before assuming passthrough is lossless.
+- LM Studio recommends a model with **>~25k context**, since Claude Code is context-hungry.
 
 ## Anthropic model IDs
 
@@ -39,7 +56,7 @@ Two request-shape facts that matter when proxying to current models: `thinking` 
 ## Stack decisions (from README)
 
 - Python, FastAPI, type hints throughout.
-- **Pydantic** models for requests/responses/messages — this is the natural place to encode the Anthropic ↔ OpenAI block translation.
+- **Pydantic** models for requests/responses/messages. Note that since the router forwards rather than translates, validation is mainly needed for the *routing-relevant* fields (`model`, `stream`) — full-body parsing is optional and costs fidelity if LM Studio or Anthropic add fields the models don't know about.
 - **YAML** for configuration (backends, model routing table); **`.env`** for API keys.
 - **`uv`** for dependencies and project management.
 
