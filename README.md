@@ -29,3 +29,4 @@ Implementation details:
 - `.env` to store API keys.
 - Using type hints.
 - Using Pydantic for data validation (requests, responses, messages, etc).
+- `uv` for dependencies and the project management.
