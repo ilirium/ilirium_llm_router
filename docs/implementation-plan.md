@@ -167,11 +167,12 @@ a row together. Make sure rows cannot interleave into corrupted lines.
 
 ## Risks and open questions
 
-**How Claude Code authenticates to Anthropic.** This is the biggest unknown and it should be checked
-early, ideally during Phase 1. If you normally sign in to Claude Code with a subscription account
-rather than an API key, the credentials are not an API key and cannot simply be forwarded. In that
-case reaching the Anthropic side through the router would need a separate, separately billed API key.
-This does not affect the local side at all. Worth confirming before assuming the cloud half works.
+**How Claude Code authenticates to Anthropic.** This is the biggest unknown and should be settled
+before Phase 1 rather than during it, because it decides whether the router needs to hold an API key
+at all. A subscription login sends an OAuth token rather than an API key; that token may still be
+usable as-is, in which case the router can forward whatever arrives and keep no secret of its own. If
+it is not usable, the cloud side needs a separate, separately billed API key. Either way the local
+side is unaffected. See `anthropic-auth-check.md` for how to test this and what each outcome implies.
 
 **Whether LM Studio reports usage.** If it does not, the token columns will be empty for every local
 call and comparisons will have to lean on request size and timing instead. Phase 4 answers this.
