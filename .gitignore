@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Step: Macos
+.DS_Store
+__MACOSX/
+
+# Step: Project related
+.idea/
