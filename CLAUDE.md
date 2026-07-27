@@ -40,6 +40,57 @@ Known gaps to design around (not translation work — LM Studio's own surface):
 - LM Studio publishes **no feature-parity matrix**. Its `/v1/messages` docs don't spell out handling of `system`, `tool_result`, `thinking` blocks, or images. Verify these empirically against a loaded model before assuming passthrough is lossless.
 - LM Studio recommends a model with **>~25k context**, since Claude Code is context-hungry.
 
+## Design decisions
+
+Decided deliberately; don't quietly reverse these.
+
+- **Routing is a prefix rule in code, not a config table.** `model` starting with `claude-` → Anthropic; everything else → LM Studio. No per-model YAML. New Anthropic and local models work without touching config. YAML holds backend definitions (base URLs, which env var carries the key), not a model list.
+- **No special case for background/auxiliary traffic.** Whatever `model` Claude Code sends gets routed by the same rule, including the small/fast model used for background calls. Consequence to keep in mind: a `claude-`prefixed background call leaves the machine and costs money even when the main model is local.
+- **Relay the body, log only metadata.** Forward the request body byte-for-byte and stream the response through without re-encoding; peek at `model` for routing only. Log model, backend, status, and duration — never deserialize or re-serialize the payload. This keeps the proxy correct when either side adds fields, which is the main risk of a parse-and-rebuild design.
+- **First milestone is a minimal end-to-end proxy:** uv project + FastAPI + `POST /v1/messages` dispatching to both backends with streaming working, verified by pointing Claude Code at it. Merged `/v1/models` and config polish come later.
+
+## Observability: log + CSV stats
+
+Every call is logged **and** appended as one row to a CSV, so model/backend comparisons are analyzable without parsing free-text logs.
+
+CSV columns:
+
+| Column | Source |
+|---|---|
+| `timestamp` | ISO 8601, when the request arrived |
+| `backend` | `anthropic` or `lmstudio` |
+| `model` | peeked from the request body |
+| `input_tokens` | `usage.input_tokens`, tee'd from the response |
+| `output_tokens` | `usage.output_tokens` (free alongside the above) |
+| `request_bytes` | raw body length — always available, even when `usage` is not |
+| `duration_ms` | wall time until the response *completes* (stream fully drained), not time-to-first-byte |
+| `is_error` | boolean |
+| `error_code` | HTTP status, or a symbolic code for transport failures |
+| `error_message` | short description, single line, no embedded newlines |
+
+Implementation constraints that fall out of this:
+
+- **Tee, don't parse-and-rebuild.** Relay response bytes downstream untouched while scanning a copy for `usage`. Byte-relay fidelity is preserved; observation is passive. If `usage` can't be found, write empty token columns rather than failing the request.
+- **Streaming hides errors behind a 200.** A streamed response returns HTTP 200 before content exists, so a backend failure can arrive as an SSE `error` event mid-stream. Error detection must watch the tee'd stream, not just the initial status code.
+- **Never let telemetry break a call.** Any failure in logging or CSV writing is caught and dropped; the proxied request always wins.
+- **Transport errors matter most here.** LM Studio simply not running is the common failure. That's a connection error with no HTTP status — give it a symbolic `error_code` rather than leaving it blank.
+- Rotation is size-based for both files, with sizes set in YAML. On rotation the CSV must **re-emit its header row** in the new file, or rotated segments won't parse standalone.
+
+Config shape:
+
+```yaml
+logging:
+  level: INFO
+  file: logs/router.log
+  max_bytes: 10485760   # 10 MiB
+  backup_count: 5
+
+stats:
+  file: logs/calls.csv
+  max_bytes: 5242880    # 5 MiB
+  backup_count: 10
+```
+
 ## Anthropic model IDs
 
 Use exact strings; do not append date suffixes.
