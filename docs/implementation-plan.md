@@ -46,7 +46,11 @@ and a local model. This is the milestone that proves the whole idea.
 
 **Work.**
 
-- Accept `POST /v1/messages` and read the raw request body.
+- Answer the startup probe. Before its first real call, Claude Code sends a bare `HEAD /` to the
+  configured address to check something is there. Reply to it successfully. If this is missed, the
+  router can look like a dead endpoint before it has handled a single request.
+- Accept `POST /v1/messages` and read the raw request body. Note that the real path carries a query
+  string, so forward the query along with the path rather than assuming a bare path.
 - Look inside the body just far enough to find the model name. Do not deserialize the whole thing.
   If there is no model name, reject with a clear error.
 - Apply the routing rule: a model name beginning with `claude-` goes to Anthropic, anything else
@@ -129,6 +133,16 @@ publishes no compatibility table, so the only way to know is to send real traffi
   calls and their results, thinking blocks, and an image.
 - Check whether the local backend reports usage numbers at all, since half the statistics depend on
   it.
+- Test the specific things the captured request revealed, which are the likeliest places a local
+  backend diverges:
+  - a system-role message sitting *inside* the conversation rather than in the system field, which
+    is a recent addition and almost certainly unsupported locally;
+  - a long list of beta feature flags in the headers, none of which mean anything to LM Studio — the
+    question is whether it ignores them quietly or objects;
+  - body fields outside the base API, such as the context-management, output-effort and caching
+    settings — again, ignored or rejected;
+  - a system prompt and tool list far larger than a toy request, which is the realistic case rather
+    than an edge case.
 - Record the findings in `CLAUDE.md`, including anything that does not work.
 - Only if something is genuinely broken, consider a small targeted fix for that specific gap. Do not
   build a general translation layer; that was ruled out for good reason.
@@ -141,14 +155,28 @@ publishes no compatibility table, so the only way to know is to send real traffi
 
 These cut across phases and are worth getting right the first time.
 
-**Headers.** The incoming request carries a placeholder credential meant for us, not for the real
-backend. Replace it: the real key for Anthropic, whatever LM Studio expects locally. Also drop the
-headers that describe the old connection, such as the host and the content length, and let the HTTP
-client set fresh ones. If these leak through, requests fail in confusing ways.
+**Headers.** The credential arriving from Claude Code is the real one and works as-is against
+Anthropic, so cloud-bound requests forward it unchanged. Local-bound requests have it removed, since
+a real credential is of no use to LM Studio and should not be handed to something that might log it.
+Forward for cloud, strip for local.
+
+The `anthropic-beta` header must be forwarded verbatim to Anthropic. It is a long comma-separated
+list, and one of its entries is what makes the bearer token acceptable — dropping or trimming it
+turns a working request into an authentication failure.
+
+Drop the headers that describe the old connection, such as the host and the content length, and let
+the HTTP client set fresh ones. If these leak through, requests fail in confusing ways.
 
 **Compression.** If we allow the backend to compress its reply, we cannot read the usage numbers out
-of the passing bytes without decompressing first. Ask for an uncompressed reply. The traffic is local
-or already fast, so nothing is lost.
+of the passing bytes without decompressing first. Ask for an uncompressed reply. Claude Code asks for
+several compression formats on the way in, so this has to be overridden deliberately rather than
+merely not set. The traffic is local or already fast, so nothing is lost.
+
+**Prompt caching.** The requests carry cache markers on the large, unchanging parts — the system
+prompt and the tool list. Caching matches on the exact bytes of that prefix, so anything that
+rewrites the body, even reordering keys while meaning the same thing, silently stops the cache from
+matching and makes every call cost full price. This is the strongest practical reason to relay the
+body untouched rather than parse and rebuild it.
 
 **Do not buffer the whole reply.** Watching bytes go past must not mean collecting them all in
 memory. Keep only a small working buffer, take the numbers out as they appear, and discard the rest.
@@ -167,12 +195,16 @@ a row together. Make sure rows cannot interleave into corrupted lines.
 
 ## Risks and open questions
 
-**How Claude Code authenticates to Anthropic.** This is the biggest unknown and should be settled
-before Phase 1 rather than during it, because it decides whether the router needs to hold an API key
-at all. A subscription login sends an OAuth token rather than an API key; that token may still be
-usable as-is, in which case the router can forward whatever arrives and keep no secret of its own. If
-it is not usable, the cloud side needs a separate, separately billed API key. Either way the local
-side is unaffected. See `anthropic-auth-check.md` for how to test this and what each outcome implies.
+**How Claude Code authenticates to Anthropic.** *Settled — this is no longer a risk.* It sends an
+OAuth subscription token as a bearer credential, and that token is accepted by Anthropic when
+forwarded the way Claude Code sends it. The router therefore holds no key of its own: it forwards the
+credential on cloud-bound requests and strips it on local ones. Details and evidence in
+`anthropic-auth-check.md`.
+
+**Request fields we have not seen.** The one captured request already carried three body fields that
+this plan did not anticipate, and a message role that is not part of the base API. More will appear
+as Claude Code evolves. Nothing needs doing about it — that is precisely what relaying the body
+untouched buys us — but it is worth remembering the next time parsing the body looks tempting.
 
 **Whether LM Studio reports usage.** If it does not, the token columns will be empty for every local
 call and comparisons will have to lean on request size and timing instead. Phase 4 answers this.

@@ -90,8 +90,47 @@ injecting a key and safer than passing it everywhere.
 
 ## Result
 
-_To be filled in once the tests have been run._
+Both tests were run on 2026-07-28. The full captured request is in `log-the-whole-request.txt`, with
+the token and the account, device and session identifiers replaced by `REDACTED-*` placeholders.
 
-- Credential type observed:
-- Test B status code (if applicable):
-- Decision:
+- **Credential type observed:** OAuth subscription token — `Authorization: Bearer sk-ant-oat01-…`,
+  accompanied by `anthropic-beta: claude-code-20250219,oauth-2025-04-20,…` (ten beta flags in all)
+  and `anthropic-version: 2023-06-01`. No `x-api-key` header is sent.
+- **Test B status code:** `429`.
+- **Decision:** forward the arriving credential; the router holds no Anthropic key of its own.
+
+### Why a 429 settles the question
+
+A 429 is not a rejection of the credential. A bad token returns 401, and a token scoped away from the
+endpoint returns 403. A 429 is returned *after* authentication succeeds, on rate or usage grounds —
+so the token was accepted at `/v1/messages` when sent exactly the way Claude Code sends it. That is
+the fact Test B set out to establish.
+
+The original curl in Test B discarded the response body (`-o /dev/null`), which is why the 429 was
+ambiguous at first. To confirm the limit is an ordinary one rather than something unexpected, re-run
+showing headers and body:
+
+```
+curl -sS -D- -o- https://api.anthropic.com/v1/messages \
+  -H "authorization: Bearer <token>" \
+  -H "anthropic-beta: claude-code-20250219,oauth-2025-04-20" \
+  -H "anthropic-version: 2023-06-01" \
+  -H "content-type: application/json" \
+  -d '{"model":"claude-sonnet-5","max_tokens":16,"messages":[{"role":"user","content":"hi"}]}'
+```
+
+An `error.type` of `rate_limit_error` alongside `anthropic-ratelimit-*` or `retry-after` headers means
+the subscription's usage window was simply full at that moment.
+
+### What this means in practice
+
+Set Claude Code's `ANTHROPIC_AUTH_TOKEN` to the real credential, point `ANTHROPIC_BASE_URL` at the
+router, and have the router pass the `Authorization` header through unchanged on cloud-bound
+requests. The `anthropic-beta` header must be forwarded verbatim too — `oauth-2025-04-20` is what
+makes the bearer token acceptable, and dropping it would turn a working request into a 401.
+
+The credential is stripped from requests heading to LM Studio, as described above.
+
+One thing to be clear about: in this arrangement the client really is Claude Code, and the router
+only relays its traffic unmodified. That is what `ANTHROPIC_BASE_URL` exists for. Using a
+subscription token from some *other* client is a different thing and is not what this design does.

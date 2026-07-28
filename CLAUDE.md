@@ -32,13 +32,27 @@ So both sides of the router speak the *same* protocol, and the router is a **mod
 
 This is why the router exists at all: **Claude Code accepts exactly one `ANTHROPIC_BASE_URL`.** Pointing it at LM Studio gives up the Anthropic models; pointing it at Anthropic gives up the local ones. Something has to sit in front and route per-request to have both at once. Because the protocol matches on both sides, the request body can likely be forwarded unmodified and the response stream relayed as bytes, rather than parsed and re-emitted.
 
-The second real job is **credential injection**: the local side wants a dummy token, the cloud side needs the real key. The router picks the right credential per route, so the developer configures one endpoint.
+The second real job is **credential handling**: *forward for cloud, strip for local*. Verified 2026-07-28 (see `docs/anthropic-auth-check.md`): Claude Code sends an OAuth subscription token as `Authorization: Bearer sk-ant-oat01-…`, and Anthropic accepts it as forwarded. So the router injects nothing and holds no secret — it passes the arriving credential through to Anthropic and removes it from LM Studio-bound requests, which have no use for it and might log it.
+
+The `anthropic-beta` header must reach Anthropic verbatim. It arrives as a ten-entry comma-separated list, and one entry (`oauth-2025-04-20`) is what makes the bearer token acceptable; trimming the list turns a working request into a 401.
 
 Known gaps to design around (not translation work — LM Studio's own surface):
 
 - The Anthropic-compat namespace exposes **only `/v1/messages`** — there is no `/v1/models` under it. To advertise a merged model list, enumerate local models via LM Studio's native `GET /api/v1/models` (or its OpenAI-compat `GET /v1/models`).
 - LM Studio publishes **no feature-parity matrix**. Its `/v1/messages` docs don't spell out handling of `system`, `tool_result`, `thinking` blocks, or images. Verify these empirically against a loaded model before assuming passthrough is lossless.
-- LM Studio recommends a model with **>~25k context**, since Claude Code is context-hungry.
+- LM Studio recommends a model with **>~25k context**. Measured against a real request, that is optimistic: a bare `hi` turn arrived as **118 KB** of JSON — 81 KB of tool schemas (27 tools), 28 KB of system prompt, and 368 bytes of actual conversation. Call it ~30k tokens of fixed preamble before the user types anything, so a usable local model needs meaningfully more headroom than 25k.
+
+## Observed request shape
+
+From one captured request (`docs/log-the-whole-request.txt` — token and account/device/session identifiers redacted; it is one 120 KB line, so read it with `jq`). Concrete facts that constrain the proxy:
+
+- **Claude Code probes with `HEAD /` first**, from a separate client (`User-Agent: Bun/1.4.0`), before any `/v1/messages` call. The router must answer it or it looks like a dead endpoint at startup.
+- **The path carries a query string**: `POST /v1/messages?beta=true`. Forward path *and* query.
+- **`Accept-Encoding: gzip, deflate, br, zstd`** comes in, so requesting an uncompressed response upstream must be a deliberate override — otherwise `usage` can't be read from the passing bytes.
+- **Body fields beyond the base API**: `context_management`, `output_config` (`{"effort":"high"}`), `metadata.user_id`. None were anticipated when this file was first written. This is the concrete case for byte-relay: a Pydantic full-body model would have silently dropped all three.
+- **`cache_control: {"type":"ephemeral","ttl":"1h"}`** on the system blocks. Prompt caching matches on exact prefix bytes, so any reserialization — even key reordering that means the same thing — breaks cache hits and costs real money. Byte-relay is not just about forward-compatibility.
+- **A `role: "system"` message inside `messages`** (the `mid-conversation-system-2026-04-07` beta). Almost certainly unsupported by LM Studio; a specific Phase 4 test item rather than a vague parity worry.
+- Confirms two claims below: `thinking` is `{"type":"adaptive","display":"omitted"}`, and no `temperature`/`top_p`/`top_k` is sent at all.
 
 ## Design decisions
 
@@ -62,7 +76,7 @@ CSV columns:
 | `model` | peeked from the request body |
 | `input_tokens` | `usage.input_tokens`, tee'd from the response |
 | `output_tokens` | `usage.output_tokens` (free alongside the above) |
-| `request_bytes` | raw body length — always available, even when `usage` is not |
+| `request_bytes` | raw body length — always available, even when `usage` is not. Note it is dominated by the ~110 KB fixed preamble, so it is a weak proxy for conversation size; keep it as the fallback it is, not the comparison metric |
 | `duration_ms` | wall time until the response *completes* (stream fully drained), not time-to-first-byte |
 | `is_error` | boolean |
 | `error_code` | HTTP status, or a symbolic code for transport failures |

@@ -12,45 +12,66 @@ stopped and what happens next.
 ## Where the project stands
 
 **No code has been written.** The repository contains documentation only: `README.md`, `CLAUDE.md`,
-and three files in `docs/`. There is no `pyproject.toml`, no source tree, and no tests. Phase 0 of
+and four files in `docs/`. There is no `pyproject.toml`, no source tree, and no tests. Phase 0 of
 the plan has not started.
 
-Everything decided so far came from reading vendor documentation and reasoning about the design.
-**Nothing has been executed or tested.** That distinction matters — see the caveats below.
+Most of what is decided came from reading vendor documentation and reasoning about the design. The
+exception is the authentication question, which was settled empirically by capturing a real request
+— see below.
 
 ## Git state
 
-On branch `docs/add-claude-md`, four commits ahead of `origin/main`, nothing pushed:
+On branch `docs/add-claude-md`, five commits ahead of `origin/main`, nothing pushed:
 
 - `5895359` initial CLAUDE.md
 - `c9be81f` correction to CLAUDE.md
 - `f7c71d4` design decisions and observability spec
 - `1636024` implementation plan
+- `93fda4f` authentication check procedure and handoff notes
 
-Two files are uncommitted:
-
-- `docs/anthropic-auth-check.md` — new, untracked
-- `docs/implementation-plan.md` — modified, its authentication risk entry corrected and pointed at
-  the new file
-
-The branch is four commits of documentation under a name that suggests docs, and is about to grow
-code. Consider merging it to `main` and starting implementation on a fresh branch.
+The branch is documentation-only under a name that suggests docs, and is about to grow code.
+Consider merging it to `main` and starting implementation on a fresh branch.
 
 ## What we were doing when we stopped
 
-The immediate next step is **running Test A in `anthropic-auth-check.md`** to find out what kind of
-credential Claude Code puts on the wire. This was deliberately placed before Phase 0 because the
-answer decides whether the router needs to hold an Anthropic API key at all, which changes what gets
-built.
+The authentication question is **answered**. Test A and Test B were run on 2026-07-28 and the
+captured request is saved as `log-the-whole-request.txt`. Claude Code sends an OAuth subscription
+token as a bearer credential, and Anthropic accepts it as forwarded — so the router holds no key of
+its own and the rule is *forward for cloud, strip for local*. Test B's 429 was initially read as a
+failure; it is not, because a 429 is only returned after authentication has succeeded.
 
-Once the answer is known: record it in that file's Result section, adjust the plan if key injection
-turns out to be unnecessary, then begin Phase 0.
+The capture also produced several concrete facts that were previously guesses — a `HEAD /` startup
+probe, a query string on the messages path, body fields outside the base API, and prompt-cache
+markers that make byte-relay a correctness requirement rather than a preference. These are recorded
+in `CLAUDE.md` under "Observed request shape" and folded into the plan.
+
+**The next step is Phase 0** — the project skeleton. Nothing blocks it.
+
+One loose end: re-run the Test B curl showing its response body, to confirm the 429 was an ordinary
+subscription rate limit rather than something unexpected. The command is in `anthropic-auth-check.md`.
+This does not block Phase 0.
+
+## About `log-the-whole-request.txt`
+
+A real captured request, kept as the evidence behind the "Observed request shape" notes. 120 KB,
+nearly all of it a single line — read it with `jq` rather than opening it whole.
+
+It has been redacted and is safe to commit. Replaced with `REDACTED-*` placeholders: the Anthropic
+token, `account_uuid`, `device_id`, and `session_id` (which appeared both in the body and in an
+`X-Claude-Code-Session-Id` header), plus the owner's email address where the system prompt carried it.
+The JSON body still parses, including the nested `metadata.user_id` string.
+
+Left in deliberately: `/Users/ilirium` paths, since the username is already throughout the repository
+and git history, and stripping it would make the capture harder to read for no gain.
+
+If a further capture is ever taken, redact the same set before committing it.
 
 ## Caveats worth carrying forward
 
-**The documentation describes intentions, not observed behaviour.** Nothing in `CLAUDE.md` or the
-plan has been validated by running anything. Treat statements about how the router will behave as
-design intent until code exists to check them against.
+**The documentation describes intentions, not observed behaviour** — with one exception. The
+"Observed request shape" section of `CLAUDE.md` and the Result section of `anthropic-auth-check.md`
+come from a real captured request and are facts. Everything else about how the router will behave is
+still design intent, unvalidated until code exists to check it against.
 
 **Claims about LM Studio come from its own documentation.** That it implements an Anthropic-compatible
 `/v1/messages` is well supported. What is *not* known is how completely: LM Studio publishes no
