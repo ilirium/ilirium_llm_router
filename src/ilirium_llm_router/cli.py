@@ -67,16 +67,24 @@ def _report(config: Config, path: Path) -> None:
     print(f"Config:   {path.resolve()}")
     print(f"Listening on {config.server.host}:{config.server.port}")
     print("\nBackends:")
-    print(f"  anthropic  {config.backends.anthropic.base_url}   "
-          f"models starting with 'claude-'   [{_credential(config.backends.anthropic)}]")
-    print(f"  lmstudio   {config.backends.lmstudio.base_url}   "
-          f"every other model                [{_credential(config.backends.lmstudio)}]")
-    print("\nLog:      "
-          f"{config.logging.file}  ({config.logging.level}, "
-          f"rotate at {_mib(config.logging.max_bytes)}, keep {config.logging.backup_count})")
-    print("Stats:    "
-          f"{config.stats.file}  (rotate at {_mib(config.stats.max_bytes)}, "
-          f"keep {config.stats.backup_count})")
+    print(
+        f"  anthropic  {config.backends.anthropic.base_url}   "
+        f"models starting with 'claude-'   [{_credential(config.backends.anthropic)}]"
+    )
+    print(
+        f"  lmstudio   {config.backends.lmstudio.base_url}   "
+        f"every other model                [{_credential(config.backends.lmstudio)}]"
+    )
+    print(
+        "\nLog:      "
+        f"{config.logging.file}  ({config.logging.level}, "
+        f"rotate at {_mib(config.logging.max_bytes)}, keep {config.logging.backup_count})"
+    )
+    print(
+        "Stats:    "
+        f"{config.stats.file}  (rotate at {_mib(config.stats.max_bytes)}, "
+        f"keep {config.stats.backup_count})"
+    )
 
 
 def _credential(backend: Backend) -> str:
