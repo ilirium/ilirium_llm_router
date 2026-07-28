@@ -24,10 +24,18 @@ src/ilirium_llm_router/
 tests/
 ```
 
-- `uv sync` — install
-- `uv run ilirium-llm-router --check` — validate and print the config without starting
-- `uv run ilirium-llm-router` — start the server
-- `uv run pytest` / `uv run pytest tests/test_config.py::test_empty_file_is_rejected`
+`make` on its own lists the targets. The useful ones:
+
+| | |
+|---|---|
+| `make run` | start the server (`uv run ilirium-llm-router`) |
+| `make check` | validate and print the config without starting |
+| `make test` | run the tests; `make test ARGS="tests/test_config.py::test_empty_file_is_rejected"` for one |
+| `make lint` / `make format` | ruff, fetched on demand via `uvx` — not a project dependency |
+| `make sync` | install |
+| `make clean` | caches and build artefacts; leaves `logs/` alone |
+
+`make run CONFIG=other.yaml` overrides the config path on any target that takes one. There is no reload target: the app is built by a factory, which `uvicorn --reload` cannot import.
 
 Config models set `extra="forbid"`, so a mistyped YAML key is an error rather than a silently ignored default. Relative log/stats paths resolve against the config file's directory, not the working directory.
 
