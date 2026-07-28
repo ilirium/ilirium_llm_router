@@ -17,7 +17,7 @@ config table, and never let the logging get in the way of a request.
 
 ---
 
-## Phase 0 — Project skeleton
+## Phase 0 — Project skeleton — **done**
 
 **Goal.** A project that starts up, reads its configuration, and does nothing else. No request
 handling yet.

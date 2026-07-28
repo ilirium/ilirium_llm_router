@@ -11,9 +11,12 @@ stopped and what happens next.
 
 ## Where the project stands
 
-**No code has been written.** The repository contains documentation only: `README.md`, `CLAUDE.md`,
-and four files in `docs/`. There is no `pyproject.toml`, no source tree, and no tests. Phase 0 of
-the plan has not started.
+**Phase 0 is complete.** The skeleton exists and runs: uv project, validated config loading, the
+routing rule, a CLI with a `--check` mode, and 26 passing tests. `proxy.py`, `stats.py` and
+`logging_setup.py` are stubs whose docstrings carry the constraints they must satisfy.
+
+**No request forwarding exists yet.** Nothing has been proxied, and the router has never spoken to
+Anthropic or LM Studio. That is Phase 1.
 
 Most of what is decided came from reading vendor documentation and reasoning about the design. The
 exception is the authentication question, which was settled empirically by capturing a real request
@@ -45,11 +48,21 @@ probe, a query string on the messages path, body fields outside the base API, an
 markers that make byte-relay a correctness requirement rather than a preference. These are recorded
 in `CLAUDE.md` under "Observed request shape" and folded into the plan.
 
-**The next step is Phase 0** — the project skeleton. Nothing blocks it.
+Phase 0 was then built on `main` and is described above.
 
-One loose end: re-run the Test B curl showing its response body, to confirm the 429 was an ordinary
-subscription rate limit rather than something unexpected. The command is in `anthropic-auth-check.md`.
-This does not block Phase 0.
+**The next step is Phase 1** — the proxy itself, and the milestone that proves the whole idea. The
+constraints are already written down in `proxy.py`'s docstring and in the plan; the work is to
+implement them.
+
+One loose end, carried over and still not blocking: re-run the Test B curl showing its response body,
+to confirm the 429 was an ordinary subscription rate limit rather than something unexpected. The
+command is in `anthropic-auth-check.md`.
+
+One decision deferred during Phase 0: `config.yaml` supports an optional `api_key_env` per backend,
+which injects a key from the environment instead of forwarding or stripping the incoming credential.
+Nothing uses it today — it exists because LM Studio's "Require Authentication" setting is a plausible
+near-term need and because the README calls for `.env` to hold API keys. If it is still unused when
+the project settles, consider removing it rather than carrying an untested path.
 
 ## About `log-the-whole-request.txt`
 

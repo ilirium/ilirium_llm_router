@@ -4,9 +4,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-The repository currently contains only `README.md`, `.gitignore`, and `.idea/` — **no source code, no `pyproject.toml`, no tests yet**. Everything below is the design the README commits to; treat it as the target, and update this file as real structure lands.
+**Phase 0 is done** (see `docs/implementation-plan.md` for the phases). The project skeleton exists: uv project, config loading with fail-fast validation, the routing rule, and tests. **No request forwarding yet** — that is Phase 1, and `proxy.py`, `stats.py` and `logging_setup.py` are documented stubs.
 
 Note: `/Users/ilirium/Projects/code-2026/ilirium_llm_router` and the OneDrive path are the *same directory* (identical inode), not two checkouts. Editing either edits both.
+
+## Layout and commands
+
+```
+config.yaml                 backend definitions, server, log/stats rotation — no model list
+.env.example                normally empty; the router holds no secret (see auth note below)
+src/ilirium_llm_router/
+  config.py                 YAML → validated Config; raises ConfigError with a readable message
+  routing.py                the `claude-` prefix rule
+  proxy.py                  Phase 1 — forwarding (stub; its docstring lists the constraints)
+  stats.py                  Phase 2 — CSV rows (stub)
+  logging_setup.py          Phase 2 — rotating log (stub)
+  app.py                    FastAPI app factory
+  cli.py                    entry point; `--check` validates config and exits
+tests/
+```
+
+- `uv sync` — install
+- `uv run ilirium-llm-router --check` — validate and print the config without starting
+- `uv run ilirium-llm-router` — start the server
+- `uv run pytest` / `uv run pytest tests/test_config.py::test_empty_file_is_rejected`
+
+Config models set `extra="forbid"`, so a mistyped YAML key is an error rather than a silently ignored default. Relative log/stats paths resolve against the config file's directory, not the working directory.
 
 ## Goal
 
@@ -125,7 +148,7 @@ Two request-shape facts that matter when proxying to current models: `thinking` 
 - **YAML** for configuration (backends, model routing table); **`.env`** for API keys.
 - **`uv`** for dependencies and project management.
 
-Once `pyproject.toml` exists, the commands are `uv sync`, `uv run uvicorn <module>:app --reload`, `uv run pytest`, and `uv run pytest path/to/test.py::test_name` for a single test. Verify against the actual project file rather than assuming.
+Commands are listed under "Layout and commands" above. Python 3.13; the app is created by a factory (`app.create_app(config)`) rather than a module-level `app`, so `uvicorn <module>:app` does not apply — start it through the CLI.
 
 ## Style
 

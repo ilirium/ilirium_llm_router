@@ -1,0 +1,40 @@
+# Configuration for ilirium_llm_router.
+#
+# There is deliberately no model list here. Routing is a rule in code: a model named `claude-…`
+# goes to Anthropic, anything else goes to LM Studio. New models on either side need no change here.
+#
+# Relative paths below are resolved against the directory holding this file.
+
+server:
+  host: 127.0.0.1
+  port: 8787
+
+backends:
+  # Models named `claude-…`.
+  anthropic:
+    base_url: https://api.anthropic.com
+    # `forward` passes the credential arriving from Claude Code straight through. It is the real
+    # one and Anthropic accepts it, so the router holds no key of its own. See
+    # docs/anthropic-auth-check.md.
+    credential: forward
+
+  # Every other model.
+  lmstudio:
+    base_url: http://localhost:1234
+    # `strip` removes the credential. A real Anthropic token is of no use to a local server and
+    # should not be handed to something that might write it to a log.
+    credential: strip
+    # If LM Studio's "Require Authentication" is switched on, name the environment variable holding
+    # its key here instead, and the router will send that rather than stripping:
+    # api_key_env: LMSTUDIO_API_KEY
+
+logging:
+  level: INFO
+  file: logs/router.log
+  max_bytes: 10485760   # 10 MiB
+  backup_count: 5
+
+stats:
+  file: logs/calls.csv
+  max_bytes: 5242880    # 5 MiB
+  backup_count: 10

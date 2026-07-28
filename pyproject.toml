@@ -1,0 +1,28 @@
+[project]
+name = "ilirium-llm-router"
+version = "0.1.0"
+description = "Routes one coding harness to Anthropic and locally served models at the same time."
+readme = "README.md"
+authors = [
+    { name = "Ilya 'Ilirium' Kalimulin", email = "ilirium115@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.140.9",
+    "httpx>=0.28.1",
+    "python-dotenv>=1.2.2",
+    "pyyaml>=6.0.3",
+    "uvicorn[standard]>=0.51.0",
+]
+
+[project.scripts]
+ilirium-llm-router = "ilirium_llm_router.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.11.32,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]
