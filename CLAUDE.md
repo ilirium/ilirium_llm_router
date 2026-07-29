@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-**Phase 1 is written but not yet verified in a real session** (see `docs/implementation-plan.md` for the phases). The router forwards: it answers the `HEAD /` probe, dispatches `POST /v1/messages` by the model named in the body, and has a catch-all for every other path. Bodies are relayed byte for byte and replies streamed back untouched. `stats.py` and `logging_setup.py` are still documented stubs — that is Phase 2.
+**Phase 1 is done, verified in a real session on 2026-07-29** (see `docs/implementation-plan.md` for the phases, and `docs/testing-against-claude-code.md` for the procedure and the full results). The router forwards: it answers the `HEAD /` probe, dispatches `POST /v1/messages` by the model named in the body, and has a catch-all for every other path. Bodies are relayed byte for byte and replies streamed back untouched. **Next is Phase 2** — `stats.py` and `logging_setup.py` are still documented stubs, so nothing yet records what a call did.
 
-Phase 1's "done when" is a real `claude` session against a cloud *and* a local model. **That has not been run.** What has been run: the test suite, and live curls against the router with a backend on the other end — the `HEAD /` probe, a local-model request that reached LM Studio, and a request with no `model` field being rejected.
+Both halves work. `claude-sonnet-5` through the router behaves as a normal session. `google/gemma-4-e4b` in LM Studio handles tool use — reading and writing files, running bash commands, running a Python script and reading its stdout — with multi-turn conversation holding together. Streaming was confirmed incrementally in a curl smoke test rather than inferred from the display.
+
+This settles the project's central claim: **no protocol translation is needed, and a local model can drive a real coding session through the router.**
 
 **LM Studio's "Require Authentication" is switched on** on this machine (observed 2026-07-29: a forwarded local request comes back `401 authentication_error` from LM Studio itself). Local models will not work until either that setting is turned off, or `lmstudio.api_key_env: LMSTUDIO_API_KEY` is uncommented in `config.yaml` and the key put in `.env`. This retires the Phase 0 question of whether `api_key_env` was a speculative feature worth removing: it is load-bearing.
 
@@ -76,6 +78,8 @@ Known gaps to design around (not translation work — LM Studio's own surface):
 - The Anthropic-compat namespace exposes **only `/v1/messages`** — there is no `/v1/models` under it. To advertise a merged model list, enumerate local models via LM Studio's native `GET /api/v1/models` (or its OpenAI-compat `GET /v1/models`).
 - LM Studio publishes **no feature-parity matrix**. Its `/v1/messages` docs don't spell out handling of `system`, `tool_result`, `thinking` blocks, or images. Verify these empirically against a loaded model before assuming passthrough is lossless.
 - LM Studio recommends a model with **>~25k context**. Measured against a real request, that is optimistic: a bare `hi` turn arrived as **118 KB** of JSON — 81 KB of tool schemas (27 tools), 28 KB of system prompt, and 368 bytes of actual conversation. Call it ~30k tokens of fixed preamble before the user types anything, so a usable local model needs meaningfully more headroom than 25k.
+
+  One data point against that estimate: the 2026-07-29 session ran `google/gemma-4-e4b` at a context length of **34304 tokens** and worked, tools and multi-turn included. That is only ~4k above the estimated preamble, which is less headroom than the estimate predicts a working session needs. Either the ~30k figure is pessimistic for this tokenizer, or context is being silently trimmed somewhere. Worth resolving in Phase 4, because silent truncation would degrade answers invisibly rather than failing loudly.
 
 ## Observed request shape
 

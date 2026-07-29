@@ -6,7 +6,8 @@ itself.
 
 It is deliberately thin. The design lives in `CLAUDE.md`, which is loaded automatically every
 session; the phased plan lives in `implementation-plan.md`; the authentication procedure lives in
-`anthropic-auth-check.md`; the decisions taken while writing the proxy live in `phase-1-notes.md`.
+`anthropic-auth-check.md`; the decisions taken while writing the proxy live in `phase-1-notes.md`;
+the procedure for testing the router against a real session lives in `testing-against-claude-code.md`.
 Read those for substance. This file only records session state — where we stopped and what happens
 next.
 
@@ -15,17 +16,15 @@ next.
 **Phase 0 is complete** — uv project, validated config loading, the routing rule, a CLI with a
 `--check` mode.
 
-**Phase 1 is written and passes its tests, but its "done when" has not been met.** `proxy.py` and
-`app.py` now forward: the `HEAD /` probe is answered locally, `POST /v1/messages` is dispatched on
-the model named in the body, and a catch-all carries anything else to Anthropic. Bodies go out byte
-for byte, replies stream back untouched. 54 tests pass.
-
-What that does *not* include: a real `claude` session. The router has spoken to LM Studio but not to
-Anthropic, and no conversation has been held through it. Until someone drives `claude` against it,
-Phase 1 is unproven in the way that matters.
+**Phase 1 is complete and proven in a real session on 2026-07-29.** `proxy.py` and `app.py` forward:
+the `HEAD /` probe is answered locally, `POST /v1/messages` is dispatched on the model named in the
+body, and a catch-all carries anything else to Anthropic. Bodies go out byte for byte, replies stream
+back untouched. 54 tests pass, and Claude Code has run through the router against both backends —
+`claude-sonnet-5` as a normal session, and `google/gemma-4-e4b` in LM Studio with working tool calls
+and multi-turn. Full results in `testing-against-claude-code.md`.
 
 `stats.py` and `logging_setup.py` are still stubs whose docstrings carry the constraints they must
-satisfy. That is Phase 2.
+satisfy. That is Phase 2, and it is the next thing to build.
 
 ## What we were doing when we stopped
 
@@ -41,10 +40,17 @@ question of whether `api_key_env` was speculative and should be removed — it i
 passing the backend's through gave the client two of each, which the HTTP spec forbids. Found by
 reading the headers off a real reply, not by reasoning; the drop list in `proxy.py` now covers them.
 
-**The next step is to verify Phase 1 for real:** point Claude Code at the router
-(`ANTHROPIC_BASE_URL=http://127.0.0.1:8787`) and hold a conversation with a `claude-` model and with
-a local one, checking that replies stream, tools work, and multi-turn holds together. Sort out the
-LM Studio credential first or the local half cannot work at all. After that, Phase 2.
+Phase 1 was then verified end to end, which is where the project now stands. The one surprise from
+that session: the local model ran at 34304 tokens of context — barely above the ~30k fixed preamble
+measured from the captured request — and worked anyway. Either that estimate is pessimistic or
+something trims context quietly; Phase 4 should find out, because silent truncation degrades answers
+without failing.
+
+**The next step is Phase 2** — the log and the per-call CSV. The columns and the constraints are
+already specified in `CLAUDE.md` under "Observability"; the notable ones are teeing the response
+rather than parsing it, re-emitting the CSV header on rotation, and never letting a telemetry
+failure break a call. It also answers a question Phase 1 left uncomfortable: right now nothing
+records which backend a request took, so testing means reading LM Studio's own server log.
 
 One loose end, carried over and still not blocking: re-run the Test B curl showing its response body,
 to confirm the 429 was an ordinary subscription rate limit rather than something unexpected. The
@@ -67,17 +73,19 @@ If a further capture is ever taken, redact the same set before committing it.
 
 ## Caveats worth carrying forward
 
-**Most of the documentation still describes intentions rather than observed behaviour.** The
-exceptions — the parts that are facts — are the "Observed request shape" section of `CLAUDE.md`, the
-Result section of `anthropic-auth-check.md`, and the two Phase 1 findings above. In particular, the
-router has never sent a request to Anthropic. That the forwarded credential and beta header work
-through the router is inference from the capture, not something anyone has watched happen.
+**Phases 2 to 4 are still intentions, not observed behaviour.** What is now fact: the "Observed
+request shape" section of `CLAUDE.md`, the Result section of `anthropic-auth-check.md`, the two
+Phase 1 findings above, and the session results in `testing-against-claude-code.md`. Everything
+written about logging, statistics, error handling and LM Studio parity remains design intent that no
+code has been checked against.
 
-**Claims about LM Studio come from its own documentation.** That it implements an Anthropic-compatible
-`/v1/messages` is well supported. What is *not* known is how completely: LM Studio publishes no
-compatibility table, so its handling of system prompts, tool results, thinking blocks, images, and
-usage reporting is unverified. Phase 4 exists to find out. Do not assume passthrough is lossless
-before then.
+**LM Studio's parity is now partly measured rather than assumed, but only partly.** Tool calls
+demonstrably survive the round trip — the 2026-07-29 session read and wrote files, ran bash commands
+and ran a Python script — which was the biggest unknown. LM Studio still publishes no compatibility
+table, and these remain untested: a `role: "system"` message inside `messages`, `thinking` blocks,
+images, and whether it reports `usage` at all. That last one decides whether half of Phase 2's CSV
+columns can ever be filled for local calls, so it is worth answering early rather than at Phase 4.
+Do not assume passthrough is lossless before then.
 
 **One claim in this repository was already wrong once.** The first version of `CLAUDE.md` asserted
 that a protocol translation layer between the Anthropic and OpenAI formats was needed and was the

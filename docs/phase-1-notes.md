@@ -93,20 +93,27 @@ before the stand-in backend was changed to reply with an async iterator, which i
 backend does. `tests/test_proxy.py` has a `streamed()` helper for this; use it rather than building
 `httpx.Response` directly.
 
-## What is still unverified
+## What was still unverified when these notes were written — and how it resolved
 
-Phase 1's "done when" has **not** been met. It asks for a real `claude` session against a cloud and
-a local model, and no conversation has been held through the router.
+This section originally said the "done when" had not been met and that the router had never sent a
+request to Anthropic. Both were true on the day, and both were overtaken on 2026-07-29 when the
+procedure in `testing-against-claude-code.md` was run. Keeping the correction visible rather than
+editing the claim away, since the gap between what the tests proved and what a session proved is the
+useful part.
 
-More specifically: **the router has never sent a request to Anthropic.** That the forwarded
-credential and the `anthropic-beta` list work through it is inference from the captured request in
-`log-the-whole-request.txt`, not something anyone has watched happen. The tests assert that those
-headers arrive at the backend unchanged, which is the part we can check without a live token; they
-cannot tell us Anthropic accepts them.
+**Resolved.** The forwarded credential and the `anthropic-beta` list do work through the router —
+`claude-sonnet-5` ran as a normal session. That had been inference from the captured request, and
+the tests could only assert the headers left the router unchanged, never that Anthropic accepted
+them. Streaming, tools and multi-turn were verified against a local model too: `google/gemma-4-e4b`
+wrote and read files, ran bash commands, and ran a Python script and read its stdout.
 
-Streaming is likewise verified only against a stand-in. Real SSE from either backend, tools, and
-multi-turn conversation are all untested.
+**Still open.** LM Studio's parity with the Anthropic API remains largely as unknown as before.
+Working tool calls are a substantial result, but the awkward cases the capture turned up are
+untested: a `role: "system"` message inside `messages`, `thinking` blocks, images, and whether
+`usage` is reported at all — the last of which decides whether half of Phase 2's CSV columns can
+ever be filled for local calls. That is Phase 4's job, and nothing in Phase 1 brought it forward.
 
-And LM Studio's actual parity with the Anthropic API — system prompts, `tool_result`, `thinking`
-blocks, images, whether it reports `usage` at all — remains exactly as unknown as it was before
-Phase 1. That is Phase 4's job, and nothing here brought it forward.
+One new question came out of the session rather than the code: the model ran at 34304 tokens of
+context and worked, which is only ~4k above the ~30k fixed preamble measured from the captured
+request. Either that estimate is pessimistic for this tokenizer or something is trimming context
+quietly. Worth settling in Phase 4, because silent truncation degrades answers without failing.

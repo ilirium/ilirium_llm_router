@@ -39,7 +39,7 @@ about, and exits cleanly with a clear error if the config file is wrong.
 
 ---
 
-## Phase 1 — The proxy itself (first milestone) — **written, awaiting a real session**
+## Phase 1 — The proxy itself (first milestone) — **done**
 
 **Goal.** Claude Code can be pointed at this service and work normally against both a cloud model
 and a local model. This is the milestone that proves the whole idea.
@@ -67,11 +67,15 @@ and a local model. This is the milestone that proves the whole idea.
 `claude --model <some-local-model>` both work in a real session: replies stream smoothly, tools
 work, and a multi-turn conversation holds together.
 
-**Where it stands.** All of the above is written and covered by tests, and the router has been run
-for real: it answers the probe, a local-model request reaches LM Studio, and a body with no model is
-refused. The remaining step is the session itself, which needs a person driving `claude`. One thing
-that turned up on the way: LM Studio has "Require Authentication" switched on here, so local calls
-return 401 until its key is configured — see the Status section of `CLAUDE.md`.
+**Met on 2026-07-29.** Claude Code ran through the router against both backends: `claude-sonnet-5`
+behaved as a normal session, and `google/gemma-4-e4b` in LM Studio wrote and read files, ran bash
+commands, and ran a Python script and read its stdout, with multi-turn conversation holding
+together. Streaming was confirmed incrementally in a curl smoke test. The procedure and the full
+results are in `testing-against-claude-code.md`.
+
+Two things turned up on the way, both now recorded in `CLAUDE.md`: LM Studio has "Require
+Authentication" switched on here, so local calls return 401 until its key is configured; and the
+backend's `date` and `server` headers must not be relayed, since our own server writes them.
 
 ---
 
