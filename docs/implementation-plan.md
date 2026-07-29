@@ -39,7 +39,7 @@ about, and exits cleanly with a clear error if the config file is wrong.
 
 ---
 
-## Phase 1 — The proxy itself (first milestone)
+## Phase 1 — The proxy itself (first milestone) — **written, awaiting a real session**
 
 **Goal.** Claude Code can be pointed at this service and work normally against both a cloud model
 and a local model. This is the milestone that proves the whole idea.
@@ -66,6 +66,12 @@ and a local model. This is the milestone that proves the whole idea.
 **Done when.** With the service running, `claude --model claude-sonnet-5` and
 `claude --model <some-local-model>` both work in a real session: replies stream smoothly, tools
 work, and a multi-turn conversation holds together.
+
+**Where it stands.** All of the above is written and covered by tests, and the router has been run
+for real: it answers the probe, a local-model request reaches LM Studio, and a body with no model is
+refused. The remaining step is the session itself, which needs a person driving `claude`. One thing
+that turned up on the way: LM Studio has "Require Authentication" switched on here, so local calls
+return 401 until its key is configured — see the Status section of `CLAUDE.md`.
 
 ---
 

@@ -4,7 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-**Phase 0 is done** (see `docs/implementation-plan.md` for the phases). The project skeleton exists: uv project, config loading with fail-fast validation, the routing rule, and tests. **No request forwarding yet** — that is Phase 1, and `proxy.py`, `stats.py` and `logging_setup.py` are documented stubs.
+**Phase 1 is written but not yet verified in a real session** (see `docs/implementation-plan.md` for the phases). The router forwards: it answers the `HEAD /` probe, dispatches `POST /v1/messages` by the model named in the body, and has a catch-all for every other path. Bodies are relayed byte for byte and replies streamed back untouched. `stats.py` and `logging_setup.py` are still documented stubs — that is Phase 2.
+
+Phase 1's "done when" is a real `claude` session against a cloud *and* a local model. **That has not been run.** What has been run: the test suite, and live curls against the router with a backend on the other end — the `HEAD /` probe, a local-model request that reached LM Studio, and a request with no `model` field being rejected.
+
+**LM Studio's "Require Authentication" is switched on** on this machine (observed 2026-07-29: a forwarded local request comes back `401 authentication_error` from LM Studio itself). Local models will not work until either that setting is turned off, or `lmstudio.api_key_env: LMSTUDIO_API_KEY` is uncommented in `config.yaml` and the key put in `.env`. This retires the Phase 0 question of whether `api_key_env` was a speculative feature worth removing: it is load-bearing.
 
 Note: `/Users/ilirium/Projects/code-2026/ilirium_llm_router` and the OneDrive path are the *same directory* (identical inode), not two checkouts. Editing either edits both.
 
@@ -16,10 +20,10 @@ config.yaml                 backend definitions, server, log/stats rotation — 
 src/ilirium_llm_router/
   config.py                 YAML → validated Config; raises ConfigError with a readable message
   routing.py                the `claude-` prefix rule
-  proxy.py                  Phase 1 — forwarding (stub; its docstring lists the constraints)
+  proxy.py                  forwarding: peek the model, rebuild headers, stream the reply back
   stats.py                  Phase 2 — CSV rows (stub)
   logging_setup.py          Phase 2 — rotating log (stub)
-  app.py                    FastAPI app factory
+  app.py                    FastAPI app factory; the four routes and the shared HTTP client
   cli.py                    entry point; `--check` validates config and exits
 tests/
 ```
