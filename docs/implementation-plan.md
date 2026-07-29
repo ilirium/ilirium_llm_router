@@ -88,8 +88,8 @@ file that can be opened in a spreadsheet and compared across models.
 
 - Log each call with the time, the model, the chosen backend, the outcome and how long it took.
 - Write one CSV row per call with the columns listed in `CLAUDE.md`: timestamp, backend, model,
-  input tokens, output tokens, request size in bytes, duration, whether it failed, and if so the
-  error code and a short description.
+  input tokens, output tokens, cached input tokens, request size in bytes, duration, whether it
+  failed, and if so the error code and a short description.
 - Get the token counts by watching the reply as it passes through, rather than by taking it apart.
   The reply carries a usage report; we read a copy of the bytes on their way past and pick the
   numbers out of it. The bytes going to Claude Code are untouched.
@@ -216,8 +216,11 @@ this plan did not anticipate, and a message role that is not part of the base AP
 as Claude Code evolves. Nothing needs doing about it — that is precisely what relaying the body
 untouched buys us — but it is worth remembering the next time parsing the body looks tempting.
 
-**Whether LM Studio reports usage.** If it does not, the token columns will be empty for every local
-call and comparisons will have to lean on request size and timing instead. Phase 4 answers this.
+**Whether LM Studio reports usage.** *Settled — it does.* Checked on 2026-07-29 ahead of Phase 2
+rather than waiting for Phase 4, because the answer decided how much of the tee-and-scan machinery
+was worth building. Usage arrives in Anthropic's exact shape in both streaming and non-streaming
+replies, and survives the relay through the router. It reports `cache_read_input_tokens` as well,
+which the CSV spec has no column for. Procedure and numbers in `lmstudio-usage-check.md`.
 
 **Other endpoints.** Claude Code may call endpoints we have not anticipated. The catch-all route in
 Phase 1 is there to stop that being fatal, but if the local backend does not implement one of them,

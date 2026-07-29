@@ -10,7 +10,9 @@ Both halves work. `claude-sonnet-5` through the router behaves as a normal sessi
 
 This settles the project's central claim: **no protocol translation is needed, and a local model can drive a real coding session through the router.**
 
-**LM Studio's "Require Authentication" is switched on** on this machine (observed 2026-07-29: a forwarded local request comes back `401 authentication_error` from LM Studio itself). Local models will not work until either that setting is turned off, or `lmstudio.api_key_env: LMSTUDIO_API_KEY` is uncommented in `config.yaml` and the key put in `.env`. This retires the Phase 0 question of whether `api_key_env` was a speculative feature worth removing: it is load-bearing.
+**LM Studio's "Require Authentication" was switched on and has since been turned off.** Earlier on 2026-07-29 a forwarded local request came back `401 authentication_error` from LM Studio itself; later the same day LM Studio answered unauthenticated, and there is no `.env`. So the current working setup needs no local credential. If the setting is switched back on, uncomment `lmstudio.api_key_env: LMSTUDIO_API_KEY` in `config.yaml` and put the key in `.env`.
+
+The auth setting is expected to go back on, and is the reason backend authentication is now a design decision rather than an untested extra — see "Design decisions" below. Note that the key path has still never carried a live request: the setting was turned off rather than configured around, so it is covered by a unit test and nothing more. The agreed config shape (one `credential` field, three modes, contradictions refused at startup) is **not implemented yet**; `config.py` still has the two-knob shape.
 
 Note: `/Users/ilirium/Projects/code-2026/ilirium_llm_router` and the OneDrive path are the *same directory* (identical inode), not two checkouts. Editing either edits both.
 
@@ -75,8 +77,8 @@ The `anthropic-beta` header must reach Anthropic verbatim. It arrives as a ten-e
 
 Known gaps to design around (not translation work — LM Studio's own surface):
 
-- The Anthropic-compat namespace exposes **only `/v1/messages`** — there is no `/v1/models` under it. To advertise a merged model list, enumerate local models via LM Studio's native `GET /api/v1/models` (or its OpenAI-compat `GET /v1/models`).
-- LM Studio publishes **no feature-parity matrix**. Its `/v1/messages` docs don't spell out handling of `system`, `tool_result`, `thinking` blocks, or images. Verify these empirically against a loaded model before assuming passthrough is lossless.
+- The Anthropic-compat namespace exposes **only `/v1/messages`** — there is no `/v1/models` under it. To advertise a merged model list, enumerate local models via LM Studio's native `GET /api/v1/models` (or its OpenAI-compat `GET /v1/models`). That endpoint is also how to find which model is currently loaded: look for a non-empty `loaded_instances`.
+- LM Studio publishes **no feature-parity matrix**. Its `/v1/messages` docs don't spell out handling of `system`, `tool_result`, `thinking` blocks, or images. Verify these empirically against a loaded model before assuming passthrough is lossless. Measured so far: **tool calls work** (Phase 1 session) and **token usage is reported** in Anthropic's exact shape, streaming and not (`docs/lmstudio-usage-check.md`). Still unmeasured: a `role: "system"` message inside `messages`, `thinking` blocks, images.
 - LM Studio recommends a model with **>~25k context**. Measured against a real request, that is optimistic: a bare `hi` turn arrived as **118 KB** of JSON — 81 KB of tool schemas (27 tools), 28 KB of system prompt, and 368 bytes of actual conversation. Call it ~30k tokens of fixed preamble before the user types anything, so a usable local model needs meaningfully more headroom than 25k.
 
   One data point against that estimate: the 2026-07-29 session ran `google/gemma-4-e4b` at a context length of **34304 tokens** and worked, tools and multi-turn included. That is only ~4k above the estimated preamble, which is less headroom than the estimate predicts a working session needs. Either the ~30k figure is pessimistic for this tokenizer, or context is being silently trimmed somewhere. Worth resolving in Phase 4, because silent truncation would degrade answers invisibly rather than failing loudly.
@@ -101,6 +103,21 @@ Decided deliberately; don't quietly reverse these.
 - **No special case for background/auxiliary traffic.** Whatever `model` Claude Code sends gets routed by the same rule, including the small/fast model used for background calls. Consequence to keep in mind: a `claude-`prefixed background call leaves the machine and costs money even when the main model is local.
 - **Relay the body, log only metadata.** Forward the request body byte-for-byte and stream the response through without re-encoding; peek at `model` for routing only. Log model, backend, status, and duration — never deserialize or re-serialize the payload. This keeps the proxy correct when either side adds fields, which is the main risk of a parse-and-rebuild design.
 - **First milestone is a minimal end-to-end proxy:** uv project + FastAPI + `POST /v1/messages` dispatching to both backends with streaming working, verified by pointing Claude Code at it. Merged `/v1/models` and config polish come later.
+- **Backend authentication is a first-class feature, not a leftover.** Every backend declares how its credential is obtained, and the router is expected to hold keys for some of them. This was settled on 2026-07-29 and reverses the earlier framing in which `api_key_env` was an untested extra to consider deleting. Two reasons: LM Studio's "Require Authentication" is a setting this machine actually uses and intends to keep using, and the planned expansion — other local runners, other cloud APIs — makes "the router holds no secret" false as a general rule. It stays true only of Anthropic, which is one backend's property rather than the architecture's.
+
+  **The shape: one field, three modes.** `credential:` is the only knob, and `api_key_env` is required by `inject` and forbidden by the others.
+
+  | Mode | Meaning |
+  |---|---|
+  | `forward` | pass the caller's credential through untouched (Anthropic) |
+  | `strip` | remove it — a local server has no use for a real token and might log it |
+  | `inject` | remove it and send the key named by `api_key_env` instead |
+
+  This replaces a two-knob shape in which `credential` and `api_key_env` were independent and the key silently won, so `credential: forward` alongside a key read as "forward the caller's token" and did not do that. With one backend needing auth that was a wart; with several it is a trap.
+
+  **Contradictions are startup errors, not silent behaviour.** `inject` without `api_key_env`, and `api_key_env` without `inject`, are both refused. So is an environment variable that is unset or empty. Each message must say what is wrong *and* how to fix it, then exit — matching how the rest of config loading already behaves. A backend that authenticates with nothing, or a key that looks configured and is never sent, are exactly the failures that surface as a confusing 401 much later.
+
+  **Not yet implemented.** `config.py` still has the two-knob shape; this is a decision, not a description. The header question is also open and deliberately unanswered: `inject` currently means `Authorization: Bearer`, which suits LM Studio and OpenAI, but Anthropic's native key is `x-api-key` and Gemini's is `x-goog-api-key`. A per-backend header name will be needed before the second cloud provider, not before.
 
 ## Observability: log + CSV stats
 
@@ -115,15 +132,19 @@ CSV columns:
 | `model` | peeked from the request body |
 | `input_tokens` | `usage.input_tokens`, tee'd from the response |
 | `output_tokens` | `usage.output_tokens` (free alongside the above) |
+| `cache_read_input_tokens` | `usage.cache_read_input_tokens`. Reported by both backends and free alongside the other two. It is here because prompt-cache behaviour is *why* the body is relayed byte for byte: without this column the project's most expensive constraint stays an assumption instead of a measurement. Empty when a backend omits it |
 | `request_bytes` | raw body length — always available, even when `usage` is not. Note it is dominated by the ~110 KB fixed preamble, so it is a weak proxy for conversation size; keep it as the fallback it is, not the comparison metric |
 | `duration_ms` | wall time until the response *completes* (stream fully drained), not time-to-first-byte |
 | `is_error` | boolean |
 | `error_code` | HTTP status, or a symbolic code for transport failures |
 | `error_message` | short description, single line, no embedded newlines |
 
+A note on the cache column, since it is the one that needs justifying: LM Studio does real prefix caching, observed rising from 5 to 15 tokens across two runs of the same prompt (`docs/lmstudio-usage-check.md`). A cache-hit rate that collapses is the signal that something upstream has started rewriting request bytes — which is exactly the failure byte-relay exists to prevent, and is otherwise invisible.
+
 Implementation constraints that fall out of this:
 
 - **Tee, don't parse-and-rebuild.** Relay response bytes downstream untouched while scanning a copy for `usage`. Byte-relay fidelity is preserved; observation is passive. If `usage` can't be found, write empty token columns rather than failing the request.
+- **Take `input_tokens` from `message_start` and `output_tokens` from the final `message_delta`.** Verified against LM Studio 2026-07-29 (`docs/lmstudio-usage-check.md`); both backends carry usage in Anthropic's shape, so one rule covers both. Resist the obvious simplification: LM Studio repeats `input_tokens` in `message_delta`, so a scanner keyed on that event alone would look correct locally and silently record empty input counts for every Anthropic call. Non-streaming replies put `usage` at the top level instead, so that form needs its own path.
 - **Streaming hides errors behind a 200.** A streamed response returns HTTP 200 before content exists, so a backend failure can arrive as an SSE `error` event mid-stream. Error detection must watch the tee'd stream, not just the initial status code.
 - **Never let telemetry break a call.** Any failure in logging or CSV writing is caught and dropped; the proxied request always wins.
 - **Transport errors matter most here.** LM Studio simply not running is the common failure. That's a connection error with no HTTP status — give it a symbolic `error_code` rather than leaving it blank.

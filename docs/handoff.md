@@ -7,9 +7,9 @@ itself.
 It is deliberately thin. The design lives in `CLAUDE.md`, which is loaded automatically every
 session; the phased plan lives in `implementation-plan.md`; the authentication procedure lives in
 `anthropic-auth-check.md`; the decisions taken while writing the proxy live in `phase-1-notes.md`;
-the procedure for testing the router against a real session lives in `testing-against-claude-code.md`.
-Read those for substance. This file only records session state — where we stopped and what happens
-next.
+the procedure for testing the router against a real session lives in `testing-against-claude-code.md`;
+the token-usage check that unblocked Phase 2 lives in `lmstudio-usage-check.md`. Read those for
+substance. This file only records session state — where we stopped and what happens next.
 
 ## Where the project stands
 
@@ -31,10 +31,11 @@ satisfy. That is Phase 2, and it is the next thing to build.
 Phase 1 was implemented against the constraints already written in `proxy.py`'s docstring. Two
 things came out of running it that were not known from documentation:
 
-**LM Studio has "Require Authentication" switched on here.** A forwarded local request comes back
-`401 authentication_error` from LM Studio itself. Local models will not work until that setting is
-turned off or `lmstudio.api_key_env` is configured with the key in `.env`. This settles the Phase 0
-question of whether `api_key_env` was speculative and should be removed — it is needed.
+**LM Studio has "Require Authentication" switched on here** — since turned off by hand, but intended
+to go back on. A forwarded local request came back `401 authentication_error` from LM Studio itself.
+This settles the Phase 0 question of whether `api_key_env` was speculative and should be removed: it
+is needed, and backend authentication is now a design decision in `CLAUDE.md` rather than an
+untested extra.
 
 **The backend's `date` and `server` headers must not be relayed.** uvicorn writes its own, so
 passing the backend's through gave the client two of each, which the HTTP spec forbids. Found by
@@ -46,7 +47,16 @@ measured from the captured request — and worked anyway. Either that estimate i
 something trims context quietly; Phase 4 should find out, because silent truncation degrades answers
 without failing.
 
-**The next step is Phase 2** — the log and the per-call CSV. The columns and the constraints are
+**Two pieces of work are agreed and not yet written.** Neither has been started; both are decisions
+recorded in `CLAUDE.md`, and the code still reflects the state before them.
+
+*The credential config shape.* One `credential` field with three modes — `forward`, `strip`,
+`inject` — replacing today's two independent knobs, in which a configured key silently overrides
+whatever `credential` says. Contradictions become startup errors that name the fix and exit.
+Decided because auth is going back on for LM Studio and because more backends are planned, which
+makes the current ambiguity a trap rather than a wart. Full rationale under "Design decisions".
+
+*Phase 2* — the log and the per-call CSV. The columns and the constraints are
 already specified in `CLAUDE.md` under "Observability"; the notable ones are teeing the response
 rather than parsing it, re-emitting the CSV header on rotation, and never letting a telemetry
 failure break a call. It also answers a question Phase 1 left uncomfortable: right now nothing
@@ -81,11 +91,10 @@ code has been checked against.
 
 **LM Studio's parity is now partly measured rather than assumed, but only partly.** Tool calls
 demonstrably survive the round trip — the 2026-07-29 session read and wrote files, ran bash commands
-and ran a Python script — which was the biggest unknown. LM Studio still publishes no compatibility
-table, and these remain untested: a `role: "system"` message inside `messages`, `thinking` blocks,
-images, and whether it reports `usage` at all. That last one decides whether half of Phase 2's CSV
-columns can ever be filled for local calls, so it is worth answering early rather than at Phase 4.
-Do not assume passthrough is lossless before then.
+and ran a Python script — which was the biggest unknown. Token usage is reported too, in Anthropic's
+exact shape, streaming and not (`lmstudio-usage-check.md`). LM Studio still publishes no
+compatibility table, and these remain untested: a `role: "system"` message inside `messages`,
+`thinking` blocks, and images. Do not assume passthrough is lossless before Phase 4.
 
 **One claim in this repository was already wrong once.** The first version of `CLAUDE.md` asserted
 that a protocol translation layer between the Anthropic and OpenAI formats was needed and was the
