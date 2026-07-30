@@ -60,7 +60,12 @@ makes the current ambiguity a trap rather than a wart. Full rationale under "Des
 *Phase 2* — the log and the per-call CSV. The columns and the constraints are
 already specified in `CLAUDE.md` under "Observability"; the notable ones are teeing the response
 rather than parsing it, re-emitting the CSV header on rotation, and never letting a telemetry
-failure break a call. It also answers a question Phase 1 left uncomfortable: right now nothing
+failure break a call. The column set was extended on 2026-07-30, before any of it was written:
+`path`, `stream`, `cache_creation_input_tokens`, `stop_reason`, `response_bytes` and `ttfb_ms` were
+added, `is_error` became an enumerated `error_status`, and `router_version` joined the end. Each was
+taken because it is nearly free while the writer is being built — `stop_reason` in particular, since
+it is the only column that would make silent truncation visible, and `stream` with `response_bytes`
+because they are what make a row with empty token columns diagnosable rather than a dead end. It also answers a question Phase 1 left uncomfortable: right now nothing
 records which backend a request took, so testing means reading LM Studio's own server log.
 
 **One proposal is written and deliberately not decided.**
