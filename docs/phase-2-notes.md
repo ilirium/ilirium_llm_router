@@ -181,6 +181,35 @@ need. `Rows` — a `StatsWriter` stand-in that keeps records in a list — lives
 these tests are about what the router *decided* to record; `test_stats.py` already covers how a row
 reaches disk.
 
+### 13. Step 5 is a gap audit, not a second copy of step 4's tests (step 5)
+
+`test_recording.py` already goes through the app, so writing "integration tests" from scratch would
+have produced a parallel set asserting the same things against the same stand-in. What it could not
+cover is anything involving a *real file*, so `test_integration.py` is scoped to exactly that: the
+config → app → writer → disk wiring, rotation under traffic, concurrent calls, and a file that
+breaks after startup rather than at open.
+
+Two gaps found by looking rather than by writing more of the same:
+
+- **The mid-stream transport failure was untested.** `proxy.py` has two `except httpx.HTTPError`
+  branches — the `send()` that never connects, and the one that breaks *while relaying*. Only the
+  first had a test. The second is the more interesting one, because the 200 status line has already
+  gone out and the row is the only place the failure is visible at all.
+- **Nothing used the real `StatsWriter` through the app.** Every recording test used the `Rows`
+  stand-in, so the wiring in `create_app` was carried entirely by the manual live check.
+
+### 14. Two traps in the test scaffolding itself (step 5)
+
+Both were mine, and both are the kind that make a test quieter than it looks:
+
+- **A streamed `httpx.Response` can only be consumed once.** The `Upstream` stand-in hands out one
+  response object, which is invisible while every test makes a single call and fails immediately on
+  the second. `test_integration.py` builds a fresh reply per request instead.
+- **A mock backend answers instantly, so "concurrent" calls are not concurrent.** The first version
+  of the interleaving test passed without ever putting two writes near each other. It now holds each
+  reply open for 20 ms between chunks, which makes 60 calls across 12 threads genuinely overlap —
+  visible in the timing: serialized they would take 1.2 s, and the whole file runs in under 0.3 s.
+
 ## The scanner
 
 **Which path runs is decided by the response `content-type`**, not by the request's `stream` flag:

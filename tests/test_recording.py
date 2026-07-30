@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from collections.abc import AsyncIterator
 
 import httpx
 import pytest
@@ -236,6 +237,44 @@ def test_an_unreachable_backend_records_a_transport_error() -> None:
     assert row.backend == "lmstudio"
     assert row.response_bytes == 0
     assert row.ttfb_ms is None, "nothing ever came back, so there was no first byte"
+
+
+def test_a_backend_that_dies_mid_stream_is_recorded() -> None:
+    """The other transport failure: the connection succeeded, then broke while relaying.
+
+    Different from an unreachable backend in the one way that matters — the status line already went
+    out as 200, so this can never be reported to the caller. The row is where it is visible at all.
+    """
+
+    async def dies_after(chunk: bytes) -> AsyncIterator[bytes]:
+        yield chunk
+        raise httpx.ReadError("Connection reset by peer")
+
+    upstream = Upstream(
+        httpx.Response(
+            200,
+            headers=SSE_HEADERS,
+            content=dies_after(
+                b'event: message_start\ndata: {"type":"message_start","message":'
+                b'{"usage":{"input_tokens":15}}}\n\n'
+            ),
+        )
+    )
+    rows = Rows()
+    with running(upstream, rows=rows) as client:
+        reply = client.post(
+            "/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS
+        )
+
+    assert reply.status_code == 200, "the 200 was already sent before anything went wrong"
+    assert b"message_start" in reply.content, "what did arrive still reaches the caller"
+
+    row = rows.one
+    assert row.error_status == "transport_error"
+    assert row.error_code == "read_error"
+    assert "Connection reset by peer" in row.error_message
+    assert row.input_tokens == 15
+    assert row.response_bytes > 0
 
 
 @pytest.mark.parametrize(
