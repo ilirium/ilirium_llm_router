@@ -87,6 +87,47 @@ Not at the response headers. Headers arrive as soon as the backend accepts the r
 streaming reply says nothing about when the model started producing — which is the entire number
 being asked for.
 
+## Decisions taken while building
+
+Added as the phase was built, in the spirit of the note at the top of this file.
+
+### 4. The log goes to the console as well as the file (step 1)
+
+Not just the file. A router started in a terminal that prints nothing looks broken, and the failure
+this project expects most — LM Studio not running — should not need a second window to notice. Both
+handlers carry the same format, and `logging.level` governs both; there is no second knob.
+
+### 5. Uvicorn's logs join the router's file (step 1)
+
+Settled, having been listed as open. They go into the same file rather than staying on the console.
+When a call went wrong, *did the request arrive* and *was the server still up* are answered by the
+lines either side of it, and lines can only sit either side of each other in one file.
+
+Mechanically this is two pieces that must stay together: `setup_logging` attaches its handlers to
+the `uvicorn` logger (parent of `uvicorn.error` and `uvicorn.access`), **and** `cli.py` starts
+uvicorn with `log_config=None`. Left to itself uvicorn replaces those handlers and sets
+`propagate = False` on the children, and its lines never reach the file. Changing one without the
+other silently loses the access log.
+
+The handler *objects* are shared between the two loggers rather than built twice. Two
+`RotatingFileHandler`s open on one file would each keep their own size count and roll over on top of
+each other's rename.
+
+Verified against a live server, not just unit tests — startup, `Uvicorn running on…`, the access
+line for Claude Code's `HEAD /` probe, and the full shutdown sequence all land in `router.log`.
+
+### 6. Two defects found by writing step 1's tests
+
+Both were in code that already looked finished, and neither would have raised:
+
+- **Milliseconds were being discarded.** A `datefmt` of our own overrode the default `asctime`
+  format, so lines read `17:31:13` while the comment above them promised otherwise. In the phase
+  whose subject is `ttfb_ms` and `duration_ms`, the router's own log was rounding to the second.
+- **An unusable log path crashed with a traceback.** `mkdir` and the handler open were unguarded.
+  Now a `ConfigError`, matching how every other startup problem behaves. Note this is the *opposite*
+  of the rule that governs logging while serving: nothing is being proxied yet, and a log that
+  silently goes nowhere is worse than a refusal to start.
+
 ## The scanner
 
 **Which path runs is decided by the response `content-type`**, not by the request's `stream` flag:
@@ -158,11 +199,14 @@ Restated because they are the ones a plausible-looking implementation quietly vi
 - **`x-claude-code-agent-id` has never been observed here.** The capture predates any subagent use,
   so it is documented only. Until a subagent call is seen carrying it, an empty `agent_id` cannot be
   trusted to mean "main conversation". Step 6 is where this gets settled.
-- **`router_version` is duplicated** — `pyproject.toml` and `__init__.py:5` both carry `0.1.0`, so
-  they can drift and stamp rows with a version that was never released. Reading it from installed
-  metadata would fix it.
 - **Symbolic `error_code` values are unnamed.** `error_status` covers the category; the specific
   codes for transport failures still need a small, written-down set.
-- **Whether uvicorn's own logs should join the router's log file** or stay on the console.
+
+Closed since this file was written:
+
+- ~~**`router_version` is duplicated**~~ — fixed in step 2. `__init__.py` reads it from installed
+  metadata via `importlib.metadata.version`, so `pyproject.toml` is the only place it lives. A
+  source tree that was never installed reports `0.0.0+unknown` rather than guessing.
+- ~~**Whether uvicorn's own logs should join the router's log file**~~ — they do. See decision 5.
 - The credential config reshape (one `credential` field, three modes) is agreed and unimplemented,
   and is *not* part of Phase 2. `config.py` still has the two-knob shape.
