@@ -1,0 +1,168 @@
+# Phase 2 notes — logging and per-call statistics
+
+Written 2026-07-30, **before any code**, so that a fresh session can pick the work up without the
+conversation that produced the plan. The design is agreed; the implementation is not started.
+
+Companion to `phase-1-notes.md`, which records decisions taken *while* writing the proxy. Add to
+this file as Phase 2 is built, especially where reality disagrees with what is written below.
+
+Branch: `feat/phase-2-observability`, off `main` at `8d335ab`. Merge back with `--no-ff` — phase
+boundaries stay visible in the log.
+
+## What Phase 2 must produce
+
+Every call leaves two traces: a human-readable line in a rotating log, and one CSV row that can be
+opened in a spreadsheet and compared across models. The columns and their justifications are in
+`CLAUDE.md` under "Observability: log + CSV stats"; the phase's own description is Phase 2 of
+`implementation-plan.md`. **Neither is restated here** — read them, and treat this file as the
+implementation plan that sits under them.
+
+The 20 columns, in order, for quick reference only:
+
+`timestamp` `session_id` `agent_id` `backend` `model` `path` `stream` `input_tokens`
+`output_tokens` `cache_read_input_tokens` `cache_creation_input_tokens` `stop_reason`
+`request_bytes` `response_bytes` `ttfb_ms` `duration_ms` `error_status` `error_code`
+`error_message` `router_version`
+
+## Shape of the code
+
+| File | State | Job |
+|---|---|---|
+| `logging_setup.py` | stub | Configure a `RotatingFileHandler` from `config.logging`; one logger named for the package |
+| `stats.py` | stub | `StatsWriter` owning the CSV: one row per call, size-based rotation, header re-emitted after each rollover |
+| `observe.py` | **new** | The tee and the two scanners. Kept out of `proxy.py` so the forwarding path stays readable |
+| `proxy.py` | exists | `relay` wraps the response iterator; the existing transport-error branch gains a row |
+| `cli.py` | exists | Calls `logging_setup` at startup |
+| `config.py` | **done already** | `Logging` and `Stats` models exist with the right fields, and `resolve_paths` already makes both absolute against the config file's directory. Phase 2 needs no config change |
+
+`logging_setup` is called from `cli.py` rather than `create_app`, so tests are not forced to touch
+global logging state. The stats writer is owned by the app, so a test can point it at a temporary
+path.
+
+## Decisions taken on 2026-07-30, before implementation
+
+Approved in conversation. Each was a real fork, not a formality.
+
+### 1. Non-streaming replies are buffered to a 1 MiB cap
+
+`usage` in a non-streaming reply sits inside one JSON object, and an object's contents are unknown
+until its closing brace. So the "do not buffer the whole reply" constraint cannot hold literally for
+that path. Options considered:
+
+| Approach | Why not |
+|---|---|
+| Tail buffer, keep the last ~8 KB | **Bets on field order.** Works only because Anthropic happens to emit `usage` last. JSON guarantees no ordering and LM Studio is a separate implementation, so this looks correct today and goes silently empty the day either side reorders. Same species of mistake as the `message_delta` trap below |
+| Incremental JSON parser | A dependency, or a hand-written parser, against the stated non-negotiable of simple, human-readable code |
+| Don't scan non-streaming at all | Throws away the numbers for a call shape Claude Code actually uses |
+
+Chosen: accumulate up to **1 MiB**, parse once at the end, give up beyond it.
+
+Why a cap exists at all is *not* about Anthropic's replies — it is about **the catch-all route**.
+`anything_else` forwards any path, so the reply to an unanticipated endpoint could be anything at
+all. The cap turns "memory decided by an endpoint nobody has enumerated" into a known ceiling.
+
+Why 1 MiB: 64k output tokens at roughly 4 bytes each is about 256 KB, plus JSON overhead, thinking
+blocks and tool-use inputs — so roughly four times the worst realistic reply. The comparative
+argument is stronger: `proxy.py` already does `body = await request.body()`, so the router **already
+holds the whole request in memory**, and the captured request is 118 KB. A 1 MiB response ceiling is
+the same order as what Phase 1 already accepted.
+
+At the cap: stop accumulating, write the row with empty token and `stop_reason` columns.
+`response_bytes` is a counter, so it stays accurate regardless. **The relay is never affected** —
+bytes go downstream as they arrive whether or not the scanner is still listening. The cap can cost
+observation, never fidelity.
+
+Not a YAML setting. It is a number nobody will tune, and simple configuration is a stated
+non-negotiable. A module constant in the style of `TIMEOUT`, with the reasoning in its comment.
+
+### 2. The `model`-less 400 gets a row too
+
+`Proxy.messages` refuses a body with no `model` before any backend is chosen. That row is written
+with `backend` empty and `error_status: http_error`. It never reached a backend, but it is a call
+the router refused, and a silent gap in the file is worse than a row with blanks.
+
+### 3. `ttfb_ms` is measured at the first byte of the body
+
+Not at the response headers. Headers arrive as soon as the backend accepts the request, which for a
+streaming reply says nothing about when the model started producing — which is the entire number
+being asked for.
+
+## The scanner
+
+**Which path runs is decided by the response `content-type`**, not by the request's `stream` flag:
+`text/event-stream` means SSE, anything else means the buffered path. The content-type describes
+what the bytes *are*; the request flag describes what was *asked for*.
+
+Bonus from keeping them separate: `stream` is its own CSV column, so a row with `stream` true that
+was scanned by the buffered path is a visible disagreement between the two — worth knowing, and
+invisible if one signal drove both.
+
+**SSE path.** Keep a small line buffer and discard as you go; every `data:` line is a complete JSON
+document on its own, so memory stays constant however long the model talks.
+
+- `input_tokens`, `cache_read_input_tokens`, `cache_creation_input_tokens` from **`message_start`**
+- `output_tokens` and `stop_reason` from the **final `message_delta`**
+- an `event: error` sets `error_status: stream_error`
+
+**The trap, verified 2026-07-29 (`lmstudio-usage-check.md`):** LM Studio repeats `input_tokens` in
+`message_delta`; Anthropic does not. A scanner keyed on `message_delta` alone would look correct
+against the local backend and silently record empty input counts for **every** Anthropic call.
+
+**Buffered path.** Accumulate to the cap, `json.loads` once, read `usage` and `stop_reason` from the
+top level.
+
+`stop_reason` rides the same two places as `usage`, so it is free *only if* both forms are handled.
+Build them together rather than bolting one on afterwards.
+
+## The CSV writer
+
+Rotation is built on `logging.handlers.RotatingFileHandler` rather than a hand-rolled rename dance:
+`max_bytes`/`backup_count` map 1:1 onto `maxBytes`/`backupCount`, it is battle-tested, and its lock
+satisfies the "rows must not interleave into corrupted lines" constraint for free. The single
+override is `doRollover`, to re-emit the header row into the fresh file — without it, rotated
+segments cannot be parsed standalone.
+
+Rows go through `csv.writer` rather than manual joining. Model IDs like `google/gemma-4-e4b` are
+harmless, but `error_message` is free text and must stay on one line with no embedded newlines.
+
+## Build order
+
+Each step is verifiable on its own.
+
+1. `logging_setup.py` and the `cli.py` wiring — smallest piece, proves the config plumbing.
+2. `stats.py`: the writer and rotation. Tests for header re-emission after rollover and for escaping.
+3. The scanners, tested against captured SSE shapes, including the `message_delta` trap and the
+   non-streaming form.
+4. The tee in `relay`; the transport-error row and the client-disconnect row.
+5. Integration tests through the app. Prove "never let telemetry break a call" with a writer that
+   raises.
+6. **Run a real session and read the CSV.** The only step that confirms anything about the world.
+
+## Constraints that must not be broken
+
+Restated because they are the ones a plausible-looking implementation quietly violates:
+
+- **Telemetry never breaks a call.** Any failure in logging or CSV writing is caught and dropped.
+  The proxied request always wins, including when the disk is full.
+- **The body is never logged.** It carries the whole conversation, and on the cloud side it arrives
+  alongside a real credential.
+- **Nothing derived, nothing body-shaped.** Tokens per second belongs in the spreadsheet, where it
+  cannot drift out of agreement with the columns it came from.
+- **Tee, don't parse-and-rebuild.** Observation stays passive; the bytes going downstream are the
+  bytes that arrived.
+- **A streamed response returns HTTP 200 before content exists**, so error detection must watch the
+  tee'd stream, not just the initial status code.
+
+## Still open
+
+- **`x-claude-code-agent-id` has never been observed here.** The capture predates any subagent use,
+  so it is documented only. Until a subagent call is seen carrying it, an empty `agent_id` cannot be
+  trusted to mean "main conversation". Step 6 is where this gets settled.
+- **`router_version` is duplicated** — `pyproject.toml` and `__init__.py:5` both carry `0.1.0`, so
+  they can drift and stamp rows with a version that was never released. Reading it from installed
+  metadata would fix it.
+- **Symbolic `error_code` values are unnamed.** `error_status` covers the category; the specific
+  codes for transport failures still need a small, written-down set.
+- **Whether uvicorn's own logs should join the router's log file** or stay on the console.
+- The credential config reshape (one `credential` field, three modes) is agreed and unimplemented,
+  and is *not* part of Phase 2. `config.py` still has the two-knob shape.

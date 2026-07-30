@@ -6,7 +6,8 @@ itself.
 
 It is deliberately thin. The design lives in `CLAUDE.md`, which is loaded automatically every
 session; the phased plan lives in `implementation-plan.md`; the authentication procedure lives in
-`anthropic-auth-check.md`; the decisions taken while writing the proxy live in `phase-1-notes.md`;
+`anthropic-auth-check.md`; the decisions taken while writing the proxy live in `phase-1-notes.md`; the agreed plan for Phase 2,
+written before any of it was implemented, lives in `phase-2-notes.md`;
 the procedure for testing the router against a real session lives in `testing-against-claude-code.md`;
 the token-usage check that unblocked Phase 2 lives in `lmstudio-usage-check.md`; proposals that are
 written up but not decided live in `EPD-NNN-*.md`. Read those for substance. This file only records
