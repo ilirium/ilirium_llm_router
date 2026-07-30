@@ -8,8 +8,9 @@ It is deliberately thin. The design lives in `CLAUDE.md`, which is loaded automa
 session; the phased plan lives in `implementation-plan.md`; the authentication procedure lives in
 `anthropic-auth-check.md`; the decisions taken while writing the proxy live in `phase-1-notes.md`;
 the procedure for testing the router against a real session lives in `testing-against-claude-code.md`;
-the token-usage check that unblocked Phase 2 lives in `lmstudio-usage-check.md`. Read those for
-substance. This file only records session state — where we stopped and what happens next.
+the token-usage check that unblocked Phase 2 lives in `lmstudio-usage-check.md`; proposals that are
+written up but not decided live in `EPD-NNN-*.md`. Read those for substance. This file only records
+session state — where we stopped and what happens next.
 
 ## Where the project stands
 
@@ -61,6 +62,22 @@ already specified in `CLAUDE.md` under "Observability"; the notable ones are tee
 rather than parsing it, re-emitting the CSV header on rotation, and never letting a telemetry
 failure break a call. It also answers a question Phase 1 left uncomfortable: right now nothing
 records which backend a request took, so testing means reading LM Studio's own server log.
+
+**One proposal is written and deliberately not decided.**
+`EPD-001-model-selection-and-mixed-model-sessions.md`, written 2026-07-30, covers two requirements
+that turned out to be absent from the specs: choosing a local model with `/model` mid-session, and
+running subagents on local models alongside a Claude main conversation. Per-request dispatch already
+satisfies the second with no code, and `/model <local-id>` should already work, so nothing here is
+blocking. The decision waits until Phase 4, because a picker full of local models is worth nothing
+until Phase 4 shows a local model can hold a real session. Do not treat that document as agreed
+design; most of it is vendor documentation that has never been run against this router.
+
+One piece of it *was* accepted the same day: the CSV gains `session_id` and `agent_id`, copied from
+the `x-claude-code-*` request headers, and Phase 2 must write them. The agent header is what
+distinguishes a subagent's call from the main conversation's, and it is nearly free to include now.
+Note the asymmetry in evidence — the session header appears in the captured request, the agent header
+is documented only, so confirm it arrives rather than assuming an empty column means "main
+conversation".
 
 One loose end, carried over and still not blocking: re-run the Test B curl showing its response body,
 to confirm the 429 was an ordinary subscription rate limit rather than something unexpected. The

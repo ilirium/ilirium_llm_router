@@ -128,6 +128,8 @@ CSV columns:
 | Column | Source |
 |---|---|
 | `timestamp` | ISO 8601, when the request arrived |
+| `session_id` | `x-claude-code-session-id`, copied from the request headers. Groups a session's calls without parsing bodies. Empty when the header is absent, since a non-Claude-Code caller has no reason to send it |
+| `agent_id` | `x-claude-code-agent-id`. **Present only on requests from a subagent**, so an empty value means the main conversation — that emptiness is the signal, not missing data. Without this column a mixed-model session collapses into an indistinguishable pile of rows, and it is far cheaper to write now than to retrofit into a working CSV writer. See `EPD-001-model-selection-and-mixed-model-sessions.md` for why mixed-model sessions are expected at all |
 | `backend` | `anthropic` or `lmstudio` |
 | `model` | peeked from the request body |
 | `input_tokens` | `usage.input_tokens`, tee'd from the response |
@@ -143,6 +145,7 @@ A note on the cache column, since it is the one that needs justifying: LM Studio
 
 Implementation constraints that fall out of this:
 
+- **The two identifier columns come from headers, not the body.** Copying `x-claude-code-session-id` and `x-claude-code-agent-id` costs a dictionary lookup and needs no parsing, which is the whole reason they are affordable. `session_id` is measured — it is in the captured request, which is why `handoff.md` records redacting an `X-Claude-Code-Session-Id`. `agent_id` is documented only; the capture predates any subagent use here, so expect to confirm it arrives before trusting an empty column to mean "main conversation". Neither is a user identifier: an agent ID identifies a spawn, and subagent IDs are generated fresh each time.
 - **Tee, don't parse-and-rebuild.** Relay response bytes downstream untouched while scanning a copy for `usage`. Byte-relay fidelity is preserved; observation is passive. If `usage` can't be found, write empty token columns rather than failing the request.
 - **Take `input_tokens` from `message_start` and `output_tokens` from the final `message_delta`.** Verified against LM Studio 2026-07-29 (`docs/lmstudio-usage-check.md`); both backends carry usage in Anthropic's shape, so one rule covers both. Resist the obvious simplification: LM Studio repeats `input_tokens` in `message_delta`, so a scanner keyed on that event alone would look correct locally and silently record empty input counts for every Anthropic call. Non-streaming replies put `usage` at the top level instead, so that form needs its own path.
 - **Streaming hides errors behind a 200.** A streamed response returns HTTP 200 before content exists, so a backend failure can arrive as an SSE `error` event mid-stream. Error detection must watch the tee'd stream, not just the initial status code.

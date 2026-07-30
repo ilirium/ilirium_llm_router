@@ -87,9 +87,15 @@ file that can be opened in a spreadsheet and compared across models.
 **Work.**
 
 - Log each call with the time, the model, the chosen backend, the outcome and how long it took.
-- Write one CSV row per call with the columns listed in `CLAUDE.md`: timestamp, backend, model,
-  input tokens, output tokens, cached input tokens, request size in bytes, duration, whether it
-  failed, and if so the error code and a short description.
+- Write one CSV row per call with the columns listed in `CLAUDE.md`: timestamp, session and agent
+  identifiers, backend, model, input tokens, output tokens, cached input tokens, request size in
+  bytes, duration, whether it failed, and if so the error code and a short description.
+- Copy the session and agent identifiers straight off the request headers. Both are free — a header
+  lookup, no body parsing — and the agent one is the only thing that distinguishes a subagent's call
+  from the main conversation's. That matters because the two are expected to run on *different*
+  models, which is what `EPD-001-model-selection-and-mixed-model-sessions.md` is about; without the
+  column such a session records as an indistinguishable pile of rows. Cheap to write while building
+  the writer, tedious to retrofit into a working one.
 - Get the token counts by watching the reply as it passes through, rather than by taking it apart.
   The reply carries a usage report; we read a copy of the bytes on their way past and pick the
   numbers out of it. The bytes going to Claude Code are untouched.

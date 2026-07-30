@@ -13,6 +13,9 @@ Not implemented yet — this is Phase 2. Constraints established beforehand:
 - Rotation is size-based. On rotation the CSV must re-emit its header row, or rotated segments
   cannot be parsed on their own.
 - Several calls can finish at once; rows must not interleave into corrupted lines.
+- `session_id` and `agent_id` are copied from the `x-claude-code-session-id` and
+  `x-claude-code-agent-id` request headers, not from the body. `agent_id` arrives only on a
+  subagent's call, so empty means the main conversation rather than a missing value.
 
 Columns are listed in CLAUDE.md. Note `request_bytes` is dominated by the fixed ~110 KB preamble of
 system prompt and tool schemas, so treat it as a fallback rather than a measure of conversation size.
