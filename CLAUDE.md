@@ -4,7 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-**Phase 1 is done, verified in a real session on 2026-07-29** (see `docs/implementation-plan.md` for the phases, and `docs/testing-against-claude-code.md` for the procedure and the full results). The router forwards: it answers the `HEAD /` probe, dispatches `POST /v1/messages` by the model named in the body, and has a catch-all for every other path. Bodies are relayed byte for byte and replies streamed back untouched. **Next is Phase 2** — `stats.py` and `logging_setup.py` are still documented stubs, so nothing yet records what a call did.
+**Phase 1 is done, verified in a real session on 2026-07-29** (see `docs/implementation-plan.md` for the phases, and `docs/testing-against-claude-code.md` for the procedure and the full results). The router forwards: it answers the `HEAD /` probe, dispatches `POST /v1/messages` by the model named in the body, and has a catch-all for every other path. Bodies are relayed byte for byte and replies streamed back untouched.
+
+**Phase 2 is built but not yet proven in a real session.** Steps 1–5 of `docs/phase-2-notes.md` are done and committed on `feat/phase-2-observability`; 137 tests pass. Every call now leaves two traces: a line in a rotating log — which uvicorn's own lines join, so "did the request arrive" and "was the server up" sit next to it — and a row in `logs/calls.csv` with all 20 columns. Usage is read off a tee of the passing bytes, never by parsing and rebuilding them.
+
+Checked against a live LM Studio serving `google/gemma-4-e4b`: a streamed call recorded 19/33 tokens with `end_turn`, a non-streaming one 16/39 with `max_tokens` and 5 cached, every number matching the raw reply. One streamed call came back `ttfb_ms` 10109 against `duration_ms` 11030 — the felt difference the two clocks exist to separate.
+
+**What remains is step 6: run a real Claude Code session through the router and read the CSV.** That is the only step that confirms anything about the world, and two open questions wait on it — whether `x-claude-code-agent-id` actually arrives on a subagent's call (the router demonstrably copies it when present, but no real subagent has been seen sending one), and whether starlette reliably reaches the `client_disconnect` branch on a genuinely dropped connection. The procedure is written down in `docs/testing-against-claude-code.md`.
 
 Both halves work. `claude-sonnet-5` through the router behaves as a normal session. `google/gemma-4-e4b` in LM Studio handles tool use — reading and writing files, running bash commands, running a Python script and reading its stdout — with multi-turn conversation holding together. Streaming was confirmed incrementally in a curl smoke test rather than inferred from the display.
 
@@ -24,10 +30,11 @@ config.yaml                 backend definitions, server, log/stats rotation — 
 src/ilirium_llm_router/
   config.py                 YAML → validated Config; raises ConfigError with a readable message
   routing.py                the `claude-` prefix rule
-  proxy.py                  forwarding: peek the model, rebuild headers, stream the reply back
-  stats.py                  Phase 2 — CSV rows (stub)
-  logging_setup.py          Phase 2 — rotating log (stub)
-  app.py                    FastAPI app factory; the four routes and the shared HTTP client
+  proxy.py                  forwarding: peek the body, rebuild headers, tee the reply back
+  observe.py                the two usage scanners, and `Call` — one call from arrival to row
+  stats.py                  the CSV: one row per call, size-rotated, header re-emitted
+  logging_setup.py          the rotating log; uvicorn's loggers are pointed at it too
+  app.py                    FastAPI app factory; the four routes, HTTP client and stats writer
   cli.py                    entry point; `--check` validates config and exits
 tests/
 ```
