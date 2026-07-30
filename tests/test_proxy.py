@@ -8,96 +8,22 @@ bytes and headers it carried when it got there.
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncIterator, Iterable, Iterator
-from contextlib import contextmanager
 
 import httpx
 import pytest
-from fastapi.testclient import TestClient
+from conftest import (
+    BETA,
+    CLAUDE_BODY,
+    CLAUDE_CODE_HEADERS,
+    LOCAL_BODY,
+    Upstream,
+    make_config,
+    running,
+    streamed,
+)
 
-from ilirium_llm_router.app import create_app
-from ilirium_llm_router.config import Backend, Backends, Config
-from ilirium_llm_router.proxy import peek_model
-
-CLAUDE_BODY = b'{"model":"claude-sonnet-5","messages":[{"role":"user","content":"hi"}]}'
-LOCAL_BODY = b'{"model":"qwen3-coder-30b","messages":[{"role":"user","content":"hi"}]}'
-
-# What Claude Code actually sends, shortened. The beta list matters: `oauth-2025-04-20` is what
-# makes the bearer token acceptable to Anthropic, so it has to arrive whole.
-BETA = "claude-code-20250219,oauth-2025-04-20,context-management-2025-06-27"
-CLAUDE_CODE_HEADERS = {
-    "authorization": "Bearer sk-ant-oat01-example",
-    "content-type": "application/json",
-    "anthropic-beta": BETA,
-    "anthropic-version": "2023-06-01",
-    "accept-encoding": "gzip, deflate, br, zstd",
-    "user-agent": "claude-cli/2.1.212 (external, sdk-cli)",
-    "x-app": "cli",
-}
-
-
-def streamed(
-    status: int = 200,
-    *,
-    chunks: Iterable[bytes] = (b'{"ok":true}',),
-    headers: dict[str, str] | None = None,
-) -> httpx.Response:
-    """A reply that arrives as a stream, the way a real backend's does.
-
-    Worth spelling out rather than using `httpx.Response(content=b"...")`: that form is already
-    fully read, and the router — rightly — will not stream a response a second time.
-    """
-
-    async def body() -> AsyncIterator[bytes]:
-        for chunk in chunks:
-            yield chunk
-
-    return httpx.Response(status, headers=headers, content=body())
-
-
-class Upstream:
-    """A stand-in backend: records the requests that reach it, replies with what it was given."""
-
-    def __init__(
-        self, reply: httpx.Response | None = None, error: Exception | None = None
-    ) -> None:
-        self.reply = reply
-        self.error = error
-        self.requests: list[httpx.Request] = []
-
-    def handle(self, request: httpx.Request) -> httpx.Response:
-        self.requests.append(request)
-        if self.error is not None:
-            raise self.error
-        return self.reply if self.reply is not None else streamed()
-
-    @property
-    def received(self) -> httpx.Request:
-        """The one request that arrived, asserting there was exactly one."""
-        assert len(self.requests) == 1, (
-            f"expected one request, got {len(self.requests)}"
-        )
-        return self.requests[0]
-
-
-def make_config(lmstudio: Backend | None = None) -> Config:
-    return Config(
-        backends=Backends(
-            anthropic=Backend(
-                base_url="https://api.anthropic.com", credential="forward"
-            ),
-            lmstudio=lmstudio
-            or Backend(base_url="http://localhost:1234", credential="strip"),
-        )
-    )
-
-
-@contextmanager
-def running(upstream: Upstream, config: Config | None = None) -> Iterator[TestClient]:
-    """The router, with every outgoing request answered by `upstream` instead of the network."""
-    client = httpx.AsyncClient(transport=httpx.MockTransport(upstream.handle))
-    with TestClient(create_app(config or make_config(), client)) as test_client:
-        yield test_client
+from ilirium_llm_router.config import Backend
+from ilirium_llm_router.proxy import peek
 
 
 def test_the_startup_probe_is_answered() -> None:
@@ -351,9 +277,24 @@ def test_an_unanticipated_path_still_routes_on_the_model_when_there_is_one() -> 
         b'{"model":""}',
     ],
 )
-def test_peek_model_returns_nothing_when_there_is_no_usable_model(body: bytes) -> None:
-    assert peek_model(body) is None
+def test_peek_returns_nothing_when_there_is_no_usable_model(body: bytes) -> None:
+    assert peek(body).model is None
 
 
-def test_peek_model_finds_the_model() -> None:
-    assert peek_model(CLAUDE_BODY) == "claude-sonnet-5"
+def test_peek_finds_the_model() -> None:
+    assert peek(CLAUDE_BODY).model == "claude-sonnet-5"
+
+
+@pytest.mark.parametrize(
+    ("body", "expected"),
+    [
+        (b'{"model":"m","stream":true}', True),
+        (b'{"model":"m","stream":false}', False),
+        (b'{"model":"m"}', None),
+        (b'{"model":"m","stream":"yes"}', None),
+        (b"not json", None),
+    ],
+)
+def test_peek_finds_the_stream_flag(body: bytes, expected: bool | None) -> None:
+    """Absent and non-boolean both read as unknown, so the column stays honest."""
+    assert peek(body).stream is expected

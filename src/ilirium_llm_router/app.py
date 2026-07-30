@@ -19,22 +19,32 @@ from fastapi.responses import Response
 
 from .config import Config
 from .proxy import Proxy, create_client
+from .stats import StatsWriter
 
 CATCH_ALL_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
 
 
-def create_app(config: Config, client: httpx.AsyncClient | None = None) -> FastAPI:
+def create_app(
+    config: Config,
+    client: httpx.AsyncClient | None = None,
+    stats: StatsWriter | None = None,
+) -> FastAPI:
     """Build the app.
 
-    `client` exists for tests, which pass one wired to a stand-in backend and close it themselves.
-    In normal use the app owns its client and closes it on shutdown.
+    `client` and `stats` exist for tests, which pass a client wired to a stand-in backend and a
+    writer pointed at a temporary path, and close both themselves. In normal use the app owns them
+    and closes them on shutdown.
     """
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         async with AsyncExitStack() as stack:
             http = client or await stack.enter_async_context(create_client())
-            app.state.proxy = Proxy(config, http, config.api_keys())
+            writer = stats
+            if writer is None:
+                writer = StatsWriter(config.stats)
+                stack.callback(writer.close)
+            app.state.proxy = Proxy(config, http, config.api_keys(), writer)
             yield
 
     app = FastAPI(title="ilirium_llm_router", lifespan=lifespan)

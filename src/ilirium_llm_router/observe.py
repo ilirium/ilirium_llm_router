@@ -24,9 +24,22 @@ from __future__ import annotations
 
 import json
 import logging
+import re
+import time
 from dataclasses import dataclass
+from datetime import UTC, datetime
+
+from starlette.requests import Request
+
+from .stats import CallRecord, ErrorStatus
 
 logger = logging.getLogger(__name__)
+
+# Copied straight off the request headers — a dictionary lookup, no body parsing, which is the whole
+# reason these two columns are affordable. `agent_id` arrives only on a subagent's call, so an empty
+# one means the main conversation rather than a missing value.
+SESSION_HEADER = "x-claude-code-session-id"
+AGENT_HEADER = "x-claude-code-agent-id"
 
 # A ceiling on what a scanner will hold in memory, for the buffered body and for a single unbroken
 # SSE line alike. One number because it answers one question: how much is it worth remembering
@@ -265,6 +278,114 @@ def _read_error(payload: dict[str, object], observation: Observation) -> None:
         observation.error_type = str(error["type"])
     if isinstance(error.get("message"), str):
         observation.error_message = str(error["message"])
+
+
+class Call:
+    """One call, from the moment it arrived to the row it becomes.
+
+    Deliberately a bag of plain attributes rather than a tidy object: each one is a CSV column, and
+    each is filled in at the point it becomes known — the model once the body is peeked, the backend
+    once routing has run, the timings as bytes go past.
+    """
+
+    def __init__(self, request: Request) -> None:
+        # Both clocks start here, at arrival. `ttfb_ms` stops at the first byte and `duration_ms` at
+        # the last, so the pair reads as "how long until it began" and "how long in total" without
+        # anyone having to subtract one from the other.
+        self._started = time.perf_counter()
+
+        self.timestamp = datetime.now(UTC).isoformat(timespec="milliseconds")
+        self.session_id = request.headers.get(SESSION_HEADER, "")
+        self.agent_id = request.headers.get(AGENT_HEADER, "")
+        # Without the query string: `?beta=true` is forwarded but says nothing about which endpoint
+        # was called, and the point of this column is to name the endpoints nobody anticipated.
+        self.path = request.url.path
+
+        self.backend = ""
+        self.model = ""
+        self.stream: bool | None = None
+        self.request_bytes = 0
+        self.response_bytes = 0
+        self.ttfb_ms: int | None = None
+        self.error_status: ErrorStatus = "ok"
+        self.error_code = ""
+        self.error_message = ""
+
+    def saw_bytes(self, count: int) -> None:
+        """One chunk went downstream. The first one is what `ttfb_ms` measures.
+
+        Measured at the first byte of the *body*, not at the response headers: headers arrive as
+        soon as the backend accepts the request, which for a streamed reply says nothing about when
+        the model started producing — the entire number being asked for.
+        """
+        if self.ttfb_ms is None:
+            self.ttfb_ms = self._elapsed_ms()
+        self.response_bytes += count
+
+    def failed(self, status: ErrorStatus, code: str, message: str) -> None:
+        self.error_status = status
+        self.error_code = code
+        self.error_message = message
+
+    def record(self, observation: Observation | None = None) -> CallRecord:
+        """The finished row. Stops the duration clock, so call it once, at the end."""
+        seen = observation or Observation()
+
+        if seen.stream_error and self.error_status == "ok":
+            # A streamed reply returns HTTP 200 before any content exists, so an error arriving
+            # down the tee is the only place this failure can be seen at all.
+            self.failed("stream_error", seen.error_type, seen.error_message)
+        elif self.error_status != "ok" and not self.error_message:
+            # The backend's own wording, which beats a bare status code in the file.
+            self.error_message = seen.error_message
+
+        return CallRecord(
+            timestamp=self.timestamp,
+            session_id=self.session_id,
+            agent_id=self.agent_id,
+            backend=self.backend,
+            model=self.model,
+            path=self.path,
+            stream=self.stream,
+            input_tokens=seen.input_tokens,
+            output_tokens=seen.output_tokens,
+            cache_read_input_tokens=seen.cache_read_input_tokens,
+            cache_creation_input_tokens=seen.cache_creation_input_tokens,
+            stop_reason=seen.stop_reason,
+            request_bytes=self.request_bytes,
+            response_bytes=self.response_bytes,
+            ttfb_ms=self.ttfb_ms,
+            duration_ms=self._elapsed_ms(),
+            error_status=self.error_status,
+            error_code=self.error_code,
+            error_message=self.error_message,
+        )
+
+    def _elapsed_ms(self) -> int:
+        return round((time.perf_counter() - self._started) * 1000)
+
+
+def transport_error_code(exc: Exception) -> str:
+    """A symbolic code for a failure that never got an HTTP status.
+
+    Derived from the exception's class name rather than looked up in a table, so httpx's whole
+    family is covered — and one it adds later still lands as something readable instead of falling
+    into a catch-all. `ConnectError` becomes `connect_error`, `RemoteProtocolError` becomes
+    `remote_protocol_error`, `PoolTimeout` becomes `pool_timeout`.
+
+    LM Studio simply not running is the common failure here, and it is a `ConnectError` with no
+    status code at all — which is exactly why leaving `error_code` blank was never an option.
+    """
+    return _snake_case(type(exc).__name__)
+
+
+def _snake_case(name: str) -> str:
+    """`ConnectError` → `connect_error`, `HTTPStatusError` → `http_status_error`.
+
+    The second pattern is what keeps an acronym together: split before a capital that follows a
+    lowercase, and before the last capital of a run that starts a new word.
+    """
+    return re.sub(r"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])", "_", name).lower()
 
 
 def _count(value: object) -> int | None:

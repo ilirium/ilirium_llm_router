@@ -147,6 +147,40 @@ Anthropic sends both — `event: message_start` above `data: {"type":"message_st
 boundaries, and it does not assume both backends frame their event lines identically. LM Studio is a
 separate implementation, and the SSE spec does not require an `event:` line at all.
 
+### 9. Transport error codes are derived from the httpx exception class (step 4)
+
+Settled, having been listed as open. `transport_error_code` snake-cases the exception's class name:
+`ConnectError` → `connect_error`, `RemoteProtocolError` → `remote_protocol_error`, `PoolTimeout` →
+`pool_timeout`. Derived rather than tabulated, so httpx's whole family is covered today and one it
+adds later still lands as something readable instead of collapsing into a catch-all.
+
+LM Studio not running is the common failure and it is a `ConnectError` with no status code at all,
+which is why leaving `error_code` blank was never an option.
+
+### 10. `peek_model` becomes `peek`, returning model *and* stream (step 4)
+
+One `json.loads` of a 118 KB body instead of two. `stream` was always meant to be "free alongside
+`model`", and calling a second peeking function would have quietly made it not free.
+
+### 11. `client_disconnect` is tested by driving the generator directly (step 4)
+
+There is no way to provoke it through `TestClient`: a request there always reads its reply to the
+end, so the caller can never be the one who stops listening. The test builds the `watch` generator,
+pulls one chunk, and calls `aclose()` — which throws `GeneratorExit` in at the yield, the same thing
+starlette does when a connection drops.
+
+Worth knowing this is the *least* verified of the five statuses. The unit test proves the branch
+does what it says; whether starlette reliably lands there for a real dropped connection is a step 6
+question.
+
+### 12. Shared test scaffolding moved to `conftest.py` (step 4)
+
+`test_proxy.py` (what the router forwards) and `test_recording.py` (what it writes down about the
+forwarding) describe the same call from two angles, and neither should own the stand-in backend both
+need. `Rows` — a `StatsWriter` stand-in that keeps records in a list — lives there too, because
+these tests are about what the router *decided* to record; `test_stats.py` already covers how a row
+reaches disk.
+
 ## The scanner
 
 **Which path runs is decided by the response `content-type`**, not by the request's `stream` flag:
@@ -217,11 +251,16 @@ Restated because they are the ones a plausible-looking implementation quietly vi
 
 - **`x-claude-code-agent-id` has never been observed here.** The capture predates any subagent use,
   so it is documented only. Until a subagent call is seen carrying it, an empty `agent_id` cannot be
-  trusted to mean "main conversation". Step 6 is where this gets settled.
-- **Symbolic `error_code` values are unnamed.** `error_status` covers the category; the specific
-  codes for transport failures still need a small, written-down set.
+  trusted to mean "main conversation". Step 6 is where this gets settled. Step 4 narrowed it: the
+  router demonstrably *copies* the header when it is present, verified against a live server with
+  the header set by hand. What remains unproven is only whether Claude Code sends it.
+- **`client_disconnect` is the least verified of the five statuses.** Its branch is unit-tested, but
+  whether starlette reliably lands there on a real dropped connection is a step 6 question.
 
 Closed since this file was written:
+
+- ~~**Symbolic `error_code` values are unnamed**~~ — settled in step 4. Derived from the httpx
+  exception class name rather than tabulated. See decision 9.
 
 - ~~**`router_version` is duplicated**~~ — fixed in step 2. `__init__.py` reads it from installed
   metadata via `importlib.metadata.version`, so `pyproject.toml` is the only place it lives. A
