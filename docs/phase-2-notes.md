@@ -128,6 +128,25 @@ Both were in code that already looked finished, and neither would have raised:
   of the rule that governs logging while serving: nothing is being proxied yet, and a log that
   silently goes nowhere is worse than a refusal to start.
 
+### 7. The SSE scanner flushes its last line at `finish` (step 3)
+
+Found by a test written on a wrong premise, which is the best kind. The line buffer holds back the
+tail after the last newline, waiting for the next chunk — correct while bytes are still arriving,
+and wrong at the end. A backend that stops after the closing brace rather than sending a final blank
+line would have left that line unread.
+
+It matters more than it sounds: the line held back is the *last* one, which is exactly where
+`output_tokens` and `stop_reason` live. The failure would have been a stream that looks perfectly
+healthy and records its two most interesting numbers as empty, only against backends that frame
+their last event that way. `SseScanner._finish` now reads the leftover.
+
+### 8. Events are recognised by the JSON's `type`, not the `event:` line (step 3)
+
+Anthropic sends both — `event: message_start` above `data: {"type":"message_start",…}`. Reading the
+`type` inside the document means one line to look at instead of two to pair up across chunk
+boundaries, and it does not assume both backends frame their event lines identically. LM Studio is a
+separate implementation, and the SSE spec does not require an `event:` line at all.
+
 ## The scanner
 
 **Which path runs is decided by the response `content-type`**, not by the request's `stream` flag:
