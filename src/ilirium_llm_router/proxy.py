@@ -31,7 +31,14 @@ from starlette.requests import ClientDisconnect, Request
 from starlette.responses import JSONResponse, Response, StreamingResponse
 
 from .config import Backend, Config
-from .observe import Call, Scanner, is_sse, scanner_for, transport_error_code
+from .observe import (
+    Call,
+    Scanner,
+    describe_exception,
+    is_sse,
+    scanner_for,
+    transport_error_code,
+)
 from .routing import BackendName, backend_for_model
 from .stats import StatsWriter
 
@@ -173,17 +180,13 @@ class Proxy:
         except httpx.HTTPError as exc:
             # No HTTP status ever existed here, so a symbolic code stands in for one. LM Studio not
             # running is the common failure, and it lands as `connect_error`.
-            call.failed(
-                "transport_error",
-                transport_error_code(exc),
-                f"{type(exc).__name__}: {exc}",
-            )
+            call.failed("transport_error", transport_error_code(exc), describe_exception(exc))
             self.record(call)
             return error_response(
                 502,
                 "api_error",
                 f"Could not reach the {name} backend at {backend.base_url}: "
-                f"{type(exc).__name__}: {exc}",
+                f"{describe_exception(exc)}",
             )
 
         if reply.status_code >= 400:
@@ -235,15 +238,11 @@ class Proxy:
             # The status line already went out as 200, so the failure cannot be put in a status
             # code. It can still be *said*, if the reply is a stream of events: one more event ends
             # the truncation as an error instead of as a silence.
-            call.failed(
-                "transport_error",
-                transport_error_code(exc),
-                f"{type(exc).__name__}: {exc}",
-            )
+            call.failed("transport_error", transport_error_code(exc), describe_exception(exc))
             if streamed:
                 yield sse_error_event(
                     f"The {call.backend or 'upstream'} backend's reply broke off mid-stream: "
-                    f"{type(exc).__name__}: {exc}"
+                    f"{describe_exception(exc)}"
                 )
         finally:
             scanner.finish()

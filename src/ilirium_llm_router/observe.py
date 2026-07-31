@@ -399,6 +399,19 @@ def transport_error_code(exc: Exception) -> str:
     return _snake_case(type(exc).__name__)
 
 
+def describe_exception(exc: Exception) -> str:
+    """`ReadError: Connection reset by peer`, or just `ReadError` when there is nothing after it.
+
+    httpx raises several of its errors with an empty message — a connection reset mid-stream arrives
+    as `ReadError("")` — and the obvious f-string then writes `ReadError: ` into the CSV and into the
+    error event the caller sees, a dangling colon promising a reason that never comes. Measured on
+    2026-07-31 against a stand-in backend that cut a reply off mid-answer; every unit test until then
+    had supplied a message, so all of them read correctly and the real failure did not.
+    """
+    reason = str(exc).strip()
+    return f"{type(exc).__name__}: {reason}" if reason else type(exc).__name__
+
+
 def _snake_case(name: str) -> str:
     """`ConnectError` → `connect_error`, `HTTPStatusError` → `http_status_error`.
 

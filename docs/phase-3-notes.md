@@ -121,13 +121,53 @@ change it is supposed to show. **This is unresolved** — `make format` is curre
 cannot be run safely, and the fix is one line (`[tool.ruff] line-length = 100`) plus one deliberate
 reformat commit of its own. Left for the repository owner to decide, since it touches every file.
 
+## Verified against a running server, 2026-07-31
+
+Half of the "Done when" needs a real Claude Code session and is still open (below). The other half —
+does the router behave correctly when a backend fails — was checked against a **live server through
+real uvicorn**, not the test client, because the test client cannot exercise a caller that hangs up
+or a socket that resets.
+
+Setup, kept out of the way of the working router on 8787 and the real LM Studio on 1234: a second
+instance on **8799** from a scratchpad config whose `lmstudio` backend points at **1299**, which was
+either dead or held by a stand-in that answers with SSE headers and one `message_start`, then resets
+the connection with the answer half-written.
+
+| Case | Result |
+|---|---|
+| Backend not running | `502`, Anthropic-shaped: `Could not reach the lmstudio backend at http://127.0.0.1:1299: ConnectError: All connection attempts failed`. Row: `transport_error` / `connect_error`, `response_bytes` 0, `ttfb_ms` empty |
+| Backend dies mid-stream | The `message_start` that had arrived, then the injected `event: error`. Row: `transport_error` / `read_error`, `input_tokens: 11` captured before the break, `response_bytes: 122` — the backend's bytes only, injected event excluded as designed |
+| Caller hangs up mid-stream | Row: `client_disconnect`, `input_tokens: 11`, `response_bytes: 306`, `duration_ms: 105`. **And the stand-in backend printed `caller went away`** — its next write failed because the router had closed the upstream connection. The disconnect propagated rather than leaving the backend talking to nothing |
+| Service wedged? | No. After five consecutive failures, `HEAD /` and `/health` both still answered 200 |
+
+The log and the CSV lined up as intended: uvicorn's `"POST /v1/messages HTTP/1.1" 200` sits directly
+above the router's own line for the same call, on the same clock.
+
+### The defect the live run found, that 146 passing tests did not
+
+The injected event came back reading:
+
+```
+The lmstudio backend's reply broke off mid-stream: ReadError:
+```
+
+**httpx raises a mid-stream reset as `ReadError("")` — an exception with no message.** The obvious
+`f"{type(exc).__name__}: {exc}"` then writes a dangling colon promising a reason that never comes,
+into the CSV's `error_message` *and* into the event the user sees. Every unit test had supplied a
+message, so all of them read correctly and only the real failure was wrong.
+
+Now `observe.describe_exception`, which drops the separator when there is nothing after it, used at
+all three sites. Re-verified live: the event and the row both read `ReadError`.
+
+This is the same lesson as Phase 2 step 6, and it is now two for two: **the tests confirm the code
+does what it was written to do; only real traffic shows what it was written to do being wrong.**
+
 ## What is still not proven
 
-Everything above is unit-tested. The phase's own "Done when" is not:
+The other half of the "Done when":
 
-> Stopping LM Studio mid-session produces a clear message in Claude Code and a correct CSV row, and
-> no failure mode leaves the service wedged.
+> Stopping LM Studio mid-session produces a clear message in Claude Code and a correct CSV row.
 
-That needs a real session, and it is the one thing no test in this repository can stand in for. Phase
-2 is the precedent: its step 6 session found four recorder defects that all 139 tests had passed
-over. Until that session runs, this phase is written and not verified.
+The row is proven. **What Claude Code displays is not** — the 502 and the SSE `error` event are
+both in the shape Anthropic uses, which is the reason to expect it renders them, but expecting is
+not measuring. It needs a session with a local model where LM Studio is stopped mid-answer.

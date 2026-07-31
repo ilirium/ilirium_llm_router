@@ -319,6 +319,20 @@ def test_transport_error_codes_come_from_the_exception_class(
     assert rows.one.error_code == expected
 
 
+def test_an_error_with_nothing_to_say_does_not_leave_a_dangling_colon() -> None:
+    """httpx raises a mid-stream reset as `ReadError("")`, and every test here supplied a message.
+
+    So all of them read correctly while the real failure wrote `ReadError: ` into the CSV and into
+    the event the caller sees — a colon promising a reason that never arrives. Found on 2026-07-31
+    by killing a stand-in backend mid-answer, not by any of the passing tests above.
+    """
+    rows = Rows()
+    with running(Upstream(error=httpx.ReadError("")), rows=rows) as client:
+        client.post("/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert rows.one.error_message == "ReadError"
+
+
 def test_a_request_without_a_model_still_gets_a_row() -> None:
     """It never reached a backend, but a silent gap is worse than a row with blanks."""
     rows = Rows()
