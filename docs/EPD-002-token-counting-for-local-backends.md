@@ -276,12 +276,17 @@ Step 2 is the gate. If content bytes do not predict, nothing else here is worth 
 
 ## Evidence
 
-All local, all 2026-07-31, all reproducible from this repository:
+All local, all 2026-07-31, all reproducible from this repository. **The session itself is frozen in
+`docs/phase-2-step-6-session/`** — `logs/` is gitignored and rotates, so that directory rather than
+`logs/` is the citable source for everything below.
 
-- `logs/calls.csv` — 142 rows, the Phase 2 step 6 session. Rows 24–37 and 112–125 are the two
-  `/context` bursts; row 69 is the one Anthropic `count_tokens`.
-- `logs/router.log` — the same calls with uvicorn's own lines interleaved. Note the log is naive
-  **local** time and the CSV is **UTC**; the offset was +3 on the day.
+- `phase-2-step-6-session/calls.csv` — 142 rows, the Phase 2 step 6 session. Rows 24–37 and 112–125
+  are the two `/context` bursts; row 69 is the one Anthropic `count_tokens`. Session and agent
+  identifiers are replaced with stable placeholders (`session-01`, `agent-01`), which preserves the
+  grouping the arguments here depend on; see that directory's `README.md`.
+- `phase-2-step-6-session/router.log` — the same calls with uvicorn's own lines interleaved,
+  unredacted because it needed nothing. Note the log is naive **local** time and the CSV is **UTC**;
+  the offset was +3 on the day.
 - `docs/testing-against-claude-code--results.md` — the smoke test that preceded the session.
 - LM Studio as installed on this machine (`lms` CLI commit `71bd99c`), serving `qwen/qwen3.5-9b` at
   262144 context. `CLAUDE.md` records 0.4.1+ as the release that added the Anthropic-compat surface.
