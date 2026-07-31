@@ -26,3 +26,14 @@ build-backend = "uv_build"
 dev = [
     "pytest>=9.1.1",
 ]
+
+[tool.ruff]
+# The codebase is written at 100 columns and always has been; ruff's default is 88. Without this
+# line `make format` rewrote every file it was pointed at, which made the target unsafe to run and
+# meant any phase branch that touched it carried a pile of unrelated churn.
+#
+# 100 is measured rather than chosen: the widest lines here are 100 characters, and the dozen that
+# exceed it are comments and docstrings, which the formatter does not rewrap. Note that `ruff check`
+# is unaffected either way — line length is `E501`, which is not in ruff's default rule set, so this
+# setting governs the formatter alone.
+line-length = 100
