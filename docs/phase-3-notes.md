@@ -136,6 +136,14 @@ returned the Anthropic-shaped 502 and wrote its row.
 `make format` is now idempotent: running it a second time reports nineteen files unchanged, which is
 what makes the target safe to run again.
 
+**ruff is pinned too**, `RUFF ?= ruff@0.16.1`, added straight after. The line length was only half
+the problem: the version was fetched on demand, so the same target could still reformat everything
+the day ruff changed its mind — and that bump would arrive inside whatever branch happened to run
+`make format` first. Which is exactly how this was found, on a phase branch that touched neither.
+It stays a `uvx` fetch rather than a project dependency; the pin was what was missing. `make format
+RUFF=ruff@x.y.z` tries a version without adopting it, and both 0.16.0 and 0.16.1 leave the
+repository untouched, so the formatting does not sit on a knife edge between patch releases.
+
 ## Verified against a running server, 2026-07-31
 
 Half of the "Done when" needs a real Claude Code session and is still open (below). The other half —

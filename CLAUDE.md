@@ -59,13 +59,17 @@ tests/
 | `make run` | start the server (`uv run ilirium-llm-router`) |
 | `make check` | validate and print the config without starting |
 | `make test` | run the tests; `make test ARGS="tests/test_config.py::test_empty_file_is_rejected"` for one |
-| `make lint` / `make format` | ruff, fetched on demand via `uvx` — not a project dependency |
+| `make lint` / `make format` | ruff, fetched on demand via `uvx` — not a project dependency, but **pinned** in the Makefile |
 | `make sync` | install |
 | `make clean` | caches and build artefacts; leaves `logs/` alone |
 
 `make run CONFIG=other.yaml` overrides the config path on any target that takes one. There is no reload target: the app is built by a factory, which `uvicorn --reload` cannot import.
 
 Config models set `extra="forbid"`, so a mistyped YAML key is an error rather than a silently ignored default. Relative log/stats paths resolve against the config file's directory, not the working directory.
+
+**Formatting is fixed in two places, and both are there because it went wrong once.** `pyproject.toml` sets `line-length = 100`, and the Makefile pins `RUFF ?= ruff@0.16.1`. Before either existed, `make format` used ruff's default 88 columns against a codebase written at 100 and rewrote every file it touched — so the target could not be run without burying whatever change was in progress, and `make lint` never objected, because line length is `E501` and that is not in ruff's default rule set.
+
+The pin is the other half of the same problem: an unpinned formatter reformats the repository the day it changes its mind, and the bump then arrives disguised as somebody's feature branch. **Bump it deliberately.** `make format RUFF=ruff@x.y.z` tries a version without committing to it, and the diff that produces is the argument for or against taking it. When a bump is accepted, it belongs in its own commit — `d1def4f` is the precedent, and the way to check such a commit is to compare every file's AST before and after rather than to trust that formatting only moves whitespace.
 
 ## Goal
 

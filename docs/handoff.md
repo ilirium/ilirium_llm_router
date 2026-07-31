@@ -71,9 +71,12 @@ repository in one commit of its own, verified by comparing every file's AST befo
 19 identical, and the 19th a docstring that began with a quote character and gained a space. Details
 in `phase-3-notes.md`.
 
-One residual risk worth knowing: ruff is fetched on demand by `uvx` and is not pinned, so a future
-ruff release can still decide to format something differently. The line length is no longer the
-thing that would cause it.
+**ruff is now pinned as well**, `RUFF ?= ruff@0.16.1` in the Makefile, which closes the other half:
+an unpinned formatter reformats the repository the day it changes its mind, and the bump arrives
+disguised as somebody's feature branch. It is still fetched on demand rather than made a project
+dependency — the pin is what was missing, not the dependency. `make format RUFF=ruff@x.y.z` tries a
+version without committing to it. Checked at the time: 0.16.0 and 0.16.1 both leave the repository
+untouched, so the current formatting is not balanced on one patch release.
 
 ### Earlier: Phase 2 step 6
 
