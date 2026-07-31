@@ -48,9 +48,7 @@ def main() -> int:
         print(f"error: {exc}", file=sys.stderr)
         return 1
 
-    logger.info(
-        "Router %s starting on %s:%d", __version__, config.server.host, config.server.port
-    )
+    logger.info("Router %s starting on %s:%d", __version__, config.server.host, config.server.port)
 
     print(f"\nStarting on http://{config.server.host}:{config.server.port}")
     uvicorn.run(

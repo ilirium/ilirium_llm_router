@@ -191,9 +191,7 @@ class SseScanner(Scanner):
         if not isinstance(usage, dict):
             return
         self.observation.input_tokens = _count(usage.get("input_tokens"))
-        self.observation.cache_read_input_tokens = _count(
-            usage.get("cache_read_input_tokens")
-        )
+        self.observation.cache_read_input_tokens = _count(usage.get("cache_read_input_tokens"))
         self.observation.cache_creation_input_tokens = _count(
             usage.get("cache_creation_input_tokens")
         )
@@ -245,9 +243,7 @@ class BufferedScanner(Scanner):
         if isinstance(usage, dict):
             self.observation.input_tokens = _count(usage.get("input_tokens"))
             self.observation.output_tokens = _count(usage.get("output_tokens"))
-            self.observation.cache_read_input_tokens = _count(
-                usage.get("cache_read_input_tokens")
-            )
+            self.observation.cache_read_input_tokens = _count(usage.get("cache_read_input_tokens"))
             self.observation.cache_creation_input_tokens = _count(
                 usage.get("cache_creation_input_tokens")
             )

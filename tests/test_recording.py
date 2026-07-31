@@ -88,9 +88,7 @@ def test_watching_a_reply_does_not_change_a_byte_of_it() -> None:
     upstream = Upstream(streamed(chunks=chunks, headers=JSON_HEADERS))
 
     with running(upstream) as client:
-        reply = client.post(
-            "/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS
-        )
+        reply = client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
 
     assert reply.content == b"".join(chunks)
 
@@ -232,9 +230,7 @@ def test_an_error_event_mid_stream_is_recorded_despite_the_200() -> None:
         )
     )
     with running(upstream, rows=rows) as client:
-        reply = client.post(
-            "/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS
-        )
+        reply = client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
 
     assert reply.status_code == 200, "the failure never reached the status line"
     row = rows.one
@@ -283,9 +279,7 @@ def test_a_backend_that_dies_mid_stream_is_recorded() -> None:
     )
     rows = Rows()
     with running(upstream, rows=rows) as client:
-        reply = client.post(
-            "/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS
-        )
+        reply = client.post("/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS)
 
     assert reply.status_code == 200, "the 200 was already sent before anything went wrong"
     assert b"message_start" in reply.content, "what did arrive still reaches the caller"
@@ -337,9 +331,7 @@ def test_a_request_without_a_model_still_gets_a_row() -> None:
     """It never reached a backend, but a silent gap is worse than a row with blanks."""
     rows = Rows()
     with running(Upstream(), rows=rows) as client:
-        client.post(
-            "/v1/messages", content=b'{"messages":[]}', headers=CLAUDE_CODE_HEADERS
-        )
+        client.post("/v1/messages", content=b'{"messages":[]}', headers=CLAUDE_CODE_HEADERS)
 
     row = rows.one
     assert row.backend == ""
@@ -476,19 +468,13 @@ def test_the_injected_error_event_is_not_counted_as_the_backends_bytes() -> None
         yield chunk
         raise httpx.ReadError("Connection reset by peer")
 
-    upstream = Upstream(
-        httpx.Response(200, headers=SSE_HEADERS, content=dies_after(sent))
-    )
+    upstream = Upstream(httpx.Response(200, headers=SSE_HEADERS, content=dies_after(sent)))
     rows = Rows()
     with running(upstream, rows=rows) as client:
-        reply = client.post(
-            "/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS
-        )
+        reply = client.post("/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS)
 
     assert len(reply.content) > len(sent), "the caller did get the extra event"
-    assert rows.one.response_bytes == len(sent), (
-        "but the row counts only the backend's bytes"
-    )
+    assert rows.one.response_bytes == len(sent), "but the row counts only the backend's bytes"
 
 
 def test_a_writer_that_raises_does_not_break_the_call() -> None:
@@ -500,9 +486,7 @@ def test_a_writer_that_raises_does_not_break_the_call() -> None:
 
     upstream = Upstream(sse_reply())
     with running(upstream, rows=Broken()) as client:
-        reply = client.post(
-            "/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS
-        )
+        reply = client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
 
     assert reply.status_code == 200
     assert b"message_stop" in reply.content

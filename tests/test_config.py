@@ -46,9 +46,7 @@ def test_relative_paths_resolve_against_the_config_file(tmp_path: Path) -> None:
 
 
 def test_absolute_paths_are_left_alone(tmp_path: Path) -> None:
-    config = load_config(
-        write(tmp_path, MINIMAL + "\nstats:\n  file: /var/log/calls.csv\n")
-    )
+    config = load_config(write(tmp_path, MINIMAL + "\nstats:\n  file: /var/log/calls.csv\n"))
 
     assert config.stats.file == Path("/var/log/calls.csv")
 

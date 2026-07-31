@@ -176,7 +176,7 @@ def test_the_line_also_goes_to_the_console(
 
 
 def test_uvicorns_own_lines_land_in_the_router_log(tmp_path: Path) -> None:
-    """"Did the request arrive" and "was the server up" are answered by the lines either side."""
+    """ "Did the request arrive" and "was the server up" are answered by the lines either side."""
     path = tmp_path / "router.log"
     setup_logging(Logging(file=path))
 

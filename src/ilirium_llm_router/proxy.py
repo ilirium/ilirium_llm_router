@@ -261,9 +261,7 @@ class Proxy:
             # The log line is read from the finished row rather than measured again, so the two
             # traces of one call can never disagree about how long it took.
             outcome = (
-                "ok"
-                if row.error_status == "ok"
-                else f"{row.error_status} {row.error_code}".strip()
+                "ok" if row.error_status == "ok" else f"{row.error_status} {row.error_code}".strip()
             )
             logger.info(
                 "%s  %s → %s  %s  %d ms, %d bytes",
@@ -384,9 +382,7 @@ def sse_error_event(message: str) -> bytes:
     backend sent, and these bytes are ours — a row whose byte count included the router's own
     apology would be lying about the reply it is describing.
     """
-    payload = json.dumps(
-        {"type": "error", "error": {"type": "api_error", "message": message}}
-    )
+    payload = json.dumps({"type": "error", "error": {"type": "api_error", "message": message}})
     return f"event: error\ndata: {payload}\n\n".encode()
 
 

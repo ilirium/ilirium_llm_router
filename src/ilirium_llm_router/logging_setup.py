@@ -46,9 +46,7 @@ class UtcFormatter(logging.Formatter):
     seconds — and a phase whose subject is measuring durations should not round its own clock.
     """
 
-    def formatTime(
-        self, record: logging.LogRecord, datefmt: str | None = None
-    ) -> str:
+    def formatTime(self, record: logging.LogRecord, datefmt: str | None = None) -> str:
         stamped = datetime.fromtimestamp(record.created, UTC)
         return stamped.isoformat(timespec="milliseconds")
 
@@ -102,9 +100,7 @@ def setup_logging(config: Logging) -> logging.Logger:
     return get_logger()
 
 
-def _attach(
-    logger: logging.Logger, handlers: list[logging.Handler], level: str
-) -> None:
+def _attach(logger: logging.Logger, handlers: list[logging.Handler], level: str) -> None:
     """Give `logger` exactly these handlers, replacing whatever it had."""
     for existing in list(logger.handlers):
         logger.removeHandler(existing)

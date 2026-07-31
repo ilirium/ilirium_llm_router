@@ -28,8 +28,7 @@ from ilirium_llm_router.observe import (
 def sse(*events: dict[str, object]) -> bytes:
     """The events as a real backend frames them: an `event:` line, a `data:` line, a blank line."""
     return b"".join(
-        f"event: {event['type']}\ndata: {json.dumps(event)}\n\n".encode()
-        for event in events
+        f"event: {event['type']}\ndata: {json.dumps(event)}\n\n".encode() for event in events
     )
 
 
@@ -289,7 +288,8 @@ def test_an_unreadable_non_streaming_body_is_survived(body: bytes) -> None:
 def test_a_token_count_that_is_not_a_number_reads_as_absent(value: object) -> None:
     """`True` is an `int` in Python, and would otherwise be recorded as one token."""
     result = observed(
-        SseScanner(), sse(message_start(input_tokens=value))  # type: ignore[arg-type]
+        SseScanner(),
+        sse(message_start(input_tokens=value)),  # type: ignore[arg-type]
     )
 
     assert result.input_tokens is None
