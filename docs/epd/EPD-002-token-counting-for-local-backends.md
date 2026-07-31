@@ -280,11 +280,11 @@ All local, all 2026-07-31, all reproducible from this repository. **The session 
 `docs/phase-2-step-6-session/`** — `logs/` is gitignored and rotates, so that directory rather than
 `logs/` is the citable source for everything below.
 
-- `phase-2-step-6-session/calls.csv` — 142 rows, the Phase 2 step 6 session. Rows 24–37 and 112–125
+- `docs/phase-2-step-6-session/calls.csv` — 142 rows, the Phase 2 step 6 session. Rows 24–37 and 112–125
   are the two `/context` bursts; row 69 is the one Anthropic `count_tokens`. Session and agent
   identifiers are replaced with stable placeholders (`session-01`, `agent-01`), which preserves the
   grouping the arguments here depend on; see that directory's `README.md`.
-- `phase-2-step-6-session/router.log` — the same calls with uvicorn's own lines interleaved,
+- `docs/phase-2-step-6-session/router.log` — the same calls with uvicorn's own lines interleaved,
   unredacted because it needed nothing. Note the log is naive **local** time and the CSV is **UTC**;
   the offset was +3 on the day.
 - `docs/testing-against-claude-code--results.md` — the smoke test that preceded the session.
@@ -294,6 +294,6 @@ All local, all 2026-07-31, all reproducible from this repository. **The session 
   `calls.csv`.
 
 Related: `EPD-001-model-selection-and-mixed-model-sessions.md` for the `/v1/models` and model
-discovery questions this touches; `lmstudio-usage-check.md` for the `usage` shape the router reads;
+discovery questions this touches; `docs/lmstudio-usage-check.md` for the `usage` shape the router reads;
 `CLAUDE.md` "Observability" for why the `path` column exists, which is the only reason any of this
 was noticed.

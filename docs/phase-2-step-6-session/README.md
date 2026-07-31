@@ -1,6 +1,6 @@
 # Phase 2 step 6 — the frozen session
 
-The evidence behind `EPD-002-token-counting-for-local-backends.md`, and behind the claim that Phase 2
+The evidence behind `docs/epd/EPD-002-token-counting-for-local-backends.md`, and behind the claim that Phase 2
 step 6 passed. Captured 2026-07-31 on this machine, copied here because `logs/` is gitignored and
 both files rotate — without this directory the numbers quoted in EPD-002 would have no source.
 
