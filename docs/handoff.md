@@ -100,7 +100,7 @@ measured from the captured request — and worked anyway. Either that estimate i
 something trims context quietly; Phase 4 should find out, because silent truncation degrades answers
 without failing.
 
-## An open proposal
+## Open proposals
 
 **Written and deliberately not decided.**
 `EPD-001-model-selection-and-mixed-model-sessions.md`, written 2026-07-30, covers two requirements
@@ -117,6 +117,23 @@ distinguishes a subagent's call from the main conversation's, and it is nearly f
 Note the asymmetry in evidence — the session header appears in the captured request, the agent header
 is documented only, so confirm it arrives rather than assuming an empty column means "main
 conversation".
+
+**Also written and deliberately not decided.**
+`EPD-002-token-counting-for-local-backends.md`, written 2026-07-31 out of the Phase 2 step 6 session.
+LM Studio does not implement `POST /v1/messages/count_tokens` and answers it with **HTTP 200 and an
+error body**, so all 32 such rows in `calls.csv` are logged `ok`. Claude Code falls back to its own
+estimator — `/context` still displays plausible numbers, labelled "Estimated" — but against an
+assumed **200k** window rather than the model's real context length, which it has no way to learn.
+On `qwen/qwen3.5-9b` at 262144 that is harmlessly conservative. On a sub-200k model it is not: a
+34304-token `google/gemma-4-e4b` would show 41% for a conversation at 238% of its window, and
+auto-compaction would fire far too late. That is the concrete mechanism behind the Phase 4 silent-
+trimming worry. The document also settles that raw `request_bytes` cannot predict token counts
+(6× ratio spread, 410% worst-case error) and leaves one hypothesis untested — that *content* bytes
+can. Do not build anything from it: the fork between an honest count and a scaled one is open, and
+question 3 in that file may make the fork moot.
+
+Nothing there is blocking. The router forwards `count_tokens` correctly today and every session in
+`calls.csv` completed.
 
 One loose end, carried over and still not blocking: re-run the Test B curl showing its response body,
 to confirm the 429 was an ordinary subscription rate limit rather than something unexpected. The
