@@ -261,6 +261,15 @@ def peek(body: bytes) -> Peeked:
     not what picks the scanner — the response content-type does that — so the column's real use is
     diagnosing the recorder rather than the call: empty token columns with `stream` true means the
     SSE path came up empty, empty with `stream` false means the buffered one did.
+
+    That diagnosis only works if `false` is written as `false`. **An absent `stream` is a
+    non-streaming request**, since the API defaults it to false and Claude Code omits the field
+    rather than sending it — measured on 2026-07-31, where every non-streaming row in
+    `docs/phase-2-step-6-session/calls.csv` has the column blank. Reading absence as unknown left 83
+    of 142 rows saying nothing, and left an empty cell meaning two different things.
+
+    So an empty cell now means only what it should: the body never parsed, or it said something
+    about `stream` that was not a boolean.
     """
     try:
         payload = json.loads(body)
@@ -271,9 +280,18 @@ def peek(body: bytes) -> Peeked:
 
     model = payload.get("model")
     stream = payload.get("stream")
+    if stream is None:
+        streaming: bool | None = False
+    elif isinstance(stream, bool):
+        streaming = stream
+    else:
+        # Present but not a boolean. The backend will make its own judgement; this column declines
+        # to guess, which is what the empty cell is for.
+        streaming = None
+
     return Peeked(
         model=model if isinstance(model, str) and model else None,
-        stream=stream if isinstance(stream, bool) else None,
+        stream=streaming,
     )
 
 

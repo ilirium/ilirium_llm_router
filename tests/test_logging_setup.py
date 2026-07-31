@@ -11,6 +11,7 @@ from __future__ import annotations
 import logging
 import re
 from collections.abc import Iterator
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -102,9 +103,26 @@ def test_each_line_carries_the_time_to_the_millisecond(tmp_path: Path) -> None:
     setup_logging(Logging(file=path)).info("Router starting")
 
     assert re.fullmatch(
-        r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3}\s+INFO\s+Router starting",
+        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}\+00:00\s+INFO\s+Router starting",
         lines(path)[0],
     ), f"unexpected line shape: {lines(path)[0]!r}"
+
+
+def test_the_log_stamps_the_same_string_the_csv_would(tmp_path: Path) -> None:
+    """The two files are read together, so a line and its row must carry the same timestamp.
+
+    Before this, the log wrote naive local time and the CSV wrote UTC — correlating them meant
+    remembering an offset that appeared in neither file.
+    """
+    path = tmp_path / "router.log"
+    before = datetime.now(UTC).isoformat(timespec="milliseconds")
+    setup_logging(Logging(file=path)).info("Router starting")
+    after = datetime.now(UTC).isoformat(timespec="milliseconds")
+
+    stamped = lines(path)[0].split()[0]
+    # Same shape `observe.Call` writes into the `timestamp` column, and parseable as such.
+    assert datetime.fromisoformat(stamped).tzinfo is UTC
+    assert before <= stamped <= after
 
 
 def test_calling_setup_twice_does_not_double_every_line(tmp_path: Path) -> None:

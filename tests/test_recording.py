@@ -188,7 +188,21 @@ def test_an_http_error_records_the_status_and_the_backends_wording() -> None:
     row = rows.one
     assert row.error_status == "http_error"
     assert row.error_code == "429"
-    assert row.error_message == "slow down"
+    # The symbolic type rides along with the wording. `error_code` is the HTTP status on this path,
+    # so this column is the only place `rate_limit_error` can survive — and it is the countable
+    # half. Anthropic answered a real rate-limited call with the bare word "Error" on 2026-07-31.
+    assert row.error_message == "rate_limit_error: slow down"
+
+
+def test_an_http_error_with_no_wording_still_keeps_the_type() -> None:
+    """Either half alone, without a stray separator."""
+    typed_only = json.dumps({"type": "error", "error": {"type": "overloaded_error"}}).encode()
+    rows = Rows()
+    upstream = Upstream(streamed(529, chunks=[typed_only], headers=JSON_HEADERS))
+    with running(upstream, rows=rows) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert rows.one.error_message == "overloaded_error"
 
 
 def test_an_error_event_mid_stream_is_recorded_despite_the_200() -> None:

@@ -13,6 +13,7 @@ the process's logging.
 from __future__ import annotations
 
 import logging
+from datetime import UTC, datetime
 from logging.handlers import RotatingFileHandler
 
 from .config import ConfigError, Logging
@@ -29,9 +30,27 @@ LOGGER_NAME = "ilirium_llm_router"
 UVICORN_LOGGER_NAME = "uvicorn"
 
 # Fixed-width level and a millisecond timestamp, so a column of these lines reads as a table.
-# `asctime` is left at its default format on purpose: passing a `datefmt` of our own would drop the
-# milliseconds, and a phase whose subject is measuring durations should not round its own clock.
 LINE_FORMAT = "%(asctime)s  %(levelname)-7s  %(message)s"
+
+
+class UtcFormatter(logging.Formatter):
+    """The router's line format, timestamped in UTC exactly as the CSV timestamps a row.
+
+    The two files are meant to be read side by side — that is the whole reason uvicorn's lines are
+    pointed at this one — and correlating them only works if a log line and its CSV row carry the
+    same string. They did not: the log wrote naive *local* time and the CSV writes UTC, so on
+    2026-07-31 the same call appeared at `11:46:47` in one file and `08:46:47+00:00` in the other,
+    and lining them up meant remembering an offset neither file records.
+
+    `formatTime` is overridden rather than a `datefmt` passed, because `datefmt` truncates to whole
+    seconds — and a phase whose subject is measuring durations should not round its own clock.
+    """
+
+    def formatTime(
+        self, record: logging.LogRecord, datefmt: str | None = None
+    ) -> str:
+        stamped = datetime.fromtimestamp(record.created, UTC)
+        return stamped.isoformat(timespec="milliseconds")
 
 
 def get_logger() -> logging.Logger:
@@ -51,7 +70,7 @@ def setup_logging(config: Logging) -> logging.Logger:
     here nothing is being proxied yet, and a log that silently goes nowhere is worse than a refusal
     to start.
     """
-    formatter = logging.Formatter(LINE_FORMAT)
+    formatter = UtcFormatter(LINE_FORMAT)
 
     try:
         config.file.parent.mkdir(parents=True, exist_ok=True)

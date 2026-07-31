@@ -280,6 +280,13 @@ def _read_error(payload: dict[str, object], observation: Observation) -> None:
         observation.error_message = str(error["message"])
 
 
+def _describe(error_type: str, message: str) -> str:
+    """`type: message`, dropping either half the body did not carry."""
+    if error_type and message:
+        return f"{error_type}: {message}"
+    return error_type or message
+
+
 class Call:
     """One call, from the moment it arrived to the row it becomes.
 
@@ -336,8 +343,13 @@ class Call:
             # down the tee is the only place this failure can be seen at all.
             self.failed("stream_error", seen.error_type, seen.error_message)
         elif self.error_status != "ok" and not self.error_message:
-            # The backend's own wording, which beats a bare status code in the file.
-            self.error_message = seen.error_message
+            # The backend's own wording, which beats a bare status code in the file — carrying the
+            # symbolic type alongside it. On this branch `error_code` holds the HTTP status, so
+            # unlike the `stream_error` case above there is nowhere else for the type to go, and it
+            # was being dropped. It is the half worth keeping: a type is countable with a
+            # spreadsheet filter where a message is only readable, and Anthropic answers a
+            # rate-limited call with the single word "Error", which alone says nothing at all.
+            self.error_message = _describe(seen.error_type, seen.error_message)
 
         return CallRecord(
             timestamp=self.timestamp,

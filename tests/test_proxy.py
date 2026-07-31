@@ -290,11 +290,14 @@ def test_peek_finds_the_model() -> None:
     [
         (b'{"model":"m","stream":true}', True),
         (b'{"model":"m","stream":false}', False),
-        (b'{"model":"m"}', None),
+        # Absent is the API default, and it is how Claude Code sends every non-streaming call —
+        # measured on 2026-07-31, where reading it as unknown left 83 of 142 rows saying nothing.
+        (b'{"model":"m"}', False),
+        # Only these two leave the column empty, so an empty cell means one thing: we could not tell.
         (b'{"model":"m","stream":"yes"}', None),
         (b"not json", None),
     ],
 )
 def test_peek_finds_the_stream_flag(body: bytes, expected: bool | None) -> None:
-    """Absent and non-boolean both read as unknown, so the column stays honest."""
+    """Absent reads as false; only an unparseable body or a non-boolean reads as unknown."""
     assert peek(body).stream is expected

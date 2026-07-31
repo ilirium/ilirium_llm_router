@@ -19,6 +19,17 @@ the header into the fresh file.
 
 Note `request_bytes` is dominated by the fixed ~110 KB preamble of system prompt and tool schemas, so
 treat it as a fallback rather than a measure of conversation size.
+
+**The file is in completion order, not arrival order.** A row is appended when its call finishes,
+while `timestamp` records when the call *arrived*, so a slow call lands after quicker ones that
+started later — 14 adjacent pairs are out of order in
+`docs/phase-2-step-6-session/calls.csv`, one of them by nearly two minutes. Sort by `timestamp`
+before analysing.
+
+Deliberately not fixed. Ordering the file would mean holding finished rows in memory until the calls
+that started before them came back, which trades a sort in the spreadsheet for losing every buffered
+row when the process stops — and "never let telemetry break a call" argues the same way about
+holding telemetry hostage to a call still in flight.
 """
 
 from __future__ import annotations
