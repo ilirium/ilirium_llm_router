@@ -226,3 +226,4 @@ __MACOSX/
 
 # Step: Router runtime output
 logs/
+!docs/phase-2-step-6-session/router.log
