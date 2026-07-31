@@ -10,8 +10,9 @@ session; the phased plan lives in `implementation-plan.md`; the authentication p
 the fourteen decisions taken building it live in `phase-2-notes.md`;
 the procedure for testing the router against a real session lives in `testing-against-claude-code.md`;
 the token-usage check that unblocked Phase 2 lives in `lmstudio-usage-check.md`; proposals that are
-written up but not decided live in `EPD-NNN-*.md`. Read those for substance. This file only records
-session state — where we stopped and what happens next.
+written up but not decided live in `docs/epd/`, indexed by `EPD-000-about-these-documents.md`, which
+also says what an EPD is and what the conventions are. Read those for substance. This file only
+records session state — where we stopped and what happens next.
 
 ## Where the project stands
 
@@ -31,15 +32,15 @@ a scanner on its way downstream. Decisions taken while building are numbered 4�
 `phase-2-notes.md`. Step 6 ran, answered all four questions the phase existed to settle, and turned up
 four recorder defects that have since been fixed. The session is frozen in `phase-2-step-6-session/`.
 
-**The branch has not been merged.** That is the one Phase 2 action still outstanding, and by
-convention it is a `--no-ff` merge so the phase boundary stays visible in the history.
+**The branch was merged into `main` on 2026-07-31** as `4d7d7f6`, `--no-ff` by convention so the
+phase boundary stays visible in the history. Nothing from Phase 2 is outstanding.
 
 ## What we were doing when we stopped
 
 **Phase 2 step 6, finishing 2026-07-31 with a clean tree.** The session was run, the CSV and log read,
 `EPD-002` written out of what the `path` column exposed, the session frozen into `docs/` because
 `logs/` is gitignored, the four recorder defects fixed, and the Phase 1 429 loose end answered from
-rows the session already had. Six commits. What remains is the `--no-ff` merge to `main`.
+rows the session already had. Six commits, then the `--no-ff` merge to `main`.
 
 Two process notes from it. The analysis was worth more than the run: three of the four defects were
 invisible in the passing tests and only showed up when reading 142 real rows next to each other.
@@ -96,7 +97,7 @@ in `phase-2-step-6-session/`.
   `message_delta` would have looked fine locally and been wrong here.
 - **Does anything unexpected reach the catch-all?** **Yes** — `/v1/messages/count_tokens`, 33 rows.
   LM Studio does not implement it and answers HTTP 200 with an error body, so the rows read `ok`.
-  That became `EPD-002-token-counting-for-local-backends.md`.
+  That became `docs/epd/EPD-002-token-counting-for-local-backends.md`.
 
 Four recorder defects surfaced alongside, all fixed: `stream` written blank where Claude Code omits
 the field, the log and CSV timestamping on different clocks, the backend's symbolic `error.type`
@@ -130,8 +131,12 @@ without failing.
 
 ## Open proposals
 
+All indexed in `docs/epd/EPD-000-about-these-documents.md`, which is also where "EPD" is expanded
+(Enhancement Proposal Document) and where the conventions all three follow are written down. Read it
+first if you have not seen one of these before.
+
 **Written and deliberately not decided.**
-`EPD-001-model-selection-and-mixed-model-sessions.md`, written 2026-07-30, covers two requirements
+`docs/epd/EPD-001-model-selection-and-mixed-model-sessions.md`, written 2026-07-30, covers two requirements
 that turned out to be absent from the specs: choosing a local model with `/model` mid-session, and
 running subagents on local models alongside a Claude main conversation. Per-request dispatch already
 satisfies the second with no code, and `/model <local-id>` should already work, so nothing here is
@@ -147,7 +152,7 @@ is documented only, so confirm it arrives rather than assuming an empty column m
 conversation".
 
 **Also written and deliberately not decided.**
-`EPD-002-token-counting-for-local-backends.md`, written 2026-07-31 out of the Phase 2 step 6 session.
+`docs/epd/EPD-002-token-counting-for-local-backends.md`, written 2026-07-31 out of the Phase 2 step 6 session.
 LM Studio does not implement `POST /v1/messages/count_tokens` and answers it with **HTTP 200 and an
 error body**, so all 32 such rows in `calls.csv` are logged `ok`. Claude Code falls back to its own
 estimator — `/context` still displays plausible numbers, labelled "Estimated" — but against an
@@ -162,6 +167,28 @@ question 3 in that file may make the fork moot.
 
 Nothing there is blocking. The router forwards `count_tokens` correctly today and every session in
 `calls.csv` completed.
+
+**Newest, and the only one not waiting on Phase 4.**
+`docs/epd/EPD-003-capturing-bodies-for-a-corpus.md`, written 2026-07-31 in answer to a requirement raised the
+same day: store every request and response body for later analysis, and possibly as a fine-tuning
+corpus. Two findings drive it. **The corpus is ~93% request bytes and those are almost entirely
+repeats** — every turn re-sends the whole conversation, so storage is O(N²) in turns where the
+transcript is O(N); the step 6 session would have produced 10.35 MB in 77 minutes. And **the storage
+question is a compression-window question, not a database question**: measured on the real captured
+request grown across twenty turns, gzip manages 2.4× where zstd manages 28.6×, while on a *single*
+body the two are tied at 2.9× and 3.1×. The whole gap is gzip's 32 KB window failing to see the
+previous request's copy of the same preamble.
+
+What it waits on is not a phase but a decision: **Anthropic's terms prohibit using outputs as
+training targets**, so the fine-tuning half of the requirement may not survive, while the analysis
+half is untouched. That answer changes the design rather than its priority, which is why it is
+question 1 in that file.
+
+Note it also reverses one sentence of `CLAUDE.md` on purpose — the one ruling out anything
+body-shaped — and says so explicitly. The narrow form it argues for is *store bytes, parse never*.
+Nothing is implemented, and its own gate is a twenty-minute measurement: whether a trained zstd
+dictionary recovers the cross-body ratio for per-file storage. If it does not, per-call files are the
+wrong unit and the sketch in that document does not survive.
 
 The loose end carried here since Phase 1 — whether Test B's 429 was an ordinary subscription rate
 limit — is **mostly closed as of 2026-07-31**, and closing the rest needs no action.

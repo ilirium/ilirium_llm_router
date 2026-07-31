@@ -31,9 +31,9 @@ and `picker`:
 | Where | What it says | Gap |
 |---|---|---|
 | `README.md:12-14` | "pick up different models in LM Studio"; Claude Code has access to its own models and local ones "simultaneously" | Closest thing to the requirement. It is about *serving*, and "simultaneously" is never pinned down to mean *within one session* |
-| `implementation-plan.md:66-68` | Phase 1 done-when is `claude --model claude-sonnet-5` and `claude --model <some-local-model>` | A launch flag, **one model per session**. Mid-session switching appears nowhere |
+| `docs/implementation-plan.md:66-68` | Phase 1 done-when is `claude --model claude-sonnet-5` and `claude --model <some-local-model>` | A launch flag, **one model per session**. Mid-session switching appears nowhere |
 | everywhere | — | **Subagents are mentioned zero times in the repository** |
-| `implementation-plan.md:237` | a combined model list endpoint is "Not doing yet" | The mechanism that would populate the picker is explicitly out of scope |
+| `docs/implementation-plan.md:237` | a combined model list endpoint is "Not doing yet" | The mechanism that would populate the picker is explicitly out of scope |
 
 So requirement 1 is half-implied and requirement 2 is absent. That is the finding: these are not
 things the current specs promise, and they should be written down as requirements before anything
@@ -113,7 +113,7 @@ Limits that matter:
 `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1` (Claude Code v2.1.129 or later) makes Claude Code
 query the gateway's `/v1/models` at startup and add what it finds to the picker, each row labelled
 "From gateway". It is off by default. This is the mechanism that would satisfy requirement 1
-properly, and it is the one `implementation-plan.md` currently defers.
+properly, and it is the one `docs/implementation-plan.md` currently defers.
 
 The constraint that shapes the design, quoted verbatim from the source:
 
@@ -165,7 +165,7 @@ handling local ones with the custom-option variable, for instance). **No option 
 ## Two CSV columns — the one part of this that *is* decided
 
 **Accepted into the spec on 2026-07-30**, while the rest of this document stays deferred. `CLAUDE.md`
-now carries `session_id` and `agent_id` in the CSV column table, `implementation-plan.md` carries
+now carries `session_id` and `agent_id` in the CSV column table, `docs/implementation-plan.md` carries
 them in the Phase 2 work list, and `stats.py`'s docstring records where they come from. They were
 accepted on the cheapness argument below, not because anything else here was settled.
 
@@ -178,7 +178,7 @@ Claude Code's gateway contract documents three headers on inference requests:
 | `x-claude-code-parent-agent-id` | present only for nested agents |
 
 The session header is not merely documented: it is in this repository's own captured request, which
-is why `handoff.md` records redacting an `X-Claude-Code-Session-Id`. The agent header is documented
+is why `docs/handoff.md` records redacting an `X-Claude-Code-Session-Id`. The agent header is documented
 only — the capture predates any subagent use here.
 
 If requirement 2 matters, the agent header is the *only* way the CSV can attribute a call to a
@@ -201,7 +201,7 @@ column is unverified against this router.**
 | Claim | Status |
 |---|---|
 | Per-request dispatch routes a mixed-model session correctly | **Measured** in the design sense — Phase 1 ran both backends through the same rule — but never with two models *inside one session* |
-| `x-claude-code-session-id` arrives on real requests | **Measured** — present in `log-the-whole-request.txt` |
+| `x-claude-code-session-id` arrives on real requests | **Measured** — present in `docs/log-the-whole-request.txt` |
 | `/model <local-id>` is accepted behind a custom base URL | Documented only |
 | Subagent frontmatter accepts a full local model ID and routes there | Documented only |
 | `ANTHROPIC_CUSTOM_MODEL_OPTION` produces a working picker row | Documented only |

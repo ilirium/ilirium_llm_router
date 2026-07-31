@@ -95,7 +95,7 @@ file that can be opened in a spreadsheet and compared across models.
 - Copy the session and agent identifiers straight off the request headers. Both are free — a header
   lookup, no body parsing — and the agent one is the only thing that distinguishes a subagent's call
   from the main conversation's. That matters because the two are expected to run on *different*
-  models, which is what `EPD-001-model-selection-and-mixed-model-sessions.md` is about; without the
+  models, which is what `docs/epd/EPD-001-model-selection-and-mixed-model-sessions.md` is about; without the
   column such a session records as an indistinguishable pile of rows. Cheap to write while building
   the writer, tedious to retrofit into a working one.
 - Get the token counts by watching the reply as it passes through, rather than by taking it apart.

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Phase 1 is done, verified in a real session on 2026-07-29** (see `docs/implementation-plan.md` for the phases, and `docs/testing-against-claude-code.md` for the procedure and the full results). The router forwards: it answers the `HEAD /` probe, dispatches `POST /v1/messages` by the model named in the body, and has a catch-all for every other path. Bodies are relayed byte for byte and replies streamed back untouched.
 
-**Phase 2 is done, all six steps, proven in a real session on 2026-07-31.** Committed on `feat/phase-2-observability`; 139 tests pass. Every call leaves two traces: a line in a rotating log — which uvicorn's own lines join, so "did the request arrive" and "was the server up" sit next to it — and a row in `logs/calls.csv` with all 20 columns. Usage is read off a tee of the passing bytes, never by parsing and rebuilding them.
+**Phase 2 is done, all six steps, proven in a real session on 2026-07-31.** Built on `feat/phase-2-observability` and merged to `main` the same day as `4d7d7f6`; 139 tests pass. Every call leaves two traces: a line in a rotating log — which uvicorn's own lines join, so "did the request arrive" and "was the server up" sit next to it — and a row in `logs/calls.csv` with all 20 columns. Usage is read off a tee of the passing bytes, never by parsing and rebuilding them.
 
 The step 6 session — long, switching models mid-conversation, subagents, an interrupted response, tool use and file editing on a local model — produced **142 rows across eleven sessions**, frozen in `docs/phase-2-step-6-session/` because `logs/` is gitignored and rotates. It answered all four questions Phase 2 existed to settle:
 
@@ -141,6 +141,20 @@ Decided deliberately; don't quietly reverse these.
 
   **Not yet implemented.** `config.py` still has the two-knob shape; this is a decision, not a description. The header question is also open and deliberately unanswered: `inject` currently means `Authorization: Bearer`, which suits LM Studio and OpenAI, but Anthropic's native key is `x-api-key` and Gemini's is `x-goog-api-key`. A per-backend header name will be needed before the second cloud provider, not before.
 
+## Open proposals — the EPDs
+
+The section above holds decisions. Questions that are **written up and deliberately not decided** live in `docs/epd/` as **EPDs — Enhancement Proposal Documents**, indexed by `docs/epd/EPD-000-about-these-documents.md`, which also records the conventions they follow. Read that first; it is short.
+
+Nothing in an EPD is implemented unless the document names the date it was accepted. Do not build from one. The rule that makes them useful: an EPD separates a **finding**, which is measured and durable, from the **decision** it implies, which usually is not.
+
+| | Waiting on | In one line |
+|---|---|---|
+| `EPD-001` | Phase 4 | Picking a local model mid-session with `/model`, and subagents on local models. Per-request dispatch already satisfies the second with no code. Its one accepted piece is the CSV's `session_id` / `agent_id` columns |
+| `EPD-002` | Phase 4 | LM Studio does not implement `count_tokens` and answers HTTP 200 with an error body, so Claude Code estimates against an assumed 200k window — silent truncation on a smaller local model |
+| `EPD-003` | a decision on the fine-tuning goal | Storing every request and response body as a corpus. The corpus is ~93% repeated prefix; the storage question is a compression-window question, not a database one; and Anthropic's terms bear on the fine-tuning half |
+
+Two of them argue that "Relay the body, log only metadata" above is narrower than it looks — that it protects bodies the router *relays*, and so does not reach a body the router answers itself (`EPD-002`) or an opaque copy it never parses (`EPD-003`). `EPD-003` additionally asks to reverse one sentence of the section below, the one ruling out anything body-shaped. **None of that has been accepted**, and reversing either rule quietly is exactly what these documents exist to prevent.
+
 ## Observability: log + CSV stats
 
 Every call is logged **and** appended as one row to a CSV, so model/backend comparisons are analyzable without parsing free-text logs.
@@ -151,7 +165,7 @@ CSV columns:
 |---|---|
 | `timestamp` | ISO 8601, when the request arrived |
 | `session_id` | `x-claude-code-session-id`, copied from the request headers. Groups a session's calls without parsing bodies. Empty when the header is absent, since a non-Claude-Code caller has no reason to send it |
-| `agent_id` | `x-claude-code-agent-id`. **Present only on requests from a subagent**, so an empty value means the main conversation — that emptiness is the signal, not missing data. Without this column a mixed-model session collapses into an indistinguishable pile of rows, and it is far cheaper to write now than to retrofit into a working CSV writer. See `EPD-001-model-selection-and-mixed-model-sessions.md` for why mixed-model sessions are expected at all |
+| `agent_id` | `x-claude-code-agent-id`. **Present only on requests from a subagent**, so an empty value means the main conversation — that emptiness is the signal, not missing data. Without this column a mixed-model session collapses into an indistinguishable pile of rows, and it is far cheaper to write now than to retrofit into a working CSV writer. See `docs/epd/EPD-001-model-selection-and-mixed-model-sessions.md` for why mixed-model sessions are expected at all |
 | `backend` | `anthropic` or `lmstudio` |
 | `model` | peeked from the request body |
 | `path` | the request path, without the query string. Almost always `/v1/messages`, and that is the point: the catch-all route forwards endpoints we did not anticipate, and without this column those rows are indistinguishable from ordinary ones. Turns the plan's standing "other endpoints" worry into a list of facts |

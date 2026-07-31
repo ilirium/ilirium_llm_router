@@ -285,7 +285,7 @@ Two things the session raised that are *not* Phase 2's to answer, recorded so th
 - **Claude Code's context accounting for local models is an estimate against an assumed 200k
   window.** LM Studio does not implement `count_tokens` and answers HTTP 200 with an error body.
   Harmless on a large-context model, silent truncation on a small one. Written up as
-  `EPD-002-token-counting-for-local-backends.md`; no decision taken.
+  `docs/epd/EPD-002-token-counting-for-local-backends.md`; no decision taken.
 - **Prompt-cache warmup probes cost 44% of local wall-clock time** — 40 calls returning zero content
   tokens, 20.0 of 45.5 minutes. Recorded in `CLAUDE.md` under the design decision it argues against,
   "No special case for background/auxiliary traffic".
