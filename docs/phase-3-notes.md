@@ -188,10 +188,47 @@ LM Studio being restarted without the user doing anything. Worth knowing before 
 belongs in the file, but a row count is not a turn count when a backend is down, and the retries are
 Claude Code's rather than the router's — nothing here retries anything.
 
+## The injected error event: measured, and Claude Code ignores it
+
+The other failure — a backend that dies *while answering* — was tested by pointing Claude Code at
+the verification router on 8799, whose backend was the stand-in that resets mid-answer. Claude Code
+said:
+
+```
+API Error: API returned an empty or malformed response (HTTP 200) — check for a proxy or gateway
+intercepting the request
+```
+
+**The first run of this test was inconclusive and the fault was the stand-in's.** Its `message_start`
+carried nothing but `usage` — no `id`, `role`, `model` or `content` — and its events mixed CRLF and
+LF framing. "Empty or malformed" was as likely a complaint about that as about anything the router
+did. The stand-in was rewritten to send the real sequence in the real shape (`message_start` with
+every field, `content_block_start`, `ping`, seven text deltas) and the test re-run. **Same message.**
+
+So the finding stands, and it is the one that matters:
+
+**Claude Code does not act on a mid-stream `error` event.** The comparison that makes this
+conclusive rather than suggestive is the 502 above, where it printed the router's own message
+verbatim — it *does* surface backend wording when it recognises an error. Here it printed its own
+generic line instead. It is reporting the absence of a completed message, which is what it would
+report if nothing had been injected at all.
+
+The event was kept regardless, deliberately, and `CLAUDE.md` now records why *and* records that it
+has no measured consumer. The honest summary of the decision taken earlier that day: **right in
+shape, wrong in effect.** Anthropic's documented error event is the correct thing to send; this
+particular client does not read it.
+
+Two things worth carrying forward from that:
+
+- **A design decision agreed from the shape of a protocol is not a measurement.** This one was
+  agreed in conversation, implemented, unit-tested, and verified by curl — and all of that
+  established only that the bytes were correct, never that anyone consumed them.
+- **The failure is not silent even so.** Claude Code's own message names the likely cause — "check
+  for a proxy or gateway intercepting the request" — which is exactly right when a proxy is what
+  broke. The user is not left staring at a stream that stopped.
+
 ## What is still not proven
 
-The dead-backend path is now measured end to end. **The injected SSE `error` event has not been seen
-in Claude Code** — that is the other failure, a backend that dies *while answering*, and the session
-above never reached it because the connection was refused before any reply started. It is verified
-against curl (above) and against tests, but what Claude Code renders for it, and whether that gets
-the same ten retries, is unmeasured.
+Nothing in Phase 3's "Done when" remains unmeasured. What is *not* known is how any harness other
+than Claude Code treats either error, which is a question for whenever the second one is attempted
+(see "Goal" in `CLAUDE.md`) and not for this phase.

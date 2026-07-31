@@ -36,12 +36,12 @@ four recorder defects that have since been fixed. The session is frozen in `phas
 **The branch was merged into `main` on 2026-07-31** as `4d7d7f6`, `--no-ff` by convention so the
 phase boundary stays visible in the history. Nothing from Phase 2 is outstanding.
 
-**Phase 3 is written and half verified, on `feat/phase-3-failure-handling`, not yet merged.** 147
-tests. Its central finding: **four of its five items were already built by Phase 2**, which was
-specified as observability and delivered most of the error handling as a by-product of needing an
-`error_status` column. The work was finding what that left — four gaps, all now closed — and
-verifying the phase's "Done when", which is where it stands: the failure behaviour is checked
-against a live server, and what Claude Code *displays* is not. Details in `phase-3-notes.md`.
+**Phase 3 is complete and verified on 2026-07-31, on `feat/phase-3-failure-handling`, not yet
+merged.** 147 tests. Its central finding: **four of its five items were already built by Phase 2**,
+which was specified as observability and delivered most of the error handling as a by-product of
+needing an `error_status` column. The work was finding what that left — four gaps, all closed — and
+measuring the phase's "Done when" against a live server and a real Claude Code session. Details in
+`phase-3-notes.md`.
 
 ## What we were doing when we stopped
 
@@ -51,10 +51,17 @@ dead-backend path is now measured in a real session: Claude Code shows the route
 one turn becomes up to ten `transport_error` rows. The display truncates the message from the right,
 which makes the order of that string a constraint rather than a preference.
 
-What is left is the *other* failure: **a backend that dies while answering**, which is what the
-injected SSE `error` event is for. It is verified against curl and against tests; what Claude Code
-renders for it is not. The session above never reached that path, because the connection was refused
-before any reply began.
+The other failure — **a backend that dies while answering** — was measured too, and the answer is
+the phase's most useful one: **Claude Code ignores the injected SSE `error` event.** It reports
+`empty or malformed response (HTTP 200)`, its own wording, where on a 502 it prints the router's
+message verbatim. So it never recognised the event; it is reporting the missing `message_stop`.
+
+The event was **kept anyway**, decided 2026-07-31 — Anthropic's documented shape, fifteen lines, one
+test, and other harnesses are planned. `CLAUDE.md` records it as a feature with **no measured
+consumer**, so nobody later mistakes it for something that solved a visible problem. If a second
+client also ignores it, delete it.
+
+The phase's "Done when" is now met in full. What remains is the `--no-ff` merge.
 
 One thing found and deliberately not acted on: **`make format` cannot be run safely.** It reformats
 twelve files, eight of them unrelated to any current work, because `pyproject.toml` sets no ruff

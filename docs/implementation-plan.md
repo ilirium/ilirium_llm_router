@@ -115,7 +115,7 @@ happened, and both files roll over correctly when the configured size is exceede
 
 ---
 
-## Phase 3 — Behaving well when things go wrong
+## Phase 3 — Behaving well when things go wrong — **done**
 
 **Goal.** Failures are understandable from the client side and are recorded accurately.
 
@@ -138,6 +138,17 @@ happened, and both files roll over correctly when the configured size is exceede
 
 **Done when.** Stopping LM Studio mid-session produces a clear message in Claude Code and a correct
 CSV row, and no failure mode leaves the service wedged.
+
+**Met on 2026-07-31**, with a correction to the plan itself: **four of the five items above were
+already written and tested**, because Phase 2 could not produce an `error_status` column without
+them. Phase 3's real work was the four gaps that left, and the verification — a live server for a
+dead backend, a stream cut off mid-answer and a caller that hung up, then a real Claude Code session
+for what the user sees. Full write-up in `phase-3-notes.md`.
+
+Two results not anticipated here. Claude Code **retries a 502 ten times with backoff**, so the
+status the router chose to *describe* a failure also decides whether the session recovers from it.
+And Claude Code **does not act on a mid-stream `error` event** — the one thing this phase added to
+the response stream is not read by the only client it has.
 
 ---
 
