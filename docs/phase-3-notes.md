@@ -109,17 +109,32 @@ The alternative — stay silent, let the CSV row be the only record — was reje
 visible to *us* and the failure happens to *the user*, mid-answer, with no indication that anything
 went wrong.
 
-### 2. `make format` disagrees with the whole codebase, and was not obeyed
+### 2. `make format` disagreed with the whole codebase — found here, fixed at the end of the phase
 
-Running `make format` reformatted **twelve files, eight of them untouched by this phase**. There is
-no `[tool.ruff]` section in `pyproject.toml`, so `ruff format` uses its default 88 columns while the
-codebase is written at ~100. `make lint` passes either way, because ruff's default rule set does not
-include line length.
+Running `make format` mid-phase reformatted **twelve files, eight of them untouched by this phase**.
+There is no `[tool.ruff]` section in `pyproject.toml`, so `ruff format` used its default 88 columns
+while the codebase is written at 100. `make lint` passed either way, because line length is `E501`
+and that is not in ruff's default rule set — so the two halves of the Makefile disagreed and only
+one of them ever ran.
 
-The reformatting was reverted rather than committed: unrelated churn in a phase branch hides the
-change it is supposed to show. **This is unresolved** — `make format` is currently a target that
-cannot be run safely, and the fix is one line (`[tool.ruff] line-length = 100`) plus one deliberate
-reformat commit of its own. Left for the repository owner to decide, since it touches every file.
+The reformatting was reverted at the time rather than committed, because unrelated churn in a phase
+branch hides the change it is supposed to show. **Fixed afterwards, deliberately and on its own:**
+`line-length = 100` in `pyproject.toml`, then one reformat commit covering the repository.
+
+100 is measured, not picked: the widest lines in the repository are 100 characters, and the twelve
+that exceed it are comments and docstrings, which `ruff format` does not rewrap.
+
+**How the reformat was checked, since "it only changes layout" is exactly the kind of claim that
+should not be taken on trust.** Every `.py` file's AST was dumped before and after and compared.
+Eighteen of nineteen were byte-identical after parsing. The nineteenth was a real change and a
+harmless one: a docstring in `test_logging_setup.py` began with a quote character —
+`""""Did the request arrive" …` — and ruff inserted a space after the opening triple quote to
+disambiguate the fourth, which alters the string's value by one leading space. Then the tests, the
+linter, `make check`, and a live request through the reformatted router, which answered the probe,
+returned the Anthropic-shaped 502 and wrote its row.
+
+`make format` is now idempotent: running it a second time reports nineteen files unchanged, which is
+what makes the target safe to run again.
 
 ## Verified against a running server, 2026-07-31
 

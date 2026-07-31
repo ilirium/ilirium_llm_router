@@ -63,12 +63,17 @@ client also ignores it, delete it.
 
 The phase's "Done when" is now met in full. What remains is the `--no-ff` merge.
 
-One thing found and deliberately not acted on: **`make format` cannot be run safely.** It reformats
-twelve files, eight of them unrelated to any current work, because `pyproject.toml` sets no ruff
-line length and the codebase is written at ~100 columns against ruff's default 88. `make lint`
-passes either way, since line length is not in ruff's default rule set. The fix is one line in
-`pyproject.toml` plus a deliberate whole-repo reformat commit; it touches every file, so it is the
-owner's call rather than something to slip into a phase branch.
+**`make format` is now safe to run**, which it was not when this phase started. `pyproject.toml` set
+no ruff line length, so the formatter used its default 88 columns against a codebase written at 100
+and rewrote every file it was pointed at — while `make lint` passed either way, because line length
+is `E501` and that is not in ruff's default rule set. Now `line-length = 100`, applied to the whole
+repository in one commit of its own, verified by comparing every file's AST before and after: 18 of
+19 identical, and the 19th a docstring that began with a quote character and gained a space. Details
+in `phase-3-notes.md`.
+
+One residual risk worth knowing: ruff is fetched on demand by `uvx` and is not pinned, so a future
+ruff release can still decide to format something differently. The line length is no longer the
+thing that would cause it.
 
 ### Earlier: Phase 2 step 6
 
