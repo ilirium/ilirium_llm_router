@@ -135,9 +135,22 @@ question 3 in that file may make the fork moot.
 Nothing there is blocking. The router forwards `count_tokens` correctly today and every session in
 `calls.csv` completed.
 
-One loose end, carried over and still not blocking: re-run the Test B curl showing its response body,
-to confirm the 429 was an ordinary subscription rate limit rather than something unexpected. The
-command is in `anthropic-auth-check.md`.
+The loose end carried here since Phase 1 — whether Test B's 429 was an ordinary subscription rate
+limit — is **mostly closed as of 2026-07-31**, and closing the rest needs no action.
+
+The step 6 session produced eight more Anthropic 429s. Their `error.type` was `rate_limit_error`:
+established by reconstruction rather than read directly, but pinned by the 429 status, a 114-byte
+body that only a 16-character type name can produce, and a recorded `error_message` of the literal
+word `Error`. A 429 at 08:34:32 followed by a 200 five seconds later corroborates it — a rejected
+credential does not recover in five seconds. Claude Code retried all eight successfully.
+
+Still unverified: the `anthropic-ratelimit-*` and `retry-after` headers, which the router never
+records — it tees response bodies, not headers. Only the Test B curl can settle that, and it needs
+the token.
+
+**Do not go looking.** The recorder now keeps the body's symbolic type, so the next 429 through the
+router writes `rate_limit_error: Error` into the CSV by itself — measured rather than reconstructed.
+The reasoning and the numbers are in `anthropic-auth-check.md`.
 
 ## About `log-the-whole-request.txt`
 

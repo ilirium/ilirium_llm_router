@@ -122,6 +122,39 @@ curl -sS -D- -o- https://api.anthropic.com/v1/messages \
 An `error.type` of `rate_limit_error` alongside `anthropic-ratelimit-*` or `retry-after` headers means
 the subscription's usage window was simply full at that moment.
 
+### Mostly answered on 2026-07-31, without re-running the curl
+
+The Phase 2 step 6 session produced **eight more 429s** from Anthropic
+(`phase-2-step-6-session/calls.csv`, rows 4, 6, 58, 61, 63, 73, 74, 85). They settle the `error.type`
+half of the question above; the header half is still open.
+
+**The type was `rate_limit_error`.** Not read directly — the recorder was discarding `error.type` at
+the time — but pinned by three measured facts:
+
+- Every one of the eight came back **HTTP 429**, and Anthropic's taxonomy maps 429 to
+  `rate_limit_error` (403 is `permission_error`, 529 is `overloaded_error`).
+- Every one returned a **114-byte** body. Reconstructing Anthropic's error envelope, only a
+  16-character type name yields exactly 114 bytes with a `message` of `Error`. Three types are 16
+  characters — `rate_limit_error`, `overloaded_error`, `permission_error` — and the other two belong
+  to different status codes. The method was checked against a live 401 on the same day, which it
+  reproduced at exactly 141 bytes.
+- `error_message` recorded the literal word **`Error`**, so the body did carry an `error` object with
+  a `message`, and its wording is Anthropic's own rather than a truncation by the router.
+
+Two things corroborate it independently of the reconstruction. A 429 at 08:34:32 was followed by a
+**200 five seconds later** on the same session — a scoped-away or rejected credential does not
+recover in five seconds, but a full usage window does. And Claude Code retried all eight
+successfully; the session never noticed.
+
+**Still unverified: the headers.** `anthropic-ratelimit-*` and `retry-after` are absent from the
+evidence because the router records response *bodies* by tee and never response headers. Only the
+curl above can settle that, and it needs the token.
+
+**It will confirm itself from here.** As of 2026-07-31 the recorder keeps the body's symbolic type,
+writing `error_message` as `type: message`. The next 429 through the router lands in the CSV as
+`rate_limit_error: Error` — measured rather than reconstructed, with no curl and no credential
+handling. Watch for it rather than going looking.
+
 ### What this means in practice
 
 Set Claude Code's `ANTHROPIC_AUTH_TOKEN` to the real credential, point `ANTHROPIC_BASE_URL` at the
