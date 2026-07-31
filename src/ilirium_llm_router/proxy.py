@@ -19,7 +19,10 @@ shape") for the captured request they came from.
 
 from __future__ import annotations
 
+import asyncio
 import json
+import logging
+from collections.abc import AsyncIterator
 from dataclasses import dataclass
 
 import httpx
@@ -28,7 +31,11 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response, StreamingResponse
 
 from .config import Backend, Config
+from .observe import Call, Scanner, scanner_for, transport_error_code
 from .routing import BackendName, backend_for_model
+from .stats import StatsWriter
+
+logger = logging.getLogger(__name__)
 
 # Headers describing the connection we arrived on rather than the message. The HTTP client sets its
 # own; letting these through makes requests fail in confusing ways.
@@ -79,20 +86,39 @@ class Proxy:
     config: Config
     client: httpx.AsyncClient
     api_keys: dict[str, str]
+    stats: StatsWriter
+
+    async def begin(self, request: Request) -> tuple[Call, bytes, Peeked]:
+        """What both entry points do before routing: start the clocks, read the body, peek at it.
+
+        `Call` is built first, so both clocks start when the request arrived rather than after the
+        body has been read — a 118 KB body is not free.
+        """
+        call = Call(request)
+        body = await request.body()
+        call.request_bytes = len(body)
+        peeked = peek(body)
+        call.model = peeked.model or ""
+        call.stream = peeked.stream
+        return call, body, peeked
 
     async def messages(self, request: Request) -> Response:
         """`POST /v1/messages` — the call that names a model, so routing is decided from the body."""
-        body = await request.body()
-        model = peek_model(body)
-        if model is None:
+        call, body, peeked = await self.begin(request)
+
+        if peeked.model is None:
+            # Refused before any backend was chosen, so `backend` stays empty. It still gets a row:
+            # a call the router turned away is a call, and a silent gap is worse than blanks.
+            call.failed("http_error", "400", "The request body carries no 'model' field.")
+            self.record(call)
             return error_response(
                 400,
                 "invalid_request_error",
                 "The request body carries no 'model' field, so there is no way to tell which "
                 "backend it belongs to.",
             )
-        name, backend = backend_for_model(model, self.config.backends)
-        return await self.relay(request, body, name, backend)
+        name, backend = backend_for_model(peeked.model, self.config.backends)
+        return await self.relay(request, call, body, name, backend)
 
     async def anything_else(self, request: Request) -> Response:
         """Any path we did not anticipate.
@@ -101,19 +127,25 @@ class Proxy:
         there is nothing to route on, and Claude Code believes it is talking to Anthropic, so that
         is where such a request goes.
         """
-        body = await request.body()
-        model = peek_model(body)
-        if model is None:
+        call, body, peeked = await self.begin(request)
+
+        if peeked.model is None:
             name: BackendName = "anthropic"
             backend = self.config.backends.anthropic
         else:
-            name, backend = backend_for_model(model, self.config.backends)
-        return await self.relay(request, body, name, backend)
+            name, backend = backend_for_model(peeked.model, self.config.backends)
+        return await self.relay(request, call, body, name, backend)
 
     async def relay(
-        self, request: Request, body: bytes, name: BackendName, backend: Backend
+        self,
+        request: Request,
+        call: Call,
+        body: bytes,
+        name: BackendName,
+        backend: Backend,
     ) -> Response:
         """Send `body` to `backend` unchanged and stream the reply back as it arrives."""
+        call.backend = name
         outgoing = self.client.build_request(
             request.method,
             target_url(backend.base_url, request),
@@ -123,6 +155,14 @@ class Proxy:
         try:
             reply = await self.client.send(outgoing, stream=True)
         except httpx.HTTPError as exc:
+            # No HTTP status ever existed here, so a symbolic code stands in for one. LM Studio not
+            # running is the common failure, and it lands as `connect_error`.
+            call.failed(
+                "transport_error",
+                transport_error_code(exc),
+                f"{type(exc).__name__}: {exc}",
+            )
+            self.record(call)
             return error_response(
                 502,
                 "api_error",
@@ -130,8 +170,13 @@ class Proxy:
                 f"{type(exc).__name__}: {exc}",
             )
 
+        if reply.status_code >= 400:
+            # The status is known now; the backend's own wording, if it sends any, is picked up off
+            # the tee and filled in when the row is written.
+            call.failed("http_error", str(reply.status_code), "")
+
         relayed = StreamingResponse(
-            reply.aiter_raw(),
+            self.watch(reply, call),
             status_code=reply.status_code,
             background=BackgroundTask(reply.aclose),
         )
@@ -139,21 +184,115 @@ class Proxy:
         relayed.raw_headers = response_headers(reply)
         return relayed
 
+    async def watch(self, reply: httpx.Response, call: Call) -> AsyncIterator[bytes]:
+        """Relay the reply's bytes untouched while reading a copy of each one.
 
-def peek_model(body: bytes) -> str | None:
-    """Return the model named in the request body, or None if there is not one.
+        The chunk is yielded exactly as it arrived; the scanner only ever sees a reference to the
+        same bytes. Nothing in here can change what the caller receives, and every failure is
+        recorded rather than raised — except the client going away, which has to propagate.
+        """
+        scanner = scanner_for(reply.headers.get("content-type", ""))
+        try:
+            async for chunk in reply.aiter_raw():
+                call.saw_bytes(len(chunk))
+                scanner.feed(chunk)
+                yield chunk
+        except (asyncio.CancelledError, GeneratorExit):
+            # Neither a success nor a backend failure — the reply was fine and nobody was left to
+            # read it. This is the case the old `is_error` boolean could not express.
+            call.failed(
+                "client_disconnect",
+                "client_disconnect",
+                "The caller went away before the reply finished.",
+            )
+            raise
+        except httpx.HTTPError as exc:
+            # The status line already went out as 200, so this cannot be reported to the caller.
+            # The row is the only place it is visible.
+            call.failed(
+                "transport_error",
+                transport_error_code(exc),
+                f"{type(exc).__name__}: {exc}",
+            )
+        finally:
+            scanner.finish()
+            self.record(call, scanner)
+
+    def record(self, call: Call, scanner: Scanner | None = None) -> None:
+        """Write the row and the log line. Never raises: telemetry does not get to break a call."""
+        try:
+            row = call.record(scanner.observation if scanner else None)
+            self.stats.write(row)
+            # The log line is read from the finished row rather than measured again, so the two
+            # traces of one call can never disagree about how long it took.
+            outcome = (
+                "ok"
+                if row.error_status == "ok"
+                else f"{row.error_status} {row.error_code}".strip()
+            )
+            logger.info(
+                "%s  %s → %s  %s  %d ms, %d bytes",
+                row.path,
+                row.model or "(no model)",
+                row.backend or "(unrouted)",
+                outcome,
+                row.duration_ms,
+                row.response_bytes,
+            )
+        except Exception as exc:  # noqa: BLE001 — telemetry must never break a call
+            logger.warning("Could not record a call: %s: %s", type(exc).__name__, exc)
+
+
+@dataclass(frozen=True)
+class Peeked:
+    """The two body fields the router looks at. Both `None` when the body is not usable JSON."""
+
+    model: str | None
+    stream: bool | None
+
+
+def peek(body: bytes) -> Peeked:
+    """Return the model and stream flag named in the request body.
 
     The body is read here, never rewritten: the original bytes are what gets forwarded, so the
     prompt-cache prefix stays byte-identical whatever this function does with its copy.
+
+    `stream` comes out of the same parse as `model`, which is why it costs nothing to record. It is
+    not what picks the scanner — the response content-type does that — so the column's real use is
+    diagnosing the recorder rather than the call: empty token columns with `stream` true means the
+    SSE path came up empty, empty with `stream` false means the buffered one did.
+
+    That diagnosis only works if `false` is written as `false`. **An absent `stream` is a
+    non-streaming request**, since the API defaults it to false and Claude Code omits the field
+    rather than sending it — measured on 2026-07-31, where every non-streaming row in
+    `docs/phase-2-step-6-session/calls.csv` has the column blank. Reading absence as unknown left 83
+    of 142 rows saying nothing, and left an empty cell meaning two different things.
+
+    So an empty cell now means only what it should: the body never parsed, or it said something
+    about `stream` that was not a boolean.
     """
     try:
         payload = json.loads(body)
     except (ValueError, UnicodeDecodeError):
-        return None
+        return Peeked(None, None)
     if not isinstance(payload, dict):
-        return None
+        return Peeked(None, None)
+
     model = payload.get("model")
-    return model if isinstance(model, str) and model else None
+    stream = payload.get("stream")
+    if stream is None:
+        streaming: bool | None = False
+    elif isinstance(stream, bool):
+        streaming = stream
+    else:
+        # Present but not a boolean. The backend will make its own judgement; this column declines
+        # to guess, which is what the empty cell is for.
+        streaming = None
+
+    return Peeked(
+        model=model if isinstance(model, str) and model else None,
+        stream=streaming,
+    )
 
 
 def target_url(base_url: str, request: Request) -> httpx.URL:

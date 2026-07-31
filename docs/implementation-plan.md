@@ -87,14 +87,23 @@ file that can be opened in a spreadsheet and compared across models.
 **Work.**
 
 - Log each call with the time, the model, the chosen backend, the outcome and how long it took.
-- Write one CSV row per call with the columns listed in `CLAUDE.md`: timestamp, backend, model,
-  input tokens, output tokens, cached input tokens, request size in bytes, duration, whether it
-  failed, and if so the error code and a short description.
+- Write one CSV row per call with the columns listed in `CLAUDE.md`: timestamp, session and agent
+  identifiers, backend, model, request path, whether streaming was asked for, input tokens, output
+  tokens, cached input tokens read and written, why the reply stopped, request and response sizes in
+  bytes, time to first byte, total duration, how the call ended and — when it did not end well — the
+  error code and a short description, and the router's own version.
+- Copy the session and agent identifiers straight off the request headers. Both are free — a header
+  lookup, no body parsing — and the agent one is the only thing that distinguishes a subagent's call
+  from the main conversation's. That matters because the two are expected to run on *different*
+  models, which is what `EPD-001-model-selection-and-mixed-model-sessions.md` is about; without the
+  column such a session records as an indistinguishable pile of rows. Cheap to write while building
+  the writer, tedious to retrofit into a working one.
 - Get the token counts by watching the reply as it passes through, rather than by taking it apart.
   The reply carries a usage report; we read a copy of the bytes on their way past and pick the
   numbers out of it. The bytes going to Claude Code are untouched.
 - If the usage numbers cannot be found, leave those columns empty and still write the row. The raw
-  request size is always available, so a row is never useless.
+  request and response sizes are always available, so a row is never useless — and recording whether
+  streaming was asked for says which of the two extraction paths was the one that came up empty.
 - Rotate both files when they grow past the size set in the configuration. When the CSV rotates,
   write the header row again at the top of the new file, otherwise the older files cannot be opened
   on their own.
@@ -121,7 +130,9 @@ happened, and both files roll over correctly when the configured size is exceede
   before any content exists, so an error can arrive afterwards. Watch the passing bytes for it
   instead of trusting the initial status.
 - Handle Claude Code disconnecting halfway through. Close the upstream connection and record the
-  call as incomplete rather than silently losing it.
+  call as incomplete rather than silently losing it — `error_status: client_disconnect`, which is the
+  case the old boolean could not express, since an abandoned call is neither a success nor a backend
+  failure.
 - Pass through backend error responses unchanged, so a real Anthropic error message reaches the user
   intact rather than being replaced by one of ours.
 
@@ -192,8 +203,10 @@ body untouched rather than parse and rebuild it.
 memory. Keep only a small working buffer, take the numbers out as they appear, and discard the rest.
 
 **Measuring duration.** Time the call until the reply has finished arriving, not until the first byte.
-Recording time to first byte as well is cheap and is arguably the more interesting number when
-comparing a local model against a cloud one.
+Time to first byte is recorded as well, in its own column, and is arguably the more interesting number
+when comparing a local model against a cloud one. Both clocks start when the request arrives, so the
+two numbers read directly rather than needing subtraction. Until 2026-07-30 this paragraph asked for
+time to first byte while the column list had nowhere to put it; that gap is now closed.
 
 **Rotation and CSV headers.** Rotation renames files behind the writer's back. The new file starts
 empty and needs its header row written before the first data row.

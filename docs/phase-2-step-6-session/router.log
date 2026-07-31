@@ -1,0 +1,313 @@
+2026-07-31 11:20:40,140  INFO     Router 0.1.0 starting on 127.0.0.1:8787
+2026-07-31 11:20:40,203  INFO     Started server process [68189]
+2026-07-31 11:20:40,203  INFO     Waiting for application startup.
+2026-07-31 11:20:40,236  INFO     Application startup complete.
+2026-07-31 11:20:40,238  INFO     Uvicorn running on http://127.0.0.1:8787 (Press CTRL+C to quit)
+2026-07-31 11:21:00,876  INFO     127.0.0.1:55961 - "HEAD / HTTP/1.1" 200
+2026-07-31 11:21:15,149  INFO     127.0.0.1:55962 - "POST /v1/messages HTTP/1.1" 200
+2026-07-31 11:21:19,680  INFO     /v1/messages  <your-lmstudio-id> → lmstudio  client_disconnect client_disconnect  4596 ms, 0 bytes
+2026-07-31 11:21:39,762  INFO     127.0.0.1:55968 - "POST /v1/messages HTTP/1.1" 200
+2026-07-31 11:21:42,736  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  2993 ms, 1992 bytes
+2026-07-31 11:29:21,125  INFO     127.0.0.1:56052 - "HEAD / HTTP/1.1" 200
+2026-07-31 11:29:22,689  INFO     127.0.0.1:56060 - "POST /v1/messages?beta=true HTTP/1.1" 429
+2026-07-31 11:29:22,694  INFO     /v1/messages  claude-sonnet-5 → anthropic  http_error 429  798 ms, 114 bytes
+2026-07-31 11:30:46,984  INFO     127.0.0.1:56064 - "HEAD / HTTP/1.1" 200
+2026-07-31 11:30:50,011  INFO     127.0.0.1:56066 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:30:50,012  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  2905 ms, 284 bytes
+2026-07-31 11:34:32,260  INFO     127.0.0.1:56093 - "HEAD / HTTP/1.1" 200
+2026-07-31 11:34:33,061  INFO     127.0.0.1:56095 - "POST /v1/messages?beta=true HTTP/1.1" 429
+2026-07-31 11:34:33,062  INFO     /v1/messages  claude-sonnet-5 → anthropic  http_error 429  693 ms, 114 bytes
+2026-07-31 11:34:39,945  INFO     127.0.0.1:56095 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:34:41,194  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  4000 ms, 1643 bytes
+2026-07-31 11:35:06,440  INFO     127.0.0.1:56105 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:35:06,603  INFO     127.0.0.1:56106 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:35:07,587  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  2238 ms, 1602 bytes
+2026-07-31 11:35:12,377  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  7027 ms, 5060 bytes
+2026-07-31 11:35:13,757  INFO     127.0.0.1:56105 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:35:14,475  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  2086 ms, 1617 bytes
+2026-07-31 11:35:46,614  INFO     127.0.0.1:56109 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:35:48,595  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  6381 ms, 5899 bytes
+2026-07-31 11:35:50,729  INFO     127.0.0.1:56109 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:35:53,238  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  3954 ms, 25086 bytes
+2026-07-31 11:35:57,336  INFO     127.0.0.1:56109 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:35:57,574  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  1525 ms, 1642 bytes
+2026-07-31 11:35:58,505  INFO     127.0.0.1:56109 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:35:59,263  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  1682 ms, 1648 bytes
+2026-07-31 11:36:16,165  INFO     127.0.0.1:56112 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:36:17,742  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  4052 ms, 5025 bytes
+2026-07-31 11:36:21,222  INFO     127.0.0.1:56112 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:36:23,499  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  3158 ms, 2808 bytes
+2026-07-31 11:36:24,306  INFO     127.0.0.1:56112 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:36:24,998  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  1490 ms, 1645 bytes
+2026-07-31 11:36:55,006  INFO     127.0.0.1:56125 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:36:55,629  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  2605 ms, 5486 bytes
+2026-07-31 11:36:59,451  INFO     127.0.0.1:56125 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:36:59,644  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  2040 ms, 1643 bytes
+2026-07-31 11:37:00,544  INFO     127.0.0.1:56125 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:37:01,359  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  1706 ms, 1645 bytes
+2026-07-31 11:39:29,792  INFO     127.0.0.1:56165 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:39:29,793  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  2614 ms, 286 bytes
+2026-07-31 11:40:05,170  INFO     127.0.0.1:56170 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:44:17,807  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  252669 ms, 10891 bytes
+2026-07-31 11:45:28,178  INFO     127.0.0.1:56240 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:46:41,669  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  73598 ms, 41288 bytes
+2026-07-31 11:46:47,339  INFO     127.0.0.1:56265 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,354  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  198 ms, 85 bytes
+2026-07-31 11:46:47,354  INFO     127.0.0.1:56267 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,355  INFO     127.0.0.1:56266 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,355  INFO     127.0.0.1:56268 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,355  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  189 ms, 85 bytes
+2026-07-31 11:46:47,356  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  193 ms, 85 bytes
+2026-07-31 11:46:47,356  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  184 ms, 85 bytes
+2026-07-31 11:46:47,356  INFO     127.0.0.1:56269 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,357  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  177 ms, 85 bytes
+2026-07-31 11:46:47,357  INFO     127.0.0.1:56270 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,357  INFO     127.0.0.1:56271 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,358  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  177 ms, 85 bytes
+2026-07-31 11:46:47,358  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  176 ms, 85 bytes
+2026-07-31 11:46:47,361  INFO     127.0.0.1:56272 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,361  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  163 ms, 85 bytes
+2026-07-31 11:46:47,370  INFO     127.0.0.1:56273 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,370  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  171 ms, 85 bytes
+2026-07-31 11:46:47,371  INFO     127.0.0.1:56274 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,371  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  171 ms, 85 bytes
+2026-07-31 11:46:47,372  INFO     127.0.0.1:56275 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,372  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  171 ms, 85 bytes
+2026-07-31 11:46:47,393  INFO     127.0.0.1:56276 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,395  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  191 ms, 85 bytes
+2026-07-31 11:46:47,453  INFO     127.0.0.1:56277 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,454  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  250 ms, 85 bytes
+2026-07-31 11:46:47,512  INFO     127.0.0.1:56278 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:46:47,512  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  307 ms, 85 bytes
+2026-07-31 11:46:50,567  INFO     127.0.0.1:56267 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:46:50,568  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  3190 ms, 285 bytes
+2026-07-31 11:46:52,289  INFO     127.0.0.1:56273 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:46:52,292  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  4905 ms, 287 bytes
+2026-07-31 11:46:53,295  INFO     127.0.0.1:56269 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:46:53,297  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  5917 ms, 287 bytes
+2026-07-31 11:46:59,086  INFO     127.0.0.1:56272 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:46:59,087  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  11699 ms, 286 bytes
+2026-07-31 11:46:59,858  INFO     127.0.0.1:56275 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:46:59,859  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  12472 ms, 285 bytes
+2026-07-31 11:47:01,091  INFO     127.0.0.1:56268 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:47:01,091  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  13713 ms, 287 bytes
+2026-07-31 11:47:01,860  INFO     127.0.0.1:56274 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:47:01,862  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  14475 ms, 286 bytes
+2026-07-31 11:47:05,398  INFO     127.0.0.1:56270 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:47:05,398  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  18018 ms, 287 bytes
+2026-07-31 11:47:57,761  INFO     127.0.0.1:56276 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:47:57,767  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  70370 ms, 286 bytes
+2026-07-31 11:47:58,258  INFO     127.0.0.1:56266 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:47:58,260  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  70882 ms, 285 bytes
+2026-07-31 11:48:00,856  INFO     127.0.0.1:56271 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:48:00,858  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  73474 ms, 286 bytes
+2026-07-31 11:48:02,799  INFO     127.0.0.1:56265 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:48:02,803  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  75417 ms, 288 bytes
+2026-07-31 11:48:06,754  INFO     127.0.0.1:56277 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:48:06,756  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  79302 ms, 287 bytes
+2026-07-31 11:48:30,905  INFO     127.0.0.1:56278 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:48:30,912  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  103395 ms, 291 bytes
+2026-07-31 11:48:30,998  INFO     127.0.0.1:56278 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:48:30,998  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  10 ms, 85 bytes
+2026-07-31 11:49:57,451  INFO     127.0.0.1:56278 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:49:57,457  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  86454 ms, 288 bytes
+2026-07-31 11:49:57,529  INFO     127.0.0.1:56278 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:49:57,529  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  7 ms, 85 bytes
+2026-07-31 11:49:58,414  INFO     127.0.0.1:56278 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:49:58,417  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  885 ms, 289 bytes
+2026-07-31 11:50:22,187  INFO     127.0.0.1:56354 - "HEAD / HTTP/1.1" 200
+2026-07-31 11:50:22,254  INFO     127.0.0.1:56355 - "HEAD / HTTP/1.1" 200
+2026-07-31 11:50:22,765  INFO     127.0.0.1:56358 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:50:22,765  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  449 ms, 286 bytes
+2026-07-31 11:50:23,066  INFO     127.0.0.1:56363 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:50:23,066  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  714 ms, 285 bytes
+2026-07-31 11:52:43,453  INFO     127.0.0.1:56399 - "HEAD / HTTP/1.1" 200
+2026-07-31 11:52:44,559  INFO     127.0.0.1:56401 - "POST /v1/messages?beta=true HTTP/1.1" 429
+2026-07-31 11:52:44,561  INFO     /v1/messages  claude-sonnet-5 → anthropic  http_error 429  966 ms, 114 bytes
+2026-07-31 11:52:45,689  INFO     127.0.0.1:56410 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:52:58,465  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  14518 ms, 33903 bytes
+2026-07-31 11:52:59,556  INFO     127.0.0.1:56410 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:53:00,657  INFO     127.0.0.1:56413 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:53:01,333  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  2848 ms, 1919 bytes
+2026-07-31 11:53:01,779  INFO     127.0.0.1:56413 - "POST /v1/messages?beta=true HTTP/1.1" 429
+2026-07-31 11:53:01,782  INFO     /v1/messages  claude-sonnet-5 → anthropic  http_error 429  435 ms, 114 bytes
+2026-07-31 11:53:02,233  INFO     /v1/messages  claude-haiku-4-5-20251001 → anthropic  ok  3752 ms, 6753 bytes
+2026-07-31 11:53:02,272  INFO     127.0.0.1:56413 - "POST /v1/messages?beta=true HTTP/1.1" 429
+2026-07-31 11:53:02,273  INFO     /v1/messages  claude-sonnet-5 → anthropic  http_error 429  477 ms, 114 bytes
+2026-07-31 11:53:04,161  INFO     127.0.0.1:56416 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:53:04,741  INFO     127.0.0.1:56410 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:53:05,648  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  3429 ms, 1854 bytes
+2026-07-31 11:53:17,917  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  14233 ms, 9230 bytes
+2026-07-31 11:53:19,379  INFO     127.0.0.1:56410 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:53:21,756  INFO     /v1/messages  claude-haiku-4-5-20251001 → anthropic  ok  3781 ms, 10639 bytes
+2026-07-31 11:53:24,360  INFO     127.0.0.1:56410 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:53:25,812  INFO     127.0.0.1:56421 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:53:26,084  INFO     /v1/messages  claude-haiku-4-5-20251001 → anthropic  ok  2685 ms, 6227 bytes
+2026-07-31 11:53:27,050  INFO     127.0.0.1:56410 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:53:28,400  INFO     /v1/messages  claude-haiku-4-5-20251001 → anthropic  ok  2313 ms, 7520 bytes
+2026-07-31 11:53:28,684  INFO     127.0.0.1:56410 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 11:53:28,685  INFO     /v1/messages/count_tokens  claude-sonnet-5 → anthropic  ok  279 ms, 22 bytes
+2026-07-31 11:53:29,539  INFO     127.0.0.1:56424 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:53:29,884  INFO     127.0.0.1:56410 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:53:33,449  INFO     /v1/messages  claude-haiku-4-5-20251001 → anthropic  ok  4963 ms, 4160 bytes
+2026-07-31 11:53:44,969  INFO     /v1/messages  claude-haiku-4-5-20251001 → anthropic  ok  16226 ms, 14686 bytes
+2026-07-31 11:53:47,800  INFO     127.0.0.1:56410 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:53:58,753  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  12771 ms, 7933 bytes
+2026-07-31 11:54:01,940  INFO     127.0.0.1:56410 - "POST /v1/messages?beta=true HTTP/1.1" 429
+2026-07-31 11:54:01,952  INFO     /v1/messages  claude-sonnet-5 → anthropic  http_error 429  452 ms, 114 bytes
+2026-07-31 11:54:02,379  INFO     127.0.0.1:56410 - "POST /v1/messages?beta=true HTTP/1.1" 429
+2026-07-31 11:54:02,381  INFO     /v1/messages  claude-sonnet-5 → anthropic  http_error 429  313 ms, 114 bytes
+2026-07-31 11:55:11,101  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  105267 ms, 65771 bytes
+2026-07-31 11:55:44,644  INFO     127.0.0.1:56421 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:55:44,650  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  33366 ms, 596 bytes
+2026-07-31 11:55:45,217  INFO     127.0.0.1:56421 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:55:56,884  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  11730 ms, 10463 bytes
+2026-07-31 11:57:25,804  INFO     127.0.0.1:56439 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 11:57:27,481  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  4323 ms, 1910 bytes
+2026-07-31 12:00:57,946  INFO     127.0.0.1:56499 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:01:27,078  INFO     127.0.0.1:56503 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:01:49,684  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  client_disconnect client_disconnect  51909 ms, 10027 bytes
+2026-07-31 12:01:54,185  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  client_disconnect client_disconnect  27211 ms, 0 bytes
+2026-07-31 12:02:43,436  INFO     127.0.0.1:56512 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:02:45,837  INFO     /v1/messages  claude-sonnet-5 → anthropic  client_disconnect client_disconnect  3890 ms, 994 bytes
+2026-07-31 12:03:24,389  INFO     127.0.0.1:56527 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:03:29,243  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  6663 ms, 7580 bytes
+2026-07-31 12:03:31,444  INFO     127.0.0.1:56527 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:03:43,091  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  13398 ms, 87457 bytes
+2026-07-31 12:03:53,550  INFO     127.0.0.1:56527 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:03:54,536  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  8161 ms, 2110 bytes
+2026-07-31 12:03:55,094  INFO     127.0.0.1:56543 - "POST /v1/messages?beta=true HTTP/1.1" 429
+2026-07-31 12:03:55,096  INFO     /v1/messages  claude-sonnet-5 → anthropic  http_error 429  498 ms, 114 bytes
+2026-07-31 12:03:55,843  INFO     127.0.0.1:56527 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:03:56,567  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  1972 ms, 1621 bytes
+2026-07-31 12:04:03,152  INFO     127.0.0.1:56545 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:04:05,312  INFO     127.0.0.1:56548 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:04:44,484  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  41496 ms, 9569 bytes
+2026-07-31 12:05:46,393  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  101140 ms, 8484 bytes
+2026-07-31 12:05:57,341  INFO     127.0.0.1:56574 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:06:03,235  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  5939 ms, 6705 bytes
+2026-07-31 12:06:57,147  INFO     127.0.0.1:56578 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:06:59,576  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  4652 ms, 2037 bytes
+2026-07-31 12:07:20,908  INFO     127.0.0.1:56581 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:07:28,232  INFO     127.0.0.1:56585 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:07:30,242  INFO     /v1/messages  claude-sonnet-5 → anthropic  ok  3771 ms, 2052 bytes
+2026-07-31 12:07:32,153  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  client_disconnect client_disconnect  11360 ms, 0 bytes
+2026-07-31 12:08:01,220  INFO     Shutting down
+2026-07-31 12:08:01,340  INFO     Waiting for application shutdown.
+2026-07-31 12:08:01,356  INFO     Application shutdown complete.
+2026-07-31 12:08:01,357  INFO     Finished server process [68189]
+2026-07-31 12:13:34,577  INFO     Router 0.1.0 starting on 127.0.0.1:8787
+2026-07-31 12:13:34,623  INFO     Started server process [72642]
+2026-07-31 12:13:34,624  INFO     Waiting for application startup.
+2026-07-31 12:13:34,662  INFO     Application startup complete.
+2026-07-31 12:13:34,664  INFO     Uvicorn running on http://127.0.0.1:8787 (Press CTRL+C to quit)
+2026-07-31 12:13:39,656  INFO     127.0.0.1:56692 - "HEAD / HTTP/1.1" 200
+2026-07-31 12:13:47,382  INFO     127.0.0.1:56693 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:13:47,384  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  7614 ms, 287 bytes
+2026-07-31 12:14:10,874  INFO     127.0.0.1:56705 - "HEAD / HTTP/1.1" 200
+2026-07-31 12:14:11,428  INFO     127.0.0.1:56707 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:14:11,429  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  440 ms, 285 bytes
+2026-07-31 12:15:13,088  INFO     127.0.0.1:56730 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:16:39,994  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  86913 ms, 17182 bytes
+2026-07-31 12:16:47,707  INFO     127.0.0.1:56736 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:18:14,486  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  86836 ms, 62862 bytes
+2026-07-31 12:19:03,173  INFO     127.0.0.1:56772 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:19:08,649  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  5507 ms, 3375 bytes
+2026-07-31 12:19:13,940  INFO     127.0.0.1:56775 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:19:20,818  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  6897 ms, 16544 bytes
+2026-07-31 12:20:04,949  INFO     127.0.0.1:56789 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:20:37,339  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  32397 ms, 5130 bytes
+2026-07-31 12:20:37,607  INFO     127.0.0.1:56789 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:20:44,948  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  7388 ms, 17213 bytes
+2026-07-31 12:21:04,977  INFO     127.0.0.1:56836 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:21:30,181  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  25221 ms, 7533 bytes
+2026-07-31 12:21:30,289  INFO     127.0.0.1:56836 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:22:38,290  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  68029 ms, 28709 bytes
+2026-07-31 12:23:16,288  INFO     127.0.0.1:56841 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:24:27,135  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  70913 ms, 79002 bytes
+2026-07-31 12:26:35,663  INFO     127.0.0.1:56855 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:26:49,689  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  client_disconnect client_disconnect  14044 ms, 4406 bytes
+2026-07-31 12:26:51,419  INFO     127.0.0.1:56872 - "HEAD / HTTP/1.1" 200
+2026-07-31 12:26:51,546  INFO     127.0.0.1:56874 - "HEAD / HTTP/1.1" 200
+2026-07-31 12:26:52,034  INFO     127.0.0.1:56896 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:26:52,162  INFO     127.0.0.1:56875 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:26:52,163  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  609 ms, 286 bytes
+2026-07-31 12:26:52,484  INFO     127.0.0.1:56881 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:26:52,485  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  765 ms, 286 bytes
+2026-07-31 12:30:45,449  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  233429 ms, 7654 bytes
+2026-07-31 12:30:45,607  INFO     127.0.0.1:56896 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:32:27,290  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  101722 ms, 3558 bytes
+2026-07-31 12:32:29,991  INFO     127.0.0.1:56896 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:32:34,467  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  4550 ms, 8091 bytes
+2026-07-31 12:33:07,477  INFO     127.0.0.1:56896 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:33:07,482  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  32892 ms, 501 bytes
+2026-07-31 12:33:07,746  INFO     127.0.0.1:56896 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:33:35,503  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  27777 ms, 11753 bytes
+2026-07-31 12:35:00,336  INFO     127.0.0.1:56982 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,337  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  93 ms, 85 bytes
+2026-07-31 12:35:00,339  INFO     127.0.0.1:56981 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,340  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  112 ms, 85 bytes
+2026-07-31 12:35:00,341  INFO     127.0.0.1:56983 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,342  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  96 ms, 85 bytes
+2026-07-31 12:35:00,342  INFO     127.0.0.1:56984 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,343  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  96 ms, 85 bytes
+2026-07-31 12:35:00,343  INFO     127.0.0.1:56985 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,344  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  96 ms, 85 bytes
+2026-07-31 12:35:00,345  INFO     127.0.0.1:56986 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,346  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  96 ms, 85 bytes
+2026-07-31 12:35:00,497  INFO     127.0.0.1:56987 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,497  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  244 ms, 85 bytes
+2026-07-31 12:35:00,558  INFO     127.0.0.1:56988 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,559  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  304 ms, 85 bytes
+2026-07-31 12:35:00,559  INFO     127.0.0.1:56990 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,560  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  301 ms, 85 bytes
+2026-07-31 12:35:00,561  INFO     127.0.0.1:56989 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,562  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  305 ms, 85 bytes
+2026-07-31 12:35:00,562  INFO     127.0.0.1:56991 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,563  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  303 ms, 85 bytes
+2026-07-31 12:35:00,592  INFO     127.0.0.1:56992 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,593  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  332 ms, 85 bytes
+2026-07-31 12:35:00,614  INFO     127.0.0.1:56993 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,614  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  351 ms, 85 bytes
+2026-07-31 12:35:00,641  INFO     127.0.0.1:56994 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:35:00,642  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  376 ms, 85 bytes
+2026-07-31 12:35:06,311  INFO     127.0.0.1:56982 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:35:06,312  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  5972 ms, 285 bytes
+2026-07-31 12:35:08,277  INFO     127.0.0.1:56981 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:35:08,278  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  7937 ms, 287 bytes
+2026-07-31 12:35:10,682  INFO     127.0.0.1:56987 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:35:10,685  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  10186 ms, 287 bytes
+2026-07-31 12:35:11,469  INFO     127.0.0.1:56983 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:35:11,470  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  11126 ms, 286 bytes
+2026-07-31 12:35:12,474  INFO     127.0.0.1:56985 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:35:12,475  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  12128 ms, 287 bytes
+2026-07-31 12:35:13,706  INFO     127.0.0.1:56984 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:35:13,707  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  13362 ms, 287 bytes
+2026-07-31 12:35:17,249  INFO     127.0.0.1:56986 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:35:17,250  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  16902 ms, 286 bytes
+2026-07-31 12:35:18,720  INFO     127.0.0.1:56988 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:35:18,723  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  18162 ms, 287 bytes
+2026-07-31 12:35:19,488  INFO     127.0.0.1:56990 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:35:19,488  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  18927 ms, 286 bytes
+2026-07-31 12:35:20,256  INFO     127.0.0.1:56989 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:35:20,259  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  19695 ms, 285 bytes
+2026-07-31 12:35:26,053  INFO     127.0.0.1:56991 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:35:26,056  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  25492 ms, 287 bytes
+2026-07-31 12:36:18,213  INFO     127.0.0.1:56992 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:36:18,219  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  77623 ms, 288 bytes
+2026-07-31 12:36:48,239  INFO     127.0.0.1:56993 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:36:48,242  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  107626 ms, 292 bytes
+2026-07-31 12:36:48,298  INFO     127.0.0.1:56993 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:36:48,298  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  8 ms, 85 bytes
+2026-07-31 12:36:52,201  INFO     127.0.0.1:56994 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:36:52,202  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  111559 ms, 287 bytes
+2026-07-31 12:38:12,489  INFO     127.0.0.1:56993 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:38:12,494  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  84191 ms, 290 bytes
+2026-07-31 12:38:12,576  INFO     127.0.0.1:56993 - "POST /v1/messages/count_tokens?beta=true HTTP/1.1" 200
+2026-07-31 12:38:12,577  INFO     /v1/messages/count_tokens  qwen/qwen3.5-9b → lmstudio  ok  6 ms, 85 bytes
+2026-07-31 12:38:13,463  INFO     127.0.0.1:56993 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-07-31 12:38:13,464  INFO     /v1/messages  qwen/qwen3.5-9b → lmstudio  ok  883 ms, 289 bytes
+2026-07-31 12:39:48,483  INFO     Shutting down
+2026-07-31 12:39:48,589  INFO     Waiting for application shutdown.
+2026-07-31 12:39:48,593  INFO     Application shutdown complete.
+2026-07-31 12:39:48,594  INFO     Finished server process [72642]
