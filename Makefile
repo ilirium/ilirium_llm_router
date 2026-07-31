@@ -4,6 +4,13 @@
 CONFIG ?= config.yaml
 ARGS   ?=
 
+# ruff is fetched on demand rather than installed as a dependency, but it is pinned: an unpinned
+# formatter reformats the whole repository the day it changes its mind, and a version bump then
+# arrives disguised as someone's feature branch. This is the version that produced the current
+# formatting. Bump it deliberately — `make format RUFF=ruff@x.y.z` tries a new one without
+# committing to it, and the diff it produces is the reason to accept or reject the bump.
+RUFF   ?= ruff@0.16.1
+
 .DEFAULT_GOAL := help
 
 .PHONY: help sync run check test lint format clean
@@ -26,10 +33,10 @@ test: ## Run the tests (make test ARGS="tests/test_routing.py::test_..." for one
 	uv run pytest $(ARGS)
 
 lint: ## Report style and correctness problems
-	uvx ruff check src tests
+	uvx $(RUFF) check src tests
 
 format: ## Reformat the code in place
-	uvx ruff format src tests
+	uvx $(RUFF) format src tests
 
 clean: ## Remove caches and build artefacts, leaving logs/ alone
 	rm -rf .pytest_cache .ruff_cache build dist *.egg-info

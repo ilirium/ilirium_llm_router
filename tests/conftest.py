@@ -56,9 +56,7 @@ def streamed(
 class Upstream:
     """A stand-in backend: records the requests that reach it, replies with what it was given."""
 
-    def __init__(
-        self, reply: httpx.Response | None = None, error: Exception | None = None
-    ) -> None:
+    def __init__(self, reply: httpx.Response | None = None, error: Exception | None = None) -> None:
         self.reply = reply
         self.error = error
         self.requests: list[httpx.Request] = []
@@ -102,11 +100,8 @@ class Rows:
 def make_config(lmstudio: Backend | None = None) -> Config:
     return Config(
         backends=Backends(
-            anthropic=Backend(
-                base_url="https://api.anthropic.com", credential="forward"
-            ),
-            lmstudio=lmstudio
-            or Backend(base_url="http://localhost:1234", credential="strip"),
+            anthropic=Backend(base_url="https://api.anthropic.com", credential="forward"),
+            lmstudio=lmstudio or Backend(base_url="http://localhost:1234", credential="strip"),
         )
     )
 

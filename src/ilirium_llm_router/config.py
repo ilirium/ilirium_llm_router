@@ -136,9 +136,7 @@ def _read_yaml(path: Path) -> dict[str, object]:
     if loaded is None:
         raise ConfigError(f"Config file {path} is empty.")
     if not isinstance(loaded, dict):
-        raise ConfigError(
-            f"Config file {path} must contain a mapping at the top level."
-        )
+        raise ConfigError(f"Config file {path} must contain a mapping at the top level.")
     return loaded
 
 

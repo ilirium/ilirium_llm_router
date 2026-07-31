@@ -197,9 +197,7 @@ def test_a_file_that_breaks_after_startup_does_not_break_the_call(tmp_path: Path
         directory.chmod(0o500)  # readable and listable, not writable
         try:
             replies = [
-                client.post(
-                    "/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS
-                )
+                client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
                 for _ in range(5)
             ]
         finally:

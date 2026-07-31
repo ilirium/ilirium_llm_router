@@ -47,9 +47,7 @@ from .logging_setup import get_logger
 
 # How a call ended. `ok` needs no error columns; the other four fill in `error_code`, and every one
 # of them is a failure a spreadsheet filter should be able to count.
-ErrorStatus = Literal[
-    "ok", "http_error", "stream_error", "transport_error", "client_disconnect"
-]
+ErrorStatus = Literal["ok", "http_error", "stream_error", "transport_error", "client_disconnect"]
 
 COLUMNS = (
     "timestamp",

@@ -7,7 +7,9 @@ itself.
 It is deliberately thin. The design lives in `CLAUDE.md`, which is loaded automatically every
 session; the phased plan lives in `implementation-plan.md`; the authentication procedure lives in
 `anthropic-auth-check.md`; the decisions taken while writing the proxy live in `phase-1-notes.md`; the plan for Phase 2 and
-the fourteen decisions taken building it live in `phase-2-notes.md`;
+the fourteen decisions taken building it live in `phase-2-notes.md`; what Phase 3 turned out to be —
+mostly already built — lives in `phase-3-notes.md`, with the backend that fails on purpose, and the
+commands that drive it, in `phase-3-verification/`;
 the procedure for testing the router against a real session lives in `testing-against-claude-code.md`;
 the token-usage check that unblocked Phase 2 lives in `lmstudio-usage-check.md`; proposals that are
 written up but not decided live in `docs/epd/`, indexed by `EPD-000-about-these-documents.md`, which
@@ -35,9 +37,51 @@ four recorder defects that have since been fixed. The session is frozen in `phas
 **The branch was merged into `main` on 2026-07-31** as `4d7d7f6`, `--no-ff` by convention so the
 phase boundary stays visible in the history. Nothing from Phase 2 is outstanding.
 
+**Phase 3 is complete and verified on 2026-07-31, on `feat/phase-3-failure-handling`, not yet
+merged.** 147 tests. Its central finding: **four of its five items were already built by Phase 2**,
+which was specified as observability and delivered most of the error handling as a by-product of
+needing an `error_status` column. The work was finding what that left — four gaps, all closed — and
+measuring the phase's "Done when" against a live server and a real Claude Code session. Details in
+`phase-3-notes.md`.
+
 ## What we were doing when we stopped
 
-**Phase 2 step 6, finishing 2026-07-31 with a clean tree.** The session was run, the CSV and log read,
+**Phase 3, 2026-07-31, on `feat/phase-3-failure-handling` with a clean tree, not yet merged.** The
+dead-backend path is now measured in a real session: Claude Code shows the router's own wording and
+**retries the 502 ten times with backoff**, so a session heals itself if LM Studio comes back — and
+one turn becomes up to ten `transport_error` rows. The display truncates the message from the right,
+which makes the order of that string a constraint rather than a preference.
+
+The other failure — **a backend that dies while answering** — was measured too, and the answer is
+the phase's most useful one: **Claude Code ignores the injected SSE `error` event.** It reports
+`empty or malformed response (HTTP 200)`, its own wording, where on a 502 it prints the router's
+message verbatim. So it never recognised the event; it is reporting the missing `message_stop`.
+
+The event was **kept anyway**, decided 2026-07-31 — Anthropic's documented shape, fifteen lines, one
+test, and other harnesses are planned. `CLAUDE.md` records it as a feature with **no measured
+consumer**, so nobody later mistakes it for something that solved a visible problem. If a second
+client also ignores it, delete it.
+
+The phase's "Done when" is now met in full. What remains is the `--no-ff` merge.
+
+**`make format` is now safe to run**, which it was not when this phase started. `pyproject.toml` set
+no ruff line length, so the formatter used its default 88 columns against a codebase written at 100
+and rewrote every file it was pointed at — while `make lint` passed either way, because line length
+is `E501` and that is not in ruff's default rule set. Now `line-length = 100`, applied to the whole
+repository in one commit of its own, verified by comparing every file's AST before and after: 18 of
+19 identical, and the 19th a docstring that began with a quote character and gained a space. Details
+in `phase-3-notes.md`.
+
+**ruff is now pinned as well**, `RUFF ?= ruff@0.16.1` in the Makefile, which closes the other half:
+an unpinned formatter reformats the repository the day it changes its mind, and the bump arrives
+disguised as somebody's feature branch. It is still fetched on demand rather than made a project
+dependency — the pin is what was missing, not the dependency. `make format RUFF=ruff@x.y.z` tries a
+version without committing to it. Checked at the time: 0.16.0 and 0.16.1 both leave the repository
+untouched, so the current formatting is not balanced on one patch release.
+
+### Earlier: Phase 2 step 6
+
+**Finishing 2026-07-31 with a clean tree.** The session was run, the CSV and log read,
 `EPD-002` written out of what the `path` column exposed, the session frozen into `docs/` because
 `logs/` is gitignored, the four recorder defects fixed, and the Phase 1 429 loose end answered from
 rows the session already had. Six commits, then the `--no-ff` merge to `main`.
@@ -48,7 +92,7 @@ And **committing the artefact needed checking, not trusting** — `git add` on t
 silently skipped `router.log` because `.gitignore` carries a blanket `*.log`, so the first version of
 that commit shipped a document citing a file that was not in the repository.
 
-### Earlier: steps 1 through 5
+### Earlier: Phase 2 steps 1 through 5
 
 Finished 2026-07-30 with a clean tree. Step 1 was found already written
 from an earlier session that was closed accidentally, and its tests were written afterwards — which
@@ -224,13 +268,16 @@ If a further capture is ever taken, redact the same set before committing it.
 
 ## Caveats worth carrying forward
 
-**Phase 2 is written and unit-tested; Phases 3 and 4 remain intentions.** What is now fact: the
+**Phase 4 remains an intention; Phase 3 is written, unit-tested and verified against a live server
+for everything except what Claude Code shows the user.** What is now fact: the
 "Observed request shape" section of `CLAUDE.md`, the Result section of `anthropic-auth-check.md`, the
 two Phase 1 findings above, the session results in `testing-against-claude-code.md`, and — for Phase
-2 — the numbers checked against a live LM Studio on 2026-07-30. What is *not* yet fact is Phase 2
-against a real session: see "What Phase 2 still has to prove" above, which is precisely the list step
-6 exists to close. Everything written about error handling and LM Studio parity remains design intent
-that no code has been checked against.
+2 — the numbers checked against a live LM Studio on 2026-07-30, and the step 6 session that closed
+all four of its open questions. For Phase 3, fact means the live-server run in `phase-3-notes.md`:
+a dead backend, a stream cut off mid-answer and a caller that hung up, each producing the row it
+should. What is *not* fact is the half that needs a person watching: whether Claude Code renders
+either error usefully. LM Studio parity beyond tool calls and usage remains design intent that no
+code has been checked against — that is Phase 4.
 
 **LM Studio's parity is now partly measured rather than assumed, but only partly.** Tool calls
 demonstrably survive the round trip — the 2026-07-29 session read and wrote files, ran bash commands

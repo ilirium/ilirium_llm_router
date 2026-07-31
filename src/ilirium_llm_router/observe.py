@@ -191,9 +191,7 @@ class SseScanner(Scanner):
         if not isinstance(usage, dict):
             return
         self.observation.input_tokens = _count(usage.get("input_tokens"))
-        self.observation.cache_read_input_tokens = _count(
-            usage.get("cache_read_input_tokens")
-        )
+        self.observation.cache_read_input_tokens = _count(usage.get("cache_read_input_tokens"))
         self.observation.cache_creation_input_tokens = _count(
             usage.get("cache_creation_input_tokens")
         )
@@ -245,9 +243,7 @@ class BufferedScanner(Scanner):
         if isinstance(usage, dict):
             self.observation.input_tokens = _count(usage.get("input_tokens"))
             self.observation.output_tokens = _count(usage.get("output_tokens"))
-            self.observation.cache_read_input_tokens = _count(
-                usage.get("cache_read_input_tokens")
-            )
+            self.observation.cache_read_input_tokens = _count(usage.get("cache_read_input_tokens"))
             self.observation.cache_creation_input_tokens = _count(
                 usage.get("cache_creation_input_tokens")
             )
@@ -262,11 +258,19 @@ class BufferedScanner(Scanner):
             _read_error(payload, self.observation)
 
 
+def is_sse(content_type: str) -> bool:
+    """Whether the reply is a stream of events rather than one document.
+
+    Asked twice: once to pick the scanner, and once by `proxy.py` to decide whether a broken relay
+    can be reported downstream at all. An SSE stream has a frame to put an error in; a half-written
+    JSON object has nowhere to say so without corrupting itself.
+    """
+    return SSE_CONTENT_TYPE in content_type.lower()
+
+
 def scanner_for(content_type: str) -> Scanner:
     """Pick the path from what the bytes claim to be."""
-    if SSE_CONTENT_TYPE in content_type.lower():
-        return SseScanner()
-    return BufferedScanner()
+    return SseScanner() if is_sse(content_type) else BufferedScanner()
 
 
 def _read_error(payload: dict[str, object], observation: Observation) -> None:
@@ -389,6 +393,19 @@ def transport_error_code(exc: Exception) -> str:
     status code at all — which is exactly why leaving `error_code` blank was never an option.
     """
     return _snake_case(type(exc).__name__)
+
+
+def describe_exception(exc: Exception) -> str:
+    """`ReadError: Connection reset by peer`, or just `ReadError` when there is nothing after it.
+
+    httpx raises several of its errors with an empty message — a connection reset mid-stream arrives
+    as `ReadError("")` — and the obvious f-string then writes `ReadError: ` into the CSV and into the
+    error event the caller sees, a dangling colon promising a reason that never comes. Measured on
+    2026-07-31 against a stand-in backend that cut a reply off mid-answer; every unit test until then
+    had supplied a message, so all of them read correctly and the real failure did not.
+    """
+    reason = str(exc).strip()
+    return f"{type(exc).__name__}: {reason}" if reason else type(exc).__name__
 
 
 def _snake_case(name: str) -> str:

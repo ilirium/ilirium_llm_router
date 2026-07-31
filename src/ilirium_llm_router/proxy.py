@@ -27,11 +27,18 @@ from dataclasses import dataclass
 
 import httpx
 from starlette.background import BackgroundTask
-from starlette.requests import Request
+from starlette.requests import ClientDisconnect, Request
 from starlette.responses import JSONResponse, Response, StreamingResponse
 
 from .config import Backend, Config
-from .observe import Call, Scanner, scanner_for, transport_error_code
+from .observe import (
+    Call,
+    Scanner,
+    describe_exception,
+    is_sse,
+    scanner_for,
+    transport_error_code,
+)
 from .routing import BackendName, backend_for_model
 from .stats import StatsWriter
 
@@ -93,9 +100,25 @@ class Proxy:
 
         `Call` is built first, so both clocks start when the request arrived rather than after the
         body has been read — a 118 KB body is not free.
+
+        That size is also why the read can fail: every call re-sends the whole conversation, so
+        there is a real window in which the caller can go away mid-upload. It is the same failure
+        the relay already records, only earlier, and it gets the same `client_disconnect` row — with
+        `backend` empty, because routing needs a body and there was never one to route on. The
+        exception carries on to `app.py`, which answers it without a traceback; nothing can be
+        delivered to a caller that has already gone.
         """
         call = Call(request)
-        body = await request.body()
+        try:
+            body = await request.body()
+        except ClientDisconnect:
+            call.failed(
+                "client_disconnect",
+                "client_disconnect",
+                "The caller went away while its request body was still arriving.",
+            )
+            self.record(call)
+            raise
         call.request_bytes = len(body)
         peeked = peek(body)
         call.model = peeked.model or ""
@@ -157,17 +180,13 @@ class Proxy:
         except httpx.HTTPError as exc:
             # No HTTP status ever existed here, so a symbolic code stands in for one. LM Studio not
             # running is the common failure, and it lands as `connect_error`.
-            call.failed(
-                "transport_error",
-                transport_error_code(exc),
-                f"{type(exc).__name__}: {exc}",
-            )
+            call.failed("transport_error", transport_error_code(exc), describe_exception(exc))
             self.record(call)
             return error_response(
                 502,
                 "api_error",
                 f"Could not reach the {name} backend at {backend.base_url}: "
-                f"{type(exc).__name__}: {exc}",
+                f"{describe_exception(exc)}",
             )
 
         if reply.status_code >= 400:
@@ -178,6 +197,9 @@ class Proxy:
         relayed = StreamingResponse(
             self.watch(reply, call),
             status_code=reply.status_code,
+            # Kept alongside the close in `watch`'s `finally`, which covers the disconnect case this
+            # task is skipped for. This one covers the opposite gap: a generator that never runs at
+            # all, and so never reaches its own `finally`.
             background=BackgroundTask(reply.aclose),
         )
         # Assigned rather than passed as `headers=`, so repeated header names survive intact.
@@ -190,7 +212,13 @@ class Proxy:
         The chunk is yielded exactly as it arrived; the scanner only ever sees a reference to the
         same bytes. Nothing in here can change what the caller receives, and every failure is
         recorded rather than raised — except the client going away, which has to propagate.
+
+        The one thing this generator does add to the stream is an error event when the relay breaks
+        under it, which is a deliberate exception to byte-relay and is written up as such in
+        `CLAUDE.md`. Nothing is ever *altered*: the injected event only ever follows bytes that have
+        already gone out untouched.
         """
+        streamed = is_sse(reply.headers.get("content-type", ""))
         scanner = scanner_for(reply.headers.get("content-type", ""))
         try:
             async for chunk in reply.aiter_raw():
@@ -207,16 +235,23 @@ class Proxy:
             )
             raise
         except httpx.HTTPError as exc:
-            # The status line already went out as 200, so this cannot be reported to the caller.
-            # The row is the only place it is visible.
-            call.failed(
-                "transport_error",
-                transport_error_code(exc),
-                f"{type(exc).__name__}: {exc}",
-            )
+            # The status line already went out as 200, so the failure cannot be put in a status
+            # code. It can still be *said*, if the reply is a stream of events: one more event ends
+            # the truncation as an error instead of as a silence.
+            call.failed("transport_error", transport_error_code(exc), describe_exception(exc))
+            if streamed:
+                yield sse_error_event(
+                    f"The {call.backend or 'upstream'} backend's reply broke off mid-stream: "
+                    f"{describe_exception(exc)}"
+                )
         finally:
             scanner.finish()
             self.record(call, scanner)
+            # Closing here rather than only in the `BackgroundTask` below: starlette skips that
+            # task when the caller disconnects on ASGI spec 2.4, which is exactly the case that
+            # leaves an upstream connection with nobody to end it. `aclose` is guarded by httpx's
+            # own `is_closed`, so the two paths cannot double-close.
+            await close_quietly(reply)
 
     def record(self, call: Call, scanner: Scanner | None = None) -> None:
         """Write the row and the log line. Never raises: telemetry does not get to break a call."""
@@ -226,9 +261,7 @@ class Proxy:
             # The log line is read from the finished row rather than measured again, so the two
             # traces of one call can never disagree about how long it took.
             outcome = (
-                "ok"
-                if row.error_status == "ok"
-                else f"{row.error_status} {row.error_code}".strip()
+                "ok" if row.error_status == "ok" else f"{row.error_status} {row.error_code}".strip()
             )
             logger.info(
                 "%s  %s → %s  %s  %d ms, %d bytes",
@@ -335,6 +368,35 @@ def response_headers(reply: httpx.Response) -> list[tuple[bytes, bytes]]:
         for name, value in reply.headers.multi_items()
         if name.lower() not in DROPPED_FROM_RESPONSE
     ]
+
+
+def sse_error_event(message: str) -> bytes:
+    """Anthropic's `error` event, for a stream that broke after its 200 had gone out.
+
+    The one place the router writes bytes of its own into a relayed reply. Without it a backend
+    dying mid-answer is indistinguishable from a model that simply stopped talking: the caller sees
+    a stream that ends, with no event saying why. The shape is the one Anthropic sends, so a client
+    that already handles a mid-stream error handles this one too.
+
+    Deliberately *not* counted in `response_bytes` and not fed to the scanner. Both measure what the
+    backend sent, and these bytes are ours — a row whose byte count included the router's own
+    apology would be lying about the reply it is describing.
+    """
+    payload = json.dumps({"type": "error", "error": {"type": "api_error", "message": message}})
+    return f"event: error\ndata: {payload}\n\n".encode()
+
+
+async def close_quietly(reply: httpx.Response) -> None:
+    """Release the upstream connection, whatever happened to the reply.
+
+    Failing to close is not worth raising over — the caller is already being dealt with, and httpx
+    reclaims the connection eventually — but it is worth a line, since a connection that is never
+    released is the shape of a leak that only appears under load.
+    """
+    try:
+        await reply.aclose()
+    except Exception as exc:  # noqa: BLE001 — a close that fails must not break the response
+        logger.debug("Could not close the upstream reply: %s: %s", type(exc).__name__, exc)
 
 
 def error_response(status: int, error_type: str, message: str) -> JSONResponse:

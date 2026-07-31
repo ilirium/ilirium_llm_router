@@ -25,6 +25,10 @@ Both halves work. `claude-sonnet-5` through the router behaves as a normal sessi
 
 This settles the project's central claim: **no protocol translation is needed, and a local model can drive a real coding session through the router.**
 
+**Phase 3 is done, verified on 2026-07-31** against a live server and a real Claude Code session; 147 tests. Its central finding is about the plan rather than the code: **four of its five work items were already built by Phase 2**, which was specified as observability and delivered most of the error handling as a by-product of needing an `error_status` column. What was left were four gaps nobody had written down — a caller that left while its body was still arriving raised instead of recording; the upstream close rode on a starlette `BackgroundTask` that is skipped on ASGI spec 2.4, so it worked by luck; a broken stream told the caller nothing; and unhandled exceptions came back as plain-text 500s. See `docs/phase-3-notes.md`.
+
+Two measurements from it are worth carrying: **Claude Code retries a 502 ten times with backoff**, so a session heals itself if LM Studio comes back — and one turn becomes up to ten `transport_error` rows, which means a row count is not a turn count when a backend is down. And **Claude Code ignores a mid-stream `error` event**, which is recorded under "Design decisions" below as the exception to byte-relay that has no measured consumer.
+
 **LM Studio's "Require Authentication" was switched on and has since been turned off.** Earlier on 2026-07-29 a forwarded local request came back `401 authentication_error` from LM Studio itself; later the same day LM Studio answered unauthenticated, and there is no `.env`. So the current working setup needs no local credential. If the setting is switched back on, uncomment `lmstudio.api_key_env: LMSTUDIO_API_KEY` in `config.yaml` and put the key in `.env`.
 
 The auth setting is expected to go back on, and is the reason backend authentication is now a design decision rather than an untested extra — see "Design decisions" below. Note that the key path has still never carried a live request: the setting was turned off rather than configured around, so it is covered by a unit test and nothing more. The agreed config shape (one `credential` field, three modes, contradictions refused at startup) is **not implemented yet**; `config.py` still has the two-knob shape.
@@ -55,13 +59,17 @@ tests/
 | `make run` | start the server (`uv run ilirium-llm-router`) |
 | `make check` | validate and print the config without starting |
 | `make test` | run the tests; `make test ARGS="tests/test_config.py::test_empty_file_is_rejected"` for one |
-| `make lint` / `make format` | ruff, fetched on demand via `uvx` — not a project dependency |
+| `make lint` / `make format` | ruff, fetched on demand via `uvx` — not a project dependency, but **pinned** in the Makefile |
 | `make sync` | install |
 | `make clean` | caches and build artefacts; leaves `logs/` alone |
 
 `make run CONFIG=other.yaml` overrides the config path on any target that takes one. There is no reload target: the app is built by a factory, which `uvicorn --reload` cannot import.
 
 Config models set `extra="forbid"`, so a mistyped YAML key is an error rather than a silently ignored default. Relative log/stats paths resolve against the config file's directory, not the working directory.
+
+**Formatting is fixed in two places, and both are there because it went wrong once.** `pyproject.toml` sets `line-length = 100`, and the Makefile pins `RUFF ?= ruff@0.16.1`. Before either existed, `make format` used ruff's default 88 columns against a codebase written at 100 and rewrote every file it touched — so the target could not be run without burying whatever change was in progress, and `make lint` never objected, because line length is `E501` and that is not in ruff's default rule set.
+
+The pin is the other half of the same problem: an unpinned formatter reformats the repository the day it changes its mind, and the bump then arrives disguised as somebody's feature branch. **Bump it deliberately.** `make format RUFF=ruff@x.y.z` tries a version without committing to it, and the diff that produces is the argument for or against taking it. When a bump is accepted, it belongs in its own commit — `d1def4f` is the precedent, and the way to check such a commit is to compare every file's AST before and after rather than to trust that formatting only moves whitespace.
 
 ## Goal
 
@@ -124,6 +132,32 @@ Decided deliberately; don't quietly reverse these.
 
   This is not a bug and nothing is currently done about it. It is recorded here because it is the strongest argument yet for revisiting the decision — a routing exception for `max_tokens: 1` probes on local backends would return nearly half the wall clock, at the price of the first special case in the dispatch rule. That trade belongs to a later phase, not to Phase 2.
 - **Relay the body, log only metadata.** Forward the request body byte-for-byte and stream the response through without re-encoding; peek at `model` for routing only. Log model, backend, status, and duration — never deserialize or re-serialize the payload. This keeps the proxy correct when either side adds fields, which is the main risk of a parse-and-rebuild design.
+- **One exception to byte-relay: a broken stream is ended with an SSE `error` event.** Decided
+  2026-07-31 in Phase 3. A streamed reply returns HTTP 200 before any content exists, so when the
+  relay breaks afterwards the failure cannot go in a status code — and a stream that simply stops is
+  indistinguishable from a model that finished talking. The router appends one Anthropic-shaped
+  `error` event to such a stream, which is the only place it writes bytes of its own into a relayed
+  reply.
+
+  Three limits keep this from becoming a parse-and-rebuild wedge: it is **appended, never altering**
+  (every backend byte still goes out untouched, and the prompt-cache argument is about *request*
+  bytes regardless); it happens **only on SSE replies**, since the same frame stapled to a
+  half-written JSON object is corruption rather than a message; and the injected bytes are **not
+  counted in `response_bytes` and not fed to the scanner**, because both measure what the backend
+  sent. Rationale and the rejected alternative are in `docs/phase-3-notes.md`.
+
+  **Measured the same day, and it buys nothing for Claude Code.** Against a stand-in backend that
+  sends a complete `message_start`, a text block, seven deltas and then resets, Claude Code reports
+  `API returned an empty or malformed response (HTTP 200)` — its own generic wording, not ours. The
+  comparison that makes this conclusive: on a 502 it prints the router's message *verbatim*, so it
+  surfaces backend wording when it recognises an error. It does not recognise a mid-stream `error`
+  event; it is reporting the missing `message_stop`, which is what it would say if nothing were
+  injected at all.
+
+  **Kept anyway, deliberately, on 2026-07-31.** The event is Anthropic's documented shape, the cost
+  is about fifteen lines behind one test, and the harnesses named under "Goal" are not this one. But
+  it is a feature with **no measured consumer**, and this paragraph exists so nobody later mistakes
+  it for something that solved a visible problem. If a second client also ignores it, delete it.
 - **First milestone is a minimal end-to-end proxy:** uv project + FastAPI + `POST /v1/messages` dispatching to both backends with streaming working, verified by pointing Claude Code at it. Merged `/v1/models` and config polish come later.
 - **Backend authentication is a first-class feature, not a leftover.** Every backend declares how its credential is obtained, and the router is expected to hold keys for some of them. This was settled on 2026-07-29 and reverses the earlier framing in which `api_key_env` was an untested extra to consider deleting. Two reasons: LM Studio's "Require Authentication" is a setting this machine actually uses and intends to keep using, and the planned expansion — other local runners, other cloud APIs — makes "the router holds no secret" false as a general rule. It stays true only of Anthropic, which is one backend's property rather than the architecture's.
 
