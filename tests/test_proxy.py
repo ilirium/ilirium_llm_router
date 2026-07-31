@@ -8,6 +8,7 @@ bytes and headers it carried when it got there.
 from __future__ import annotations
 
 import json
+from collections.abc import AsyncIterator
 
 import httpx
 import pytest
@@ -16,12 +17,15 @@ from conftest import (
     CLAUDE_BODY,
     CLAUDE_CODE_HEADERS,
     LOCAL_BODY,
+    Rows,
     Upstream,
     make_config,
     running,
     streamed,
 )
+from fastapi.testclient import TestClient
 
+from ilirium_llm_router.app import create_app
 from ilirium_llm_router.config import Backend
 from ilirium_llm_router.proxy import peek
 
@@ -242,6 +246,95 @@ def test_an_unreachable_backend_is_reported_as_an_error() -> None:
     assert reply.status_code == 502
     assert reply.json()["error"]["type"] == "api_error"
     assert "localhost:1234" in reply.json()["error"]["message"]
+
+
+def test_a_stream_that_breaks_ends_with_an_error_event() -> None:
+    """The one place the router adds bytes of its own, and why it is worth the exception.
+
+    A 200 has already gone out, so the failure cannot go in the status line. Without the event the
+    caller sees a stream that simply ends — indistinguishable from a model that finished talking.
+    """
+
+    async def dies_after(chunk: bytes) -> AsyncIterator[bytes]:
+        yield chunk
+        raise httpx.ReadError("Connection reset by peer")
+
+    upstream = Upstream(
+        httpx.Response(
+            200,
+            headers={"content-type": "text/event-stream"},
+            content=dies_after(
+                b'event: message_start\ndata: {"type":"message_start"}\n\n'
+            ),
+        )
+    )
+    with running(upstream) as client:
+        reply = client.post(
+            "/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS
+        )
+
+    assert reply.status_code == 200
+    assert "message_start" in reply.text, (
+        "what did arrive still reaches the caller first"
+    )
+
+    last = reply.text.rstrip().splitlines()[-1]
+    assert last.startswith("data: ")
+    said = json.loads(last[len("data: ") :])
+    assert said["type"] == "error"
+    assert said["error"]["type"] == "api_error"
+    assert "lmstudio" in said["error"]["message"], (
+        "which backend broke is the useful half"
+    )
+
+
+def test_a_buffered_reply_that_breaks_is_left_alone() -> None:
+    """No event here: an SSE frame appended to a half-written JSON object is just corruption.
+
+    The caller gets truncated JSON either way. The difference is that truncated JSON fails to parse
+    where JSON with an SSE frame stapled to it fails to parse *and* looks like the router's doing.
+    """
+
+    async def dies_after(chunk: bytes) -> AsyncIterator[bytes]:
+        yield chunk
+        raise httpx.ReadError("Connection reset by peer")
+
+    upstream = Upstream(
+        httpx.Response(
+            200,
+            headers={"content-type": "application/json"},
+            content=dies_after(b'{"type":"message","content":['),
+        )
+    )
+    with running(upstream) as client:
+        reply = client.post(
+            "/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS
+        )
+
+    assert reply.content == b'{"type":"message","content":['
+
+
+def test_an_unexpected_failure_comes_back_in_anthropics_shape() -> None:
+    """Nothing should reach a caller as a framework's plain-text 500.
+
+    `raise_server_exceptions=False` so the test sees what the client would see; starlette re-raises
+    after the handler has answered, which is what keeps the traceback in the log.
+    """
+
+    class Exploding:
+        async def messages(self, request: object) -> None:
+            raise RuntimeError("boom")
+
+    app = create_app(make_config(), httpx.AsyncClient(), Rows())  # type: ignore[arg-type]
+    with TestClient(app, raise_server_exceptions=False) as client:
+        app.state.proxy = Exploding()
+        reply = client.post(
+            "/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS
+        )
+
+    assert reply.status_code == 500
+    assert reply.json()["error"]["type"] == "api_error"
+    assert "RuntimeError: boom" in reply.json()["error"]["message"]
 
 
 def test_an_unanticipated_path_is_forwarded_rather_than_refused() -> None:

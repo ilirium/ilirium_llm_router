@@ -262,11 +262,19 @@ class BufferedScanner(Scanner):
             _read_error(payload, self.observation)
 
 
+def is_sse(content_type: str) -> bool:
+    """Whether the reply is a stream of events rather than one document.
+
+    Asked twice: once to pick the scanner, and once by `proxy.py` to decide whether a broken relay
+    can be reported downstream at all. An SSE stream has a frame to put an error in; a half-written
+    JSON object has nowhere to say so without corrupting itself.
+    """
+    return SSE_CONTENT_TYPE in content_type.lower()
+
+
 def scanner_for(content_type: str) -> Scanner:
     """Pick the path from what the bytes claim to be."""
-    if SSE_CONTENT_TYPE in content_type.lower():
-        return SseScanner()
-    return BufferedScanner()
+    return SseScanner() if is_sse(content_type) else BufferedScanner()
 
 
 def _read_error(payload: dict[str, object], observation: Observation) -> None:

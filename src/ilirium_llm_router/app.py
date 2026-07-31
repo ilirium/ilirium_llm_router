@@ -6,6 +6,10 @@ we did not anticipate is forwarded rather than refused.
 
 The catch-all is registered last on purpose — the first matching route wins, so it must not shadow
 the three above it.
+
+Two exception handlers sit under all four. Every failure a client can see should arrive in the
+shape it expects, and the shape Claude Code expects is Anthropic's error object — a bare framework
+500, in plain text, tells the person at the keyboard nothing about what went wrong.
 """
 
 from __future__ import annotations
@@ -16,9 +20,10 @@ from contextlib import AsyncExitStack, asynccontextmanager
 import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import Response
+from starlette.requests import ClientDisconnect
 
 from .config import Config
-from .proxy import Proxy, create_client
+from .proxy import Proxy, create_client, error_response
 from .stats import StatsWriter
 
 CATCH_ALL_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
@@ -49,6 +54,35 @@ def create_app(
 
     app = FastAPI(title="ilirium_llm_router", lifespan=lifespan)
     app.state.config = config
+
+    @app.exception_handler(ClientDisconnect)
+    async def gone(request: Request, exc: ClientDisconnect) -> Response:
+        """The caller left while its request body was still arriving.
+
+        `proxy.begin` has already written the row; this only keeps the exception from surfacing as
+        an unhandled server error. Nothing here reaches anyone — there is no longer a connection to
+        answer on — so the status is chosen for the log rather than for a reader: 499 is nginx's
+        code for exactly this, and reads better in a log than a 500 nobody caused.
+        """
+        return error_response(
+            499,
+            "invalid_request_error",
+            "The caller went away before its request had arrived.",
+        )
+
+    @app.exception_handler(Exception)
+    async def unexpected(request: Request, exc: Exception) -> Response:
+        """Anything nobody anticipated.
+
+        Starlette re-raises after this returns, so uvicorn still logs the traceback — into the
+        router's own rotating log, which is where the two are already merged. The handler's job is
+        only the half the traceback cannot do: give the caller an error it can display.
+        """
+        return error_response(
+            500,
+            "api_error",
+            f"The router failed to handle this request: {type(exc).__name__}: {exc}",
+        )
 
     @app.head("/")
     async def probe() -> Response:

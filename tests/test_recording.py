@@ -24,7 +24,8 @@ from conftest import (
     running,
     streamed,
 )
-from starlette.requests import Request
+from starlette.requests import ClientDisconnect, Request
+from starlette.types import Receive
 
 from ilirium_llm_router.observe import Call
 from ilirium_llm_router.proxy import Proxy
@@ -33,23 +34,29 @@ SSE_HEADERS = {"content-type": "text/event-stream"}
 JSON_HEADERS = {"content-type": "application/json"}
 
 
-def arriving_request(headers: list[tuple[bytes, bytes]] | None = None) -> Request:
-    """The bare ASGI scope a `Call` needs: a path, a query string and headers."""
-    return Request(
-        {
-            "type": "http",
-            "http_version": "1.1",
-            "method": "POST",
-            "scheme": "http",
-            "path": "/v1/messages",
-            "raw_path": b"/v1/messages",
-            "query_string": b"beta=true",
-            "root_path": "",
-            "headers": headers or [],
-            "client": ("127.0.0.1", 54321),
-            "server": ("127.0.0.1", 8787),
-        }
-    )
+def arriving_request(
+    headers: list[tuple[bytes, bytes]] | None = None,
+    receive: Receive | None = None,
+) -> Request:
+    """The bare ASGI scope a `Call` needs: a path, a query string and headers.
+
+    `receive` is only wanted by the tests about a body that never finished arriving; a `Call` reads
+    the scope alone, so everything else leaves it off.
+    """
+    scope = {
+        "type": "http",
+        "http_version": "1.1",
+        "method": "POST",
+        "scheme": "http",
+        "path": "/v1/messages",
+        "raw_path": b"/v1/messages",
+        "query_string": b"beta=true",
+        "root_path": "",
+        "headers": headers or [],
+        "client": ("127.0.0.1", 54321),
+        "server": ("127.0.0.1", 8787),
+    }
+    return Request(scope, receive) if receive is not None else Request(scope)
 
 
 def sse_reply(status: int = 200) -> httpx.Response:
@@ -375,6 +382,99 @@ def test_a_client_that_goes_away_mid_stream_is_recorded() -> None:
     assert row.error_code == "client_disconnect"
     assert row.response_bytes > 0, "the part that was delivered still counts"
     assert row.input_tokens == 15, "and what the scanner saw before that is still worth keeping"
+
+
+def test_a_caller_that_leaves_while_its_body_arrives_is_recorded() -> None:
+    """The same failure as the one above, one step earlier — and it used to raise instead of record.
+
+    Not a theoretical window: every call re-sends the whole conversation, so even a one-word turn
+    arrives as ~118 KB, and the caller can go away while it is still coming. Reading the body is
+    where that shows up, as starlette's `ClientDisconnect`.
+    """
+
+    async def dropped() -> dict[str, str]:
+        return {"type": "http.disconnect"}
+
+    async def scenario() -> Rows:
+        rows = Rows()
+        proxy = Proxy(make_config(), httpx.AsyncClient(), {}, rows)  # type: ignore[arg-type]
+        with pytest.raises(ClientDisconnect):
+            await proxy.messages(arriving_request(receive=dropped))
+        return rows
+
+    rows = asyncio.run(scenario())
+
+    row = rows.one
+    assert row.error_status == "client_disconnect"
+    assert row.error_code == "client_disconnect"
+    assert row.backend == "", "there was never a body to route on"
+    assert row.request_bytes == 0
+    assert row.response_bytes == 0
+
+
+def test_the_upstream_connection_is_closed_when_the_caller_goes_away() -> None:
+    """Closed by the generator itself, not by the background task starlette may never run.
+
+    On ASGI spec 2.4 starlette raises `ClientDisconnect` out of the response and skips its
+    background task — which is precisely the case that leaves an upstream reply with nobody to end
+    it. uvicorn 0.51 still advertises 2.3, so today this holds either way; the test is here so it
+    keeps holding when that changes.
+    """
+
+    async def scenario() -> httpx.Response:
+        reply = sse_reply()
+        proxy = Proxy(make_config(), httpx.AsyncClient(), {}, Rows())  # type: ignore[arg-type]
+        chunks = proxy.watch(reply, Call(arriving_request()))
+
+        await chunks.__anext__()  # the caller reads one chunk...
+        await chunks.aclose()  # ...and then goes away
+
+        return reply
+
+    assert asyncio.run(scenario()).is_closed
+
+
+def test_the_upstream_connection_is_closed_after_an_ordinary_reply() -> None:
+    """The unremarkable path, asserted anyway: a connection nobody releases is a leak under load."""
+
+    async def scenario() -> httpx.Response:
+        reply = sse_reply()
+        proxy = Proxy(make_config(), httpx.AsyncClient(), {}, Rows())  # type: ignore[arg-type]
+        async for _ in proxy.watch(reply, Call(arriving_request())):
+            pass
+        return reply
+
+    assert asyncio.run(scenario()).is_closed
+
+
+def test_the_injected_error_event_is_not_counted_as_the_backends_bytes() -> None:
+    """`response_bytes` measures what came back, and the error event is the router's own wording.
+
+    A row whose byte count included the router's apology would be describing a reply that never
+    arrived. The scanner is kept away from it for the same reason.
+    """
+    sent = (
+        b'event: message_start\ndata: {"type":"message_start","message":'
+        b'{"usage":{"input_tokens":15}}}\n\n'
+    )
+
+    async def dies_after(chunk: bytes) -> AsyncIterator[bytes]:
+        yield chunk
+        raise httpx.ReadError("Connection reset by peer")
+
+    upstream = Upstream(
+        httpx.Response(200, headers=SSE_HEADERS, content=dies_after(sent))
+    )
+    rows = Rows()
+    with running(upstream, rows=rows) as client:
+        reply = client.post(
+            "/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS
+        )
+
+    assert len(reply.content) > len(sent), "the caller did get the extra event"
+    assert rows.one.response_bytes == len(sent), (
+        "but the row counts only the backend's bytes"
+    )
 
 
 def test_a_writer_that_raises_does_not_break_the_call() -> None:
