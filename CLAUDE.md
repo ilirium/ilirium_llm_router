@@ -124,6 +124,19 @@ Decided deliberately; don't quietly reverse these.
 
   This is not a bug and nothing is currently done about it. It is recorded here because it is the strongest argument yet for revisiting the decision — a routing exception for `max_tokens: 1` probes on local backends would return nearly half the wall clock, at the price of the first special case in the dispatch rule. That trade belongs to a later phase, not to Phase 2.
 - **Relay the body, log only metadata.** Forward the request body byte-for-byte and stream the response through without re-encoding; peek at `model` for routing only. Log model, backend, status, and duration — never deserialize or re-serialize the payload. This keeps the proxy correct when either side adds fields, which is the main risk of a parse-and-rebuild design.
+- **One exception to byte-relay: a broken stream is ended with an SSE `error` event.** Decided
+  2026-07-31 in Phase 3. A streamed reply returns HTTP 200 before any content exists, so when the
+  relay breaks afterwards the failure cannot go in a status code — and a stream that simply stops is
+  indistinguishable from a model that finished talking. The router appends one Anthropic-shaped
+  `error` event to such a stream, which is the only place it writes bytes of its own into a relayed
+  reply.
+
+  Three limits keep this from becoming a parse-and-rebuild wedge: it is **appended, never altering**
+  (every backend byte still goes out untouched, and the prompt-cache argument is about *request*
+  bytes regardless); it happens **only on SSE replies**, since the same frame stapled to a
+  half-written JSON object is corruption rather than a message; and the injected bytes are **not
+  counted in `response_bytes` and not fed to the scanner**, because both measure what the backend
+  sent. Rationale and the rejected alternative are in `docs/phase-3-notes.md`.
 - **First milestone is a minimal end-to-end proxy:** uv project + FastAPI + `POST /v1/messages` dispatching to both backends with streaming working, verified by pointing Claude Code at it. Merged `/v1/models` and config polish come later.
 - **Backend authentication is a first-class feature, not a leftover.** Every backend declares how its credential is obtained, and the router is expected to hold keys for some of them. This was settled on 2026-07-29 and reverses the earlier framing in which `api_key_env` was an untested extra to consider deleting. Two reasons: LM Studio's "Require Authentication" is a setting this machine actually uses and intends to keep using, and the planned expansion — other local runners, other cloud APIs — makes "the router holds no secret" false as a general rule. It stays true only of Anthropic, which is one backend's property rather than the architecture's.
 
