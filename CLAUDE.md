@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Phase 1 is done, verified in a real session on 2026-07-29** (see `docs/implementation-plan.md` for the phases, and `docs/testing-against-claude-code.md` for the procedure and the full results). The router forwards: it answers the `HEAD /` probe, dispatches `POST /v1/messages` by the model named in the body, and has a catch-all for every other path. Bodies are relayed byte for byte and replies streamed back untouched.
 
-**Phase 2 is done, all six steps, proven in a real session on 2026-07-31.** Committed on `feat/phase-2-observability`; 139 tests pass. Every call leaves two traces: a line in a rotating log — which uvicorn's own lines join, so "did the request arrive" and "was the server up" sit next to it — and a row in `logs/calls.csv` with all 20 columns. Usage is read off a tee of the passing bytes, never by parsing and rebuilding them.
+**Phase 2 is done, all six steps, proven in a real session on 2026-07-31.** Built on `feat/phase-2-observability` and merged to `main` the same day as `4d7d7f6`; 139 tests pass. Every call leaves two traces: a line in a rotating log — which uvicorn's own lines join, so "did the request arrive" and "was the server up" sit next to it — and a row in `logs/calls.csv` with all 20 columns. Usage is read off a tee of the passing bytes, never by parsing and rebuilding them.
 
 The step 6 session — long, switching models mid-conversation, subagents, an interrupted response, tool use and file editing on a local model — produced **142 rows across eleven sessions**, frozen in `docs/phase-2-step-6-session/` because `logs/` is gitignored and rotates. It answered all four questions Phase 2 existed to settle:
 

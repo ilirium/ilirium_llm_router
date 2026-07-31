@@ -32,15 +32,15 @@ a scanner on its way downstream. Decisions taken while building are numbered 4â€
 `phase-2-notes.md`. Step 6 ran, answered all four questions the phase existed to settle, and turned up
 four recorder defects that have since been fixed. The session is frozen in `phase-2-step-6-session/`.
 
-**The branch has not been merged.** That is the one Phase 2 action still outstanding, and by
-convention it is a `--no-ff` merge so the phase boundary stays visible in the history.
+**The branch was merged into `main` on 2026-07-31** as `4d7d7f6`, `--no-ff` by convention so the
+phase boundary stays visible in the history. Nothing from Phase 2 is outstanding.
 
 ## What we were doing when we stopped
 
 **Phase 2 step 6, finishing 2026-07-31 with a clean tree.** The session was run, the CSV and log read,
 `EPD-002` written out of what the `path` column exposed, the session frozen into `docs/` because
 `logs/` is gitignored, the four recorder defects fixed, and the Phase 1 429 loose end answered from
-rows the session already had. Six commits. What remains is the `--no-ff` merge to `main`.
+rows the session already had. Six commits, then the `--no-ff` merge to `main`.
 
 Two process notes from it. The analysis was worth more than the run: three of the four defects were
 invisible in the passing tests and only showed up when reading 142 real rows next to each other.
