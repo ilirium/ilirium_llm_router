@@ -278,13 +278,26 @@ Restated because they are the ones a plausible-looking implementation quietly vi
 
 ## Still open
 
-- **`x-claude-code-agent-id` has never been observed here.** The capture predates any subagent use,
-  so it is documented only. Until a subagent call is seen carrying it, an empty `agent_id` cannot be
-  trusted to mean "main conversation". Step 6 is where this gets settled. Step 4 narrowed it: the
-  router demonstrably *copies* the header when it is present, verified against a live server with
-  the header set by hand. What remains unproven is only whether Claude Code sends it.
-- **`client_disconnect` is the least verified of the five statuses.** Its branch is unit-tested, but
-  whether starlette reliably lands there on a real dropped connection is a step 6 question.
+Nothing. Both questions this section held were settled by step 6 on 2026-07-31 — see below.
+
+Two things the session raised that are *not* Phase 2's to answer, recorded so they are not lost:
+
+- **Claude Code's context accounting for local models is an estimate against an assumed 200k
+  window.** LM Studio does not implement `count_tokens` and answers HTTP 200 with an error body.
+  Harmless on a large-context model, silent truncation on a small one. Written up as
+  `EPD-002-token-counting-for-local-backends.md`; no decision taken.
+- **Prompt-cache warmup probes cost 44% of local wall-clock time** — 40 calls returning zero content
+  tokens, 20.0 of 45.5 minutes. Recorded in `CLAUDE.md` under the design decision it argues against,
+  "No special case for background/auxiliary traffic".
+
+Closed by step 6 (2026-07-31), against the frozen session in `phase-2-step-6-session/`:
+
+- ~~**`x-claude-code-agent-id` has never been observed here**~~ — **it arrives.** Seven rows carry
+  one agent ID, spanning the subagent's own background calls as well as its main call. An empty
+  `agent_id` can be read as "main conversation".
+- ~~**`client_disconnect` is the least verified of the five statuses**~~ — **starlette reaches it
+  reliably.** Six rows, both backends, in two shapes: partial usage captured before the drop
+  (`message_start` seen, `message_delta` not), and nothing captured at all.
 
 Closed since this file was written:
 

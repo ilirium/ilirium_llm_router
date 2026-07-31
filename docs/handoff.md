@@ -25,15 +25,31 @@ back untouched. Claude Code has run through the router against both backends —
 normal session, and `google/gemma-4-e4b` in LM Studio with working tool calls and multi-turn. Full
 results in `testing-against-claude-code.md`.
 
-**Phase 2 is built, steps 1–5 of six.** On `feat/phase-2-observability`, five commits, 137 tests.
-`logging_setup.py`, `stats.py` and the new `observe.py` are written; `proxy.py` tees the reply past a
-scanner on its way downstream. Decisions taken while building are numbered 4–14 in
-`phase-2-notes.md`. **Step 6 — a real Claude Code session, then read the CSV — has not been run**,
-and it is the next thing to do.
+**Phase 2 is complete and proven in a real session on 2026-07-31.** On `feat/phase-2-observability`,
+139 tests. `logging_setup.py`, `stats.py` and `observe.py` are written; `proxy.py` tees the reply past
+a scanner on its way downstream. Decisions taken while building are numbered 4–14 in
+`phase-2-notes.md`. Step 6 ran, answered all four questions the phase existed to settle, and turned up
+four recorder defects that have since been fixed. The session is frozen in `phase-2-step-6-session/`.
+
+**The branch has not been merged.** That is the one Phase 2 action still outstanding, and by
+convention it is a `--no-ff` merge so the phase boundary stays visible in the history.
 
 ## What we were doing when we stopped
 
-Phase 2 steps 1 through 5, finishing 2026-07-30 with a clean tree. Step 1 was found already written
+**Phase 2 step 6, finishing 2026-07-31 with a clean tree.** The session was run, the CSV and log read,
+`EPD-002` written out of what the `path` column exposed, the session frozen into `docs/` because
+`logs/` is gitignored, the four recorder defects fixed, and the Phase 1 429 loose end answered from
+rows the session already had. Six commits. What remains is the `--no-ff` merge to `main`.
+
+Two process notes from it. The analysis was worth more than the run: three of the four defects were
+invisible in the passing tests and only showed up when reading 142 real rows next to each other.
+And **committing the artefact needed checking, not trusting** — `git add` on the frozen directory
+silently skipped `router.log` because `.gitignore` carries a blanket `*.log`, so the first version of
+that commit shipped a document citing a file that was not in the repository.
+
+### Earlier: steps 1 through 5
+
+Finished 2026-07-30 with a clean tree. Step 1 was found already written
 from an earlier session that was closed accidentally, and its tests were written afterwards — which
 promptly turned up two defects in it. Both are the kind that never raise: a `datefmt` was discarding
 the milliseconds from the log's own timestamps, in the phase whose subject is `ttfb_ms` and
@@ -61,23 +77,35 @@ Decided because auth is going back on for LM Studio and because more backends ar
 makes the current ambiguity a trap rather than a wart. Full rationale under "Design decisions".
 Deliberately *not* part of Phase 2.
 
-## What Phase 2 still has to prove
+## What Phase 2 had to prove — all four answered
 
-Everything below is implemented and unit-tested; none of it has met a real session.
+The step 6 session on 2026-07-31: long, switching models mid-conversation, subagents, an interrupted
+response, tool use and file editing on a local model. 142 rows across eleven client sessions, frozen
+in `phase-2-step-6-session/`.
 
-- **Does `x-claude-code-agent-id` actually arrive?** The router demonstrably copies it — verified
-  against a live server with the header set by hand — but no real subagent has been observed sending
-  one. Until then an empty `agent_id` cannot be trusted to mean "main conversation".
-- **Does `client_disconnect` happen the way the unit test says?** Its branch is proven by driving the
-  generator and calling `aclose()`, because `TestClient` always reads a reply to the end and can
-  never be the caller that stops listening. Whether starlette reliably lands there on a real dropped
-  connection is unknown.
-- **Do Anthropic's streamed replies scan the way LM Studio's do?** `lmstudio-usage-check.md` measured
-  LM Studio directly; Anthropic's shape came from its documentation. The scanner takes
-  `input_tokens` only from `message_start` precisely because the two backends differ there, so a
-  cloud call is what confirms the rule rather than the assumption.
-- **Does anything unexpected reach the catch-all?** The `path` column exists to turn that standing
-  worry into a list of facts, and a real session is what populates it.
+- **Does `x-claude-code-agent-id` actually arrive?** **Yes.** Seven rows carry one agent ID, covering
+  both the subagent's own background calls and its main call — so the column separates a subagent's
+  whole footprint, not just its headline request. An empty `agent_id` can be read as "main
+  conversation".
+- **Does `client_disconnect` happen the way the unit test says?** **Yes.** Six rows, on both
+  backends. Two shapes: some captured partial usage before the drop (`message_start` arrived,
+  `message_delta` never did), some captured nothing.
+- **Do Anthropic's streamed replies scan the way LM Studio's do?** **Yes.** Thirty-two streamed
+  Anthropic rows with every token column populated. Their `input_tokens` of 2 alongside large
+  `cache_read` values is the `message_start`-only rule earning itself — a scanner keyed on
+  `message_delta` would have looked fine locally and been wrong here.
+- **Does anything unexpected reach the catch-all?** **Yes** — `/v1/messages/count_tokens`, 33 rows.
+  LM Studio does not implement it and answers HTTP 200 with an error body, so the rows read `ok`.
+  That became `EPD-002-token-counting-for-local-backends.md`.
+
+Four recorder defects surfaced alongside, all fixed: `stream` written blank where Claude Code omits
+the field, the log and CSV timestamping on different clocks, the backend's symbolic `error.type`
+being discarded, and completion-ordered rows going undocumented.
+
+One finding that is not a defect and has no owner yet: **Claude Code's prompt-cache warmup probes
+cost 44% of local wall-clock time** in that session — 40 calls returning zero content tokens, 20.0 of
+45.5 minutes. Recorded under "No special case for background/auxiliary traffic" in `CLAUDE.md`,
+because it is an argument against that decision rather than a bug in this one.
 
 ## Findings from Phase 1, kept for the record
 
