@@ -8,7 +8,8 @@ It is deliberately thin. The design lives in `CLAUDE.md`, which is loaded automa
 session; the phased plan lives in `implementation-plan.md`; the authentication procedure lives in
 `anthropic-auth-check.md`; the decisions taken while writing the proxy live in `phase-1-notes.md`; the plan for Phase 2 and
 the fourteen decisions taken building it live in `phase-2-notes.md`; what Phase 3 turned out to be —
-mostly already built — lives in `phase-3-notes.md`;
+mostly already built — lives in `phase-3-notes.md`, with the backend that fails on purpose, and the
+commands that drive it, in `phase-3-verification/`;
 the procedure for testing the router against a real session lives in `testing-against-claude-code.md`;
 the token-usage check that unblocked Phase 2 lives in `lmstudio-usage-check.md`; proposals that are
 written up but not decided live in `docs/epd/`, indexed by `EPD-000-about-these-documents.md`, which

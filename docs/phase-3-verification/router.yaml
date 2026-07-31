@@ -1,0 +1,35 @@
+# The router configured for failure testing. See README.md in this directory.
+#
+# Two things are deliberate. The port is 8799 rather than 8787, and the backend is 1299 rather than
+# 1234, so this runs *alongside* a working router and a real LM Studio without disturbing either —
+# every measurement in phase-3-notes.md was taken that way. And the log and CSV go to `runs/`, which
+# is gitignored, so exercising the failure paths does not leave artefacts in `docs/`.
+
+server:
+  host: 127.0.0.1
+  port: 8799
+
+backends:
+  # Unused here: nothing in this directory sends a `claude-` model anywhere. Kept because the config
+  # requires both backends, and pointing it at the real address is more honest than a fake one that
+  # would send traffic somewhere unexpected if a test ever did name a Claude model.
+  anthropic:
+    base_url: https://api.anthropic.com
+    credential: forward
+
+  # Where the failures come from. With `dying_backend.py` running, this answers and then breaks;
+  # with nothing running, it is the unreachable-backend case. Both are wanted.
+  lmstudio:
+    base_url: http://127.0.0.1:1299
+    credential: strip
+
+logging:
+  level: INFO
+  file: runs/router.log
+  max_bytes: 10485760
+  backup_count: 5
+
+stats:
+  file: runs/calls.csv
+  max_bytes: 5242880
+  backup_count: 10

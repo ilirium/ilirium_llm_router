@@ -152,9 +152,13 @@ real uvicorn**, not the test client, because the test client cannot exercise a c
 or a socket that resets.
 
 Setup, kept out of the way of the working router on 8787 and the real LM Studio on 1234: a second
-instance on **8799** from a scratchpad config whose `lmstudio` backend points at **1299**, which was
-either dead or held by a stand-in that answers with SSE headers and one `message_start`, then resets
-the connection with the answer half-written.
+instance on **8799** whose `lmstudio` backend points at **1299**, which was either dead or held by a
+stand-in that answers with a complete SSE opening and then resets the connection with the answer
+half-written.
+
+**Both are committed, in `phase-3-verification/`**, with the commands and the expected results. A
+backend cannot be asked politely to die halfway through a reply, so the only way to see any of this
+again — in Phase 4, or after a change to the relay — is to keep the thing that does it.
 
 | Case | Result |
 |---|---|

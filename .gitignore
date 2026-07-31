@@ -227,3 +227,5 @@ __MACOSX/
 # Step: Router runtime output
 logs/
 !docs/phase-2-step-6-session/router.log
+# Phase 3's verification directory is a tool, not evidence: what a run of it produces is disposable.
+docs/phase-3-verification/runs/
