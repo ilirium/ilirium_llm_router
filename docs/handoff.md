@@ -45,12 +45,16 @@ against a live server, and what Claude Code *displays* is not. Details in `phase
 
 ## What we were doing when we stopped
 
-**Phase 3, 2026-07-31, three commits on `feat/phase-3-failure-handling` and a clean tree.** What is
-left is one thing: **run a real Claude Code session against a local model and stop LM Studio while
-it is answering**, then read what Claude Code puts on screen and check the row. Everything else in
-the phase is done and checked. The 502 and the injected SSE `error` event are both in Anthropic's
-shape, which is the reason to expect Claude Code renders them — expecting is not measuring, and this
-project has been wrong that way before.
+**Phase 3, 2026-07-31, on `feat/phase-3-failure-handling` with a clean tree, not yet merged.** The
+dead-backend path is now measured in a real session: Claude Code shows the router's own wording and
+**retries the 502 ten times with backoff**, so a session heals itself if LM Studio comes back — and
+one turn becomes up to ten `transport_error` rows. The display truncates the message from the right,
+which makes the order of that string a constraint rather than a preference.
+
+What is left is the *other* failure: **a backend that dies while answering**, which is what the
+injected SSE `error` event is for. It is verified against curl and against tests; what Claude Code
+renders for it is not. The session above never reached that path, because the connection was refused
+before any reply began.
 
 One thing found and deliberately not acted on: **`make format` cannot be run safely.** It reformats
 twelve files, eight of them unrelated to any current work, because `pyproject.toml` sets no ruff

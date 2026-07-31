@@ -162,12 +162,36 @@ all three sites. Re-verified live: the event and the row both read `ReadError`.
 This is the same lesson as Phase 2 step 6, and it is now two for two: **the tests confirm the code
 does what it was written to do; only real traffic shows what it was written to do being wrong.**
 
+## What Claude Code shows, measured 2026-07-31
+
+A real session against a local model with LM Studio not running. Claude Code displayed:
+
+```
+✻ 502 Could not reach the lmstudio backend at http://localhost:1234: ConnectError: … ·
+  Retrying in 3s · attempt 5/10
+```
+
+Three facts come out of that one line, and the second and third were not anticipated.
+
+**The router's own wording reaches the user, and is truncated from the right.** What is on screen is
+the `message` from `error_response`, cut off with an ellipsis. So the *order* of that string is a
+constraint, not a style choice: the backend and its address have to come before the exception, which
+is how it happens to be written. Anything that puts httpx's wording first would push the only
+identifying detail off the end of the line.
+
+**Claude Code retries a 502 — ten times, with backoff.** The status was chosen to describe what
+happened, and it turns out to also decide behaviour: a 502 reads as transient, so a session survives
+LM Studio being restarted without the user doing anything. Worth knowing before anyone is tempted to
+"fix" the status to something more precise. A 4xx would fail the turn immediately instead.
+
+**One user turn therefore becomes up to ten `transport_error` rows.** Each is a real call and
+belongs in the file, but a row count is not a turn count when a backend is down, and the retries are
+Claude Code's rather than the router's — nothing here retries anything.
+
 ## What is still not proven
 
-The other half of the "Done when":
-
-> Stopping LM Studio mid-session produces a clear message in Claude Code and a correct CSV row.
-
-The row is proven. **What Claude Code displays is not** — the 502 and the SSE `error` event are
-both in the shape Anthropic uses, which is the reason to expect it renders them, but expecting is
-not measuring. It needs a session with a local model where LM Studio is stopped mid-answer.
+The dead-backend path is now measured end to end. **The injected SSE `error` event has not been seen
+in Claude Code** — that is the other failure, a backend that dies *while answering*, and the session
+above never reached it because the connection was refused before any reply started. It is verified
+against curl (above) and against tests, but what Claude Code renders for it, and whether that gets
+the same ten retries, is unmeasured.
