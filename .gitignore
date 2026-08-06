@@ -231,3 +231,7 @@ logs/
 docs/phase-3-verification/runs/
 # Same for Phase 4's probes: the findings go in phase-4-notes.md, not into a committed transcript.
 docs/phase-4-probes/runs/
+# needle.json is generated filler, and its size is an argument to make_needle.py rather than a
+# property of the probe — there is no one version of it worth keeping. image.json is committed
+# because it is small and fixed.
+docs/phase-4-probes/bodies/needle.json

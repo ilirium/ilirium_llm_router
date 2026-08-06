@@ -11,6 +11,39 @@ run against this router even once. Read the verification table before acting on 
 accepted into the spec on the day this was written, because they are nearly free while Phase 2 is
 being built and awkward afterwards. They are specified, not written. Everything else waits.
 
+---
+
+## Phase 4 addendum, 2026-08-06 — the gate is met; the decision is still not taken
+
+The deferral above names a condition: **how much of a real session a local model can carry.** Phase 4
+answers it, and the answer is *most of it*. Full detail in `../phase-4-notes.md`; the parts that bear
+on this document:
+
+- **Nothing was rejected.** Tool calls, tool results, images, `thinking` blocks, a system-role message
+  inside `messages`, and the entire captured 118 KB Claude Code request all work against
+  `qwen/qwen3.5-9b` unmodified.
+- **A real session already happened.** The Phase 2 step 6 session ran 99 calls against this same model
+  — multi-turn, subagents, tool use, file editing — which is why Phase 4 did not run another.
+- **Mixed-model sessions are measured, not hypothetical.** Two client sessions in
+  `../phase-2-step-6-session/calls.csv` reached both backends, and seven rows carry a subagent's
+  `agent_id`. The per-request dispatch this document says already satisfies the subagent requirement
+  does satisfy it.
+
+So the reason for waiting is discharged. **This does not accept the proposal** — an EPD is accepted
+deliberately, on a stated date, or not at all, and nobody has taken that decision. What has changed is
+that the objection "a picker full of local models is worth nothing until a local model can hold a
+session" no longer applies.
+
+Two findings from Phase 4 that a model picker would have to live with, neither of them blocking:
+
+- **The usable window is bounded by time, not by its size.** The router's 600 s read timeout is
+  reachable by an ordinary large request — a ~41000-token call against a 44544-token window was
+  killed while the backend was still healthily prefilling. Offering a model in a picker implies it can
+  be used at its stated context; on this hardware it cannot.
+- **Cold prompts are slow enough to look broken.** 197 s to first byte for a one-word turn against a
+  cold cache, 50 s against a warm one. Anything that switches models mid-session pays the cold number
+  on the first turn after the switch.
+
 ## The requirement this document is about
 
 Two things the repository owner wants, stated on 2026-07-30:

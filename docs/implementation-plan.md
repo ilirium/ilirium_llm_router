@@ -181,6 +181,22 @@ publishes no compatibility table, so the only way to know is to send real traffi
 
 **Done when.** There is an honest written list of what works locally and what does not.
 
+**Met on 2026-08-06**, against `qwen/qwen3.5-9b` at 44544 tokens. The list is in `phase-4-notes.md`,
+the instrument in `phase-4-probes/`, and the summary is that **nothing was rejected** — every awkward
+shape this plan named was accepted, including the system-role message it expected to fail and the
+whole captured request replayed unmodified. No targeted fix was needed, so none was made.
+
+Three results the plan did not anticipate. **Prompt caching became a measurement** rather than a
+rationale: the same request twice, `cache_read` 27904 of 27924, time to first byte cut four-fold.
+**Silent truncation does not occur** — the boundary refuses cleanly — which retires a worry standing
+since Phase 1, though the refusal arrives in the SSE `error` form Phase 3 found Claude Code ignoring.
+And **the router's 600 s read timeout is reachable by an ordinary large request**, killing a healthy
+call mid-prefill; recorded, deliberately not fixed here, and carried to the next phase.
+
+A note on method, now true three phases running: **a third of this phase was already measured** by
+Phase 2's frozen session, and reading it first deleted a step and a probe from the plan. Phase 3
+found four of its five items already built. Check the committed artefacts before planning a run.
+
 ---
 
 ## Things that are easy to get wrong

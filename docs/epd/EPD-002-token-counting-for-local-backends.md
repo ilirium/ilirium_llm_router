@@ -9,6 +9,49 @@ accounting for local models is an estimate against an assumed 200k window.** On 
 model that is harmlessly conservative. On a small-context model it is the silent-truncation failure
 `CLAUDE.md` has been worried about since Phase 1, with a mechanism attached at last.
 
+---
+
+## Phase 4 addendum, 2026-08-06 — two corrections, still no decision
+
+Phase 4 measured what this document was waiting for. It does not settle the fork below, but it
+invalidates one row of the evidence table and one line of the proposed arithmetic. Recorded here
+rather than edited in silently, because the original reasoning is what a later reader needs to judge.
+
+**1. "Silently truncates" is wrong. It refuses.** The table under "Documented versus measured" reads
+`A sub-200k local model silently truncates while showing a low percentage — Inferred from the two
+measured errors; never observed end to end`. Now observed, and the inference does not hold: a request
+whose input exceeds the loaded window comes back in under a second with
+
+> `The number of tokens to keep from the initial prompt is greater than the context length. Try to
+> load the model with a larger context length, or provide a shorter input`
+
+LM Studio drops nothing. So the harm this document is organised around — a degraded answer that never
+announces itself — **does not occur at the boundary**. What occurs instead is a hard failure carrying
+an actionable message. See `../phase-4-notes.md`.
+
+That weakens the case for the **Scaled** option considerably, since "only the scaled option solves
+silent truncation" was its main argument and there is less silent truncation to solve. It does not
+eliminate the case: the failure still arrives as an SSE `error` inside an HTTP 200, which Phase 3
+measured Claude Code ignoring, so the user may still see only `empty or malformed response`. A
+correct `/context` percentage would let them avoid the wall rather than decode the crash.
+
+Also still open: whether trimming happens *below* the boundary. The run meant to check hit the
+router's own 600 s read timeout first.
+
+**2. The scaled option reads the wrong field.** Under "The fork, stated and not decided", the scaled
+formula is `true_tokens × 200000 / real_context_length`, and the paragraph after it sources
+`real_context_length` from `GET /api/v1/models`'s **`max_context_length`** — 262144 for
+`qwen/qwen3.5-9b`.
+
+That is the model's *maximum*, not the window it is *loaded* with. The loaded value lives one level
+down, at `loaded_instances[].config.context_length`, and on this machine it was **44544** while
+`max_context_length` said 262144. Scaling by the larger number would report a window roughly six
+times too generous — the same class of error this option exists to correct, and arrived at by reading
+the neighbouring field. Whoever picks this up must use `loaded_instances[].config.context_length`,
+and must handle its absence, since a model that is not loaded has no window at all.
+
+---
+
 ## How this surfaced
 
 Phase 2 step 6 — the real Claude Code session of 2026-07-31, recorded in `logs/calls.csv`. The `path`

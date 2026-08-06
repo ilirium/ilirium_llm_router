@@ -9,7 +9,9 @@ session; the phased plan lives in `implementation-plan.md`; the authentication p
 `anthropic-auth-check.md`; the decisions taken while writing the proxy live in `phase-1-notes.md`; the plan for Phase 2 and
 the fourteen decisions taken building it live in `phase-2-notes.md`; what Phase 3 turned out to be —
 mostly already built — lives in `phase-3-notes.md`, with the backend that fails on purpose, and the
-commands that drive it, in `phase-3-verification/`;
+commands that drive it, in `phase-3-verification/`; what LM Studio turned out to support lives in
+`phase-4-notes.md`, planned in `phase-4-plan.md` and measured with the probes in `phase-4-probes/`,
+which are committed and meant to be re-run;
 the procedure for testing the router against a real session lives in `testing-against-claude-code.md`;
 the token-usage check that unblocked Phase 2 lives in `lmstudio-usage-check.md`; proposals that are
 written up but not decided live in `docs/epd/`, indexed by `EPD-000-about-these-documents.md`, which
@@ -37,17 +39,55 @@ four recorder defects that have since been fixed. The session is frozen in `phas
 **The branch was merged into `main` on 2026-07-31** as `4d7d7f6`, `--no-ff` by convention so the
 phase boundary stays visible in the history. Nothing from Phase 2 is outstanding.
 
-**Phase 3 is complete and verified on 2026-07-31, on `feat/phase-3-failure-handling`, not yet
-merged.** 147 tests. Its central finding: **four of its five items were already built by Phase 2**,
+**Phase 3 is complete and verified on 2026-07-31, merged to `main` as `cc65aed`.** 147 tests. Its central finding: **four of its five items were already built by Phase 2**,
 which was specified as observability and delivered most of the error handling as a by-product of
 needing an `error_status` column. The work was finding what that left — four gaps, all closed — and
 measuring the phase's "Done when" against a live server and a real Claude Code session. Details in
 `phase-3-notes.md`.
 
+**Phase 4 is complete and measured on 2026-08-06, on `feat/phase-4-lmstudio-parity`, not yet
+merged.** Against `qwen/qwen3.5-9b` at 44544 tokens. **Nothing was rejected** — every shape the plan
+named was accepted, including the system-role message `CLAUDE.md` predicted was unsupported, and the
+whole captured 118 KB request replays unmodified. Findings in `phase-4-notes.md`, instrument in
+`phase-4-probes/`, which is committed and meant to be re-run.
+
 ## What we were doing when we stopped
 
-**Phase 3, 2026-07-31, on `feat/phase-3-failure-handling` with a clean tree, not yet merged.** The
-dead-backend path is now measured in a real session: Claude Code shows the router's own wording and
+**Phase 4, 2026-08-06.** The probes are written and run, the findings written up, `CLAUDE.md` and
+`implementation-plan.md` updated, and both EPDs carry Phase 4 addenda. What remains is the `--no-ff`
+merge.
+
+Three results worth carrying beyond the parity table:
+
+**Prompt caching stopped being an argument and became a number.** The captured request replayed
+twice gave `cache_read_input_tokens` of **27904 out of 27924**, and time to first byte fell from
+196789 ms to 49629 ms. `CLAUDE.md` has always called caching the strongest practical reason to relay
+bytes untouched; that is now measured end to end rather than reasoned about.
+
+**Silent truncation does not happen** — the worry standing since Phase 1 is retired. An over-window
+request is refused in 908 ms with a message naming the cause and both fixes. But it arrives as an SSE
+`error` event inside an HTTP 200, which is the shape Phase 3 measured Claude Code ignoring, so the
+most useful message LM Studio produces may never be seen. That specific case is *not* measured: Phase
+3's event followed partial content, this one is the sole event in the stream.
+
+**The router's 600 s read timeout is reachable by ordinary traffic**, and this is the phase's one
+real defect. A ~41000-token request against a 44544-token window was killed at exactly `read=600.0`
+while LM Studio was still healthily prefilling — so **the usable context of a local model is bounded
+by time, not by its window**. Deliberately not fixed: the same number is what makes a wedged backend
+fail in bounded time and Phase 3 chose it on purpose. It belongs to the next phase, alongside the
+credential work, with three options — a larger timeout, a configurable one, or one that resets on
+progress rather than on first byte.
+
+Two process notes. **A third of the phase was already measured** by Phase 2's frozen session, and
+reading `phase-2-step-6-session/calls.csv` before running anything deleted a whole step and one probe
+from the plan — the second phase running to find its work partly done. And **`lms load -c 8192` is
+silently ignored**; LM Studio's saved per-model config beats the CLI, so a specific context length
+needs a person in the GUI. The boundary was measured at the real 44544 instead.
+
+### Earlier: Phase 3
+
+**Phase 3, 2026-07-31, merged to `main` as `cc65aed`.** The
+dead-backend path is measured in a real session: Claude Code shows the router's own wording and
 **retries the 502 ten times with backoff**, so a session heals itself if LM Studio comes back — and
 one turn becomes up to ten `transport_error` rows. The display truncates the message from the right,
 which makes the order of that string a constraint rather than a preference.
@@ -62,7 +102,7 @@ test, and other harnesses are planned. `CLAUDE.md` records it as a feature with 
 consumer**, so nobody later mistakes it for something that solved a visible problem. If a second
 client also ignores it, delete it.
 
-The phase's "Done when" is now met in full. What remains is the `--no-ff` merge.
+The phase's "Done when" is met in full, and the `--no-ff` merge landed as `cc65aed`.
 
 **`make format` is now safe to run**, which it was not when this phase started. `pyproject.toml` set
 no ruff line length, so the formatter used its default 88 columns against a codebase written at 100
@@ -268,8 +308,8 @@ If a further capture is ever taken, redact the same set before committing it.
 
 ## Caveats worth carrying forward
 
-**Phase 4 remains an intention; Phase 3 is written, unit-tested and verified against a live server
-for everything except what Claude Code shows the user.** What is now fact: the
+**Phase 4 is now measured too, on 2026-08-06** — see `phase-4-notes.md` for what LM Studio supports
+and, more usefully, the four things that remain open at the end of it. What is now fact: the
 "Observed request shape" section of `CLAUDE.md`, the Result section of `anthropic-auth-check.md`, the
 two Phase 1 findings above, the session results in `testing-against-claude-code.md`, and — for Phase
 2 — the numbers checked against a live LM Studio on 2026-07-30, and the step 6 session that closed
@@ -279,12 +319,16 @@ should. What is *not* fact is the half that needs a person watching: whether Cla
 either error usefully. LM Studio parity beyond tool calls and usage remains design intent that no
 code has been checked against — that is Phase 4.
 
-**LM Studio's parity is now partly measured rather than assumed, but only partly.** Tool calls
-demonstrably survive the round trip — the 2026-07-29 session read and wrote files, ran bash commands
-and ran a Python script — which was the biggest unknown. Token usage is reported too, in Anthropic's
-exact shape, streaming and not (`lmstudio-usage-check.md`). LM Studio still publishes no
-compatibility table, and these remain untested: a `role: "system"` message inside `messages`,
-`thinking` blocks, and images. Do not assume passthrough is lossless before Phase 4.
+**LM Studio's parity is measured, and it is better than this file assumed for months.** Tool calls,
+tool results, token usage, `thinking` blocks, images, a `role: "system"` message inside `messages`,
+and the whole captured 118 KB request all work — **nothing sent in Phase 4 was rejected**. The
+sentence this paragraph used to end with, warning not to assume passthrough is lossless, was right to
+be cautious and turned out to be pessimistic.
+
+Two caveats replace it. The gaps that exist are **quiet rather than loud** — `thinking.budget_tokens`
+ignored, `output_config.effort` billing reasoning it never emits — and a quiet gap is harder to
+notice than a rejection. And **all of it is one model**, `qwen/qwen3.5-9b`; `capabilities` varies per
+model in `GET /api/v1/models`, so none of it transfers without re-running `phase-4-probes/`.
 
 **One claim in this repository was already wrong once.** The first version of `CLAUDE.md` asserted
 that a protocol translation layer between the Anthropic and OpenAI formats was needed and was the

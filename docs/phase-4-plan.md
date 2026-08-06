@@ -3,6 +3,11 @@
 Written 2026-08-06, before the phase starts. `implementation-plan.md` says what Phase 4 is for; this
 says how it will be run and in what order. Findings go in `phase-4-notes.md` as they are measured.
 
+**Completed the same day.** The boxes below are ticked as they were done, and two are not ticked
+because they could not be: the 8192 reload is not reachable from the CLI, and the replay never failed
+so there was nothing to bisect. Both are recorded rather than quietly dropped. **Read
+`phase-4-notes.md` for the results** — this file is the plan, kept as written plus its outcomes.
+
 Branch: `feat/phase-4-lmstudio-parity`, off `main` at `cc65aed`. Merge back with `--no-ff`.
 
 This is a **measurement phase**. Almost nothing here is code. The output is an honest list of what a
@@ -58,16 +63,16 @@ it tests known content rather than assumed content.
 
 ### 1. The probe instrument
 
-- [ ] Branch, and fix the one stale line in `handoff.md` that still calls Phase 3 unmerged
-- [ ] `docs/phase-4-probes/` with a runner that sends a body through the router and records status,
+- [x] Branch, and fix the one stale line in `handoff.md` that still calls Phase 3 unmerged
+- [x] `docs/phase-4-probes/` with a runner that sends a body through the router and records status,
       headers, the stream and the CSV row. Committed, following `phase-3-verification/` rather than
       `phase-2-step-6-session/`: this is a tool to re-run, not frozen evidence, because every finding
       here expires the next time LM Studio ships a release
 
 ### 2. Replay the whole captured request
 
-- [ ] Send `log-the-whole-request.txt` through the router with the model swapped to the local id
-- [ ] Record what came back
+- [x] Send `log-the-whole-request.txt` through the router with the model swapped to the local id
+- [x] Record what came back
 
 One request carries four of the phase's questions at once — a `role: "system"` message inside
 `messages`, the ten-entry `anthropic-beta` header, `context_management` / `output_config` /
@@ -75,20 +80,20 @@ One request carries four of the phase's questions at once — a `role: "system"`
 testing; the frozen session already went 170 KB. What it adds over those rows is that its contents
 are **known**, so a success names the fields that survived.
 
-- [ ] **If it fails:** bisect by removing one element at a time. That is what turns "LM Studio
-      objects" into "LM Studio objects *to this*", which is the only form of the finding worth having
+- [n/a] **If it fails:** bisect by removing one element at a time — the only form of the finding
+      worth having. **It did not fail**, so there was nothing to bisect
 
 ### 3. The probes the replay cannot isolate
 
 Small bodies, a few hundred bytes each — the question is whether LM Studio accepts the shape, not
 whether it works at scale, and a small body answers it in seconds rather than minutes.
 
-- [ ] `thinking: {"type": "adaptive", "display": "omitted"}` — accepted or rejected, and whether
+- [x] `thinking: {"type": "adaptive", "display": "omitted"}` — accepted or rejected, and whether
       qwen's reasoning surfaces as `thinking` content blocks in the stream at all. The CSV records no
       content, so the frozen session cannot answer this however many times it is read
-- [ ] An image content block, base64. A coding session sends none, so this is untouched by prior runs
-- [ ] Each unusual body field alone, so a rejection names the field rather than the request
-- [ ] A `role: "system"` message inside `messages`, alone, if step 2 did not settle it
+- [x] An image content block, base64. A coding session sends none, so this is untouched by prior runs
+- [x] Each unusual body field alone, so a rejection names the field rather than the request
+- [x] A `role: "system"` message inside `messages`, alone, if step 2 did not settle it
 
 `tool_result` was on this list and has been removed — the frozen session measured it, see above.
 
@@ -96,31 +101,38 @@ whether it works at scale, and a small body answers it in seconds rather than mi
 
 The one item with a consequence rather than a curiosity, and the mechanism behind `EPD-002`.
 
-- [ ] Reload at 8192
-- [ ] Put a distinctive needle near the start of a conversation, grow it past the window, ask for the
+- [~] Reload at 8192 — **not possible from the CLI**; `lms load -c 8192` is silently ignored,
+      LM Studio's saved per-model config wins. Measured at the real 44544 window instead
+- [x] Put a distinctive needle near the start of a conversation, grow it past the window, ask for the
       needle back
-- [ ] Compare the `input_tokens` LM Studio reports against what was actually sent
-- [ ] Record which it is: silent trimming, or a loud error
+- [x] Compare the `input_tokens` LM Studio reports against what was actually sent
+- [x] Record which it is: silent trimming, or a loud error
 
 Silent trimming degrades answers without ever failing, which is why this is worth the reload. A loud
 error is the good outcome.
 
 ### 5. Write it up
 
-- [ ] `docs/phase-4-notes.md` — procedure and findings, including everything that did not work, and
+- [x] `docs/phase-4-notes.md` — procedure and findings, including everything that did not work, and
       including that a third of this phase was already answered by a session run for another one.
       Phase 3 found four of its five items already built; this is the second instance, and a pattern
       worth naming rather than being surprised by a third time
-- [ ] The parity table into `CLAUDE.md`, replacing the "still unmeasured" list
-- [ ] `handoff.md`
-- [ ] Revisit `EPD-001` and `EPD-002`, both of which name Phase 4 as what they wait on. Revisit, not
+- [x] The parity table into `CLAUDE.md`, replacing the "still unmeasured" list
+- [x] `handoff.md`
+- [x] Revisit `EPD-001` and `EPD-002`, both of which name Phase 4 as what they wait on. Revisit, not
       decide — an EPD is accepted deliberately or not at all
 
-One fact already in hand for `EPD-002`: the loaded context length **is** machine-readable, at
-`loaded_instances[].config.context_length` in `GET /api/v1/models`. That document's problem is that
-Claude Code assumes 200k because it has no way to learn the real window; the number is available,
-just outside the Anthropic-compat namespace. It does not settle the open fork, but the document was
-written without it.
+One fact for `EPD-002`, **corrected 2026-08-06 from an earlier draft of this line**, which claimed
+the document was written without knowing the context length is machine-readable. It was not: EPD-002
+already cites `GET /api/v1/models` and its `max_context_length`.
+
+The real finding is narrower and worse. EPD-002's scaled option computes
+`true_tokens × 200000 / real_context_length` and takes `real_context_length` from
+**`max_context_length`** — 262144 for `qwen/qwen3.5-9b`. That is the model's *maximum*, not the
+window it is *loaded* with, which is `loaded_instances[].config.context_length` and was 44544 here.
+Scaling by the larger number would report a window roughly six times too big, which is the very error
+the scaled option exists to fix. The two fields are one line apart in the same response and mean
+different things.
 
 ## Done when
 
