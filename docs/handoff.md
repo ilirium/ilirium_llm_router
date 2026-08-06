@@ -45,17 +45,23 @@ needing an `error_status` column. The work was finding what that left — four g
 measuring the phase's "Done when" against a live server and a real Claude Code session. Details in
 `phase-3-notes.md`.
 
-**Phase 4 is complete and measured on 2026-08-06, on `feat/phase-4-lmstudio-parity`, not yet
-merged.** Against `qwen/qwen3.5-9b` at 44544 tokens. **Nothing was rejected** — every shape the plan
+**Phase 4 is complete and measured on 2026-08-06, merged to `main` as `50444c5`.** Against
+`qwen/qwen3.5-9b` at 44544 tokens. **Nothing was rejected** — every shape the plan
 named was accepted, including the system-role message `CLAUDE.md` predicted was unsupported, and the
 whole captured 118 KB request replays unmodified. Findings in `phase-4-notes.md`, instrument in
 `phase-4-probes/`, which is committed and meant to be re-run.
 
 ## What we were doing when we stopped
 
-**Phase 4, 2026-08-06.** The probes are written and run, the findings written up, `CLAUDE.md` and
-`implementation-plan.md` updated, and both EPDs carry Phase 4 addenda. What remains is the `--no-ff`
-merge.
+**Phase 4, 2026-08-06, finished with a clean tree.** The probes are written and run, the findings
+written up, `CLAUDE.md` and `implementation-plan.md` updated, both EPDs carry Phase 4 addenda, and
+the `--no-ff` merge landed as `50444c5`. Nothing from Phase 4 is outstanding.
+
+**What is next**, and it is now two items rather than one. The credential config shape, agreed since
+2026-07-29 and still unwritten — one `credential` field, three modes, contradictions refused at
+startup. And the **read timeout** Phase 4 found reachable by ordinary traffic, which is a real defect
+with three candidate fixes and no decision taken. They belong together: both are small, both touch
+configuration, and neither is a measurement.
 
 Three results worth carrying beyond the parity table:
 
