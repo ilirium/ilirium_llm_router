@@ -14,7 +14,13 @@ out that it has.
 | `probe.py` | Sends one body through the router and reports what came back — status, event sequence, content block types, usage, and the CSV row the call wrote |
 | `bodies/*.json` | One minimal request each, carrying exactly **one** unusual element, so a rejection names the element rather than the request |
 | `make_image.py` | Regenerates `bodies/image.json`. Hand-rolled PNG; the project has no image dependency and needs none |
-| `runs/` | Full transcripts. Gitignored — this is a tool, and its findings belong in the notes |
+| `runs/` | Full transcripts. Gitignored — this is a tool, and its findings belong in the notes. **Each probe overwrites its own file**, so a result worth keeping must be copied out before the next run |
+
+**Four results from this directory are frozen in `../phase-4-evidence/`** and must not be regenerated
+from here. Re-running reproduces most of what these probes measure, which is why `runs/` is
+disposable — but not the cold-cache replay, not the over-window refusal, and not the read timeout.
+The rule is "does re-running produce the same number", not "is this a tool or evidence"; see that
+directory's README.
 
 ## Running it
 

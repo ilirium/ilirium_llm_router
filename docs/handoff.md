@@ -11,7 +11,8 @@ the fourteen decisions taken building it live in `phase-2-notes.md`; what Phase 
 mostly already built — lives in `phase-3-notes.md`, with the backend that fails on purpose, and the
 commands that drive it, in `phase-3-verification/`; what LM Studio turned out to support lives in
 `phase-4-notes.md`, planned in `phase-4-plan.md` and measured with the probes in `phase-4-probes/`,
-which are committed and meant to be re-run;
+which are committed and meant to be re-run — with the four measurements that *cannot* be taken again
+frozen in `phase-4-evidence/`;
 the procedure for testing the router against a real session lives in `testing-against-claude-code.md`;
 the token-usage check that unblocked Phase 2 lives in `lmstudio-usage-check.md`; proposals that are
 written up but not decided live in `docs/epd/`, indexed by `EPD-000-about-these-documents.md`, which

@@ -1,0 +1,14 @@
+=== needle ==================================================================
+verdict        REJECTED — inside an HTTP 200
+status         200
+request        165051 bytes, max_tokens 64
+reply          243 bytes, ttfb 908 ms, total 910 ms
+events         error
+blocks         (none)
+stop_reason    None
+usage          null
+error          {"type": "error", "error": {"type": "api_error", "message": "The number of tokens to keep from the initial prompt is greater than the context length. Try to load the model with a larger context length, or provide a shorter input"}}
+text           ''
+csv row        backend=lmstudio, stream=true, error_status=stream_error, error_code=api_error
+
+full transcript: docs/phase-4-probes/runs/needle.txt

@@ -1,0 +1,14 @@
+=== needle ==================================================================
+verdict        REJECTED — inside an HTTP 200
+status         200
+request        135391 bytes, max_tokens 64
+reply          144 bytes, ttfb 600247 ms, total 600255 ms
+events         error
+blocks         (none)
+stop_reason    None
+usage          null
+error          {"type": "error", "error": {"type": "api_error", "message": "The lmstudio backend's reply broke off mid-stream: ReadTimeout"}}
+text           ''
+csv row        backend=lmstudio, stream=true, error_status=transport_error, error_code=read_timeout
+
+full transcript: docs/phase-4-probes/runs/needle.txt

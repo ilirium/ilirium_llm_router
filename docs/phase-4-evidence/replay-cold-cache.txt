@@ -1,0 +1,14 @@
+=== replay ==================================================================
+verdict        accepted
+status         200
+request        119797 bytes, max_tokens 64000
+reply          5036 bytes, ttfb 196789 ms, total 198000 ms
+events         message_start, content_block_start, content_block_delta ×24, content_block_stop, content_block_start, content_block_delta ×10, content_block_stop, message_delta, message_stop
+blocks         thinking, text
+stop_reason    end_turn
+usage          {"input_tokens": 27924, "output_tokens": 36, "cache_read_input_tokens": 0}
+thinking       'User greeted with "hi", so I should respond with a simple friendly greeting and ask how I can help them.\n'
+text           '\n\nHi! How can I help you today?'
+csv row        backend=lmstudio, stream=true, input_tokens=27924, output_tokens=36, stop_reason=end_turn, error_status=ok
+
+full transcript: docs/phase-4-probes/runs/replay.txt

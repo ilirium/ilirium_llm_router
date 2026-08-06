@@ -4,7 +4,11 @@ Written 2026-08-06 **while measuring**, like `phase-3-notes.md` and unlike `phas
 plan is `phase-4-plan.md`; the instrument is `phase-4-probes/`, which is committed and meant to be
 re-run, because every finding below expires the next time LM Studio ships a release.
 
-Branch: `feat/phase-4-lmstudio-parity`, off `main` at `cc65aed`. Merge back with `--no-ff`.
+Branch: `feat/phase-4-lmstudio-parity`, off `main` at `cc65aed`. Merged with `--no-ff` as `50444c5`.
+
+**The sources for the numbers that cannot be measured again are frozen in `phase-4-evidence/`** — the
+cold and warm cache replays, the over-window refusal, and the read timeout. Everything else in
+`phase-4-probes/runs/` is disposable and gitignored, because re-running reproduces it.
 
 Model throughout: **`qwen/qwen3.5-9b`**, MLX 4-bit, loaded at **44544** tokens of context out of a
 262144 maximum. LM Studio's "Require Authentication" is off, so no credential was configured.
