@@ -1,0 +1,19 @@
+{
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 128,
+  "stream": true,
+  "context_management": {
+    "edits": [
+      {
+        "type": "clear_thinking_20251015",
+        "keep": "all"
+      }
+    ]
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Reply with exactly the two words: PROBE OK"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 128,
+  "stream": true,
+  "system": [
+    {
+      "type": "text",
+      "text": "You are a probe. Answer tersely."
+    },
+    {
+      "type": "text",
+      "text": "This block is marked for caching, so that a second run of this probe can be compared against the first. Padding follows to make the prefix worth caching: the router relays request bytes untouched precisely so that a cache prefix keeps matching, and cache_read_input_tokens is the column that makes that visible rather than assumed. Repeat: the router relays request bytes untouched precisely so that a cache prefix keeps matching.",
+      "cache_control": {
+        "type": "ephemeral",
+        "ttl": "1h"
+      }
+    }
+  ],
+  "messages": [
+    {
+      "role": "user",
+      "content": "Reply with exactly the two words: PROBE OK"
+    }
+  ]
+}

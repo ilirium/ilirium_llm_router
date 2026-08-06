@@ -1,0 +1,24 @@
+{
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 256,
+  "stream": true,
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "image",
+          "source": {
+            "type": "base64",
+            "media_type": "image/png",
+            "data": "iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAX0lEQVR4nO3PMQ0AIAwAsCnZjQhuxCJnNyKQgAaOfU1qoHEyW+WerUJAQEBAQEBAQEBAQEBAQEBAQEBAQEBA4DswVrW6NVoJCAgICAgICAgICAgICAgICAgICAgICHx7+VQZPFY9uX0AAAAASUVORK5CYII="
+          }
+        },
+        {
+          "type": "text",
+          "text": "This image has four coloured quadrants. Name the colour of each, in this order: top-left, top-right, bottom-left, bottom-right. Answer with four words only."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 128,
+  "stream": true,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Reply with exactly the two words: PROBE OK"
+    }
+  ]
+}
