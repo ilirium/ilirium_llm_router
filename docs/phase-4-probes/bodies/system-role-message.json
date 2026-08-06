@@ -1,0 +1,20 @@
+{
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 128,
+  "stream": true,
+  "messages": [
+    {
+      "role": "user",
+      "content": "What colour is the sky on a clear day?"
+    },
+    {
+      "role": "system",
+      "content": [
+        {
+          "type": "text",
+          "text": "<system-reminder>\nAnswer in exactly one word, in French.\n</system-reminder>"
+        }
+      ]
+    }
+  ]
+}

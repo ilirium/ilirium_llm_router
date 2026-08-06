@@ -1,0 +1,14 @@
+{
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 128,
+  "stream": true,
+  "metadata": {
+    "user_id": "{\"device_id\":\"probe-device\",\"account_uuid\":\"probe-account\",\"session_id\":\"probe-session\"}"
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Reply with exactly the two words: PROBE OK"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "model": "qwen/qwen3.5-9b",
+  "max_tokens": 2048,
+  "stream": true,
+  "thinking": {
+    "type": "enabled",
+    "budget_tokens": 1024
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "What is 17 times 23? Work it out step by step, then give the number."
+    }
+  ]
+}

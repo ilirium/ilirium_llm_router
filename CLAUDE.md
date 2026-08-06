@@ -29,6 +29,12 @@ This settles the project's central claim: **no protocol translation is needed, a
 
 Two measurements from it are worth carrying: **Claude Code retries a 502 ten times with backoff**, so a session heals itself if LM Studio comes back — and one turn becomes up to ten `transport_error` rows, which means a row count is not a turn count when a backend is down. And **Claude Code ignores a mid-stream `error` event**, which is recorded under "Design decisions" below as the exception to byte-relay that has no measured consumer.
 
+**Phase 4 is done, measured on 2026-08-06** against `qwen/qwen3.5-9b` loaded at 44544 tokens; the instrument is `docs/phase-4-probes/` and the findings are in `docs/phase-4-notes.md`. Its headline is that **nothing was rejected** — every shape this file predicted would fail was accepted, including a system-role message inside `messages`, and the whole captured 118 KB request replays unmodified. The gaps are quieter than rejections: `thinking.budget_tokens` ignored, and `output_config.effort` billing reasoning it never shows. Details in the LM Studio bullets below.
+
+Three results reach beyond parity. **Prompt caching is now measured end to end** — the same replay twice gave `cache_read_input_tokens` 27904 of 27924 and cut time to first byte from 196789 ms to 49629 ms, which is the byte-relay decision paying for itself rather than being argued for. **Silent truncation does not happen**; an over-window request is refused in under a second with an actionable message, though in a form Claude Code may not display. And **the router's own 600 s read timeout is reachable by ordinary traffic**, which is a defect this phase found and deliberately did not fix.
+
+A third of Phase 4 turned out to be already measured by Phase 2's frozen session — the second time in a row a phase has found its work partly done, after Phase 3 found four of its five items already built.
+
 **LM Studio's "Require Authentication" was switched on and has since been turned off.** Earlier on 2026-07-29 a forwarded local request came back `401 authentication_error` from LM Studio itself; later the same day LM Studio answered unauthenticated, and there is no `.env`. So the current working setup needs no local credential. If the setting is switched back on, uncomment `lmstudio.api_key_env: LMSTUDIO_API_KEY` in `config.yaml` and put the key in `.env`.
 
 The auth setting is expected to go back on, and is the reason backend authentication is now a design decision rather than an untested extra — see "Design decisions" below. Note that the key path has still never carried a live request: the setting was turned off rather than configured around, so it is covered by a unit test and nothing more. The agreed config shape (one `credential` field, three modes, contradictions refused at startup) is **not implemented yet**; `config.py` still has the two-knob shape.
@@ -102,10 +108,35 @@ The `anthropic-beta` header must reach Anthropic verbatim. It arrives as a ten-e
 Known gaps to design around (not translation work — LM Studio's own surface):
 
 - The Anthropic-compat namespace exposes **only `/v1/messages`** — there is no `/v1/models` under it. To advertise a merged model list, enumerate local models via LM Studio's native `GET /api/v1/models` (or its OpenAI-compat `GET /v1/models`). That endpoint is also how to find which model is currently loaded: look for a non-empty `loaded_instances`.
-- LM Studio publishes **no feature-parity matrix**. Its `/v1/messages` docs don't spell out handling of `system`, `tool_result`, `thinking` blocks, or images. Verify these empirically against a loaded model before assuming passthrough is lossless. Measured so far: **tool calls work** (Phase 1 session) and **token usage is reported** in Anthropic's exact shape, streaming and not (`docs/lmstudio-usage-check.md`). Still unmeasured: a `role: "system"` message inside `messages`, `thinking` blocks, images.
+- LM Studio publishes **no feature-parity matrix**. Its `/v1/messages` docs don't spell out handling of `system`, `tool_result`, `thinking` blocks, or images. **Phase 4 measured it instead, on 2026-08-06 against `qwen/qwen3.5-9b`** — see `docs/phase-4-notes.md`, and re-run `docs/phase-4-probes/` to check it again, because these answers expire with each LM Studio release.
+
+  **Nothing was rejected.** Every shape sent came back HTTP 200 with no error body, including the ones this file predicted would fail. The gaps that exist are quieter than a rejection — things accepted and then not honoured.
+
+  | Shape | Accepted | Honoured |
+  |---|---|---|
+  | `role: "system"` message inside `messages` | yes | **yes** — obeyed an instruction given only there |
+  | Image content block (base64 PNG) | yes | **yes** — named four quadrant colours in the order asked |
+  | `thinking: {"type": "adaptive"}` | yes | **yes** — real `thinking` blocks in Anthropic's shape |
+  | `thinking.budget_tokens` | yes | **no** — the budget is ignored; thinking runs until `max_tokens` |
+  | `output_config: {"effort": "high"}` | yes | **yes, invisibly** — see below |
+  | `context_management`, `metadata.user_id` | yes | no observable effect |
+  | `cache_control` | yes | not on a small prefix; works at scale |
+  | the ten-entry `anthropic-beta` header | yes | n/a — never objected to |
+
+  Two of those deserve carrying. **`output_config.effort` turns reasoning on and bills it without showing it**: the same prompt costs 4 output tokens without the field and 216 with it, ~98% of them invisible, because reasoning is only emitted as a content block when `thinking` is also set. Claude Code sends `output_config` on every request. And **thinking is unbounded**, so a request combining it with a small `max_tokens` returns a well-formed message containing *nothing* — HTTP 200, no content blocks, `stop_reason: max_tokens`. Claude Code's own `max_tokens: 64000` leaves room, so this does not bite in practice; anything more frugal does. Note the failure signature is indistinguishable in the CSV from a prompt-cache warmup probe.
+
+  **The whole real request works.** `docs/log-the-whole-request.txt` — 27 tools, a system-role message, two `cache_control` markers, `context_management`, `output_config`, `metadata`, `thinking` — replays against a local model unmodified and answers correctly. There was nothing to bisect.
 - LM Studio recommends a model with **>~25k context**. Measured against a real request, that is optimistic: a bare `hi` turn arrived as **118 KB** of JSON — 81 KB of tool schemas (27 tools), 28 KB of system prompt, and 368 bytes of actual conversation. Call it ~30k tokens of fixed preamble before the user types anything, so a usable local model needs meaningfully more headroom than 25k.
 
-  One data point against that estimate: the 2026-07-29 session ran `google/gemma-4-e4b` at a context length of **34304 tokens** and worked, tools and multi-turn included. That is only ~4k above the estimated preamble, which is less headroom than the estimate predicts a working session needs. Either the ~30k figure is pessimistic for this tokenizer, or context is being silently trimmed somewhere. Worth resolving in Phase 4, because silent truncation would degrade answers invisibly rather than failing loudly.
+  **The preamble is now measured rather than estimated: 27924 tokens**, from replaying that exact request against `qwen/qwen3.5-9b` on 2026-08-06. The ~30k estimate was good and slightly pessimistic. Against a 44544-token window that is **63% of the context gone before the user types anything**.
+
+  **And the silent-trimming worry is settled: there is none at the boundary.** A request whose input exceeds the loaded window is **refused**, in under a second, with `api_error` and the message `The number of tokens to keep from the initial prompt is greater than the context length. Try to load the model with a larger context length, or provide a shorter input`. Nothing is quietly dropped. The 34304-token `google/gemma-4-e4b` session worked because it fit, not because anything was trimmed.
+
+  Two caveats keep this from being a clean all-clear. The refusal arrives as an **SSE `error` event inside an HTTP 200** — the shape Phase 3 measured Claude Code ignoring — so the most actionable message LM Studio produces may never reach the user. And whether trimming happens *below* the boundary is still unmeasured; the run meant to check it hit the router's own timeout instead (next bullet).
+
+- **The router's 600-second read timeout is reachable by ordinary local traffic**, found 2026-08-06. A ~41000-token request against a 44544-token window was killed at exactly `read=600.0` while LM Studio was still healthily prefilling — `transport_error` / `read_timeout`. Measured times to first byte on that model: 9166 tokens → 115 s, 27924 tokens → 197 s, ~41000 tokens → never.
+
+  So **the usable context of a local model is bounded by time, not by its window**: a model loaded at 44544 cannot be driven to the top of it through this router. Deliberately not changed in Phase 4 — the same number is what makes a wedged backend fail in bounded time, and Phase 3 chose it on purpose. The options for later are a larger timeout, a configurable one, or one that resets on progress rather than on first byte.
 
 ## Observed request shape
 
@@ -183,8 +214,8 @@ Nothing in an EPD is implemented unless the document names the date it was accep
 
 | | Waiting on | In one line |
 |---|---|---|
-| `EPD-001` | Phase 4 | Picking a local model mid-session with `/model`, and subagents on local models. Per-request dispatch already satisfies the second with no code. Its one accepted piece is the CSV's `session_id` / `agent_id` columns |
-| `EPD-002` | Phase 4 | LM Studio does not implement `count_tokens` and answers HTTP 200 with an error body, so Claude Code estimates against an assumed 200k window — silent truncation on a smaller local model |
+| `EPD-001` | **a decision** — its Phase 4 gate is met | Picking a local model mid-session with `/model`, and subagents on local models. Per-request dispatch already satisfies the second with no code. Its one accepted piece is the CSV's `session_id` / `agent_id` columns. Phase 4 discharged the reason for waiting: a local model *can* hold a real session |
+| `EPD-002` | **a decision, on a weakened case** | LM Studio does not implement `count_tokens` and answers HTTP 200 with an error body, so Claude Code estimates against an assumed 200k window. Phase 4 measured the harm it was organised around and **found none** — the boundary refuses rather than trimming silently — and also found the proposal reading `max_context_length` where it needs the loaded `context_length`. Both in its addendum |
 | `EPD-003` | a decision on the fine-tuning goal | Storing every request and response body as a corpus. The corpus is ~93% repeated prefix; the storage question is a compression-window question, not a database one; and Anthropic's terms bear on the fine-tuning half |
 
 Two of them argue that "Relay the body, log only metadata" above is narrower than it looks — that it protects bodies the router *relays*, and so does not reach a body the router answers itself (`EPD-002`) or an opaque copy it never parses (`EPD-003`). `EPD-003` additionally asks to reverse one sentence of the section below, the one ruling out anything body-shaped. **None of that has been accepted**, and reversing either rule quietly is exactly what these documents exist to prevent.
