@@ -29,8 +29,9 @@ backends:
     # The arriving credential is the real one and Anthropic accepts it, so the router holds no key
     # of its own. See docs/anthropic-auth-check.md.
     credential: forward
-    # Measured median time to first byte is 1426 ms, so ten minutes of silence already means
-    # something is wrong rather than slow.
+    # Measured median time to first byte is 1426 ms — over successful streamed /v1/messages calls,
+    # which is the slice that number means — so ten minutes of silence already means something is
+    # wrong rather than slow.
     read_timeout: 600
 
   # Every other model.

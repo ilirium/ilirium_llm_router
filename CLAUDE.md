@@ -21,6 +21,8 @@ It also exposed four defects in the recorder, all since fixed: `stream` written 
 
 Two facts worth carrying forward. **A single session reached both backends** — `session-03` and `session-06` in the frozen CSV — which is the project's central claim measured rather than argued. And **median time to first byte was 1426 ms against Anthropic and 37136 ms against LM Studio**, a 26× gap that `duration_ms` alone would have blurred.
 
+**Those two numbers are medians over one slice, and the slice is the claim.** They count *successful streamed `/v1/messages` calls only* — 32 Anthropic rows and 21 LM Studio ones. Recomputing over every row in the file instead gives 1252 ms and 4904 ms, a **3.9×** gap, because the file also holds `count_tokens` calls that Anthropic answers in milliseconds and warmup probes that LM Studio answers in seconds. Both figures are correct; they are answers to different questions. Phase 6 recorded the recipe because the number had been quoted forward three times without it, and the obvious recomputation makes the documentation look wrong by a factor of seven.
+
 Both halves work. `claude-sonnet-5` through the router behaves as a normal session. `google/gemma-4-e4b` in LM Studio handles tool use — reading and writing files, running bash commands, running a Python script and reading its stdout — with multi-turn conversation holding together. Streaming was confirmed incrementally in a curl smoke test rather than inferred from the display.
 
 This settles the project's central claim: **no protocol translation is needed, and a local model can drive a real coding session through the router.**

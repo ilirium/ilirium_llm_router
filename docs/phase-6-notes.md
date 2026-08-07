@@ -185,7 +185,7 @@ the negative one: a type checker was pointed at this codebase and found nothing 
 
 ### D1 — the 26× time-to-first-byte claim is right, and its recipe is missing
 
-`CLAUDE.md:37` (and the same sentence in `handoff.md` and `implementation-plan.md`):
+`CLAUDE.md:22`:
 
 > median time to first byte was 1426 ms against Anthropic and 37136 ms against LM Studio, a 26× gap
 
@@ -203,8 +203,16 @@ file — gives **3.9×**, and a reader who tried it would conclude the documenta
 factor of seven. This is the same defect as Phase 5's, one step earlier: not a claim that was never
 measured, but a claim whose *measurement* is unreproducible from what is written down.
 
-**Fix:** one clause — "across successful streamed `/v1/messages` calls" — in each of the three
-places. Cheapest high-value change in the review.
+**Fix:** one clause — "across successful streamed `/v1/messages` calls" — wherever the number is
+stated as fact. Cheapest high-value change in the review.
+
+> **Correction, made while fixing it.** This finding first said the sentence also appears in
+> `handoff.md` and `implementation-plan.md`. It does not. The full claim carrying both numbers
+> exists **once**, at `CLAUDE.md:22`; what is spread is the *derived* 26×, quoted forward without
+> its numbers in `phase-5-notes.md:147`, `phase-5-plan.md:141` and `config.py:66`, and the bare
+> 1426 ms in `config.yaml:32`. The finding was right about the defect and wrong about its extent —
+> written from memory of the greps rather than from a grep. Fixed above; the phase notes for
+> Phase 5 are left as they stand, because a phase record is what was believed at the time.
 
 ### D2 — one figure is traceable to a note, not to an artefact
 
