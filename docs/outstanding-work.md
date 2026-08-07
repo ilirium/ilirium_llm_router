@@ -58,6 +58,14 @@ and mixing a config change into a measurement phase is exactly what Phase 4 refu
 > a file whose whole purpose was to be an accurate list. Grouping the two items was right; the
 > reasoning offered for one of them was borrowed and wrong.
 
+> **Read again in Phase 6, 2026-08-07.** This survey was audited along with everything else, and it
+> holds: every item below is still outstanding and still for the reason given. Phase 6 added nothing
+> to it — its seven items were defects and omissions rather than deferred work, and all seven are
+> done. The one thing it changes is the standing of the *measurement* list below: those four are
+> still open, and `phase-6-notes.md` grades the live-behaviour claims among them **consistent with
+> their committed transcripts but not re-measured**, which is the honest label this file should use
+> for them too.
+
 ## Decisions waiting on a person — the three EPDs
 
 None of these is blocked on work. Each is blocked on somebody deciding.

@@ -8,7 +8,6 @@ bytes and headers it carried when it got there.
 from __future__ import annotations
 
 import json
-from collections.abc import AsyncIterator
 
 import httpx
 import pytest
@@ -19,6 +18,7 @@ from conftest import (
     LOCAL_BODY,
     Rows,
     Upstream,
+    dies_after,
     make_config,
     running,
     streamed,
@@ -301,10 +301,6 @@ def test_a_stream_that_breaks_ends_with_an_error_event() -> None:
     caller sees a stream that simply ends — indistinguishable from a model that finished talking.
     """
 
-    async def dies_after(chunk: bytes) -> AsyncIterator[bytes]:
-        yield chunk
-        raise httpx.ReadError("Connection reset by peer")
-
     upstream = Upstream(
         httpx.Response(
             200,
@@ -332,10 +328,6 @@ def test_a_buffered_reply_that_breaks_is_left_alone() -> None:
     The caller gets truncated JSON either way. The difference is that truncated JSON fails to parse
     where JSON with an SSE frame stapled to it fails to parse *and* looks like the router's doing.
     """
-
-    async def dies_after(chunk: bytes) -> AsyncIterator[bytes]:
-        yield chunk
-        raise httpx.ReadError("Connection reset by peer")
 
     upstream = Upstream(
         httpx.Response(

@@ -53,7 +53,6 @@ def create_app(
             yield
 
     app = FastAPI(title="ilirium_llm_router", lifespan=lifespan)
-    app.state.config = config
 
     @app.exception_handler(ClientDisconnect)
     async def gone(request: Request, exc: ClientDisconnect) -> Response:

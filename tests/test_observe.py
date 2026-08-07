@@ -259,6 +259,34 @@ def test_an_endless_sse_line_is_abandoned_rather_than_held() -> None:
     assert result.input_tokens is None
 
 
+def test_a_big_chunk_of_short_lines_is_read_rather_than_abandoned() -> None:
+    """The cap is about one unbroken line, not about how much arrived at once.
+
+    Checked before the split, it measured the previous tail plus the whole incoming chunk, so a
+    single large chunk of ordinary events tripped it and cost every token column — which reads in
+    the CSV exactly like the SSE scanner failing, for a stream that was perfectly well formed.
+    """
+    scanner = SseScanner()
+    filler = sse({"type": "content_block_delta", "delta": {"text": "x" * 40}})
+    chunk = (
+        sse(message_start(input_tokens=15))
+        + filler * (MAX_SCAN_BYTES // len(filler) + 10)
+        + sse(message_delta(output_tokens=7, stop_reason="end_turn"))
+    )
+
+    assert len(chunk) > MAX_SCAN_BYTES, "the chunk is over the cap"
+    assert max(len(line) for line in chunk.split(b"\n")) < 200, "no single line is anywhere near it"
+
+    # Delivered whole, not in `observed`'s 4096-byte slices: one big read is the case that broke,
+    # and slicing it up is what hid the defect from every test until now.
+    result = observed(scanner, chunk, chunk_size=len(chunk))
+
+    assert scanner.gave_up is False
+    assert result.input_tokens == 15
+    assert result.output_tokens == 7
+    assert result.stop_reason == "end_turn"
+
+
 def test_a_long_stream_does_not_accumulate() -> None:
     """Memory stays flat however long the model talks — the point of discarding as it goes."""
     scanner = SseScanner()

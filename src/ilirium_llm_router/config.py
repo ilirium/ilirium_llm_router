@@ -63,9 +63,10 @@ class Backend(Strict):
     *between* two reads, not a budget for the whole reply — every chunk restarts it. So it bounds
     silence, never duration.
 
-    It is per backend because the two differ by 26× in time to first byte, and because the only
-    thing that has ever hit the old shared 600 s was a local model prefilling a large prompt, which
-    is silence that means the backend is working rather than wedged.
+    It is per backend because the two differ by 26× in time to first byte — measured over successful
+    streamed `/v1/messages` calls, which is the slice that gap describes — and because the only thing
+    that has ever hit the old shared 600 s was a local model prefilling a large prompt, which is
+    silence that means the backend is working rather than wedged.
     """
 
     @field_validator("base_url")

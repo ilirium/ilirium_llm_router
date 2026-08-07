@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-from collections.abc import AsyncIterator
 
 import httpx
 import pytest
@@ -20,6 +19,7 @@ from conftest import (
     LOCAL_BODY,
     Rows,
     Upstream,
+    dies_after,
     make_config,
     running,
     streamed,
@@ -263,10 +263,6 @@ def test_a_backend_that_dies_mid_stream_is_recorded() -> None:
     out as 200, so this can never be reported to the caller. The row is where it is visible at all.
     """
 
-    async def dies_after(chunk: bytes) -> AsyncIterator[bytes]:
-        yield chunk
-        raise httpx.ReadError("Connection reset by peer")
-
     upstream = Upstream(
         httpx.Response(
             200,
@@ -463,10 +459,6 @@ def test_the_injected_error_event_is_not_counted_as_the_backends_bytes() -> None
         b'event: message_start\ndata: {"type":"message_start","message":'
         b'{"usage":{"input_tokens":15}}}\n\n'
     )
-
-    async def dies_after(chunk: bytes) -> AsyncIterator[bytes]:
-        yield chunk
-        raise httpx.ReadError("Connection reset by peer")
 
     upstream = Upstream(httpx.Response(200, headers=SSE_HEADERS, content=dies_after(sent)))
     rows = Rows()
