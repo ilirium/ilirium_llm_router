@@ -15,7 +15,9 @@ which are committed and meant to be re-run — with the four measurements that *
 frozen in `phase-4-evidence/`; the survey of everything still outstanding once all four phases had
 landed lives in `outstanding-work.md`, and the two items it picked out are planned in
 `phase-5-plan.md`, with what they turned out to involve in `phase-5-notes.md` and the runs behind
-them in `phase-5-measurements/`;
+them in `phase-5-measurements/`; the review of the whole basement once all five phases had landed
+lives in `phase-6-notes.md`, planned in `phase-6-plan.md`, which records both what the audit found
+and what was fixed;
 the procedure for testing the router against a real session lives in `testing-against-claude-code.md`;
 the token-usage check that unblocked Phase 2 lives in `lmstudio-usage-check.md`; proposals that are
 written up but not decided live in `docs/epd/`, indexed by `EPD-000-about-these-documents.md`, which
@@ -55,11 +57,32 @@ named was accepted, including the system-role message `CLAUDE.md` predicted was 
 whole captured 118 KB request replays unmodified. Findings in `phase-4-notes.md`, instrument in
 `phase-4-probes/`, which is committed and meant to be re-run.
 
+**Phase 6 is complete, 2026-08-07, merged to `main` as `532dc86`.** 158 tests. The first phase whose
+subject is the project rather than a capability: read all of `src/` and `tests/`, re-derived every
+quoted measurement from the frozen artefacts, drove the router against local stubs. **Fifteen of the
+sixteen quoted measurements reproduce to the digit**, and there was no dead code anywhere in `src/`.
+Seven items fixed, ~40 lines. Findings and what was done in `phase-6-notes.md`, planned in
+`phase-6-plan.md`.
+
 ## What we were doing when we stopped
 
-**Phase 4, 2026-08-06, finished with a clean tree.** The probes are written and run, the findings
-written up, `CLAUDE.md` and `implementation-plan.md` updated, both EPDs carry Phase 4 addenda, and
-the `--no-ff` merge landed as `50444c5`. Nothing from Phase 4 is outstanding.
+**Phase 6, 2026-08-07, finished with a clean tree and merged as `532dc86`.** The review is written
+up, all seven of its recommended fixes are built one commit each, `CLAUDE.md` carries a Phase 6
+status block, and `outstanding-work.md` is marked re-read and still accurate. **Nothing from Phase 6
+is outstanding**, and it added nothing to the outstanding list — its items were defects and
+omissions, not deferred work.
+
+Three things from it are worth knowing before touching anything:
+
+- **The AST-equivalence check needs two comparisons, not one.** A docstring is an `Expr` node —
+  including the bare-string kind under `Backend.read_timeout` — so raw AST equality is stricter than
+  "cosmetic" and fails on any prose edit. Compare a second time with docstrings stripped; only that
+  one may veto a cosmetic label. The instrument was wrong on its first use.
+- **`ty` was run and is deliberately not adopted.** Ten diagnostics, all stub imprecision in httpx
+  and starlette, zero defects. Do not re-open it from the count alone.
+- **The 58% comment density is measured and kept.** Docstrings share a mean 2.8% of their wording
+  with `CLAUDE.md`, so the prose is not duplication and most of it carries a measurement recorded
+  nowhere else. Cutting it was tested as a hypothesis and refuted.
 
 **Phase 5 is complete, verified on 2026-08-07 and merged to `main` as `c8401e9`.**
 157 tests. Planned in `phase-5-plan.md`, findings in `phase-5-notes.md`, measurements in
