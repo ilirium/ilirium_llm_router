@@ -141,16 +141,20 @@ class SseScanner(Scanner):
 
     def _feed(self, chunk: bytes) -> None:
         self._pending += chunk
-        # Only ever holds the tail after the last newline, so passing the cap means one line did.
-        if len(self._pending) > MAX_SCAN_BYTES:
-            self._give_up("a single SSE line grew past the scan limit")
-            return
 
         lines = self._pending.split(b"\n")
         # The last piece has no newline after it yet: an unfinished line, kept for the next chunk.
         self._pending = bytearray(lines.pop())
         for line in lines:
             self._read(bytes(line))
+
+        # Checked *after* the split, on the tail alone. Before the split `_pending` is the previous
+        # tail plus the whole arriving chunk, so a large chunk of ordinary short lines tripped the
+        # cap and cost every token column — measured in Phase 6 at 1049671 bytes whose longest line
+        # was 101. What this limit is for is one unbroken line growing without end, and the tail is
+        # the only thing that can do that.
+        if len(self._pending) > MAX_SCAN_BYTES:
+            self._give_up("a single SSE line grew past the scan limit")
 
     def _finish(self) -> None:
         """Read whatever is left over without a newline after it.
