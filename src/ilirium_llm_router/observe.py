@@ -282,10 +282,12 @@ def _read_error(payload: dict[str, object], observation: Observation) -> None:
     error = payload.get("error")
     if not isinstance(error, dict):
         return
-    if isinstance(error.get("type"), str):
-        observation.error_type = str(error["type"])
-    if isinstance(error.get("message"), str):
-        observation.error_message = str(error["message"])
+    error_type = error.get("type")
+    if isinstance(error_type, str):
+        observation.error_type = error_type
+    message = error.get("message")
+    if isinstance(message, str):
+        observation.error_message = message
 
 
 def _describe(error_type: str, message: str) -> str:
