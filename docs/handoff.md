@@ -14,7 +14,8 @@ commands that drive it, in `phase-3-verification/`; what LM Studio turned out to
 which are committed and meant to be re-run — with the four measurements that *cannot* be taken again
 frozen in `phase-4-evidence/`; the survey of everything still outstanding once all four phases had
 landed lives in `outstanding-work.md`, and the two items it picked out are planned in
-`phase-5-plan.md`;
+`phase-5-plan.md`, with what they turned out to involve in `phase-5-notes.md` and the runs behind
+them in `phase-5-measurements/`;
 the procedure for testing the router against a real session lives in `testing-against-claude-code.md`;
 the token-usage check that unblocked Phase 2 lives in `lmstudio-usage-check.md`; proposals that are
 written up but not decided live in `docs/epd/`, indexed by `EPD-000-about-these-documents.md`, which
@@ -60,27 +61,49 @@ whole captured 118 KB request replays unmodified. Findings in `phase-4-notes.md`
 written up, `CLAUDE.md` and `implementation-plan.md` updated, both EPDs carry Phase 4 addenda, and
 the `--no-ff` merge landed as `50444c5`. Nothing from Phase 4 is outstanding.
 
-**What is next is Phase 5**, and it is two items rather than one. The credential config shape, agreed
-since 2026-07-29 and still unwritten — one `credential` field, three modes, contradictions refused at
-startup. And the **read timeout** Phase 4 found reachable by ordinary traffic, which is a real defect
-with three candidate fixes and no decision taken. They belong together: both are small, both touch
-configuration, and neither is a measurement.
+**Phase 5 is built and verified on 2026-08-07**, on `feat/phase-5-config-and-timeouts`, **not yet
+merged**. 157 tests. Planned in `phase-5-plan.md`, findings in `phase-5-notes.md`, measurements in
+`phase-5-measurements/`. Two items, both configuration, picked in `outstanding-work.md` as the only
+two things left that were work rather than a decision waiting on a person.
 
-**Both are planned in `phase-5-plan.md`**, written 2026-08-07, with a Phase 5 section added to
-`implementation-plan.md` to match. Nothing from it is built yet — the branch does not exist.
+**The credential shape is built and live.** One `credential` field, three modes, contradictions
+refused at startup with messages checked by reading them. `inject` has carried a real request against
+an LM Studio requiring authentication — the first time that path has seen live traffic — with a
+`strip` control returning 401 at the same moment, which is what makes it evidence rather than a green
+light. Writing it found the ambiguity in **two more places than the known one in `proxy.py`**:
+`api_keys()` collected a key for any backend naming a variable, and `cli.py` displayed injection
+whenever a key existed, so `--check` would have reported a forwarding backend as injecting.
 
-Two things in that plan are worth knowing without reading it. The `inject` mode **has never carried a
-live request**, because the LM Studio auth setting was switched off rather than configured around, so
-the phase requires a real authenticated call rather than another unit test. And one of the three
-candidate timeout fixes — "resets on progress rather than on first byte" — **may already be httpx's
-behaviour**, since `read` looks to apply per socket read; the plan measures that before choosing,
-because if true the candidate list is shorter than `handoff.md` has been claiming.
+**The read timeout is per backend**, 600 s for Anthropic and 1800 s for LM Studio, defaulting to 600
+so an older config is unchanged. This retires Phase 4's one real defect.
 
-**Everything else outstanding is surveyed in `outstanding-work.md`**, written the same day: the three
-EPDs waiting on a decision rather than on work, the four measurements Phase 4 left open, and four
-smaller loose ends each with its reason for staying put. The useful fact in it is a dependency —
-Phase 4's unfinished "is context trimmed below the boundary" question is blocked by the timeout, so
-Phase 5 unblocks it.
+**Two claims this handoff has been repeating were wrong, and a twenty-minute measurement settled
+both.** "Resets on progress rather than on first byte" was never one of three options — it is already
+httpx's behaviour, because `read` bounds the silence *between two reads* and every chunk restarts it.
+And "a wedged backend fails in bounded time" was never true of duration, only of silence: a backend
+dribbling one byte every 599 s would have run forever under the old setting. Corrections applied in
+place to `CLAUDE.md`, `phase-4-notes.md` and `outstanding-work.md`.
+
+**The measurement the timeout was blocking is now taken: there is no silent trimming below the
+context boundary.** A codeword planted at the front of a 41595-token prompt — 93% of a 44544 window —
+came back verbatim. With the boundary itself known to refuse cleanly, the worry standing since Phase 1
+is closed at both ends.
+
+**One honest limit on the verification.** The long run did *not* reproduce the original failure: its
+first byte arrived at 461712 ms, under the old 600 s ceiling, where Phase 4 measured the same request
+killed at 600247 ms. What proves the field governs live traffic is the companion run at
+`read_timeout: 30`, dying at 30343 ms with Phase 4's exact signature. The spread across runs is
+itself the argument for configuring the number rather than hard-coding one inside the working range
+of ordinary traffic.
+
+**Left to do before merging:** switch LM Studio's "Require Authentication" back off and confirm the
+committed `config.yaml` — which still says `credential: strip` — works against it, then the `--no-ff`
+merge. The setting is **currently on**, so the repository's default config will 401 until one of the
+two is changed.
+
+**Everything else outstanding is surveyed in `outstanding-work.md`**, updated the same day: the three
+EPDs waiting on a decision rather than on work, the three measurements Phase 4 left open after Phase
+5 closed the fourth, and four smaller loose ends each with its reason for staying put.
 
 Three results worth carrying beyond the parity table:
 

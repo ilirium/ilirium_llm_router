@@ -3,6 +3,11 @@
 Written 2026-08-07, with all four phases merged and the tree clean. An audit of what is actually
 outstanding, read off `handoff.md`, `phase-4-notes.md`, `docs/epd/`, and the code itself.
 
+> **Updated the same day, after Phase 5.** The two items under "Agreed work" are **done** — the
+> credential shape and the read timeout — and one of the four open measurements went with them. The
+> sections below are marked in place rather than deleted, because what a phase found already
+> answered is worth as much as what it found outstanding. See `phase-5-notes.md`.
+
 It exists because "the phases are done" and "there is nothing left" are different statements, and
 after four phases the difference has spread across six files. This is the one place that lists it.
 
@@ -13,7 +18,7 @@ Everything else here is deliberately left where it is, with its reason.
 waiting on a person, and measurements waiting on a reason. Two items are unambiguously work, and
 they are the only two that go into Phase 5.
 
-## Agreed work, not yet written — this is Phase 5
+## ~~Agreed work, not yet written~~ — done in Phase 5, 2026-08-07
 
 **1. The credential config shape.** Decided 2026-07-29, still unbuilt. `config.py:41-42` carries the
 old two-knob shape — `credential: Literal["forward", "strip"]` and an independent `api_key_env` — in
@@ -42,6 +47,17 @@ traffic, which is not what it was chosen against.
 **These two belong together.** Both are small, both touch configuration, neither is a measurement —
 and mixing a config change into a measurement phase is exactly what Phase 4 refused to do.
 
+> **Both done, 2026-08-07.** The credential shape is built and `inject` has carried a live request
+> against an authenticated LM Studio. `read_timeout` is per backend, 600 s for Anthropic and 1800 s
+> for LM Studio.
+>
+> **What this survey got wrong**, which is the part worth keeping: it repeated the handoff's three
+> candidate timeout fixes, and one of them — "resets on progress" — was already the behaviour. It
+> also repeated "the same number is what makes a wedged backend fail in bounded time", which was
+> never true of duration. Both were inherited claims, taken from the notes rather than measured, in
+> a file whose whole purpose was to be an accurate list. Grouping the two items was right; the
+> reasoning offered for one of them was borrowed and wrong.
+
 ## Decisions waiting on a person — the three EPDs
 
 None of these is blocked on work. Each is blocked on somebody deciding.
@@ -56,9 +72,11 @@ None of these is blocked on work. Each is blocked on somebody deciding.
 
 Its own honest list, carried here so it is not lost in a phase document.
 
-- **Whether trimming happens below the context boundary.** The run meant to check it hit the read
-  timeout instead. The boundary itself refuses cleanly; the region just under it is uncharacterised.
-  **This one is blocked by item 2 above**, which is the useful sequencing fact in this whole file.
+- ~~**Whether trimming happens below the context boundary.**~~ **Closed 2026-08-07.** The sequencing
+  guess in this file was right: fixing the timeout unblocked it, and the same run did both. A
+  codeword planted at the front of a 41595-token prompt — 93% of a 44544 window — came back
+  verbatim. There is no silent trimming below the boundary, and none at it, so the worry standing
+  since Phase 1 is closed at both ends.
 - **Whether Claude Code shows LM Studio's context error.** It arrives as an SSE `error` event inside
   an HTTP 200 — the shape Phase 3 measured being ignored — but as the *sole* event, with no
   `message_start` before it, where Phase 3's case followed partial content. Whether the client treats
@@ -95,6 +113,16 @@ Its own honest list, carried here so it is not lost in a phase document.
 Phase 3 found four of its five work items already built by Phase 2. Phase 4 found a third of its plan
 already measured by Phase 2's frozen session — reading `phase-2-step-6-session/calls.csv` before
 running anything deleted a whole step and one probe.
+
+**Phase 5 found a third variant, and it is the uncomfortable one.** Nothing was already built and
+nothing was already measured — what it found was work already **misdescribed**. Two of the three
+timeout options recorded across four documents did not exist as stated, and the property those
+documents said the 600 s number bought had never been true. A single twenty-minute measurement
+against a pinned library settled both.
+
+So the habit this file recommends needs a second half. Before planning a run, grep the frozen
+artefacts — *and* check that the claims you are planning against were ever measured, rather than
+written down once and then quoted forward. This file quoted them forward.
 
 **So the honest reading of the measurement list above is that some of it may already be answered**,
 in artefacts committed for another purpose. The cheap habit, now three phases old: before planning a
