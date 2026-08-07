@@ -1,0 +1,34 @@
+The same needle body as needle-completes-at-1800.txt, through a router whose lmstudio backend is
+configured `read_timeout: 30`. Same model, same window, same bytes, same session — only the config
+differs. It dies at 30343 ms, which is the number in the config rather than any number in the code.
+
+This is the end-to-end proof that the per-backend field governs live traffic: the unit test shows
+1800 reaching the outgoing request object, and this shows the value deciding what actually happens
+to a real call.
+
+It also reproduces Phase 4's read-timeout failure exactly — same `transport_error` / `read_timeout`,
+same injected error event, same empty usage — in 30 seconds rather than the ten minutes the original
+cost. Anything later that needs this failure shape should lower the config rather than send a bigger
+request.
+
+=== needle ==================================================================
+verdict        REJECTED — inside an HTTP 200
+status         200
+request        135391 bytes, max_tokens 64
+reply          144 bytes, ttfb 30343 ms, total 30346 ms
+events         error
+blocks         (none)
+stop_reason    None
+usage          null
+error          {"type": "error", "error": {"type": "api_error", "message": "The lmstudio backend's reply broke off mid-stream: ReadTimeout"}}
+text           ''
+csv row        not found — is the router writing logs/calls.csv?
+
+full transcript: docs/phase-4-probes/runs/needle.txt
+
+--- CSV row, read from the run's own stats file -----------------------------
+error_status=transport_error error_code=read_timeout ttfb_ms=(empty) duration_ms=30305
+
+Note the empty `ttfb_ms` against a populated `duration_ms`: no first byte ever arrived, which is
+what distinguishes a prefill killed by silence from a stream that broke after starting. The
+completing run at 1800 has both.

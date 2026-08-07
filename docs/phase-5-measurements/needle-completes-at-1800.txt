@@ -1,0 +1,20 @@
+=== needle ==================================================================
+verdict        accepted
+status         200
+request        135391 bytes, max_tokens 64
+reply          2176 bytes, ttfb 461873 ms, total 462120 ms
+events         message_start, content_block_start, content_block_delta ×13, content_block_stop, message_delta, message_stop
+blocks         text
+stop_reason    end_turn
+usage          {"input_tokens": 41595, "output_tokens": 13, "cache_read_input_tokens": 0}
+text           'ZARDOZ-QUILL-7734'
+csv row        not found — is the router writing logs/calls.csv?
+
+full transcript: docs/phase-4-probes/runs/needle.txt
+
+--- CSV row, read from the run's own stats file -----------------------------
+backend=lmstudio model=qwen/qwen3.5-9b in=41595 out=13 stop_reason=end_turn
+error_status=ok ttfb_ms=461712 duration_ms=462036 request_bytes=135391
+
+(the probe looks for the repository's logs/calls.csv; this run was driven by a
+config writing elsewhere, which is why it reported the row as not found)

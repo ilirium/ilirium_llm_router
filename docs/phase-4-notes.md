@@ -294,8 +294,12 @@ proposes to close, and it is why the replay of a *known* body survived the cut.
 
 Stated plainly, because an honest list is this phase's deliverable and a short one would be dishonest.
 
-- **Whether trimming happens below the boundary.** The run meant to check it hit the router's read
-  timeout. The boundary itself refuses cleanly; the region just under it is uncharacterised.
+- ~~**Whether trimming happens below the boundary.**~~ The run meant to check it hit the router's
+  read timeout. **Closed by Phase 5 on 2026-08-07**, once that timeout was configurable: the same
+  needle completed with `ZARDOZ-QUILL-7734` returned from a prompt of **41595 tokens against a 44544
+  window, 93% full**. Nothing is dropped from the front below the boundary, and `input_tokens`
+  matches what was sent. With the boundary itself known to refuse cleanly, silent trimming is now
+  ruled out at both ends rather than one.
 - **Whether Claude Code shows LM Studio's context error.** It arrives as an SSE `error` event inside
   an HTTP 200 — the shape Phase 3 measured being ignored — but as the *sole* event, with no
   `message_start` before it, where Phase 3's case followed partial content. Whether the client treats

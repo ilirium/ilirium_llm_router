@@ -141,4 +141,64 @@ than mis-built — after the `api_keys()` and `_credential()` copies of the cred
   during prefill and stricter mid-stream than today. httpx cannot express it through `read` alone, so
   it needs code in the relay rather than a config field.
 
-Pending a decision.
+## Item 2 — decided and built, 2026-08-07
+
+**Per-backend, configured.** `read_timeout` on each backend, defaulting to 600 so a config written
+before the field existed behaves exactly as it did. `config.yaml` sets Anthropic 600 and LM Studio
+1800. Only `read` varies; connect, write and pool stay shared, because they are properties of this
+machine rather than of the model at the other end — a backend that cannot be *reached* must still
+fail fast, and that is the common LM Studio failure. There is a test for that distinction, since
+"patient with a thinking model" and "patient with an absent one" are easy to conflate.
+
+157 tests, up from 152.
+
+### Verified against real traffic, in both directions
+
+Unit tests can only show the number reaching the outgoing request object. Two live runs show it
+deciding what happens to a real call — the same 135391-byte needle, the same model at 44544, the
+same session, differing only in config. Both are frozen in this directory.
+
+| `read_timeout` | Outcome |
+|---|---|
+| 1800 | **completed** — 41595 input tokens, first byte at 461712 ms, `ok`, codeword returned |
+| 30 | **died at 30343 ms** — `transport_error` / `read_timeout`, no first byte, Phase 4's exact signature |
+
+The 30-second run is the more useful instrument of the two. It reproduces the Phase 4 failure shape
+exactly, in thirty seconds rather than the ten minutes the original cost, so anything later needing
+that failure should lower the config rather than send a bigger request.
+
+### Being honest about what the long run did and did not prove
+
+**It did not reproduce the original failure, and it cannot be claimed to have fixed it.** Phase 4
+measured this request being killed at 600247 ms without a first byte ever arriving. This run's first
+byte arrived at **461712 ms** — under the old 600 s ceiling. So on this occasion the old setting
+would have survived, and the completing run is evidence that the request works, not evidence that
+the change was required for it.
+
+**That variance is itself the finding, and it argues for what was built.** The same bytes, the same
+model, the same window and the same machine took over 600 s once and 462 s another time — a spread
+of at least 30% straddling the old fixed threshold. A single number sitting inside the working range
+of ordinary traffic does not fail predictably; it fails when the machine is having a bad day, which
+is the worst kind of threshold to hard-code. A configurable one does not have to be guessed right.
+
+Two things are established regardless of the timing: the request completes end to end at a size
+Phase 4 never saw finish, and the configured value is what decides — proven by the 30-second run
+rather than inferred from the long one.
+
+### The measurement this unblocked, taken: there is no trimming below the boundary
+
+Phase 4 left "whether context is trimmed below the window" open **because the run meant to answer it
+hit this timeout**. The same run that verified the fix answers it, because the needle exists for
+exactly this: a codeword at the very front, filler in the middle, and a question at the end asking
+for the codeword back.
+
+**`ZARDOZ-QUILL-7734` came back**, from a prompt LM Studio counted as **41595 tokens against a 44544
+window — 93% full**. Nothing was dropped from the front at 93% occupancy, and `input_tokens` matches
+what was sent rather than a trimmed remainder.
+
+So the picture Phase 4 half-drew is complete. At the boundary the request is refused, cleanly and in
+under a second. Below the boundary, up to at least 93%, it is answered in full. **LM Studio does not
+silently trim**, and the worry standing since Phase 1 is now closed at both ends rather than one.
+
+One caveat, the same one Phase 4 carries: this is `qwen/qwen3.5-9b` at one window size. It is a
+statement about this model's server behaviour, not a guarantee about every local model.
