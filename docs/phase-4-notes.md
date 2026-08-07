@@ -236,6 +236,21 @@ ordinary traffic*, which is not what it was chosen against. It belongs in the ne
 credential work, with the options being a larger read timeout, a configurable one, or one that resets
 on progress rather than on first byte.
 
+> **Corrected by Phase 5 on 2026-08-07.** Two claims in the paragraph above are wrong, both measured
+> in `phase-5-measurements/read_timeout_semantics.py`.
+>
+> **The third option does not exist.** `read` already resets on progress — a backend dripping a
+> chunk every second ran for three times the timeout and completed, because every chunk restarts the
+> clock. What `read` measures is the longest permitted *silence between two reads*, which is why a
+> silent prefill hits it and a slow stream does not.
+>
+> **And "fails in bounded time" was never true of duration.** Since the clock restarts per chunk, a
+> backend dribbling one byte every 599 s would have run forever under the old setting too. The
+> property Phase 3 actually bought was "fails if it goes quiet", which is narrower — so raising the
+> number gave up less than this paragraph implies.
+>
+> Phase 5 made `read_timeout` per backend: 600 s for Anthropic, 1800 s for LM Studio.
+
 It is also the third instance of this project's most reliable lesson, after Phase 2 step 6 and Phase
 3's `ReadError("")`: **the tests confirm the code does what it was written to do; only real traffic
 shows what it was written to do being wrong.** Every one of the 147 tests passes with this timeout.

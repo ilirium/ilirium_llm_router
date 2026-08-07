@@ -55,9 +55,36 @@ was advice from the two-knob world.
 **No existing config file breaks.** The only configuration this refuses is one that was already
 lying about what it did.
 
-**Still outstanding: `inject` has never carried a live request.** That is the one part of item 1 that
-unit tests cannot supply, and it is why the plan asks for LM Studio's "Require Authentication" to be
-switched back on rather than for more tests.
+### `inject` has now carried a live request, 2026-08-07
+
+The one part of item 1 that unit tests cannot supply. LM Studio's "Require Authentication" was
+switched back on for this — the first time since 2026-07-29 that the setting has been on with the
+router pointed at it, and the first time the key path has ever carried real traffic.
+
+Confirmed the setting was actually on before trusting anything: an unauthenticated
+`GET /api/v1/models` answered **401** with `invalid_api_key`.
+
+**The test and its control, both against `qwen/qwen3.5-9b` at 44544:**
+
+| Mode | Result |
+|---|---|
+| `inject` | **HTTP 200**, `input_tokens: 18`, `output_tokens: 3`, the model answered `inject works`, CSV row `ok` |
+| `strip` | **HTTP 401**, `authentication_error`, CSV row `http_error` / `401` |
+
+The control is what makes it proof rather than a green light. An `inject` request succeeding could
+mean the key was sent, or it could mean authentication was quietly off; the identical request under
+`strip` failing at the same moment against the same server rules the second out.
+
+Two details worth keeping. The caller sent `Authorization: Bearer sk-ant-oat01-…`, a
+deliberately fake Anthropic token — so the 200 also shows the arriving credential was **replaced**
+rather than passed alongside, which is the half of `inject` that `strip` does not test. And the
+failing row reads `authentication_error: An LM Studio API token is required…`, which is the Phase 2
+recorder fix — keeping the backend's symbolic `error.type` — earning itself on a failure nobody had
+produced through the router before.
+
+This also reproduces the Phase 1 finding that started the whole credential decision, from the other
+side: back then a forwarded local request came back 401 and the conclusion was that `api_key_env` was
+needed. It is now used.
 
 ## Item 2, step 0 — what `read` actually applies to, measured 2026-08-07
 

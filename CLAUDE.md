@@ -35,9 +35,9 @@ Three results reach beyond parity. **Prompt caching is now measured end to end**
 
 A third of Phase 4 turned out to be already measured by Phase 2's frozen session — the second time in a row a phase has found its work partly done, after Phase 3 found four of its five items already built.
 
-**LM Studio's "Require Authentication" was switched on and has since been turned off.** Earlier on 2026-07-29 a forwarded local request came back `401 authentication_error` from LM Studio itself; later the same day LM Studio answered unauthenticated, and there is no `.env`. So the current working setup needs no local credential. If the setting is switched back on, uncomment `lmstudio.api_key_env: LMSTUDIO_API_KEY` in `config.yaml` and put the key in `.env`.
+**LM Studio's "Require Authentication" has been on and off, and the key path now works against it.** On 2026-07-29 a forwarded local request came back `401 authentication_error` from LM Studio itself; the setting was then turned off, which is why for months the key path was covered by a unit test and nothing more. **On 2026-08-07 it was switched back on and `credential: inject` carried a real request** — HTTP 200 with the caller's own (fake) Anthropic token replaced by the configured key, against a `strip` control at the same moment that returned 401. Details in `docs/phase-5-notes.md`.
 
-The auth setting is expected to go back on, and is the reason backend authentication is now a design decision rather than an untested extra — see "Design decisions" below. Note that the key path has still never carried a live request: the setting was turned off rather than configured around, so it is covered by a unit test and nothing more. The agreed config shape (one `credential` field, three modes, contradictions refused at startup) is **not implemented yet**; `config.py` still has the two-knob shape.
+To use it: set `credential: inject` **and** `api_key_env: LMSTUDIO_API_KEY` on the `lmstudio` backend in `config.yaml`, and put the key in `.env`. It takes both lines now — naming the variable alone is refused at startup rather than silently overriding the mode.
 
 Note: `/Users/ilirium/Projects/code-2026/ilirium_llm_router` and the OneDrive path are the *same directory* (identical inode), not two checkouts. Editing either edits both.
 
@@ -204,7 +204,9 @@ Decided deliberately; don't quietly reverse these.
 
   **Contradictions are startup errors, not silent behaviour.** `inject` without `api_key_env`, and `api_key_env` without `inject`, are both refused. So is an environment variable that is unset or empty. Each message must say what is wrong *and* how to fix it, then exit — matching how the rest of config loading already behaves. A backend that authenticates with nothing, or a key that looks configured and is never sent, are exactly the failures that surface as a confusing 401 much later.
 
-  **Not yet implemented.** `config.py` still has the two-knob shape; this is a decision, not a description. The header question is also open and deliberately unanswered: `inject` currently means `Authorization: Bearer`, which suits LM Studio and OpenAI, but Anthropic's native key is `x-api-key` and Gemini's is `x-goog-api-key`. A per-backend header name will be needed before the second cloud provider, not before.
+  **Implemented in Phase 5 on 2026-08-07**, and `inject` has carried a live request against an LM Studio requiring authentication. The mode is the only thing consulted at request time, so the ambiguity is unrepresentable rather than discouraged. Writing it revealed the same ambiguity in two more places than the known one in `proxy.py`: `api_keys()` collected a key for any backend naming a variable, and `cli.py` *displayed* injection whenever a key existed — so `--check` would have reported a forwarding backend as injecting. See `docs/phase-5-notes.md`.
+
+  The header question remains open and deliberately unanswered: `inject` means `Authorization: Bearer`, which suits LM Studio and OpenAI, but Anthropic's native key is `x-api-key` and Gemini's is `x-goog-api-key`. A per-backend header name will be needed before the second cloud provider, not before — and Phase 5 deliberately did not settle it while editing the same function.
 
 ## Open proposals — the EPDs
 
