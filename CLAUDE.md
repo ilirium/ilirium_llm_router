@@ -35,7 +35,7 @@ Three results reach beyond parity. **Prompt caching is now measured end to end**
 
 A third of Phase 4 turned out to be already measured by Phase 2's frozen session — the second time in a row a phase has found its work partly done, after Phase 3 found four of its five items already built.
 
-**Phase 5 is done, verified against live traffic on 2026-08-07**; 157 tests. Two items, both configuration, chosen in `docs/outstanding-work.md` as the only two things left that were work rather than a decision waiting on a person. Findings in `docs/phase-5-notes.md`, measurements in `docs/phase-5-measurements/`.
+**Phase 5 is done, verified against live traffic on 2026-08-07 and merged to `main` as `c8401e9`**; 157 tests. Two items, both configuration, chosen in `docs/outstanding-work.md` as the only two things left that were work rather than a decision waiting on a person. Findings in `docs/phase-5-notes.md`, measurements in `docs/phase-5-measurements/`.
 
 **The credential shape agreed on 2026-07-29 is built**, and `inject` has now carried a live request against an authenticated LM Studio — the first time that path has ever seen real traffic. Writing it found the same ambiguity in two more places than the known one: `api_keys()` collected a key regardless of mode, and `--check` would have *displayed* a forwarding backend as injecting.
 

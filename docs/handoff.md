@@ -61,8 +61,8 @@ whole captured 118 KB request replays unmodified. Findings in `phase-4-notes.md`
 written up, `CLAUDE.md` and `implementation-plan.md` updated, both EPDs carry Phase 4 addenda, and
 the `--no-ff` merge landed as `50444c5`. Nothing from Phase 4 is outstanding.
 
-**Phase 5 is built and verified on 2026-08-07**, on `feat/phase-5-config-and-timeouts`, **not yet
-merged**. 157 tests. Planned in `phase-5-plan.md`, findings in `phase-5-notes.md`, measurements in
+**Phase 5 is complete, verified on 2026-08-07 and merged to `main` as `c8401e9`.**
+157 tests. Planned in `phase-5-plan.md`, findings in `phase-5-notes.md`, measurements in
 `phase-5-measurements/`. Two items, both configuration, picked in `outstanding-work.md` as the only
 two things left that were work rather than a decision waiting on a person.
 
@@ -101,8 +101,8 @@ both surviving modes: `strip` to LM Studio answered 200, and `forward` to Anthro
 deliberately fake token — which is the expected answer and therefore evidence the credential was
 forwarded rather than dropped. The repository's default `config.yaml` matches the machine again.
 
-**The phase is complete and deliberately not merged**, held on 2026-08-07 for the owner to read the
-diff first. `git diff main..feat/phase-5-config-and-timeouts` is the whole of it.
+**Merged to `main` on 2026-08-07 as `c8401e9`**, `--no-ff` by convention so the phase boundary stays
+visible. 157 tests pass on `main`. **Nothing from Phase 5 is outstanding.**
 
 Two committed values are choices rather than measurements, and were confirmed as such: LM Studio's
 **`read_timeout: 1800`** is roughly 4× the observed 462 s worst prefill, picked for headroom. The
