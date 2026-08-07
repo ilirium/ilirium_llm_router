@@ -237,6 +237,39 @@ before, and which this phase could easily settle by accident while editing the s
 
 ---
 
+## Phase 6 — Reviewing the basement — **done 2026-08-07**
+
+**Goal.** Read the whole thing at once, which nobody had done. Not a capability: the first phase
+whose subject is the project itself.
+
+Its reason was the shape of the three phases before it. Phase 3 found work already *built*, Phase 4
+found work already *measured*, Phase 5 found work already *misdescribed* — a claim quoted forward
+across four documents that had never been true. That last one is a failure only a re-reading catches.
+
+**Work.** Read all of `src/` and `tests/`; audit every assertion of *built* / *fixed* / *verified* /
+*measured* against the code, the frozen artefacts or the test suite; check for duplication, dead code
+and bloat; run a type checker and an AST inventory; drive the router live against local stubs. The
+EPDs were explicitly out of scope. Planned in `phase-6-plan.md`, findings and outcome in
+`phase-6-notes.md`.
+
+**What it found.** The documentation was almost entirely right — **fifteen of the sixteen quoted
+measurements reproduce to the digit**, no dead code anywhere in `src/`, a type checker finding ten
+diagnostics and none of them a defect. Seven items fixed, about forty lines: the 26× time-to-first-byte
+gap quoted without the slice it means, an SSE scan cap that counted the arriving chunk rather than
+one line, two undeclared direct dependencies, four identical copies of one test helper, one dead
+line, a README with no instructions, and a double lookup.
+
+**What it declined to do**, each measured first rather than argued: `ty` is not adopted, the 58%
+comment density is kept (mean 2.8% wording overlap with `CLAUDE.md`, so it is not duplication),
+`.gitignore` is not trimmed and no document is deleted.
+
+**Its process lesson turns Phase 5's on the reviewer.** The plan asserted the comments were redundant
+and a five-minute measurement refuted it; a finding overstated how many files carried the 26× claim,
+written from memory of a grep rather than from the grep. Check the claim you are planning against,
+including when it is your own.
+
+---
+
 ## Things that are easy to get wrong
 
 These cut across phases and are worth getting right the first time.
