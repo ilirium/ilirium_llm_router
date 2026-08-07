@@ -42,5 +42,7 @@ python3 docs/phase-4-probes/probe.py needle --router http://127.0.0.1:<port>
 **Lower the config rather than enlarging the request** when the failure shape is what you want. The
 30-second run reproduces Phase 4's ten-minute timeout in thirty seconds.
 
-Note the needle body itself is regenerated in place at `../phase-4-probes/bodies/needle.json`, and
-these runs left it at `--tokens 41000` rather than the 12000 default.
+Note `make_needle.py` **overwrites** `../phase-4-probes/bodies/needle.json` in place, so running it
+at a different size changes what `probe.py needle` does for whoever runs it next. These runs used
+`--tokens 41000`; the file has been put back to its committed 12000-token default afterwards, and
+anything reproducing them needs to regenerate it and put it back the same way.

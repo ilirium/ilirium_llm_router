@@ -86,6 +86,18 @@ This also reproduces the Phase 1 finding that started the whole credential decis
 side: back then a forwarded local request came back 401 and the conclusion was that `api_key_env` was
 needed. It is now used.
 
+**Authentication was then switched back off**, and the committed `config.yaml` re-checked against it,
+so the repository's default matches the machine again. Both modes in one pass:
+
+| Route | Result |
+|---|---|
+| `qwen/qwen3.5-9b` → lmstudio, `strip` | **200**, `ok`, the model answered `strip works` |
+| `claude-sonnet-5` → anthropic, `forward` | **401**, `http_error` — the deliberately fake token reaching Anthropic and being rejected |
+
+The 401 is the interesting half. It is the *expected* answer to a fake token, and getting it means
+the credential was forwarded rather than dropped: a stripped request would have failed differently.
+So one pass confirms both surviving modes still behave after the plumbing changed underneath them.
+
 ## Item 2, step 0 — what `read` actually applies to, measured 2026-08-07
 
 The instrument is `phase-5-measurements/read_timeout_semantics.py`, which drives a backend at three

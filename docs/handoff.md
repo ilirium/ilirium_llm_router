@@ -96,10 +96,18 @@ killed at 600247 ms. What proves the field governs live traffic is the companion
 itself the argument for configuring the number rather than hard-coding one inside the working range
 of ordinary traffic.
 
-**Left to do before merging:** switch LM Studio's "Require Authentication" back off and confirm the
-committed `config.yaml` — which still says `credential: strip` — works against it, then the `--no-ff`
-merge. The setting is **currently on**, so the repository's default config will 401 until one of the
-two is changed.
+**Authentication is back off and the committed config is confirmed against it.** One pass covered
+both surviving modes: `strip` to LM Studio answered 200, and `forward` to Anthropic returned 401 on a
+deliberately fake token — which is the expected answer and therefore evidence the credential was
+forwarded rather than dropped. The repository's default `config.yaml` matches the machine again.
+
+**The phase is complete and deliberately not merged**, held on 2026-08-07 for the owner to read the
+diff first. `git diff main..feat/phase-5-config-and-timeouts` is the whole of it.
+
+Two committed values are choices rather than measurements, and were confirmed as such: LM Studio's
+**`read_timeout: 1800`** is roughly 4× the observed 462 s worst prefill, picked for headroom. The
+needle fixture was regenerated to 41000 tokens for the runs and **put back** to its committed 12000
+default afterwards, so `probe.py needle` behaves as it always did.
 
 **Everything else outstanding is surveyed in `outstanding-work.md`**, updated the same day: the three
 EPDs waiting on a decision rather than on work, the three measurements Phase 4 left open after Phase
