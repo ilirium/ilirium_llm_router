@@ -110,8 +110,10 @@ def _report(config: Config, path: Path) -> None:
 
 
 def _credential(backend: Backend) -> str:
-    if backend.api_key_env:
-        return f"key from ${backend.api_key_env}"
+    """One line per mode. This used to prefer the key over the mode, which was the display half of
+    the ambiguity the config shape now refuses."""
+    if backend.credential == "inject":
+        return f"inject key from ${backend.api_key_env}"
     return f"{backend.credential} incoming credential"
 
 

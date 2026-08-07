@@ -10,22 +10,30 @@ server:
   port: 8787
 
 backends:
+  # `credential` is the only knob, and it has three modes:
+  #
+  #   forward   pass the credential arriving from the caller through untouched
+  #   strip     remove it
+  #   inject    remove it and send the key named by `api_key_env` instead
+  #
+  # `api_key_env` is required by `inject` and forbidden by the other two. Both contradictions are
+  # refused at startup rather than resolved silently.
+
   # Models named `claude-…`.
   anthropic:
     base_url: https://api.anthropic.com
-    # `forward` passes the credential arriving from Claude Code straight through. It is the real
-    # one and Anthropic accepts it, so the router holds no key of its own. See
-    # docs/anthropic-auth-check.md.
+    # The arriving credential is the real one and Anthropic accepts it, so the router holds no key
+    # of its own. See docs/anthropic-auth-check.md.
     credential: forward
 
   # Every other model.
   lmstudio:
     base_url: http://localhost:1234
-    # `strip` removes the credential. A real Anthropic token is of no use to a local server and
-    # should not be handed to something that might write it to a log.
+    # A real Anthropic token is of no use to a local server and should not be handed to something
+    # that might write it to a log.
     credential: strip
-    # If LM Studio's "Require Authentication" is switched on, name the environment variable holding
-    # its key here instead, and the router will send that rather than stripping:
+    # If LM Studio's "Require Authentication" is switched on, this takes two lines: change the mode
+    # above to `inject` and name the variable holding the key here.
     # api_key_env: LMSTUDIO_API_KEY
 
 logging:

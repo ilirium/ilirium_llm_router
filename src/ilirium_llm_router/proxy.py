@@ -343,9 +343,12 @@ def outgoing_headers(
 
     Everything else is passed through as it arrived — including `anthropic-beta`, whose
     `oauth-2025-04-20` entry is what makes the bearer token acceptable to Anthropic.
+
+    The credential is decided by `backend.credential` alone, never by whether a key happens to
+    exist. `api_key` carries the value for `inject` and is ignored by the other two modes.
     """
     dropped = set(DROPPED_FROM_REQUEST)
-    if api_key is not None or backend.credential == "strip":
+    if backend.credential in {"strip", "inject"}:
         dropped |= CREDENTIAL_HEADERS
 
     headers = [
@@ -356,7 +359,7 @@ def outgoing_headers(
     # Deliberate override: Claude Code asks for gzip and friends, but a compressed reply cannot be
     # read for `usage` on its way past (Phase 2) without decompressing it first.
     headers.append((b"accept-encoding", b"identity"))
-    if api_key is not None:
+    if backend.credential == "inject" and api_key is not None:
         headers.append((b"authorization", f"Bearer {api_key}".encode()))
     return headers
 

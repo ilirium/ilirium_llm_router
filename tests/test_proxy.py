@@ -26,7 +26,7 @@ from conftest import (
 from fastapi.testclient import TestClient
 
 from ilirium_llm_router.app import create_app
-from ilirium_llm_router.config import Backend
+from ilirium_llm_router.config import Backend, Config
 from ilirium_llm_router.proxy import peek
 
 
@@ -132,24 +132,46 @@ def test_an_uncompressed_reply_is_requested() -> None:
     assert upstream.received.headers["accept-encoding"] == "identity"
 
 
+def _injecting_config() -> Config:
+    return make_config(
+        lmstudio=Backend(
+            base_url="http://localhost:1234",
+            credential="inject",
+            api_key_env="LMSTUDIO_API_KEY",
+        )
+    )
+
+
 def test_a_configured_key_replaces_the_incoming_credential(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """LM Studio's "Require Authentication" setting: send its key rather than stripping."""
     monkeypatch.setenv("LMSTUDIO_API_KEY", "local-key")
-    config = make_config(
-        lmstudio=Backend(
-            base_url="http://localhost:1234",
-            credential="strip",
-            api_key_env="LMSTUDIO_API_KEY",
-        )
-    )
 
     upstream = Upstream()
-    with running(upstream, config) as client:
+    with running(upstream, _injecting_config()) as client:
         client.post("/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS)
 
     assert upstream.received.headers["authorization"] == "Bearer local-key"
+
+
+def test_inject_removes_the_incoming_key_header_as_well(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """`inject` is `strip` plus a key, so the caller's own `x-api-key` must not survive either."""
+    monkeypatch.setenv("LMSTUDIO_API_KEY", "local-key")
+
+    upstream = Upstream()
+    with running(upstream, _injecting_config()) as client:
+        client.post(
+            "/v1/messages",
+            content=LOCAL_BODY,
+            headers={**CLAUDE_CODE_HEADERS, "x-api-key": "secret"},
+        )
+
+    received = upstream.received
+    assert "x-api-key" not in received.headers
+    assert received.headers["authorization"] == "Bearer local-key"
 
 
 def test_the_backends_own_connection_headers_do_not_come_back() -> None:
