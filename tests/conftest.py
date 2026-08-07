@@ -53,6 +53,21 @@ def streamed(
     return httpx.Response(status, headers=headers, content=body())
 
 
+def dies_after(chunk: bytes) -> AsyncIterator[bytes]:
+    """A reply that delivers `chunk` and then has its connection reset under it.
+
+    The backend-died-mid-answer case, which both test files need: `test_proxy.py` to check what the
+    caller is told, `test_recording.py` to check what the row says. It was defined four times with
+    identical bodies before Phase 6 noticed.
+    """
+
+    async def body() -> AsyncIterator[bytes]:
+        yield chunk
+        raise httpx.ReadError("Connection reset by peer")
+
+    return body()
+
+
 class Upstream:
     """A stand-in backend: records the requests that reach it, replies with what it was given."""
 
