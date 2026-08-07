@@ -12,7 +12,9 @@ mostly already built — lives in `phase-3-notes.md`, with the backend that fail
 commands that drive it, in `phase-3-verification/`; what LM Studio turned out to support lives in
 `phase-4-notes.md`, planned in `phase-4-plan.md` and measured with the probes in `phase-4-probes/`,
 which are committed and meant to be re-run — with the four measurements that *cannot* be taken again
-frozen in `phase-4-evidence/`;
+frozen in `phase-4-evidence/`; the survey of everything still outstanding once all four phases had
+landed lives in `outstanding-work.md`, and the two items it picked out are planned in
+`phase-5-plan.md`;
 the procedure for testing the router against a real session lives in `testing-against-claude-code.md`;
 the token-usage check that unblocked Phase 2 lives in `lmstudio-usage-check.md`; proposals that are
 written up but not decided live in `docs/epd/`, indexed by `EPD-000-about-these-documents.md`, which
@@ -58,11 +60,27 @@ whole captured 118 KB request replays unmodified. Findings in `phase-4-notes.md`
 written up, `CLAUDE.md` and `implementation-plan.md` updated, both EPDs carry Phase 4 addenda, and
 the `--no-ff` merge landed as `50444c5`. Nothing from Phase 4 is outstanding.
 
-**What is next**, and it is now two items rather than one. The credential config shape, agreed since
-2026-07-29 and still unwritten — one `credential` field, three modes, contradictions refused at
+**What is next is Phase 5**, and it is two items rather than one. The credential config shape, agreed
+since 2026-07-29 and still unwritten — one `credential` field, three modes, contradictions refused at
 startup. And the **read timeout** Phase 4 found reachable by ordinary traffic, which is a real defect
 with three candidate fixes and no decision taken. They belong together: both are small, both touch
 configuration, and neither is a measurement.
+
+**Both are planned in `phase-5-plan.md`**, written 2026-08-07, with a Phase 5 section added to
+`implementation-plan.md` to match. Nothing from it is built yet — the branch does not exist.
+
+Two things in that plan are worth knowing without reading it. The `inject` mode **has never carried a
+live request**, because the LM Studio auth setting was switched off rather than configured around, so
+the phase requires a real authenticated call rather than another unit test. And one of the three
+candidate timeout fixes — "resets on progress rather than on first byte" — **may already be httpx's
+behaviour**, since `read` looks to apply per socket read; the plan measures that before choosing,
+because if true the candidate list is shorter than `handoff.md` has been claiming.
+
+**Everything else outstanding is surveyed in `outstanding-work.md`**, written the same day: the three
+EPDs waiting on a decision rather than on work, the four measurements Phase 4 left open, and four
+smaller loose ends each with its reason for staying put. The useful fact in it is a dependency —
+Phase 4's unfinished "is context trimmed below the boundary" question is blocked by the timeout, so
+Phase 5 unblocks it.
 
 Three results worth carrying beyond the parity table:
 
