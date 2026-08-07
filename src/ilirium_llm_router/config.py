@@ -56,6 +56,17 @@ class Backend(Strict):
     base_url: str
     credential: Literal["forward", "strip", "inject"]
     api_key_env: str | None = None
+    read_timeout: float = Field(default=600.0, gt=0)
+    """How long this backend may stay silent before the call is abandoned, in seconds.
+
+    Measured on 2026-08-07 (`docs/phase-5-measurements/`): this is the longest gap permitted
+    *between* two reads, not a budget for the whole reply — every chunk restarts it. So it bounds
+    silence, never duration.
+
+    It is per backend because the two differ by 26× in time to first byte, and because the only
+    thing that has ever hit the old shared 600 s was a local model prefilling a large prompt, which
+    is silence that means the backend is working rather than wedged.
+    """
 
     @field_validator("base_url")
     @classmethod

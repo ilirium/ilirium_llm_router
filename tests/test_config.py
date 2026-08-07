@@ -152,6 +152,31 @@ def test_present_api_key_env_var_is_accepted(
     assert config.api_keys() == {"lmstudio": "local-key"}
 
 
+def test_read_timeout_defaults_to_the_old_shared_number(tmp_path: Path) -> None:
+    """A config written before the field existed keeps behaving exactly as it did."""
+    config = load_config(write(tmp_path, MINIMAL))
+
+    assert config.backends.anthropic.read_timeout == 600.0
+    assert config.backends.lmstudio.read_timeout == 600.0
+
+
+def test_read_timeout_is_set_per_backend(tmp_path: Path) -> None:
+    """The whole point: the local backend needs minutes of silence, the cloud one never has."""
+    text = MINIMAL + "    read_timeout: 1800\n"
+
+    config = load_config(write(tmp_path, text))
+
+    assert config.backends.lmstudio.read_timeout == 1800.0
+    assert config.backends.anthropic.read_timeout == 600.0
+
+
+def test_a_non_positive_read_timeout_is_rejected(tmp_path: Path) -> None:
+    text = MINIMAL + "    read_timeout: 0\n"
+
+    with pytest.raises(ConfigError, match="read_timeout"):
+        load_config(write(tmp_path, text))
+
+
 def test_a_forwarding_backend_contributes_no_key(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

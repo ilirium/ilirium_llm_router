@@ -174,6 +174,46 @@ def test_inject_removes_the_incoming_key_header_as_well(
     assert received.headers["authorization"] == "Bearer local-key"
 
 
+def _patient_lmstudio() -> Config:
+    return make_config(
+        lmstudio=Backend(
+            base_url="http://localhost:1234",
+            credential="strip",
+            read_timeout=1800,
+        )
+    )
+
+
+def test_each_backend_carries_its_own_tolerance_for_silence() -> None:
+    """Phase 4 killed a healthy local prefill at a shared 600 s. The number is now per backend."""
+    config = _patient_lmstudio()
+
+    local = Upstream()
+    with running(local, config) as client:
+        client.post("/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    cloud = Upstream()
+    with running(cloud, config) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert local.received.extensions["timeout"]["read"] == 1800
+    assert cloud.received.extensions["timeout"]["read"] == 600
+
+
+def test_a_patient_backend_is_still_reached_impatiently() -> None:
+    """Waiting 30 minutes for a model to think must not mean waiting 30 minutes to find it absent.
+
+    LM Studio simply not running is the common failure, and it is a connect error, not silence.
+    """
+    upstream = Upstream()
+    with running(upstream, _patient_lmstudio()) as client:
+        client.post("/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    timeout = upstream.received.extensions["timeout"]
+    assert timeout["connect"] == 5.0
+    assert timeout["write"] == 30.0
+
+
 def test_the_backends_own_connection_headers_do_not_come_back() -> None:
     """Our server writes `date` and `server` itself; relaying the backend's leaves two of each."""
     upstream = Upstream(
