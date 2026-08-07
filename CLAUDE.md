@@ -49,6 +49,16 @@ Its process lesson is a variant of the previous three. Phase 3 and Phase 4 each 
 
 To use it: set `credential: inject` **and** `api_key_env: LMSTUDIO_API_KEY` on the `lmstudio` backend in `config.yaml`, and put the key in `.env`. It takes both lines now — naming the variable alone is refused at startup rather than silently overriding the mode.
 
+**Phase 6 is done, 2026-08-07** — the first phase whose subject is the project rather than a capability. It read all 1713 lines of source and 2220 of tests, re-derived every measurement quoted in the documents from the frozen artefacts, and drove the router live against local stubs. Findings and what was done about them are in `docs/phase-6-notes.md`; 158 tests.
+
+**Its headline is that the documentation was almost entirely right.** Fifteen of the sixteen quoted measurements reproduce to the digit — the whole Phase 2 frozen session, every Phase 4 and Phase 5 number, all four cited commit hashes. There was no dead code, no unused import and no unreachable branch anywhere in `src/`; a type checker found ten diagnostics and none of them a defect.
+
+Seven items were fixed, about forty lines in total. Three matter. **The 26× time-to-first-byte gap was quoted without the slice it means** — see the correction under Phase 2 above, which is the one place the docs could have misled a reader by a factor of seven. **The SSE scan cap counted the whole arriving chunk instead of one line**, so a large chunk of ordinary short events made the scanner give up and lose every token column, while logging a reason that was not true. And **`pydantic` and `starlette` were direct imports that nothing declared**, arriving transitively through FastAPI for five phases.
+
+Two things it deliberately did *not* do, so they are not re-opened from the numbers alone. **`ty` is not adopted** — ten remaining diagnostics are all stub imprecision in httpx and starlette. And **the comment density is kept**: 58% of the source is prose, 371 lines of code carrying 1000 of commentary, which is the obvious thing to cut. It was tested instead of assumed — the docstrings share a **mean 2.8%** of their wording with this file, so they are not duplication, and most carry a measurement or a failure recorded nowhere else. Deliberately measured and deliberately kept.
+
+Its process lesson turns Phase 5's on the reviewer. The review's own plan asserted the comments were redundant, and a five-minute measurement refuted it; the review's own finding about the 26× claim overstated how many files carried it, written from memory of a grep rather than from the grep. **Check the claim you are planning against, including when it is your own.**
+
 Note: `/Users/ilirium/Projects/code-2026/ilirium_llm_router` and the OneDrive path are the *same directory* (identical inode), not two checkouts. Editing either edits both.
 
 ## Layout and commands

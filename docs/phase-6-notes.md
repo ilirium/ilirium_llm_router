@@ -1,7 +1,10 @@
 # Phase 6 — what the review found
 
-Act 1, 2026-08-07. Nothing has been changed. The plan is `phase-6-plan.md`; this is the findings
-half, and the "what was done" half will be appended after the gate.
+Act 1, 2026-08-07. The plan is `phase-6-plan.md`.
+
+> **Act 3 is done, the same day.** All seven recommended items were accepted at the gate and are
+> built, one commit each. See "What was done" at the end of this document; the findings below are
+> left exactly as they were written, before anything was fixed.
 
 **The short version.** The code is in better shape than the review expected, and the documents are
 in better shape than the review expected — but for a reason worth stating precisely: *almost every
@@ -366,3 +369,73 @@ it is valuable because it **refuted the plan that produced it**. The plan assert
 redundant; five minutes of shingle comparison said they were not. That is the Phase 5 lesson
 turned on the reviewer instead of the reviewed — check the claim you are planning against, including
 when it is your own.
+
+---
+
+# What was done
+
+Act 3, 2026-08-07. All seven items accepted, one commit each, in the ranked order.
+
+| | Finding | Commit | Effect |
+|---|---|---|---|
+| 1 | D1 — the 26× slice | `8e048f7` | prose only |
+| 2 | C1 — the SSE scan cap | `115bf53` | **behaviour**, +1 test |
+| 3 | C3 — declare `pydantic`, `starlette` | `122f788` | packaging |
+| 4 | B2 — `dies_after` into `conftest.py` | `ffe2d86` | tests, −18 lines |
+| 5 | C2 — delete `app.state.config` | `d1c0856` | −1 line |
+| 6 | D3 — README quick start | `7cd90f9` | docs |
+| 7 | C4 — narrow once in `_read_error` | `5a589e0` | cosmetic |
+
+**158 tests** (was 157), ruff clean, tree formatted, config valid, and the router driven live
+against the stubs again afterwards — six request shapes, four rows, twenty columns, every value
+where the design says it should be.
+
+## The three things worth carrying forward
+
+**The AST check needed fixing before it could be trusted.** The plan said "identical AST proves a
+change was cosmetic". The first prose-only commit came back **DIFFERENT**, and the reason is that a
+docstring is an `Expr` node — including the bare-string kind this codebase puts under
+`Backend.read_timeout`. So raw AST equality is stricter than "cosmetic" and would have failed every
+comment edit the review recommended.
+
+The tool now makes two comparisons: **strict** (prose edits show here) and **semantic** (docstrings
+stripped first; a difference here is a real behaviour change, and nothing labelled cosmetic may have
+one). That distinction is the useful half, and the repo's own method from `d1def4f` needs it. The
+instrument was wrong before the first commit landed, which is the Phase 2 habit — *fix the
+instrument before believing its result* — arriving one phase later than it should have.
+
+**A regression test that has never failed proves nothing.** C1's test was run against the stashed
+old `observe.py` and confirmed to fail there before being kept. This mattered more than usual: the
+existing `observed()` helper feeds payloads in 4096-byte slices, and *slicing is exactly what hid
+the defect* — a test written the obvious way would have passed against the broken code and locked
+the bug in behind a green check. The new test passes `chunk_size=len(chunk)` for that reason.
+
+**The review's own finding was wrong about its extent, and fixing it found that out.** D1 claimed
+the TTFB sentence appeared in three files. It appears in one. The finding was written from memory of
+a grep rather than from the grep, in a document whose entire purpose was to check claims against
+evidence — the same failure it was reporting, committed while reporting it. Corrected in place, with
+the correction left visible.
+
+## What was deliberately not done
+
+Unchanged from the recommendation, and worth restating so it is not re-opened from the ratio alone:
+
+- **`ty` is not adopted.** Ten diagnostics remain (was twelve; C4 removed two), all stub imprecision
+  in httpx and starlette. Zero found a real problem.
+- **Comment density is kept.** 58% of the source is prose, and the measurement — mean 2.8% wording
+  overlap with `CLAUDE.md` — says it is not duplication. Measured, and kept on purpose.
+- **`.gitignore` is not trimmed**; no document is deleted, including `handoff.md`.
+
+## What the next phase should know
+
+The audit graded three classes of claim **consistent with their committed transcripts but not
+re-measured**, because they rest on live third-party behaviour this phase deliberately stayed away
+from: Claude Code retrying a 502 ten times, Claude Code ignoring a mid-stream `error` event, and
+LM Studio's honoured/ignored feature table. None showed any sign of being wrong. None was re-run.
+
+The pattern across six phases now reads: 3 found work already **built**, 4 found work already
+**measured**, 5 found work already **misdescribed**, and 6 found the documentation **almost entirely
+right** — fifteen of sixteen quoted measurements reproducing to the digit — with the drift
+concentrated in a single missing qualifier. The basement is sound. What it cost to establish that
+was about forty lines of change and one afternoon, and the most valuable output was a hypothesis
+refuted rather than a defect found.
