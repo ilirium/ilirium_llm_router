@@ -26,7 +26,7 @@ from conftest import (
 from fastapi.testclient import TestClient
 
 from ilirium_llm_router.app import create_app
-from ilirium_llm_router.config import Backend
+from ilirium_llm_router.config import Backend, Config
 from ilirium_llm_router.proxy import peek
 
 
@@ -132,24 +132,86 @@ def test_an_uncompressed_reply_is_requested() -> None:
     assert upstream.received.headers["accept-encoding"] == "identity"
 
 
+def _injecting_config() -> Config:
+    return make_config(
+        lmstudio=Backend(
+            base_url="http://localhost:1234",
+            credential="inject",
+            api_key_env="LMSTUDIO_API_KEY",
+        )
+    )
+
+
 def test_a_configured_key_replaces_the_incoming_credential(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """LM Studio's "Require Authentication" setting: send its key rather than stripping."""
     monkeypatch.setenv("LMSTUDIO_API_KEY", "local-key")
-    config = make_config(
-        lmstudio=Backend(
-            base_url="http://localhost:1234",
-            credential="strip",
-            api_key_env="LMSTUDIO_API_KEY",
-        )
-    )
 
     upstream = Upstream()
-    with running(upstream, config) as client:
+    with running(upstream, _injecting_config()) as client:
         client.post("/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS)
 
     assert upstream.received.headers["authorization"] == "Bearer local-key"
+
+
+def test_inject_removes_the_incoming_key_header_as_well(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """`inject` is `strip` plus a key, so the caller's own `x-api-key` must not survive either."""
+    monkeypatch.setenv("LMSTUDIO_API_KEY", "local-key")
+
+    upstream = Upstream()
+    with running(upstream, _injecting_config()) as client:
+        client.post(
+            "/v1/messages",
+            content=LOCAL_BODY,
+            headers={**CLAUDE_CODE_HEADERS, "x-api-key": "secret"},
+        )
+
+    received = upstream.received
+    assert "x-api-key" not in received.headers
+    assert received.headers["authorization"] == "Bearer local-key"
+
+
+def _patient_lmstudio() -> Config:
+    return make_config(
+        lmstudio=Backend(
+            base_url="http://localhost:1234",
+            credential="strip",
+            read_timeout=1800,
+        )
+    )
+
+
+def test_each_backend_carries_its_own_tolerance_for_silence() -> None:
+    """Phase 4 killed a healthy local prefill at a shared 600 s. The number is now per backend."""
+    config = _patient_lmstudio()
+
+    local = Upstream()
+    with running(local, config) as client:
+        client.post("/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    cloud = Upstream()
+    with running(cloud, config) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert local.received.extensions["timeout"]["read"] == 1800
+    assert cloud.received.extensions["timeout"]["read"] == 600
+
+
+def test_a_patient_backend_is_still_reached_impatiently() -> None:
+    """Waiting 30 minutes for a model to think must not mean waiting 30 minutes to find it absent.
+
+    LM Studio simply not running is the common failure, and it is a connect error, not silence.
+    """
+    upstream = Upstream()
+    with running(upstream, _patient_lmstudio()) as client:
+        client.post("/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    timeout = upstream.received.extensions["timeout"]
+    assert timeout["connect"] == 5.0
+    assert timeout["write"] == 30.0
 
 
 def test_the_backends_own_connection_headers_do_not_come_back() -> None:

@@ -91,11 +91,13 @@ def _report(config: Config, path: Path) -> None:
     print("\nBackends:")
     print(
         f"  anthropic  {config.backends.anthropic.base_url}   "
-        f"models starting with 'claude-'   [{_credential(config.backends.anthropic)}]"
+        f"models starting with 'claude-'   [{_credential(config.backends.anthropic)}] "
+        f"[{_silence(config.backends.anthropic)}]"
     )
     print(
         f"  lmstudio   {config.backends.lmstudio.base_url}   "
-        f"every other model                [{_credential(config.backends.lmstudio)}]"
+        f"every other model                [{_credential(config.backends.lmstudio)}] "
+        f"[{_silence(config.backends.lmstudio)}]"
     )
     print(
         "\nLog:      "
@@ -110,9 +112,16 @@ def _report(config: Config, path: Path) -> None:
 
 
 def _credential(backend: Backend) -> str:
-    if backend.api_key_env:
-        return f"key from ${backend.api_key_env}"
+    """One line per mode. This used to prefer the key over the mode, which was the display half of
+    the ambiguity the config shape now refuses."""
+    if backend.credential == "inject":
+        return f"inject key from ${backend.api_key_env}"
     return f"{backend.credential} incoming credential"
+
+
+def _silence(backend: Backend) -> str:
+    """Named for what the number measures, since "timeout" reads as a budget for the whole call."""
+    return f"give up after {backend.read_timeout:g}s silent"
 
 
 def _mib(value: int) -> str:

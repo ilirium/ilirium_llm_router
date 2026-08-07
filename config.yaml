@@ -10,22 +10,40 @@ server:
   port: 8787
 
 backends:
+  # `credential` is the only knob, and it has three modes:
+  #
+  #   forward   pass the credential arriving from the caller through untouched
+  #   strip     remove it
+  #   inject    remove it and send the key named by `api_key_env` instead
+  #
+  # `api_key_env` is required by `inject` and forbidden by the other two. Both contradictions are
+  # refused at startup rather than resolved silently.
+
+  # `read_timeout` is how long a backend may stay *silent* before the call is abandoned. It is not
+  # a budget for the whole reply: every chunk that arrives restarts it, measured 2026-08-07 in
+  # docs/phase-5-measurements/. So it bounds silence, never duration.
+
   # Models named `claude-…`.
   anthropic:
     base_url: https://api.anthropic.com
-    # `forward` passes the credential arriving from Claude Code straight through. It is the real
-    # one and Anthropic accepts it, so the router holds no key of its own. See
-    # docs/anthropic-auth-check.md.
+    # The arriving credential is the real one and Anthropic accepts it, so the router holds no key
+    # of its own. See docs/anthropic-auth-check.md.
     credential: forward
+    # Measured median time to first byte is 1426 ms, so ten minutes of silence already means
+    # something is wrong rather than slow.
+    read_timeout: 600
 
   # Every other model.
   lmstudio:
     base_url: http://localhost:1234
-    # `strip` removes the credential. A real Anthropic token is of no use to a local server and
-    # should not be handed to something that might write it to a log.
+    # A real Anthropic token is of no use to a local server and should not be handed to something
+    # that might write it to a log.
     credential: strip
-    # If LM Studio's "Require Authentication" is switched on, name the environment variable holding
-    # its key here instead, and the router will send that rather than stripping:
+    # Prefilling a large prompt is silent while it works: 27924 tokens took 197 s, and a ~41000-token
+    # request was still going when the old shared 600 s killed it (docs/phase-4-notes.md).
+    read_timeout: 1800
+    # If LM Studio's "Require Authentication" is switched on, this takes two lines: change the mode
+    # above to `inject` and name the variable holding the key here.
     # api_key_env: LMSTUDIO_API_KEY
 
 logging:

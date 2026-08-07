@@ -78,12 +78,31 @@ DROPPED_FROM_RESPONSE = CONNECTION_HEADERS | {"content-length", "date", "server"
 
 # A model can think for minutes, so the usual short read timeout would cut replies off. Connecting
 # should still fail fast: LM Studio simply not running is the common failure.
+#
+# `read` here is only the fallback for a client built without a config. The real one is per backend
+# and set on each request below, because Phase 4 found a single shared 600 s killing a healthy local
+# prefill while being far longer than Anthropic has ever needed.
 TIMEOUT = httpx.Timeout(connect=5.0, read=600.0, write=30.0, pool=5.0)
 
 
 def create_client() -> httpx.AsyncClient:
     """The single HTTP client shared by every request, so connections are reused."""
     return httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False)
+
+
+def backend_timeout(backend: Backend) -> httpx.Timeout:
+    """The shared timeouts, with this backend's own tolerance for silence.
+
+    Only `read` varies. Connecting, writing and waiting for a pool slot are properties of this
+    machine rather than of the model at the other end, and a backend that cannot be *reached*
+    should still fail fast whichever one it is.
+    """
+    return httpx.Timeout(
+        connect=TIMEOUT.connect,
+        read=backend.read_timeout,
+        write=TIMEOUT.write,
+        pool=TIMEOUT.pool,
+    )
 
 
 @dataclass(frozen=True)
@@ -174,6 +193,7 @@ class Proxy:
             target_url(backend.base_url, request),
             headers=outgoing_headers(request, backend, self.api_keys.get(name)),
             content=body,
+            timeout=backend_timeout(backend),
         )
         try:
             reply = await self.client.send(outgoing, stream=True)
@@ -343,9 +363,12 @@ def outgoing_headers(
 
     Everything else is passed through as it arrived — including `anthropic-beta`, whose
     `oauth-2025-04-20` entry is what makes the bearer token acceptable to Anthropic.
+
+    The credential is decided by `backend.credential` alone, never by whether a key happens to
+    exist. `api_key` carries the value for `inject` and is ignored by the other two modes.
     """
     dropped = set(DROPPED_FROM_REQUEST)
-    if api_key is not None or backend.credential == "strip":
+    if backend.credential in {"strip", "inject"}:
         dropped |= CREDENTIAL_HEADERS
 
     headers = [
@@ -356,7 +379,7 @@ def outgoing_headers(
     # Deliberate override: Claude Code asks for gzip and friends, but a compressed reply cannot be
     # read for `usage` on its way past (Phase 2) without decompressing it first.
     headers.append((b"accept-encoding", b"identity"))
-    if api_key is not None:
+    if backend.credential == "inject" and api_key is not None:
         headers.append((b"authorization", f"Bearer {api_key}".encode()))
     return headers
 

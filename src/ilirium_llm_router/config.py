@@ -14,7 +14,14 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 
 
 class ConfigError(Exception):
@@ -35,11 +42,31 @@ class Strict(BaseModel):
 
 
 class Backend(Strict):
-    """One place requests can be sent."""
+    """One place requests can be sent.
+
+    `credential` says what happens to the credential arriving from the caller, and it is the *only*
+    thing consulted when the request goes out — `forward` passes it through, `strip` removes it, and
+    `inject` removes it and sends the key named by `api_key_env` instead.
+
+    The two used to be independent, and a configured key silently won over whatever `credential`
+    said, so `credential: forward` beside a key read as "forward the caller's token" and did not do
+    that. The validator below makes that state unrepresentable rather than merely discouraged.
+    """
 
     base_url: str
-    credential: Literal["forward", "strip"]
+    credential: Literal["forward", "strip", "inject"]
     api_key_env: str | None = None
+    read_timeout: float = Field(default=600.0, gt=0)
+    """How long this backend may stay silent before the call is abandoned, in seconds.
+
+    Measured on 2026-08-07 (`docs/phase-5-measurements/`): this is the longest gap permitted
+    *between* two reads, not a budget for the whole reply — every chunk restarts it. So it bounds
+    silence, never duration.
+
+    It is per backend because the two differ by 26× in time to first byte, and because the only
+    thing that has ever hit the old shared 600 s was a local model prefilling a large prompt, which
+    is silence that means the backend is working rather than wedged.
+    """
 
     @field_validator("base_url")
     @classmethod
@@ -48,6 +75,27 @@ class Backend(Strict):
         if not value.startswith(("http://", "https://")):
             raise ValueError("must start with http:// or https://")
         return value.rstrip("/")
+
+    @model_validator(mode="after")
+    def _mode_and_key_agree(self) -> Backend:
+        """Refuse the two ways of asking for a key and a mode that contradict each other.
+
+        Both are the failures that otherwise surface as a confusing 401 a long way from their
+        cause: a backend that authenticates with nothing, and a key that looks configured and is
+        never sent.
+        """
+        if self.credential == "inject" and not self.api_key_env:
+            raise ValueError(
+                "'credential: inject' needs 'api_key_env' naming the environment variable that "
+                "holds the key. Add it, or use 'forward' or 'strip' if this backend needs no key "
+                "of its own."
+            )
+        if self.credential != "inject" and self.api_key_env:
+            raise ValueError(
+                f"'api_key_env' is set but credential is '{self.credential}', so that key would "
+                f"never be sent. Use 'credential: inject' to send it, or remove 'api_key_env'."
+            )
+        return self
 
 
 class Backends(Strict):
@@ -91,10 +139,13 @@ class Config(Strict):
 
         Returns a mapping of backend name to key. Backends that forward or strip the incoming
         credential do not appear.
+
+        Keyed on the mode, so this and the request path decide from the same thing. The second
+        clause narrows the type; the model validator already guarantees it.
         """
         keys: dict[str, str] = {}
         for name, backend in _named_backends(self.backends):
-            if backend.api_key_env:
+            if backend.credential == "inject" and backend.api_key_env:
                 keys[name] = os.environ[backend.api_key_env]
         return keys
 
@@ -146,13 +197,15 @@ def _check_api_keys(config: Config) -> None:
     Waiting until the first request would turn a configuration mistake into a runtime one.
     """
     for name, backend in _named_backends(config.backends):
+        if backend.credential != "inject":
+            continue
         variable = backend.api_key_env
         if variable and not os.environ.get(variable, "").strip():
             raise ConfigError(
-                f"Backend '{name}' expects its API key in the environment variable "
-                f"'{variable}', which is unset or empty.\n"
-                f"Set it in your .env file, or remove 'api_key_env' from that backend to forward "
-                f"or strip the incoming credential instead."
+                f"Backend '{name}' has 'credential: inject' and expects its API key in the "
+                f"environment variable '{variable}', which is unset or empty.\n"
+                f"Set it in your .env file, or switch that backend to 'credential: forward' or "
+                f"'credential: strip' if it needs no key of its own."
             )
 
 

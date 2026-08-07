@@ -35,9 +35,17 @@ Three results reach beyond parity. **Prompt caching is now measured end to end**
 
 A third of Phase 4 turned out to be already measured by Phase 2's frozen session — the second time in a row a phase has found its work partly done, after Phase 3 found four of its five items already built.
 
-**LM Studio's "Require Authentication" was switched on and has since been turned off.** Earlier on 2026-07-29 a forwarded local request came back `401 authentication_error` from LM Studio itself; later the same day LM Studio answered unauthenticated, and there is no `.env`. So the current working setup needs no local credential. If the setting is switched back on, uncomment `lmstudio.api_key_env: LMSTUDIO_API_KEY` in `config.yaml` and put the key in `.env`.
+**Phase 5 is done, verified against live traffic on 2026-08-07**; 157 tests. Two items, both configuration, chosen in `docs/outstanding-work.md` as the only two things left that were work rather than a decision waiting on a person. Findings in `docs/phase-5-notes.md`, measurements in `docs/phase-5-measurements/`.
 
-The auth setting is expected to go back on, and is the reason backend authentication is now a design decision rather than an untested extra — see "Design decisions" below. Note that the key path has still never carried a live request: the setting was turned off rather than configured around, so it is covered by a unit test and nothing more. The agreed config shape (one `credential` field, three modes, contradictions refused at startup) is **not implemented yet**; `config.py` still has the two-knob shape.
+**The credential shape agreed on 2026-07-29 is built**, and `inject` has now carried a live request against an authenticated LM Studio — the first time that path has ever seen real traffic. Writing it found the same ambiguity in two more places than the known one: `api_keys()` collected a key regardless of mode, and `--check` would have *displayed* a forwarding backend as injecting.
+
+**The read timeout is per backend**, which retires Phase 4's one real defect and unblocks the measurement it was blocking: **there is no silent trimming below the context boundary** — 41595 tokens against a 44544 window, 93% full, codeword returned from the very front.
+
+Its process lesson is a variant of the previous three. Phase 3 and Phase 4 each found work already *built*; Phase 5 found work already *misdescribed*. Two of the three timeout options in the handoff did not exist as stated, and "a wedged backend fails in bounded time" was never true of duration. **The notes about the code had drifted from the code, and only a measurement caught it.**
+
+**LM Studio's "Require Authentication" has been on and off, and the key path now works against it.** On 2026-07-29 a forwarded local request came back `401 authentication_error` from LM Studio itself; the setting was then turned off, which is why for months the key path was covered by a unit test and nothing more. **On 2026-08-07 it was switched back on and `credential: inject` carried a real request** — HTTP 200 with the caller's own (fake) Anthropic token replaced by the configured key, against a `strip` control at the same moment that returned 401. Details in `docs/phase-5-notes.md`.
+
+To use it: set `credential: inject` **and** `api_key_env: LMSTUDIO_API_KEY` on the `lmstudio` backend in `config.yaml`, and put the key in `.env`. It takes both lines now — naming the variable alone is refused at startup rather than silently overriding the mode.
 
 Note: `/Users/ilirium/Projects/code-2026/ilirium_llm_router` and the OneDrive path are the *same directory* (identical inode), not two checkouts. Editing either edits both.
 
@@ -132,11 +140,17 @@ Known gaps to design around (not translation work — LM Studio's own surface):
 
   **And the silent-trimming worry is settled: there is none at the boundary.** A request whose input exceeds the loaded window is **refused**, in under a second, with `api_error` and the message `The number of tokens to keep from the initial prompt is greater than the context length. Try to load the model with a larger context length, or provide a shorter input`. Nothing is quietly dropped. The 34304-token `google/gemma-4-e4b` session worked because it fit, not because anything was trimmed.
 
-  Two caveats keep this from being a clean all-clear. The refusal arrives as an **SSE `error` event inside an HTTP 200** — the shape Phase 3 measured Claude Code ignoring — so the most actionable message LM Studio produces may never reach the user. And whether trimming happens *below* the boundary is still unmeasured; the run meant to check it hit the router's own timeout instead (next bullet).
+  **And there is none below the boundary either, measured in Phase 5 on 2026-08-07** once the read timeout stopped preventing the run. A prompt of **41595 tokens against a 44544 window — 93% full** — returned the codeword planted at its very front, with `input_tokens` matching what was sent. So the worry is closed at both ends: refused above the window, answered in full below it.
+
+  One caveat still keeps this from being a clean all-clear. The refusal arrives as an **SSE `error` event inside an HTTP 200** — the shape Phase 3 measured Claude Code ignoring — so the most actionable message LM Studio produces may never reach the user. And all of it is one model at one window size.
 
 - **The router's 600-second read timeout is reachable by ordinary local traffic**, found 2026-08-06. A ~41000-token request against a 44544-token window was killed at exactly `read=600.0` while LM Studio was still healthily prefilling — `transport_error` / `read_timeout`. Measured times to first byte on that model: 9166 tokens → 115 s, 27924 tokens → 197 s, ~41000 tokens → never.
 
-  So **the usable context of a local model is bounded by time, not by its window**: a model loaded at 44544 cannot be driven to the top of it through this router. Deliberately not changed in Phase 4 — the same number is what makes a wedged backend fail in bounded time, and Phase 3 chose it on purpose. The options for later are a larger timeout, a configurable one, or one that resets on progress rather than on first byte.
+  **Fixed in Phase 5 on 2026-08-07: `read_timeout` is now per backend**, 600 s for Anthropic and 1800 s for LM Studio, defaulting to 600 so an older config is unchanged. A model loaded at 44544 can now be driven to 93% of its window through the router — measured, 41595 input tokens answered in full.
+
+  Two corrections Phase 5 owes this bullet, both measured (`docs/phase-5-measurements/`). **"Resets on progress" was never one of the three options — it is already the behaviour**: `read` bounds the silence between two reads and every chunk restarts it, which is why a silent prefill hits it and a slow stream does not. And **"a wedged backend fails in bounded time" was never true of duration**, only of silence: a backend dribbling one byte every 599 s would have run forever under the old setting too. Raising the number gave up less than this paragraph used to imply.
+
+  The honest limit on the verification: the completing run's first byte arrived at 461712 ms, *under* the old 600 s ceiling, so it did not reproduce the failure Phase 4 measured at 600247 ms. The same request straddles the old threshold across runs, which is the argument for configuring the number rather than hard-coding it. What proves the field governs live traffic is the companion run at `read_timeout: 30`, which dies at 30343 ms with Phase 4's exact signature.
 
 ## Observed request shape
 
@@ -204,7 +218,9 @@ Decided deliberately; don't quietly reverse these.
 
   **Contradictions are startup errors, not silent behaviour.** `inject` without `api_key_env`, and `api_key_env` without `inject`, are both refused. So is an environment variable that is unset or empty. Each message must say what is wrong *and* how to fix it, then exit — matching how the rest of config loading already behaves. A backend that authenticates with nothing, or a key that looks configured and is never sent, are exactly the failures that surface as a confusing 401 much later.
 
-  **Not yet implemented.** `config.py` still has the two-knob shape; this is a decision, not a description. The header question is also open and deliberately unanswered: `inject` currently means `Authorization: Bearer`, which suits LM Studio and OpenAI, but Anthropic's native key is `x-api-key` and Gemini's is `x-goog-api-key`. A per-backend header name will be needed before the second cloud provider, not before.
+  **Implemented in Phase 5 on 2026-08-07**, and `inject` has carried a live request against an LM Studio requiring authentication. The mode is the only thing consulted at request time, so the ambiguity is unrepresentable rather than discouraged. Writing it revealed the same ambiguity in two more places than the known one in `proxy.py`: `api_keys()` collected a key for any backend naming a variable, and `cli.py` *displayed* injection whenever a key existed — so `--check` would have reported a forwarding backend as injecting. See `docs/phase-5-notes.md`.
+
+  The header question remains open and deliberately unanswered: `inject` means `Authorization: Bearer`, which suits LM Studio and OpenAI, but Anthropic's native key is `x-api-key` and Gemini's is `x-goog-api-key`. A per-backend header name will be needed before the second cloud provider, not before — and Phase 5 deliberately did not settle it while editing the same function.
 
 ## Open proposals — the EPDs
 

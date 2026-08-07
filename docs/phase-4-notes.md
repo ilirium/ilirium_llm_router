@@ -236,6 +236,21 @@ ordinary traffic*, which is not what it was chosen against. It belongs in the ne
 credential work, with the options being a larger read timeout, a configurable one, or one that resets
 on progress rather than on first byte.
 
+> **Corrected by Phase 5 on 2026-08-07.** Two claims in the paragraph above are wrong, both measured
+> in `phase-5-measurements/read_timeout_semantics.py`.
+>
+> **The third option does not exist.** `read` already resets on progress — a backend dripping a
+> chunk every second ran for three times the timeout and completed, because every chunk restarts the
+> clock. What `read` measures is the longest permitted *silence between two reads*, which is why a
+> silent prefill hits it and a slow stream does not.
+>
+> **And "fails in bounded time" was never true of duration.** Since the clock restarts per chunk, a
+> backend dribbling one byte every 599 s would have run forever under the old setting too. The
+> property Phase 3 actually bought was "fails if it goes quiet", which is narrower — so raising the
+> number gave up less than this paragraph implies.
+>
+> Phase 5 made `read_timeout` per backend: 600 s for Anthropic, 1800 s for LM Studio.
+
 It is also the third instance of this project's most reliable lesson, after Phase 2 step 6 and Phase
 3's `ReadError("")`: **the tests confirm the code does what it was written to do; only real traffic
 shows what it was written to do being wrong.** Every one of the 147 tests passes with this timeout.
@@ -279,8 +294,12 @@ proposes to close, and it is why the replay of a *known* body survived the cut.
 
 Stated plainly, because an honest list is this phase's deliverable and a short one would be dishonest.
 
-- **Whether trimming happens below the boundary.** The run meant to check it hit the router's read
-  timeout. The boundary itself refuses cleanly; the region just under it is uncharacterised.
+- ~~**Whether trimming happens below the boundary.**~~ The run meant to check it hit the router's
+  read timeout. **Closed by Phase 5 on 2026-08-07**, once that timeout was configurable: the same
+  needle completed with `ZARDOZ-QUILL-7734` returned from a prompt of **41595 tokens against a 44544
+  window, 93% full**. Nothing is dropped from the front below the boundary, and `input_tokens`
+  matches what was sent. With the boundary itself known to refuse cleanly, silent trimming is now
+  ruled out at both ends rather than one.
 - **Whether Claude Code shows LM Studio's context error.** It arrives as an SSE `error` event inside
   an HTTP 200 — the shape Phase 3 measured being ignored — but as the *sole* event, with no
   `message_start` before it, where Phase 3's case followed partial content. Whether the client treats

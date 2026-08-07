@@ -199,6 +199,44 @@ found four of its five items already built. Check the committed artefacts before
 
 ---
 
+## Phase 5 — The credential shape and the read timeout
+
+**Goal.** Close the two items that are unambiguously work rather than deliberation, both of which
+touch configuration.
+
+This phase is the mirror image of Phase 4: almost all of it is code, and none of it is a measurement
+except the one that Phase 4 could not take. `outstanding-work.md` is the survey that picked these two
+out of everything left; `phase-5-plan.md` is how they will be run.
+
+**Work.**
+
+- **Replace the two-knob credential configuration with one field and three modes** — `forward`,
+  `strip`, `inject` — with `api_key_env` required by the last and forbidden by the others. Agreed
+  2026-07-29 and never written. Today a configured key silently overrides whatever `credential` says,
+  so `credential: forward` alongside a key does not forward. Contradictions become startup errors
+  that name the fix and exit, matching the rest of config loading.
+- **Exercise the `inject` path with a live request.** It has never carried one: LM Studio's
+  authentication setting was switched off rather than configured around, so the mode that motivated
+  this whole decision is covered by a unit test and nothing else.
+- **Decide what to do about the 600-second read timeout**, which Phase 4 found reachable by ordinary
+  traffic — a healthy local request killed mid-prefill, which means a local model's usable context is
+  bounded by time rather than by its window. Start by measuring what httpx's `read` timeout actually
+  applies to, because one of the three candidate fixes may already be the behaviour.
+- **Verify the timeout change against the request that exposed it**, not against tests. Every one of
+  the 147 tests passed with the broken number.
+- Optionally, take the measurement this unblocks: whether context is trimmed *below* the boundary.
+  The run meant to answer it in Phase 4 hit this timeout instead.
+
+**Done when.** The credential shape cannot express a contradiction, `inject` has worked against a
+real authenticated backend, and the timeout is either changed with its reasoning written down or
+deliberately kept with the same. In both cases `CLAUDE.md` stops describing them as outstanding.
+
+**Deliberately out of scope.** The per-backend authentication *header* name — `Authorization` versus
+`x-api-key` versus `x-goog-api-key` — which is needed before the second cloud provider and not
+before, and which this phase could easily settle by accident while editing the same function.
+
+---
+
 ## Things that are easy to get wrong
 
 These cut across phases and are worth getting right the first time.
