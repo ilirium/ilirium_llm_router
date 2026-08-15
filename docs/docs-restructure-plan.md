@@ -6,33 +6,43 @@ The shape and the argument for it are in `docs/epd/EPD-004-documentation-structu
 the mechanical half: what moves where, what breaks when it does, and in which order to do it so that
 a mistake is recoverable.
 
-Read the seven silent breakages first. Five of them fail without an error message, and two of those
+Read the eight silent breakages first. Six of them fail without an error message, and two of those
 have already fired once in this repository.
 
 ## Scale
 
+Measured 2026-08-15 on `docs/milestone-boundary-restructure` at commit `51b857b`.
+
 | | |
 |---|---|
-| Files under `docs/` | 68, of which **50 are tracked** by git |
-| Untracked-but-present | `phase-3-verification/runs/`, `phase-4-probes/runs/`, `phase-4-probes/bodies/needle.json`, `.DS_Store` — all gitignored local scratch |
+| Files under `docs/` | **67 present, 52 tracked** — of which this document and `EPD-004` are two of each. Before `51b857b`: 65 present, 50 tracked |
+| Untracked-but-present | **15 files**: `phase-3-verification/runs/` (2), `phase-4-probes/runs/` (11), `phase-4-probes/bodies/needle.json`, `.DS_Store` — all gitignored local scratch |
 | Mentions of the 22 documents and directories that move | **253**, across `docs/`, `README.md`, `CLAUDE.md`, `src/`, `tests/`, `config.yaml`, `.gitignore` |
-| Doc paths cited from code and config | **8**, in 6 files |
+| Doc paths cited from code and config | **11**, in 7 files — 8 pointing *out* to `docs/`, 3 pointing *into* `CLAUDE.md` |
 | `.gitignore` entries naming `docs/` paths | **4**, one of them a negation |
-| Documents rewritten rather than moved | 4 — `CLAUDE.md`, `README.md`, `outstanding-work.md`, and the new `status.md` |
+| Documents rewritten rather than moved | **5** — `CLAUDE.md`, `README.md`, `outstanding-work.md`, `EPD-000`, and the new `status.md` |
+
+**The first row was wrong in this document's first version**, which said "68 files, 50 tracked". The
+50 was right; the 68 was not, and it contradicted the untracked row two lines below it — 50 + 15 is
+65, not 68. Recorded rather than silently corrected, because a document whose subject is this
+repository's habit of quoting numbers forward has no business hiding one of its own.
 
 The mention count is why this is not a forty-minute job. Roughly a quarter of them are inside the
 documents being moved, referring to each other.
 
 ---
 
-## The seven things that break silently
+## The eight things that break silently
 
 **1. `probe.py` computes the repository root from its own depth.** `probe.py:40` is
 `ROOT = HERE.parent.parent`, used at `:43` for `docs/log-the-whole-request.txt` and at `:44` for
 `logs/calls.csv`. Moving `docs/phase-4-probes/` to `docs/procedures/lmstudio-capability-probes/`
 takes it from two levels below the root to three. It will not raise on import — it fails later, when
-`replay` cannot find the capture. **Both lines need editing, and `CAPTURE` needs editing twice** if
-the capture also moves to `docs/captures/`.
+`replay` cannot find the capture.
+
+**The minimum correct edit is `:40` alone.** `CALLS_CSV` at `:44` is derived from `ROOT` and is fixed
+for free; `:43` needs a second edit only if the capture also moves to `docs/captures/`. (This
+document's first version said "both lines need editing", which overstated the job.)
 
 **2. The `.gitignore` negation for `router.log`.** `.gitignore:59` is a blanket `*.log`;
 `.gitignore:229` is `!docs/phase-2-step-6-session/router.log`, the exception that lets the frozen
@@ -51,7 +61,9 @@ never committed. Fails in the wrong direction — nothing errors, the repository
 its committed 12000 default afterwards. It is local scratch; it moves with `mv`, not `git mv`, and
 its ignore line moves with it.
 
-**5. Docstring citations in `src/` are not tested.** Eight of them, and nothing fails if they rot:
+**5. Docstring citations in `src/` are not tested.** Eleven of them, and nothing fails if they rot.
+
+**Eight point outward, to a path under `docs/`:**
 
 | File | Line | Cites |
 |---|---|---|
@@ -63,6 +75,25 @@ its ignore line moves with it.
 | `config.yaml` | 24 | `docs/phase-5-measurements/` |
 | `config.yaml` | 30 | `docs/anthropic-auth-check.md` |
 | `config.yaml` | 44 | `docs/phase-4-notes.md` |
+
+**Three point inward, naming a `CLAUDE.md` section by its title** — and these are the ones the first
+version of this document missed, because they were looked for by grepping `docs/`, which structurally
+cannot find a citation that never mentions `docs/`:
+
+| File:line | Names the section |
+|---|---|
+| `src/ilirium_llm_router/proxy.py:3` | "Observed request shape" — **Leaves** |
+| `src/ilirium_llm_router/proxy.py:238` | the byte-relay exception, under "Design decisions" — **rationale leaves** |
+| `src/ilirium_llm_router/stats.py:3` | "Observability: log + CSV stats" — **Leaves** |
+
+Every one names a section that EPD-004's triage table marks as leaving `CLAUDE.md`. After the cut,
+each points at a heading that no longer exists in the file it names, and nothing fails — which is
+exactly the property this breakage is titled after.
+
+These are also the harder edit. A path citation is replaced by a path; a section citation has to be
+repointed at the new `reference/` file **and**, where one survives, at the one-line statement left
+behind in `CLAUDE.md`. `proxy.py:238` is the sharpest case: it is the only record in the code that
+the SSE `error` event is a deliberate exception rather than an oversight.
 
 Phase 6 measured the source at 58% prose and kept it deliberately, on the grounds that the docstrings
 carry measurements recorded nowhere else. That decision is what makes these citations load-bearing
@@ -80,6 +111,30 @@ below git's similarity threshold and the file's history ends there. Given that t
 this repository's documents is that they record when a thing was learned, **losing the history of
 `phase-4-notes.md` would cost more than the restructure gains.** Hence the commit order below:
 every move is its own commit, and no move commit changes a file's contents.
+
+**8. `router.yaml` writes into `runs/` by a relative path, and the move un-ignores it.**
+`docs/phase-3-verification/router.yaml:28` and `:33` are `file: runs/router.log` and
+`file: runs/calls.csv`. `CLAUDE.md` records that relative log and stats paths resolve against **the
+config file's directory**, not the working directory — so the destination follows the YAML file
+wherever it goes.
+
+The mapping below sends `router.yaml` to `docs/procedures/dying-backend/` and `runs/` to the phase
+archive. The next run of the stub then writes to `docs/procedures/dying-backend/runs/`, a path
+**nothing ignores**, and the next `git add -A` commits transcripts that `.gitignore:231` exists to
+keep out. That is breakage 3's failure mode arriving through a door breakage 3 does not cover.
+`router.yaml:5` also carries a comment asserting the runs are gitignored, which the move would make
+false.
+
+This one is embarrassing rather than subtle: the identical hazard in `probe.py` got a dedicated
+paragraph below, and this one got nothing, because `RUNS` is Python and `file: runs/router.log` is
+YAML. **It is resolved the same way** — see the mapping.
+
+**And a trap that applies to breakages 3, 4 and 8 together:** `git mv olddir newdir` relocates the
+directory's *ignored* contents along with it, and they arrive showing as untracked `??` rather than
+ignored, because `.gitignore` still names the old path. So moving `phase-4-probes/` wholesale would
+relocate `runs/` and `needle.json` **and un-ignore them in one stroke**. The "plain `mv`" instruction
+in the mapping is only correct if the parent directory is never moved as a unit — move the tracked
+contents, not the directory.
 
 ---
 
@@ -115,16 +170,18 @@ verbatim; the work is deciding which paragraph belongs to which file.
 | `docs/testing-against-claude-code--results.md` | `docs/milestone-1-core/phase-1-proxy/evidence/session-results.md` | results are Phase 1 history, not a procedure |
 | `docs/phase-4-probes/{probe,make_needle,make_image}.py`, `README.md`, `bodies/` | `docs/procedures/lmstudio-capability-probes/` | **edit `probe.py:40,43` after the move** |
 | `docs/phase-4-probes/bodies/needle.json` | same directory | gitignored — plain `mv`, and update `.gitignore:237` |
-| `docs/phase-4-probes/runs/` | `docs/milestone-1-core/phase-4-lmstudio-parity/evidence/probe-runs/` | gitignored — plain `mv`, update `.gitignore:233`. Also update `RUNS` in `probe.py:42` if runs are to keep landing beside the phase rather than beside the probe |
-| `docs/phase-3-verification/{dying_backend.py,router.yaml,README.md}` | `docs/procedures/dying-backend/` | the stub is a tool |
-| `docs/phase-3-verification/runs/` | `docs/milestone-1-core/phase-3-error-handling/evidence/runs/` | gitignored — plain `mv`, update `.gitignore:231` |
+| `docs/phase-4-probes/runs/` | **stays beside the probe** at `docs/procedures/lmstudio-capability-probes/runs/`; the Milestone 1 transcripts are *copied* to `docs/milestone-1-core/phase-4-lmstudio-parity/evidence/probe-runs/` | gitignored — repoint `.gitignore:233` at the new probe path, and add the archive copy as an exception if it is to be committed |
+| `docs/phase-3-verification/{dying_backend.py,router.yaml,README.md}` | `docs/procedures/dying-backend/` | the stub is a tool. `router.yaml:5` comment and `README.md:25`'s `make run CONFIG=…` example both need the new path |
+| `docs/phase-3-verification/runs/` | **stays beside `router.yaml`** at `docs/procedures/dying-backend/runs/`; Milestone 1 transcripts *copied* to `docs/milestone-1-core/phase-3-error-handling/evidence/runs/` | breakage 8. Repoint `.gitignore:231` at the new procedures path — **not** at the archive, or the stub writes to an unignored directory |
 | `docs/phase-5-measurements/read_timeout_semantics.py` | `docs/procedures/read-timeout-semantics.py` | a twenty-minute measurement that settled two wrong claims; worth keeping runnable |
 | — | `docs/procedures/README.md` | **new** — the index, and when each check is worth re-running |
 
-**On the `probe.py` `RUNS` question.** Its transcripts currently land next to the probe. If runs move
-to the phase archive, the probe would be writing into a milestone folder, which is wrong for
-Milestone 2. Proposed: `RUNS` stays beside the probe (`procedures/lmstudio-capability-probes/runs/`,
-gitignored), and only the *Milestone 1* transcripts are copied into the phase evidence directory.
+**The rule behind both `runs/` rows.** An instrument's output directory must follow the instrument,
+never the archive. If it follows the archive, the tool writes into a milestone folder — wrong for
+Milestone 2 — and the ignore rule that keeps disposable transcripts out of the repository stops
+covering the path the tool actually writes to. So in both cases: **`runs/` stays beside the thing
+that writes it, and only the Milestone 1 transcripts are copied into phase evidence.** `probe.py:42`
+(`RUNS`) needs no edit under this rule, and neither does `router.yaml:28,33`.
 
 ### Tier 3 — captures
 
@@ -137,9 +194,20 @@ one path with a live alternative (`reference/captures/`).
 
 ### Tier 4 — EPDs
 
-**Nothing moves.** `docs/epd/` stays, numbering untouched, `EPD-000`'s index gains a row for
-`EPD-004` and its "Related documents that are not EPDs" closing section is rewritten to point at the
-new tiers rather than at the old flat `docs/`.
+**No EPD moves**, and no EPD is renumbered. But "untouched" was wrong in this document's first
+version — three kinds of edit are needed inside `docs/epd/`:
+
+| What | Where |
+|---|---|
+| `EPD-000`'s index row for `EPD-004` | **already done** in `51b857b`. Listed as pending below by mistake |
+| `EPD-000`'s closing "Related documents that are not EPDs" section | rewritten to point at the new tiers rather than the old flat `docs/` |
+| `EPD-000:31` (`docs/implementation-plan.md`) and `EPD-000:55` (`docs/handoff.md`) | both targets move; both are outside the closing section |
+| `EPD-000:28-30`, "An EPD graduates *into* `CLAUDE.md`" | a **convention change**, not a path fix — see EPD-004 |
+| `EPD-001:19`, `EPD-001:28`, `EPD-002:30` | relative links `../phase-4-notes.md` and `../phase-2-step-6-session/calls.csv`, all three targets moving into `milestone-1-core/` |
+
+Relative links inside moved directories change by **depth**, not only by name:
+`phase-4-evidence/README.md:4` cites `../../CLAUDE.md` and needs `../../../../` after the move. The
+link-check script under Verification is what catches this class; reading for it does not.
 
 ### Tier 5 — the Milestone 1 archive
 
@@ -147,7 +215,7 @@ new tiers rather than at the old flat `docs/`.
 |---|---|
 | `docs/handoff.md` | `docs/milestone-1-core/closing-notes.md` |
 | `docs/implementation-plan.md` | `docs/milestone-1-core/implementation-plan.md` |
-| `docs/outstanding-work.md` | `docs/milestone-1-core/outstanding-work.md` — **and its live items are lifted into `docs/status.md` first** (EPD-004 fork 3) |
+| `docs/outstanding-work.md` | `docs/milestone-1-core/outstanding-work.md` — moved in commit 8, then split in commit 10, its live items lifted into `docs/status.md` (EPD-004 fork 3) |
 | `docs/phase-1-notes.md` | `docs/milestone-1-core/phase-1-proxy/notes.md` |
 | `docs/phase-2-notes.md` | `docs/milestone-1-core/phase-2-observability/notes.md` |
 | `docs/phase-2-step-6-session/` | `docs/milestone-1-core/phase-2-observability/evidence/step-6-session/` — **update `.gitignore:229`** |
@@ -173,27 +241,59 @@ directory.
 | `README.md` | "What it does today" gains the Milestone 1 result in two sentences; the pointer to `CLAUDE.md` becomes a pointer to `docs/reference/` for facts and `docs/status.md` for state. The "Description" brief stays verbatim |
 | `docs/status.md` | **new** — milestones → phases → tasks, one page, plus "where we stopped". Takes over `handoff.md`'s live role |
 
+### Tier 7 — these two documents
+
+The first version of this plan placed every file under `docs/` except itself. Naming the destination:
+
+| File | Destination |
+|---|---|
+| `docs/epd/EPD-004-documentation-structure.md` | **stays** in `docs/epd/`, per Tier 4. An EPD keeps its number and its home whatever is decided about it |
+| `docs/docs-restructure-plan.md` | `docs/milestone-1-core/docs-restructure-plan.md`, as the last step of commit 13 |
+
+The plan is process material, and this restructure is Milestone 1's closing act rather than
+Milestone 2's opening one — it exists because Milestone 1 ended, and its subject is Milestone 1's
+output. Filing it in the archive it creates is the consistent choice.
+
+It also brushes an EPD-000 convention worth naming: `EPD-000:31` says an EPD is "**not a plan**",
+with plans living in `implementation-plan.md`. A migration plan for a *documentation* proposal fits
+neither slot. Archiving it beside `implementation-plan.md` is the closest available answer.
+
 ---
 
 ## Commit order
 
-Twelve commits. The principle: **no commit both moves a file and edits it**, so rename detection
-survives (breakage 7), and any single step can be reverted without unpicking the rest.
+Thirteen commits. The principle: **no commit both moves a file and edits it**, so rename detection
+survives (breakage 7), and any single step can be reverted without unpicking the rest. Each of the
+move commits below pairs its move with an edit to a *different* file — `.gitignore`, never the moved
+file itself — which is what keeps the principle true rather than merely stated.
 
 | # | Commit | Why here |
 |---|---|---|
 | 1 | `EPD-004` + this plan | Already on the branch. The decision record precedes the work |
-| 2 | Write `reference/measurements.md` and `reference/lessons.md` | **The gate.** EPD-004's cheapest next step: if the durable half will not separate from the process half, stop here having touched nothing |
-| 3 | Create empty tier directories with their `README.md` index files | Gives every later move a destination that already explains itself |
-| 4 | Assemble the remaining `reference/` files from `CLAUDE.md` and the phase notes | Content composition, no moves. `CLAUDE.md` is not yet cut — text is duplicated for one commit, deliberately |
-| 5 | `git mv` the procedures, **including the gitignored `runs/` and `needle.json` by plain `mv`**, and update `.gitignore` in the same commit | The ignore rules must never be out of step with the paths, not even for one commit |
-| 6 | Fix `probe.py` (`ROOT`, `CAPTURE`, `RUNS`, header paths, usage examples) and the moved `README.md` links | Separate from the move, so the move stays a clean rename |
-| 7 | `git mv` the capture to `docs/captures/`, fix `probe.py:43` | Small, isolated, easy to revert if the fork is decided the other way |
-| 8 | `git mv` the milestone archive; update `.gitignore:229` in the same commit | The `router.log` negation and its path move together (breakage 2) |
-| 9 | Rewrite `CLAUDE.md` — cut the moved sections, insert the pointers | Only now, once every destination exists |
-| 10 | Split `outstanding-work.md`; write `docs/status.md` | EPD-004 fork 3. Its own commit because it rewrites rather than moves |
-| 11 | Rewrite the 253 cross-references, `README.md`, `EPD-000`'s index and closing section | The bulk edit, in one reviewable commit |
-| 12 | Fix the 8 doc paths in `src/`, `tests/` and `config.yaml`; run `make test` and `make lint` | Code last, so a test failure has one obvious cause |
+| 2 | Write `reference/backend-lmstudio.md`, extracting the parity table out of `phase-4-notes.md` | **The gate**, and it is an *extraction* — see below |
+| 3 | Write `reference/measurements.md` and `reference/lessons.md` | The highest-value output of the proposal, and worth having whatever is decided about the rest |
+| 4 | Create the remaining tier directories with their `README.md` index files | Gives every later move a destination that already explains itself |
+| 5 | Assemble the remaining `reference/` files from `CLAUDE.md` and the phase notes | Content composition, no moves. `CLAUDE.md` is not yet cut — text is duplicated for one commit, deliberately |
+| 6 | Move the procedures — tracked contents by `git mv`, the gitignored `runs/` and `needle.json` by plain `mv`, **never the parent directory as a unit** — and update `.gitignore` in the same commit | The ignore rules must never be out of step with the paths, not even for one commit (breakages 3, 4, 8) |
+| 7 | Fix `probe.py` (`ROOT` at `:40`, header paths at `:6,12,26`, usage examples at `:20-23`), `router.yaml:5`, and the moved `README.md` links | Separate from the move, so the move stays a clean rename. `RUNS` and `file: runs/…` need no edit under the instrument rule |
+| 8 | `git mv` the capture to `docs/captures/`, fix `probe.py:43` | Small, isolated, easy to revert if fork 4 is decided the other way |
+| 9 | `git mv` the milestone archive; update `.gitignore:229` in the same commit; copy the Milestone 1 run transcripts into phase evidence | The `router.log` negation and its path move together (breakage 2) |
+| 10 | Rewrite `CLAUDE.md` — cut the moved sections, insert the pointers | Only now, once every destination exists |
+| 11 | Split `outstanding-work.md`; write `docs/status.md` | EPD-004 fork 3. Its own commit because it rewrites rather than moves |
+| 12 | Rewrite the 253 cross-references, `README.md`, and `EPD-000`'s two body citations plus its closing section | The bulk edit, in one reviewable commit. The `EPD-004` index row is **already done** in `51b857b` |
+| 13 | Fix the 11 doc citations in `src/`, `tests/` and `config.yaml`; move this plan into the archive; run `make test` and `make lint` | Code last, so a test failure has one obvious cause |
+
+**Why the gate changed.** The first version of this plan made commit 2 the writing of
+`measurements.md` and `lessons.md`, on the grounds that it would discover whether the durable half
+separates from the process half. It would not have. Those two files are **synthesis** — they harvest
+asides scattered across six phase notes — and harvesting asides succeeds whether or not the tier
+split is sound. The extraction that actually tests the proposition is the parity table coming out of
+`phase-4-notes.md`, the one source most fused with its phase narrative. If that cannot be lifted
+without dragging half the narrative along, the tiers are wrong, and it is cheaper to learn it from
+one file than from twenty-two.
+
+Commits 2 and 3 are both cheap and both reversible; the point of the reordering is only that the
+*gate* is the one that can fail.
 
 Merge `--no-ff` per repository convention, so the boundary stays visible.
 
@@ -203,15 +303,22 @@ Green tests prove nothing about documents, so the checks are separate.
 
 - **Link check.** A throwaway script over every `.md` in the repository: resolve each relative link
   and each backticked path that looks like a file, report the ones that do not exist. Run it before
-  commit 11 to size the job and after commit 12 to close it. Worth writing — 253 references is well
-  past what a careful read catches.
-- **`git log --follow`** on `phase-4-notes.md`, `handoff.md` and `probe.py` after commit 12. Each
+  commit 12 to size the job and after commit 13 to close it. Worth writing — 253 references is well
+  past what a careful read catches, and it is the only practical check for links that break by
+  *depth* rather than by name (`../../CLAUDE.md` → `../../../../CLAUDE.md`).
+- **A section-citation check, which the link checker will not do.** Grep `src/` and `tests/` for
+  `CLAUDE.md` and confirm each of the three section titles named there still resolves to a heading
+  that exists — in `CLAUDE.md` or in the `reference/` file that took it (breakage 5).
+- **`git log --follow`** on `phase-4-notes.md`, `handoff.md` and `probe.py` after commit 13. Each
   must still reach its original commit. If one does not, the move and an edit shared a commit.
-- **`git status --ignored`** after commits 5 and 8: the same four ignored paths as today, at their
-  new locations, and nothing newly tracked.
+- **`git status --ignored`** after commits 6 and 9: the same four ignored paths as today, at their
+  new locations, and nothing newly tracked. Specifically confirm that
+  `procedures/dying-backend/runs/` and `procedures/lmstudio-capability-probes/runs/` are *ignored*
+  and not merely absent — breakages 3 and 8 both fail by a path silently ceasing to be covered.
 - **Run the instruments.** `python3 docs/procedures/lmstudio-capability-probes/probe.py --list`, and
   `probe.py baseline` if LM Studio is up. This is the only check that catches breakage 1, and
-  `--list` alone will not — it has to be a run that reads the capture.
+  `--list` alone will not — it has to be a run that reads the capture. Then run the dying-backend
+  stub once and confirm its output lands in an ignored `runs/` beside `router.yaml` (breakage 8).
 - **`make test` and `make lint`.** 158 tests, before and after. Any change in the count means this
   work touched behaviour, which it must not.
 - **Read `CLAUDE.md` end to end** and ask of each removed section whether the pointer that replaced
@@ -219,9 +326,14 @@ Green tests prove nothing about documents, so the checks are separate.
 
 ## Rollback
 
-Each commit is revertible in isolation except 5 and 8, which pair a move with its `.gitignore`
+Each commit is revertible in isolation except 6 and 9, which pair a move with its `.gitignore`
 update by design. The branch is `docs/milestone-boundary-restructure`; `main` is untouched until the
-merge, and no commit here changes anything under `src/` except eight comment lines in commit 12.
+merge.
+
+The only changes under `src/` are **7 comment and docstring lines in commit 13** — 4 citing a
+`docs/` path, 3 naming a `CLAUDE.md` section. The other 4 of the 11 citations are in `tests/` (1) and
+`config.yaml` (3). The first version of this section said "eight comment lines under `src/`", which
+both undercounted the citations and misattributed them to one directory.
 
 ## What this plan does not cover
 

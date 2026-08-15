@@ -9,9 +9,17 @@ This is the first EPD whose subject is the repository rather than the router. `E
 restrict the series to the product, and the format fits: a question written up before it is
 answered, with the forks left open.
 
+**Reviewed 2026-08-15 against the tree, and revised.** The review found one wrong count, one
+self-contradiction, a class of citation this document had not looked for, and a gate that would have
+passed without testing what it claimed to test. All are corrected below **in place and visibly** —
+each correction says what the first version said — because a proposal arguing that this repository
+quotes numbers forward without checking them cannot quietly fix its own. The `CLAUDE.md` cut, which
+was asserted from the file's size alone, is now measured; the measurement changed two rows of the
+triage table and opened fork 5.
+
 ## Why now
 
-Milestone 1 is done. Six phases, 68 files under `docs/`, and a `CLAUDE.md` of 337 lines that is
+Milestone 1 is done. Six phases, 65 files under `docs/`, and a `CLAUDE.md` of 337 lines that is
 loaded into every session whether or not the session touches any of it. The next chunk of work —
 Milestone 2 — starts from three EPDs and a handful of loose ends, none of which needs to know how
 Phase 3 chose its timeout.
@@ -34,14 +42,20 @@ Per `EPD-000`'s convention, what in this proposal was counted against the tree a
 
 | Claim | Confidence |
 |---|---|
-| 68 files under `docs/`, 50 of them tracked by git | **Measured** — `git ls-files docs`, `find` |
+| 65 files under `docs/`, 50 of them tracked, before this EPD was committed; 67 / 52 after | **Measured** — `git ls-files docs`, `git ls-tree -r 9dd907e`, `find` |
 | `CLAUDE.md` is 337 lines / 46725 bytes, loaded every session | **Measured** |
 | 253 mentions of the 22 documents and directories that would move | **Measured** — grep over `docs/`, `README.md`, `CLAUDE.md`, `src/`, `tests/`, `config.yaml`, `.gitignore` |
-| 8 citations of `docs/` paths from 6 code and config files | **Measured** — `config.py:62`, `proxy.py:321`, `stats.py:26`, `observe.py:12`, `tests/test_observe.py:9`, `config.yaml:24,30,44` |
+| 11 doc citations from 7 code and config files — 8 naming a `docs/` path, 3 naming a `CLAUDE.md` section | **Measured** — `config.py:62`, `proxy.py:3,238,321`, `stats.py:3,26`, `observe.py:12`, `tests/test_observe.py:9`, `config.yaml:24,30,44` |
 | 4 `.gitignore` entries name `docs/` paths, one of them a negation | **Measured** — `.gitignore:229,231,233,237` |
 | `probe.py` breaks silently if its directory changes depth | **Measured** — `ROOT = HERE.parent.parent` at `probe.py:40`, used to locate the capture and `logs/calls.csv` |
+| `router.yaml` writes its runs by a path relative to itself, so a move relocates them out of the ignore rule | **Measured** — `router.yaml:28,33` |
+| Six `CLAUDE.md` sections have never been cited by name in Milestone 1; "Design decisions" has been cited 8 times | **Measured** — see the section below |
 | Moving reference material out of `CLAUDE.md` costs a session the knowledge unless a pointer replaces it | **Inferred strongly** — `CLAUDE.md` is auto-loaded, nothing else in `docs/` is |
 | The proposed split makes future quoting-forward errors less likely | **Unmeasured hypothesis** — it is the reason for the shape, and it is not testable in advance |
+
+**The first row was wrong in this document's first version**, which claimed 68 files. Corrected in
+place and left visible: an EPD whose argument rests on this repository's habit of quoting numbers
+forward should not quietly fix one of its own.
 
 ## The central claim: this is a split, not a move
 
@@ -132,6 +146,66 @@ arguably the most valuable thing Milestone 1 produced. It currently exists only 
 bottom of six separate phase notes, which is precisely where it will not be read at the start of
 Milestone 2.
 
+## Which `CLAUDE.md` sections Milestone 1 actually consulted — measured 2026-08-15
+
+The first version of this document proposed cutting `CLAUDE.md` from 337 lines to ~100 on the sole
+grounds that it is 337 lines and auto-loaded. That is a restatement of the file's size, not evidence
+of harm — and this repository has a precedent that makes the omission pointed. Phase 6 faced the
+structurally identical claim about the source's 58% comment density, **measured** the overlap at a
+mean 2.8%, and refused the cut. That episode is one of the two process lessons this proposal wants
+to preserve in `reference/lessons.md`. Proposing an unmeasured cut in the same document was the same
+mistake in a new place.
+
+So it was measured. Every reference to `CLAUDE.md` across `docs/`, `src/`, `tests/` and `README.md`
+was extracted and classified by which section it names. Replay transcripts were excluded — they
+contain the captured system prompt, not a citation.
+
+| Section | Lines | Cited by name | In how many files |
+|---|---|---|---|
+| Design decisions | 179–236 | **8** | 6 — including 3 of the 4 EPDs |
+| Observability: log + CSV stats | 251–312 | **4** | 4 — including `stats.py:3` |
+| Observed request shape | 167–178 | **3** | 2 — including `proxy.py:3` |
+| Goal | 100–105 | 1 | 1 |
+| The central architectural problem | 106–166 | 1 | 1 |
+| **Status** | **5–63** | **0** | 0 |
+| **Layout and commands** | 64–99 | **0** | 0 |
+| **Anthropic model IDs** | 313–325 | **0** | 0 |
+| **Open proposals — the EPDs** | 237–250 | **0** | 0 |
+| **Stack decisions**, **Style** | 326–337 | **0** | 0 |
+
+**The result does not say what a first reading suggests, and the caveat is the finding.** A citation
+counts a section used as an *authority* — something a document argues with, defers to, or records a
+correction against. It cannot count a section used as a *lookup table*. Nobody writes "as `CLAUDE.md`
+'Layout and commands' states" before running `make test`; nobody cites "Anthropic model IDs" before
+typing `claude-sonnet-5`. Those two sections are almost certainly the most *used* in the file and
+score zero.
+
+So the measurement splits `CLAUDE.md` in a way the original triage did not:
+
+- **Cited sections** — Design decisions, Observability, Observed request shape. Heavily consulted,
+  and always *from a document*. A reader already going elsewhere can follow one more link, so these
+  are the sections a pointer genuinely replaces.
+- **Silently-used sections** — Layout and commands, Anthropic model IDs. Zero citations, constant
+  use, and no link can be followed by someone who does not know they need it. **These must stay.**
+- **Genuinely inert** — Status, at 59 lines the single largest section in the file, with **zero**
+  citations in six phases. Stack decisions and Style, 12 lines, likewise.
+
+**The strongest measured argument for cutting is `Status`**, and it is a stronger one than this
+document originally made: 18% of an auto-loaded file, never once cited as an authority, consisting
+almost entirely of Milestone 1 phase history. The triage table below already proposed moving it, for
+the weaker reason that it was long.
+
+Two results argue *against* parts of the original triage. **"Design decisions" is the most-cited
+section in the file, and three of the four EPDs cite it** — the EPDs are precisely the documents that
+argue *against* a decision, and what they need is the rationale, not the one-line statement. Cutting
+rationale from the section most used for argument is the riskiest single item in this proposal.
+And **"Layout and commands" scoring zero is evidence of nothing**, which is worth stating plainly so
+the number is not later quoted as though it were.
+
+The recipe, so this number is never quoted without its slice: *citations naming a section title in
+quotes, across `docs/`, `src/`, `tests/` and `README.md`, excluding `CLAUDE.md` itself, this
+document, `docs-restructure-plan.md`, and the three files containing replayed request captures.*
+
 ## What leaves `CLAUDE.md`, and the rule for deciding
 
 `CLAUDE.md` is auto-loaded; nothing in `docs/` is. So the split cannot be "long things move out".
@@ -141,23 +215,24 @@ replaces it is load-bearing — it has to name *when to open the file*, not mere
 **The rule: what every session must hold in its head stays. What you look up when touching one area
 moves, with a pointer that names the trigger.**
 
-| Section, today | Lines | Proposal |
-|---|---|---|
-| Status | 5–63 | **Leaves.** A three-line summary in `CLAUDE.md`, the board in `docs/status.md`, the detail in the milestone archive |
-| Layout and commands | 64–99 | **Stays.** Every session needs it, including the ruff pin and why it is pinned |
-| Goal | 100–105 | **Stays**, compressed to three lines; the long form is `reference/architecture.md` |
-| The central architectural problem | 106–166 | **Leaves** to `reference/architecture.md` and `reference/backend-lmstudio.md`. A four-line summary stays: no translation, dispatch on the model name, relay bytes |
-| Observed request shape | 167–178 | **Leaves** to `reference/request-shape.md` |
-| Design decisions | 179–236 | **Split.** The one-line statement of each decision stays — these are the rules a session must not quietly reverse. The rationale and the measurements behind each move to `reference/design-decisions.md` |
-| Open proposals — the EPDs | 237–250 | **Stays**, cut to the table plus "do not build from one" |
-| Observability: log + CSV stats | 251–312 | **Leaves** to `reference/observability.md`. A pointer stays, triggered on "touching the recorder" |
-| Anthropic model IDs | 313–325 | **Stays.** Short, and getting it wrong produces a 400 |
-| Stack decisions, Style | 326–337 | **Stays** |
+| Section, today | Lines | Cited | Proposal |
+|---|---|---|---|
+| Status | 5–63 | 0 | **Leaves**, and the measurement makes this the clearest case in the table. A three-line summary in `CLAUDE.md`, the board in `docs/status.md`, the detail in the milestone archive |
+| Layout and commands | 64–99 | 0 | **Stays** — silently used, not citable. Every session needs it, including the ruff pin and why it is pinned |
+| Goal | 100–105 | 1 | **Stays**, compressed to three lines; the long form is `reference/architecture.md` |
+| The central architectural problem | 106–166 | 1 | **Leaves** to `reference/architecture.md` and `reference/backend-lmstudio.md`. A four-line summary stays: no translation, dispatch on the model name, relay bytes |
+| Observed request shape | 167–178 | 3 | **Leaves** to `reference/request-shape.md`. Repoint `proxy.py:3` |
+| Design decisions | 179–236 | **8** | **Split — and this is the item to challenge.** The one-line statement of each decision stays; the rationale moves to `reference/design-decisions.md`. But this is the most-cited section in the file, and three of the four EPDs cite it *for its reasoning*. Repoint `proxy.py:238` |
+| Open proposals — the EPDs | 237–250 | 0 | **Stays**, cut to the table plus "do not build from one" |
+| Observability: log + CSV stats | 251–312 | 4 | **Leaves** to `reference/observability.md`. A pointer stays, triggered on "touching the recorder". Repoint `stats.py:3` |
+| Anthropic model IDs | 313–325 | 0 | **Stays** — silently used. Short, and getting it wrong produces a 400 |
+| Stack decisions, Style | 326–337 | 0 | **Stays.** 12 lines; not worth a link |
 
 Target: roughly 100 lines. The risk to state plainly is that this trades **certainty** for **size** —
 today every fact is guaranteed present; afterwards some facts depend on a pointer being followed.
-The design decisions section is where that risk concentrates, which is why its statements stay and
-only its reasoning leaves.
+The measurement locates that risk precisely: it is not spread across the file but concentrated in
+**Design decisions**, the one section used as an authority by the documents whose whole purpose is to
+argue with it. See fork 5.
 
 ## Numbering
 
@@ -182,6 +257,9 @@ alternative — restarting at Phase 1 inside each milestone — makes "Phase 3 f
 items already built" ambiguous forever, and that sentence appears in five documents.
 
 ## Open forks — deliberately not decided here
+
+Six of them. Forks 5 and 6 were added on 2026-08-15 after a review found the first four attached to
+the least consequential questions in the document.
 
 **1. Whether findings get IDs.** The strong version of `measurements.md` gives every measurement a
 citable ID (`M-014`) so a claim in any document is a link rather than a restatement, and a
@@ -208,17 +286,64 @@ moving it, and it should be a commit of its own.
 **4. Where the captured request lives.** `docs/captures/` above, on the grounds that it is raw data
 serving both `reference/request-shape.md` and the probes. The alternative is
 `reference/captures/`, next to the document derived from it. Low stakes; it changes one path in
-`probe.py` either way.
+`probe.py` either way. **This is the least consequential item in the document and it was, in the
+first version, the only structural question given a fork** — which was a misallocation. Forks 5 and
+6 are the ones that matter.
+
+**5. Whether `Design decisions` should be split at all.** Opened because the measurement above
+contradicts the triage: it is the most-cited section in `CLAUDE.md`, and three of the four EPDs cite
+it *for its rationale*, which is the half proposed to move. An EPD exists to argue against a
+decision; splitting statement from reasoning puts the reasoning one link away from every document
+whose job is to weigh it.
+
+Three options. **(a) Split as proposed** — statements stay, rationale moves; cheapest, and the risk
+is that a future session reverses a decision having read only the statement. **(b) Do not split it**
+— the whole 58-line section stays in `CLAUDE.md`, and the ~100-line target becomes ~150. **(c) Split
+by decision rather than by layer** — the three or four decisions with a measured cost (byte-relay and
+prompt caching, no special case for background traffic, the SSE `error` event with no measured
+consumer) keep their reasoning inline; the rest move. **Proposed: (b).** The measurement says this
+section carries its weight, and the file it would leave behind is a rules list without the reasons
+anyone kept the rules — which is exactly the artefact that gets quietly reversed.
+
+**6. Whether the `reference/` tier should start at ten files.** Ten new documents plus two index
+`README.md`s, on day one, for a 371-line codebase. Six are extractions with an obvious home,
+`measurements.md` and `lessons.md` earn themselves, and `backend-anthropic.md` is assembled from
+three sources and may come to a page. The lighter version starts `reference/` with four files —
+architecture, design-decisions, observability, measurements — and lets the rest earn a home as
+material accumulates. **Proposed: start light.** If the tier split is the thing being decided, its
+granularity is part of what is being decided, and a thin index is easier to grow than to prune.
+
+## One EPD-000 convention this changes
+
+`EPD-000:28-30` says an EPD is "not a design document": `CLAUDE.md` holds the design, and an EPD
+"graduates *into* `CLAUDE.md` under 'Design decisions'" when a decision is taken.
+
+If the split above happens, that sentence stops being accurate — an accepted EPD would graduate into
+*two* places: a one-line statement in `CLAUDE.md` and a rationale block in
+`reference/design-decisions.md`. Under fork 5 option (b) the convention survives untouched, which is
+a further argument for (b).
+
+Either way the change must be made deliberately in `EPD-000` rather than discovered later. The
+migration plan treats `docs/epd/` as a path-fix job; it is not. `EPD-000:31` is affected too — it
+names `docs/implementation-plan.md` as the home of the phases, and that file is archived into
+`milestone-1-core/` with nothing named as Milestone 2's successor. `status.md` is proposed as
+`handoff.md`'s successor, not the plan's. **That gap is unresolved and belongs to whoever writes
+Milestone 2's plan.**
 
 ## What this does not propose
 
-- **No rewriting of measured content.** Every number, table and finding moves verbatim. The only
-  documents *rewritten* are `CLAUDE.md`, `README.md`, and the two new `reference/` files that are
-  assembled out of existing text. If a fact changes during this work, that is a defect in the work.
+- **No rewriting of measured content.** Every number, table and finding moves verbatim. The
+  documents actually *rewritten* are five: `CLAUDE.md`, `README.md`, `outstanding-work.md` (fork 3),
+  `EPD-000` (the convention and its two body citations), and the new `status.md` — plus the
+  `reference/` files assembled out of existing text. The first version of this list said three and
+  omitted `outstanding-work.md`, eleven lines after calling it "the one item in this proposal that
+  rewrites a document rather than moving it". If a fact changes during this work, that is a defect
+  in the work.
 - **No deletion.** Nothing is dropped, including the marginalia. The archive is where a thing goes
   to stop being in the way, not to stop existing.
-- **No change to `src/`, `tests/` or behaviour**, beyond updating the 8 doc paths cited in
-  docstrings and comments. The test count should be 158 before and after.
+- **No change to `src/`, `tests/` or behaviour**, beyond updating the 11 doc citations in docstrings
+  and comments — 7 in `src/`, 1 in `tests/`, 3 in `config.yaml`. The test count should be 158 before
+  and after.
 
 ## The cheapest next step, and the gate
 
@@ -228,10 +353,16 @@ the rest of this document survives, and the whole job collapses to `git mv docs/
 plus link fixes — perhaps forty minutes.
 
 If the split is accepted, the cheapest first step is **not** moving files. It is writing
-`docs/reference/measurements.md` and `docs/reference/lessons.md` from the existing phase notes,
-because that is the step that discovers whether the durable half separates cleanly from the process
-half. If it does not — if the parity table cannot be lifted out of `phase-4-notes.md` without taking
-half the phase narrative with it — then the tiers are wrong and it is better to learn that from two
-files than from twenty-two.
+`docs/reference/backend-lmstudio.md`, extracting the measured parity table out of
+`phase-4-notes.md` — the one source most fused with its phase narrative. If that table cannot be
+lifted without dragging half the narrative with it, the tiers are wrong, and it is better to learn
+that from one file than from twenty-two.
 
-`docs/docs-restructure-plan.md` sequences the rest, and lists the seven things that break silently.
+**The first version of this document named a different first step**, writing `measurements.md` and
+`lessons.md`, and justified it by the parity table — a file it did not include. Those two are
+*synthesis*: they harvest asides scattered across six phase notes, and harvesting asides succeeds
+whether or not the tier split is sound. They would have passed the gate without testing it. They
+remain the highest-value output of this proposal and are worth writing second, whatever is decided
+about the rest.
+
+`docs/docs-restructure-plan.md` sequences the rest, and lists the eight things that break silently.
