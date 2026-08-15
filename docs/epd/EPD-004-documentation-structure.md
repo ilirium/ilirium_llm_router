@@ -1,9 +1,15 @@
 # EPD-004 — Documentation structure at the milestone boundary
 
-**Status: proposal, written 2026-08-15. Nothing is decided and nothing has been moved.** The
-mechanical half — which file goes where, and everything that breaks when it does — is in
-`docs/docs-restructure-plan.md`. This document is the argument for the shape; that one is the
-argument for the order of operations. Neither is a build order.
+**Status: decided 2026-08-15 by the repository owner. Nothing has been moved yet.** Written the same
+day as a proposal; all six forks were answered, and the outcomes are recorded under "Decisions
+taken" below, each beside the reasoning it overrode or confirmed. The mechanical half — which file
+goes where, and everything that breaks when it does — is in `docs/docs-restructure-plan.md`.
+
+**Where this decision graduates to.** `EPD-000` says a decided EPD graduates into `CLAUDE.md` under
+"Design decisions". This one does not: its subject is how the documents are organised, so it
+graduates into **`docs/README.md`**, the documentation manual that decision 8 creates. That manual is
+the durable form of this document; what stays here is the argument and the measurements. `EPD-000`'s
+vocabulary needs a small extension to cover it, recorded under "One EPD-000 convention this changes".
 
 This is the first EPD whose subject is the repository rather than the router. `EPD-000` does not
 restrict the series to the product, and the format fits: a question written up before it is
@@ -90,16 +96,17 @@ re-derives it. They go to `docs/procedures/`; their *results* stay frozen with t
 README.md                    the front door — what it is, quick start, the original brief
 CLAUDE.md                    ~100 lines: how to work in this repo, and the map
 docs/
-  status.md                  one page: milestones → phases → tasks, and where we stopped
+  README.md                  THE MANUAL — what each tier is for, what goes where, how to
+                             decide, and how to open a milestone. The entry point to docs/
+  status.md                  where the project is: done, in progress, next. No backlog
+  backlog.md                 the pool of unscheduled work, each item with why it is parked
   reference/                 durable. Survives every milestone
     README.md                the reading order and what each file answers
-    architecture.md          dispatch not translation; why the router exists
-    design-decisions.md      the decisions list — don't quietly reverse these
+    architecture.md          dispatch not translation; why the router exists. Opens with
+                             the request shape and the Anthropic surface as sections
+    design-decisions.md      the whole decisions section, statements and reasoning together
     observability.md         the CSV columns and the recorder's constraints
-    configuration.md         config shape, credential modes, timeouts
     backend-lmstudio.md      the measured parity table, context and window facts
-    backend-anthropic.md     model IDs, auth shape, rate-limit behaviour
-    request-shape.md         what Claude Code actually sends
     measurements.md          every number the docs quote, with its date and its slice
     lessons.md               how this project has been wrong, and what caught it
   procedures/                re-runnable. How to check something again
@@ -116,7 +123,8 @@ docs/
     README.md                what it was, what it proved, the index
     closing-notes.md         (was handoff.md, frozen at the boundary)
     implementation-plan.md
-    outstanding-work.md
+    outstanding-work.md      the survey, archived; its live items became backlog.md
+    docs-restructure-plan.md
     phase-1-proxy/           notes.md, evidence/
     phase-2-observability/   notes.md, evidence/
     phase-3-error-handling/  notes.md, evidence/
@@ -124,6 +132,12 @@ docs/
     phase-5-credentials-and-timeout/
     phase-6-review/
 ```
+
+**Deferred, each with its reason** (decision 7): `configuration.md` — its material is credential
+modes, which are a design decision, and timeouts, which belong to `backend-lmstudio.md`; it has no
+source of its own. `backend-anthropic.md` and `request-shape.md` — 13 and 12 lines respectively,
+starting as sections of `architecture.md`. Each becomes a file when it has a nameable trigger *and*
+passes roughly 40 lines.
 
 `milestone-2-*/` is created when Milestone 2 starts, with the same internal shape. That repetition is
 the point: the archive layout is a template, so the second milestone costs no design.
@@ -222,17 +236,26 @@ moves, with a pointer that names the trigger.**
 | Goal | 100–105 | 1 | **Stays**, compressed to three lines; the long form is `reference/architecture.md` |
 | The central architectural problem | 106–166 | 1 | **Leaves** to `reference/architecture.md` and `reference/backend-lmstudio.md`. A four-line summary stays: no translation, dispatch on the model name, relay bytes |
 | Observed request shape | 167–178 | 3 | **Leaves** to `reference/request-shape.md`. Repoint `proxy.py:3` |
-| Design decisions | 179–236 | **8** | **Split — and this is the item to challenge.** The one-line statement of each decision stays; the rationale moves to `reference/design-decisions.md`. But this is the most-cited section in the file, and three of the four EPDs cite it *for its reasoning*. Repoint `proxy.py:238` |
+| Design decisions | 179–236 | **8** | **Leaves whole** (decision on fork 5). All 58 lines become `reference/design-decisions.md`, statements and reasoning together, readable front to back. `CLAUDE.md` keeps a **titles-only table of contents** plus "read the file before reversing any of these" — an index, not a summary, so there is nothing to drift. Repoint `proxy.py:238` |
 | Open proposals — the EPDs | 237–250 | 0 | **Stays**, cut to the table plus "do not build from one" |
 | Observability: log + CSV stats | 251–312 | 4 | **Leaves** to `reference/observability.md`. A pointer stays, triggered on "touching the recorder". Repoint `stats.py:3` |
 | Anthropic model IDs | 313–325 | 0 | **Stays** — silently used. Short, and getting it wrong produces a 400 |
 | Stack decisions, Style | 326–337 | 0 | **Stays.** 12 lines; not worth a link |
 
-Target: roughly 100 lines. The risk to state plainly is that this trades **certainty** for **size** —
-today every fact is guaranteed present; afterwards some facts depend on a pointer being followed.
-The measurement locates that risk precisely: it is not spread across the file but concentrated in
-**Design decisions**, the one section used as an authority by the documents whose whole purpose is to
-argue with it. See fork 5.
+Target: roughly 100 lines — about 80 of surviving sections, plus a three-line status summary, a
+four-line architecture summary, two pointers, and the twelve-line table of contents for the
+decisions.
+
+The risk to state plainly is that this trades **certainty** for **size** — today every fact is
+guaranteed present; afterwards some facts depend on a pointer being followed. The measurement locates
+that risk precisely: it is not spread across the file but concentrated in **Design decisions**, the
+one section used as an authority by the documents whose whole purpose is to argue with it.
+
+**The fork 5 decision accepts that risk deliberately**, and mitigates it with the titles-only table
+of contents rather than by keeping the section. The bet is that a session which can see *that* a
+decision exists will open the file before reversing it, and that a decisions document worth reading
+front to back is worth more than one guaranteed to be in context but never read as a whole. It is a
+bet, not a measurement, and it is the one place this restructure could make things worse.
 
 ## Numbering
 
@@ -256,10 +279,143 @@ recommendation.
 alternative — restarting at Phase 1 inside each milestone — makes "Phase 3 found four of its five
 items already built" ambiguous forever, and that sentence appears in five documents.
 
-## Open forks — deliberately not decided here
+## Decisions taken, 2026-08-15
 
-Six of them. Forks 5 and 6 were added on 2026-08-15 after a review found the first four attached to
-the least consequential questions in the document.
+All six forks answered by the repository owner, plus two additions. Forks 5 and 6 were opened the
+same day, after a review found the first four attached to the least consequential questions in the
+document. The original reasoning is kept below each decision, including where it was overridden.
+
+**Gate — accepted.** The four-tier split stands, so the rest of this document applies.
+
+**Decision on fork 4 — `docs/captures/`.** The alternative, `reference/captures/`, is dropped.
+
+**Decision on numbering — no prefixes on reference documents.** Order lives in
+`reference/README.md`. The identity-versus-order rule below is adopted as written.
+
+### Decision on fork 5 — `Design decisions` moves out whole
+
+**Overrides this document's recommendation**, which was to keep the section in `CLAUDE.md` because
+the measurement showed it was the most-cited section in the file. The owner's reason is better than
+the objection: the decisions are worth reading *as a document*, front to back, and they cannot be
+while they are one section of an auto-loaded reference file nobody reads linearly.
+
+So `reference/design-decisions.md` holds the section entire — every statement with the reasoning and
+the measurement that produced it, in the order they were taken.
+
+**What stays in `CLAUDE.md` is a table of contents: the decision titles only, and one line saying
+that reversing any of them means reading the file first.** This is deliberately not a summary. A
+one-line restatement of a decision *is* duplication and would drift; a list of titles is an index and
+cannot. It preserves the property the measurement was worried about — a session knows which
+decisions exist and that it must not quietly reverse one — at no risk of two copies disagreeing.
+
+The consequence for `EPD-000` is real and is recorded below: an accepted EPD now graduates into
+`reference/design-decisions.md`, not into `CLAUDE.md`.
+
+### Decision on fork 3 — split, with the backlog in its own file
+
+`outstanding-work.md` is archived as the survey it is. Its live items move out — **but to
+`docs/backlog.md`, not into `status.md`.**
+
+The owner's distinction, and it is the right one: **status is state, backlog is inventory.** A status
+file that carries the work items themselves stops being readable at a glance, which is the only
+property that makes it worth having. `status.md` names what is done, what is in progress, and what
+is next; the *next* items are the two or three drawn out of the backlog, cited to it.
+
+One refinement, because `outstanding-work.md` is unusually good at something a plain to-do list
+loses: **every item there carries the reason it is parked**, and several carry the reason the
+question is weaker than it looks. `backlog.md` must keep that column. An item that has lost its
+"why it is here and why it has not been done" has become a to-do, and a to-do that nobody has
+justified in six months is indistinguishable from a to-do nobody wants.
+
+And the backlog **points at the EPDs rather than restating them.** Three of its heaviest items are
+`EPD-001`, `002` and `003`; copying their substance into the backlog would create the second copy
+this whole restructure exists to prevent.
+
+### Decision on fork 2 — freeze the handoff, and do *not* create a third file
+
+`handoff.md` is frozen as `milestone-1-core/closing-notes.md`. Its own opening paragraph has always
+said it should be deleted once the project can speak for itself; the milestone boundary is that
+moment.
+
+The owner asked whether session state needs its own document alongside `status.md`. **Recommendation:
+no — one file, with a bounded volatile section.** The reasoning:
+
+`handoff.md` does three jobs today, and only the third is genuinely ephemeral. It **indexes the
+documents**, which `docs/README.md` and `CLAUDE.md`'s map now do. It **records what is complete**,
+which is `status.md`. And it records **where we stopped and what to know before touching anything** —
+which changes every session, where the other two change every phase.
+
+The case for a third file is that a volatile document churning against a stable one is unpleasant.
+The case against is stronger: two documents that both answer "where are we" will drift, and drift
+between documents that were supposed to agree is this repository's demonstrated failure mode — Phase
+5 found exactly that across four files. One file cannot disagree with itself.
+
+So `status.md` has three parts, most volatile first:
+
+| Part | Changes | Holds |
+|---|---|---|
+| **Where we stopped** | every session | The handoff: what was in flight, what to know before touching anything, the tree's state |
+| **Where the project is** | every phase | Milestones → phases → tasks. Done, in progress |
+| **What is next** | every phase | The two or three items drawn from `backlog.md`, cited to it |
+
+**The split condition, so this is falsifiable rather than a preference:** if "Where we stopped"
+passes ~30 lines, or if it starts carrying material that outlives the session that wrote it, it has
+become a document and should be given its own file. Until then it is a section.
+
+### Decision on fork 6 — the reference tier starts at six files
+
+**Revised from "five" after measuring the source material**, and revised again by fork 5, which puts
+`design-decisions.md` back. The five that pass both tests plus `design-decisions.md`:
+`architecture.md`, `design-decisions.md`, `observability.md`, `backend-lmstudio.md`,
+`measurements.md`, `lessons.md`.
+
+**The two tests a reference file must pass.** A **nameable trigger** — a moment you would open *it*
+and not its neighbour — and **enough content that grep would not find the fact faster inside a bigger
+file**. `configuration.md` fails the first: "working on configuration" is not distinct from "working
+on credentials" or "working on timeouts", which live in two other files. `request-shape.md` fails
+the second at 12 lines.
+
+**Why too many files is the more expensive mistake.** Every extra file is a filing decision for
+future material — does "LM Studio requires auth, and here is the header" go in `configuration.md` or
+`backend-lmstudio.md`? Both are defensible, so two sessions answer differently, and the fact lands in
+two places where one later gets updated. That is precisely the failure this restructure exists to
+prevent, and this repository has paid for it twice.
+
+The failure modes are not symmetric, which is what decides it. **Merging two thin files later is one
+commit**, and citations to either can point at the merged file with an anchor; splitting a fat file
+later costs the same. **A duplicated fact discovered later is expensive** — someone has to determine
+which copy is right and which documents trusted the wrong one. Over-splitting risks the expensive
+failure; under-splitting risks the cheap one.
+
+**The growth rule**, so the tier can expand without argument: a section becomes its own file when its
+trigger is nameable *and* it passes roughly 40 lines. Until then it lives as a section in the nearest
+file that already has a trigger. The 40 is a judgement, not a measurement — it is roughly where a
+section stops being findable by grepping a file you already have open.
+
+Note this rule keeps `proxy.py:3` working unchanged: it cites "Observed request shape" by **section
+title**, and that section survives as a section of `architecture.md`.
+
+### Decision 8 — `docs/README.md`, the manual
+
+**New, raised by the owner, and it repairs a real gap in this proposal.** Everything above explains
+*why* the tiers exist, and all of it would end up in `milestone-1-core/`, visible only to somebody
+already digging through history. The rules would survive only as an archived argument, which is how
+conventions get re-litigated.
+
+So `docs/README.md` is written as a **manual, not a narrative**: what each tier is for, what belongs
+in it, how to decide when a thing is ambiguous, the naming and numbering conventions, the growth
+rule, and how to open a new milestone. It is the entry point to `docs/`, and it is the durable form
+of this EPD.
+
+The test it must pass: **somebody who has never read `EPD-004` can file a new document correctly
+using only `docs/README.md`.** If they must consult the archive, the manual has failed.
+
+`reference/README.md` and `procedures/README.md` stay as they are — indexes of their own tier,
+setting reading order. The manual governs; the indexes list.
+
+## The original forks, as written before the decisions
+
+Kept because the reasoning is what makes the decisions checkable later.
 
 **1. Whether findings get IDs.** The strong version of `measurements.md` gives every measurement a
 citable ID (`M-014`) so a claim in any document is a link rather than a restatement, and a
@@ -318,23 +474,30 @@ granularity is part of what is being decided, and a thin index is easier to grow
 `EPD-000:28-30` says an EPD is "not a design document": `CLAUDE.md` holds the design, and an EPD
 "graduates *into* `CLAUDE.md` under 'Design decisions'" when a decision is taken.
 
-If the split above happens, that sentence stops being accurate — an accepted EPD would graduate into
-*two* places: a one-line statement in `CLAUDE.md` and a rationale block in
-`reference/design-decisions.md`. Under fork 5 option (b) the convention survives untouched, which is
-a further argument for (b).
+**The decision on fork 5 makes the change mandatory.** The whole section leaves `CLAUDE.md`, so an
+accepted EPD now graduates into **`reference/design-decisions.md`**. `EPD-000:28-30` must be edited
+to say so; leaving it would send the next accepted proposal to a file that holds only a table of
+contents.
 
-Either way the change must be made deliberately in `EPD-000` rather than discovered later. The
-migration plan treats `docs/epd/` as a path-fix job; it is not. `EPD-000:31` is affected too — it
-names `docs/implementation-plan.md` as the home of the phases, and that file is archived into
-`milestone-1-core/` with nothing named as Milestone 2's successor. `status.md` is proposed as
-`handoff.md`'s successor, not the plan's. **That gap is unresolved and belongs to whoever writes
-Milestone 2's plan.**
+Two further `EPD-000` edits fall out of the same decision:
+
+- **The graduation target is per-subject, not fixed.** This EPD graduates into `docs/README.md`
+  rather than into the design decisions, because its subject is the filing system rather than the
+  router. `EPD-000` should say that a decided EPD graduates into *the durable document that owns its
+  subject*, and name the two that exist.
+- **`EPD-000:31`** names `docs/implementation-plan.md` as the home of the phases. That file is
+  archived into `milestone-1-core/`, and **nothing is named as Milestone 2's successor.**
+  `status.md` takes over `handoff.md`'s role, not the plan's. **This gap is still open** and belongs
+  to whoever writes Milestone 2's plan; `docs/README.md` should record the convention — one
+  implementation plan per milestone, inside that milestone's folder — so the answer is not invented
+  twice.
 
 ## What this does not propose
 
 - **No rewriting of measured content.** Every number, table and finding moves verbatim. The
-  documents actually *rewritten* are five: `CLAUDE.md`, `README.md`, `outstanding-work.md` (fork 3),
-  `EPD-000` (the convention and its two body citations), and the new `status.md` — plus the
+  documents actually *rewritten* are five: `CLAUDE.md`, `README.md`, `outstanding-work.md` (split
+  into `backlog.md`), `EPD-000` (the graduation convention and its two body citations), and the
+  original brief in `README.md` — plus the new `docs/README.md`, `status.md`, `backlog.md` and the
   `reference/` files assembled out of existing text. The first version of this list said three and
   omitted `outstanding-work.md`, eleven lines after calling it "the one item in this proposal that
   rewrites a document rather than moving it". If a fact changes during this work, that is a defect
@@ -347,12 +510,12 @@ Milestone 2's plan.**
 
 ## The cheapest next step, and the gate
 
-The gate is a decision, not a measurement: **is the four-tier split (reference / procedures /
-epd / milestone archive) the right cut?** If reference and archive are not worth separating, none of
-the rest of this document survives, and the whole job collapses to `git mv docs/phase-* docs/milestone-1-core/`
-plus link fixes — perhaps forty minutes.
+The gate was a decision, not a measurement: **is the four-tier split (reference / procedures /
+epd / milestone archive) the right cut?** **Accepted on 2026-08-15**, so the rest of this document
+applies. Had it been refused, the job would have collapsed to
+`git mv docs/phase-* docs/milestone-1-core/` plus link fixes — perhaps forty minutes.
 
-If the split is accepted, the cheapest first step is **not** moving files. It is writing
+With the split accepted, the cheapest first step is **not** moving files. It is writing
 `docs/reference/backend-lmstudio.md`, extracting the measured parity table out of
 `phase-4-notes.md` — the one source most fused with its phase narrative. If that table cannot be
 lifted without dragging half the narrative with it, the tiers are wrong, and it is better to learn
