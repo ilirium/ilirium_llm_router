@@ -268,6 +268,7 @@ The first version of this plan placed every file under `docs/` except itself. Na
 |---|---|
 | `docs/epd/EPD-004-documentation-structure.md` | **stays** in `docs/epd/`, per Tier 4. An EPD keeps its number and its home whatever is decided about it |
 | `docs/docs-restructure-plan.md` | `docs/milestone-1-core/docs-restructure-plan.md`, as the last step of commit 14 |
+| `docs/handoff-docs-restructure.md` | **deleted** in commit 14. It is the temporary handoff for this branch; its content becomes the "Where we stopped" section of `docs/status.md` in commit 12. Leaving it would create the second "where are we" document that the fork 2 decision exists to prevent |
 
 The plan is process material, and this restructure is Milestone 1's closing act rather than
 Milestone 2's opening one — it exists because Milestone 1 ended, and its subject is Milestone 1's
