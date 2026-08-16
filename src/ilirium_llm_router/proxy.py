@@ -1,7 +1,8 @@
 """Forwarding requests to a backend and streaming the reply back.
 
-The constraints below were established before any code was written; see CLAUDE.md ("Observed request
-shape") for the captured request they came from.
+The constraints below were established before any code was written; see
+`docs/reference/architecture.md` ("Observed request shape") for the captured request they came
+from.
 
 - Relay the request body byte for byte. Do not parse and rebuild it. Beyond forward-compatibility,
   the requests carry prompt-cache markers that match on the exact bytes of the prefix, so even a
@@ -235,8 +236,8 @@ class Proxy:
 
         The one thing this generator does add to the stream is an error event when the relay breaks
         under it, which is a deliberate exception to byte-relay and is written up as such in
-        `CLAUDE.md`. Nothing is ever *altered*: the injected event only ever follows bytes that have
-        already gone out untouched.
+        `docs/reference/design-decisions.md`. Nothing is ever *altered*: the injected event only
+        ever follows bytes that have already gone out untouched.
         """
         streamed = is_sse(reply.headers.get("content-type", ""))
         scanner = scanner_for(reply.headers.get("content-type", ""))
@@ -318,8 +319,9 @@ def peek(body: bytes) -> Peeked:
     That diagnosis only works if `false` is written as `false`. **An absent `stream` is a
     non-streaming request**, since the API defaults it to false and Claude Code omits the field
     rather than sending it — measured on 2026-07-31, where every non-streaming row in
-    `docs/phase-2-step-6-session/calls.csv` has the column blank. Reading absence as unknown left 83
-    of 142 rows saying nothing, and left an empty cell meaning two different things.
+    `docs/milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv`
+    has the column blank. Reading absence as unknown left 83 of 142 rows saying nothing, and left an
+    empty cell meaning two different things.
 
     So an empty cell now means only what it should: the body never parsed, or it said something
     about `stream` that was not a boolean.

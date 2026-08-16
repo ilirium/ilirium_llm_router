@@ -42,7 +42,8 @@ Two files are deliberately deferred, each with its reason:
   timeouts, which belong to the backend they describe. "Working on configuration" is not a trigger
   distinct from those two.
 - **`request-shape.md`** — 12 lines, and it stays a section of `architecture.md`. That is also what
-  keeps `proxy.py:3` citing a section title that still resolves.
+  keeps `proxy.py:3` citing a section title that still resolves — though the citation itself was
+  repointed at commit 14, since it named `CLAUDE.md` as the file holding that section.
 
 Filing rules for the whole of `docs/` are in `../README.md`.
 

@@ -187,8 +187,14 @@ docs/
 **Deferred, each with its reason** (decision 7): `configuration.md` — its material is credential
 modes, which are a design decision, and timeouts, which belong to `backend-lmstudio.md`; it has no
 source of its own. `request-shape.md` — 12 lines, starting as a section of `architecture.md`, and
-kept there deliberately, because that is what keeps `proxy.py:3` needing no edit at all. Each becomes
-a file when it has a nameable trigger *and* passes roughly 40 lines.
+kept there deliberately. Each becomes a file when it has a nameable trigger *and* passes roughly
+40 lines.
+
+**This paragraph said keeping the section is "what keeps `proxy.py:3` needing no edit at all", and
+that was wrong** — corrected at commit 14 on 2026-08-16, where the edit was made. The section title
+survives, but the citation names the *file*: `see CLAUDE.md ("Observed request shape")`. Keeping
+`request-shape.md` deferred saved repointing it **twice**, which is a smaller claim than the one made
+here four times across three documents. Deferring the file is still right, for its own reasons.
 
 **`backend-anthropic.md` was on that list until 2026-08-16 and is now a file** — see the fork 6
 revision below. At 13 lines it still fails the size test; the 40-line rule did not decide it and
@@ -534,7 +540,9 @@ trigger is nameable *and* it passes roughly 40 lines. Until then it lives as a s
 file that already has a trigger. The 40 is a judgement, not a measurement — it is roughly where a
 section stops being findable by grepping a file you already have open.
 
-Note this rule keeps `proxy.py:3` working unchanged: it cites "Observed request shape" by **section
+Note this rule keeps `proxy.py:3`'s *section title* resolving — though the citation still needed
+repointing at commit 14, because it names `CLAUDE.md` as the file. It cites "Observed request shape"
+by **section
 title**, and that section survives as a section of `architecture.md`.
 
 ### Decision 8 — `docs/README.md`, the manual
@@ -576,8 +584,8 @@ the next reader has to find both. That is precisely the failure this document ex
 
 ### 9 — `backend-anthropic.md` becomes the seventh reference file
 
-Recorded under fork 6 above. `request-shape.md` stays deferred, which is what keeps `proxy.py:3`
-needing no edit.
+Recorded under fork 6 above. `request-shape.md` stays deferred — which was claimed to keep
+`proxy.py:3` needing no edit, and did not; see the correction under fork 6.
 
 **The boundary between the two files, since the split is only worth making if it is stateable:**
 

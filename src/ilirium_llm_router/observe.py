@@ -9,7 +9,8 @@ content-type describes what the bytes *are*; the flag describes what was *asked 
 separate columns in the CSV, so a disagreement between them is visible rather than invisible.
 
 The trap this file exists to avoid, verified against LM Studio on 2026-07-29
-(`docs/lmstudio-usage-check.md`): a streamed reply carries `input_tokens` in `message_start` and
+(`docs/procedures/lmstudio-usage-check.md`): a streamed reply carries `input_tokens` in
+`message_start` and
 `output_tokens` in the final `message_delta`, but **LM Studio also repeats `input_tokens` in
 `message_delta` and Anthropic does not**. A scanner keyed on `message_delta` alone would look
 correct against the local backend and silently record empty input counts for every Anthropic call.

@@ -21,13 +21,14 @@ backends:
 
   # `read_timeout` is how long a backend may stay *silent* before the call is abandoned. It is not
   # a budget for the whole reply: every chunk that arrives restarts it, measured 2026-08-07 in
-  # docs/phase-5-measurements/. So it bounds silence, never duration.
+  # docs/milestone-1-core/phase-5-config-and-timeouts/evidence/. So it bounds silence, never
+  # duration.
 
   # Models named `claude-…`.
   anthropic:
     base_url: https://api.anthropic.com
     # The arriving credential is the real one and Anthropic accepts it, so the router holds no key
-    # of its own. See docs/anthropic-auth-check.md.
+    # of its own. See docs/procedures/anthropic-auth-check.md.
     credential: forward
     # Measured median time to first byte is 1426 ms — over successful streamed /v1/messages calls,
     # which is the slice that number means — so ten minutes of silence already means something is
@@ -41,7 +42,8 @@ backends:
     # that might write it to a log.
     credential: strip
     # Prefilling a large prompt is silent while it works: 27924 tokens took 197 s, and a ~41000-token
-    # request was still going when the old shared 600 s killed it (docs/phase-4-notes.md).
+    # request was still going when the old shared 600 s killed it
+    # (docs/milestone-1-core/phase-4-lmstudio-parity/notes.md).
     read_timeout: 1800
     # If LM Studio's "Require Authentication" is switched on, this takes two lines: change the mode
     # above to `inject` and name the variable holding the key here.

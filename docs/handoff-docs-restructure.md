@@ -14,8 +14,8 @@ untouched.
 
 1. **Read this section and "Where this stands" below.** Then `docs/docs-restructure-plan.md` for the
    commit you are on, and `docs/README.md` for the rules every commit is checked against.
-2. **The work is executing a fifteen-commit plan.** Commits 2 to 13 are done. **Commit 14 is
-   next** — the doc citations in `src/`, `tests/` and `config.yaml`, the only commit touching code.
+2. **The work is executing a fifteen-commit plan.** Commits 2 to 14 are done. **Commit 15 is
+   next, and it is the last** — the closing playbook, then retiring this file and the plan.
 3. **Run `python3 docs/procedures/link-check.py` before and after anything that moves.** Everything
    repointable now resolves. What it still reports is **76 hits in the two migration documents**,
    which name old paths as their subject and retire at commit 15, and **seven that are correct and
@@ -28,15 +28,15 @@ untouched.
 
 ## Where this stands
 
-25 commits on the branch, tree clean. **Commits 2 to 13 of the plan are done.** `docs/` has its
+27 commits on the branch, tree clean. **Commits 2 to 14 of the plan are done.** `docs/` has its
 full target shape: `reference/`, `procedures/`, `captures/`, `epd/`, `milestone-1-core/`, the manual,
 `status.md`, `backlog.md`, and the two migration documents that retire at commit 15. `CLAUDE.md` is
 cut and all nine memories are pointers.
 
-**Every document now resolves.** The live tiers were repaired in the same commit as each move,
-`CLAUDE.md` at commit 11, and the EPDs and the archive's prose at commit 13. **The only stale
-citations left are in code** — `src/`, `tests/` and `config.yaml`, which is commit 14 — plus the two
-migration documents, which are meant to name old paths and are deleted or archived at commit 15.
+**Every citation in the repository now resolves**, including the eleven in `src/`, `tests/` and
+`config.yaml` repointed at commit 14. The only paths that do not are in the two migration documents,
+which name old paths as their subject and retire at commit 15, and the seven permanent hits listed
+in `procedures/link-check.py`'s docstring.
 
 | Commit | What |
 |---|---|
@@ -63,7 +63,9 @@ migration documents, which are meant to name old paths and are deleted or archiv
 | `d515763` | **Commit 11** — `CLAUDE.md` cut 337 → 188, and all nine memories shrunk to pointers |
 | `a778b8b` | What commit 11 cost, and the correction it found in a third file |
 | `4f67b4a` | **Commit 12** — `status.md` and `backlog.md`, split out of the archived survey |
-| *(this one)* | **Commit 13** — every repointable citation, `EPD-000` and the root `README.md` |
+| `b642619` | **Commit 13** — every repointable citation, `EPD-000` and the root `README.md` |
+| `cd96c6d` | The roundabout-path check, and the move-tool question decision 21 now answers |
+| *(this one)* | **Commit 14** — the eleven code and config citations, and the "ten" that was wrong |
 
 The two planning documents:
 
@@ -130,10 +132,16 @@ decision 21 exposed was carried across. See "What commit 12 found" below.
 archive's prose now resolves, `EPD-000` and the root `README.md` are rewritten, and what is left is
 seven hits that are correct — see "What commit 13 found" below.
 
-**The next action is commit 14: fix the 10 doc citations in `src/`, `tests/` and `config.yaml`**,
-then `make test` and `make lint`. `proxy.py:3` is the eleventh and needs no edit — it cites
-"Observed request shape" by section title, which survives as a heading in
-`reference/architecture.md`.
+~~**The next action is commit 14**~~ **Done 2026-08-16.** All **11** citations were edited, not the
+10 the plan predicted — see "What commit 14 found" below. 158 tests, `make lint` clean, and
+`make check` run against the edited `config.yaml`.
+
+**The next action is commit 15, the last one.** Write the **closing** playbook into `docs/README.md`
+from what this restructure actually cost, replacing the placeholder commit 4 left there; delete the
+dated migration note at the top of that file; move this plan into the archive; delete this handoff,
+its content becoming `status.md`'s "Where we stopped"; then repoint the four references to both and
+re-run the link check. **It will not report zero** — expect the seven permanent hits listed in
+`procedures/link-check.py`'s docstring, and nothing else once the migration documents are gone.
 
 ---
 
@@ -429,6 +437,31 @@ every phase after it. This is *not* a defect to repair — rewriting history to 
 would cost far more than the boundary is worth — but a reader checking the convention against the log
 finds two exceptions, so `milestone-1-core/README.md` now says why they are there.
 
+## What commit 14 found
+
+**All eleven citations needed editing, not ten — and the claim that one was free had been made four
+times across three documents.** `proxy.py:3` was said to need no edit because it names "Observed
+request shape" by *section title*, and that heading survives inside `reference/architecture.md`. The
+heading does survive. The citation reads `see CLAUDE.md ("Observed request shape")` — it names the
+**file**, and the file changed. Deferring `request-shape.md` saved repointing it *twice* rather than
+saving the edit; the file is still rightly deferred, for its own reasons.
+
+Corrected where it lives permanently — `EPD-004` in three places and `reference/README.md` — and in
+the plan, each marked with what it used to say. **This is Phase 6's process lesson landing on the
+restructure that quotes it:** *check the claim you are planning against, including when it is your
+own.* It survived a fresh-context review that verified all 11 citations line for line, because the
+review checked that the citations *existed*, not what they would need.
+
+**The check that found it is one nothing in the repository runs.** `link-check.py` reads `*.md`
+only, so no citation in `src/`, `tests/` or `config.yaml` has ever been verified by anything but a
+person. All 11 were resolved by hand here, and all 11 point at files that exist. That is the same
+gap as the `file.py:N` half of the backlog item, seen from the other side: the checker cannot see
+these citations because of where they live, as well as because of how they are written.
+
+**`config.yaml` was exercised rather than assumed.** `make check` loads it and prints both backends
+with their timeouts and credential modes, which is the cheap version of driving the real thing for a
+file whose only change was comments — and comments are exactly what a test would not catch.
+
 ## What commit 13 found
 
 **A clean run is not a zero run, and the number is seven rather than the three commit 12 reported.**
@@ -452,6 +485,31 @@ simultaneously valid and wrong**, and only a human reading it says so.
 old ones, so 19 prose paragraphs spilled past the 100-column wrap the documents are written to.
 Mechanically reflowed, then checked in characters rather than bytes — an em-dash is three bytes, so
 counting with `awk` reported eight lines over the limit that were not.
+
+## What commit 14 found
+
+**All eleven citations needed editing, not ten — and the claim that one was free had been made four
+times across three documents.** `proxy.py:3` was said to need no edit because it names "Observed
+request shape" by *section title*, and that heading survives inside `reference/architecture.md`. The
+heading does survive. The citation reads `see CLAUDE.md ("Observed request shape")` — it names the
+**file**, and the file changed. Deferring `request-shape.md` saved repointing it *twice* rather than
+saving the edit; the file is still rightly deferred, for its own reasons.
+
+Corrected where it lives permanently — `EPD-004` in three places and `reference/README.md` — and in
+the plan, each marked with what it used to say. **This is Phase 6's process lesson landing on the
+restructure that quotes it:** *check the claim you are planning against, including when it is your
+own.* It survived a fresh-context review that verified all 11 citations line for line, because the
+review checked that the citations *existed*, not what they would need.
+
+**The check that found it is one nothing in the repository runs.** `link-check.py` reads `*.md`
+only, so no citation in `src/`, `tests/` or `config.yaml` has ever been verified by anything but a
+person. All 11 were resolved by hand here, and all 11 point at files that exist. That is the same
+gap as the `file.py:N` half of the backlog item, seen from the other side: the checker cannot see
+these citations because of where they live, as well as because of how they are written.
+
+**`config.yaml` was exercised rather than assumed.** `make check` loads it and prints both backends
+with their timeouts and credential modes, which is the cheap version of driving the real thing for a
+file whose only change was comments — and comments are exactly what a test would not catch.
 
 ## What commit 13 found
 

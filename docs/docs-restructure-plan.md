@@ -130,8 +130,10 @@ exactly the property this breakage is titled after.
 These are also the harder edit. A path citation is replaced by a path; a section citation has to be
 repointed at the `reference/` file that took the section. Two of the three become straightforward
 once the destinations exist — `proxy.py:238` at `reference/design-decisions.md`, `stats.py:3` at
-`reference/observability.md`. **`proxy.py:3` needs no edit at all**: it names "Observed request
-shape" by section title, and that section survives as a section of `architecture.md`.
+`reference/observability.md`. This said **`proxy.py:3` needs no edit at all** because it names
+"Observed request shape" by section title and that section survives inside `architecture.md`.
+**Wrong, and found at commit 14**: it reads `see CLAUDE.md ("Observed request shape")`, so the file
+is named and the file changed. All **11** citations needed editing, not 10.
 
 `proxy.py:238` is the one to get right: it is the only record in the code that the SSE `error` event
 is a deliberate exception rather than an oversight, and the reasoning it points at is now a whole
@@ -191,8 +193,8 @@ verbatim; the work is deciding which paragraph belongs to which file.
 
 **Seven files, not ten** (EPD-004 fork 6, revised on 2026-08-16 from six). Deferred:
 `configuration.md`, which has no source of its own, and `request-shape.md` at 12 lines, which starts
-as a section of `architecture.md` — and stays there deliberately, since that is what keeps
-`proxy.py:3` needing no edit.
+as a section of `architecture.md` — and stays there deliberately, which saves repointing
+`proxy.py:3` twice rather than saving the edit entirely; see the correction under breakage 6.
 
 | New file | Assembled from |
 |---|---|
@@ -375,7 +377,7 @@ file itself — which is what keeps the principle true rather than merely stated
 | 11 | Rewrite `CLAUDE.md` — cut the moved sections, rewrite the survivors as rules, insert the pointers, the decisions table of contents, the branch convention and the seven migrated memory rules. **And fix the two numeric errors commit 3 found**: the 111-second warmup probe carried 1960 bytes, not 31 KB, and the probes cost 20.0 of **45.6** minutes | Only now, once every destination exists. **Then shrink all nine migrated memories to pointers** — a step, not a commit, since those files are outside the repository (see below) |
 | 12 | Write `docs/status.md` and `docs/backlog.md`; **split** `outstanding-work.md`, lifting its live items into `backlog.md` | EPD-004's fork 3 decision. Its own commit because it rewrites rather than moves. The *move* into the archive already happened at commit 10; this row used to say "archive", duplicating it |
 | 13 | Rewrite the cross-references **the link checker reports**, `README.md`, and `EPD-000`'s graduation convention, two body citations and closing section | The bulk edit, in one reviewable commit. Said "the 253 cross-references"; that number is withdrawn above, and the checker's output is the actual work list. The `EPD-004` index row is **already done** in `51b857b` |
-| 14 | Fix the **10** doc citations that need it in `src/`, `tests/` and `config.yaml`; run `make test` and `make lint` | Code last, so a test failure has one obvious cause. There are 11 citations but `proxy.py:3` needs no edit — this row said 11, conflating the count with the work |
+| 14 | Fix the doc citations in `src/`, `tests/` and `config.yaml`; run `make test` and `make lint` | Code last, so a test failure has one obvious cause. **All 11 needed editing.** This row said 11, was corrected to 10 on the grounds that `proxy.py:3` cites a surviving section title, and was corrected back at commit 14: the citation names `CLAUDE.md` as the file |
 | 15 | Write the **closing** playbook into `docs/README.md` from what this restructure actually cost — replacing the "not yet written, deliberately" placeholder commit 4 left there — and **delete the dated migration note at the top of that file**; move this plan into the archive; delete `handoff-docs-restructure.md`; **repoint the four references to both, then re-run the link check** | **New, 2026-08-16.** The playbook is mined from this plan and that handoff, so both retire only after it is written. Writing it earlier would commit an instrument that has never been run |
 
 **Commit 15 breaks references that commit 13 repaired, and the link check must close after it, not
