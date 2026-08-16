@@ -231,10 +231,14 @@ is the whole test. A rule you would look up before acting belongs here instead.
 
 ## Where the harness configuration lives
 
-`.claude/settings.json` is **tracked** and holds durable project policy: it encodes things like which
-command runs the tests and that the formatter is pinned, which is project knowledge.
-`.claude/settings.local.json` is untracked, holds machine-specific permission accretions, and is
-pruned periodically.
+The permission allowlist is split the way the documents are. A **tracked `.claude/settings.json`**
+holds durable project policy — it encodes things like which command runs the tests and that the
+formatter is pinned, which is project knowledge rather than one laptop's. The untracked
+`.claude/settings.local.json` keeps machine-specific accretions and is pruned periodically.
+
+**The tracked half is decided and not yet built** (`epd/EPD-004`, decision 17); today only the local
+file exists. This paragraph is the convention, so that whoever builds it does not re-litigate the
+split.
 
 ---
 

@@ -12,8 +12,8 @@ untouched.
 
 ## Where this stands
 
-Sixteen commits, tree clean. **Commits 2 to 9 are done — the procedures and the capture have moved,
-and every live tier resolves.** The gate
+Seventeen commits, tree clean. **Commits 2 to 9a are done — the procedures and the capture have
+moved, every live tier resolves, and the link checker is a committed instrument.** The gate
 passed, all seven `reference/` files exist, the manual is written, and all three tier indexes are in
 place. Four reference files still duplicate a `CLAUDE.md` section; that is deliberate and ends at
 commit 11. **No citation has been repointed yet**, so a dozen documents and three code files name
@@ -37,7 +37,8 @@ paths that no longer exist — commits 8, 13 and 14.
 | `a3e88bc` | **Commit 6** — the last four `reference/` files, assembled from `CLAUDE.md` |
 | `f729cbc` | **Commit 7** — the procedures moved, `.gitignore` repointed in the same commit |
 | `f5b993c` | **Commit 8** — `probe.py` and the moved READMEs repaired; two plan corrections |
-| *(this one)* | **Commit 9** — the capture to `captures/`, with a README it turned out to need |
+| `6535d7f` | **Commit 9** — the capture to `captures/`, with a README it turned out to need |
+| *(this one)* | **Commit 9a** — the link checker filed as `procedures/link-check.py` |
 
 The two planning documents:
 
@@ -84,6 +85,9 @@ corrections — see "What commit 8 found" below.
 
 ~~**The next action is commit 9**~~ **Done 2026-08-16.** Less isolated than the plan's row implied —
 see "What commit 9 found" below.
+
+~~**The next action was commit 10**~~ **Commit 9a came first, at the owner's call:** the link checker
+is now `docs/procedures/link-check.py` rather than a file in `/tmp`. See "What commit 9a found".
 
 **The next action is commit 10: `git mv` the milestone archive**, update `.gitignore:229` in the same
 commit, copy the Milestone 1 run transcripts into phase evidence, and **write the three missing
@@ -368,6 +372,28 @@ commit and no visible boundary. The `--no-ff` convention starts at Phase 2 (`4d7
 every phase after it. This is *not* a defect to repair — rewriting history to add two merge commits
 would cost far more than the boundary is worth — but a reader checking the convention against the log
 finds two exceptions, so `milestone-1-core/README.md` now says why they are there.
+
+## What commit 9a found
+
+**Filing the checker made it find two things it had missed.** Tightening the filter from "looks like
+a path" to **addressed rather than merely named** — first segment is `.`, `..`, or a directory that
+exists at the repository root — cut the live-tier noise from 33 hits to 2, and both survivors were
+real.
+
+**One of them was a defect in the manual.** `docs/README.md` described `.claude/settings.json` as
+though it exists. It does not: decision 17 records the split and defers building the tracked half.
+The paragraph now says so.
+
+**The other was a bug in the checker itself**, which is lesson 4 arriving on schedule. Its
+"is this relative?" guard was `startswith(".")`, so `.claude/settings.local.json` — a *rooted* path
+that happens to start with a dot — never got its repository-root fallback and was reported as missing
+while sitting on disk. Fixed, with the reason in a comment.
+
+**The whole-repository run is the commit 13 work list, available now: 97 hits across 55 files.**
+Roughly: `CLAUDE.md` 8 (commit 11), forward references to `status.md` and `backlog.md` (commit 12),
+the EPDs and the archive's prose (commit 13), and the two migration documents themselves, which name
+old paths *as their subject* and are noise. That last class cannot be filtered — the `→` convention
+covers a rename written as an arrow, not one written as a sentence.
 
 ## What commit 9 found
 

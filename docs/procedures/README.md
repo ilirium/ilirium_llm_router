@@ -16,6 +16,7 @@ what stays in this tier is the thing that produced it.
 | `anthropic-auth-check.md` | That Claude Code's OAuth bearer token is accepted by Anthropic as forwarded, and that the ten-entry `anthropic-beta` list must arrive intact | If forwarded requests start returning 401, or after a Claude Code version that changes what it sends. Cited by `config.yaml` |
 | `testing-against-claude-code.md` | That a real session works end to end through the router, on both backends | At every milestone close, and after any change to the relay. This is the sign-off procedure — green tests are not one |
 | `dying-backend/` | How the router behaves when a backend dies mid-answer, refuses to start, or when the caller hangs up | After any change to the relay or the error path. A backend cannot be asked politely to die halfway through a reply, so this is one that always does |
+| `link-check.py` | Which cited paths no longer resolve, anywhere in the repository | **After any commit that moves a document**, and before and after a milestone close. It is the only check for a link that breaks by *depth* rather than by name, which no name-based grep can find |
 | `read-timeout-semantics.py` | What httpx's `read` timeout actually applies to — the silence between two reads, restarted by every chunk | **After an httpx bump.** It is a fact about a pinned library, and the wrong belief about it stood in four documents for two phases |
 
 ## Two rules that keep this tier working
