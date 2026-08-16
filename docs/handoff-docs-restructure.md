@@ -21,7 +21,7 @@ started.**
 | `9202106` | Repairs after a fresh-context review found six defects, plus the `CLAUDE.md` section measurement |
 | `7da2f1b` | All six forks decided; the manual and the backlog file added |
 | `de4e28a` | This handoff |
-| `dff62a9` | The 2026-08-16 round — decisions 9–17, two of them revising decisions already taken |
+| `dff62a9` | The 2026-08-16 round — decisions 9–19, two of them revising decisions already taken |
 | *(this one)* | Decisions 18 and 19, and the reclassification that empties decision 16's machine-local category |
 
 The two planning documents:
@@ -41,15 +41,20 @@ from one file than from twenty-two.
 
 ## The decisions, in one place
 
+**These use `EPD-004`'s numbering, corrected 2026-08-16.** This table previously renumbered the forks
+— it had 2 as `outstanding-work.md` and 3 as `handoff.md`, where the EPD has the opposite, and it
+shifted three others. Decision numbers are how these get cited, so two documents numbering them
+differently is worse than either numbering.
+
 | # | Question | Decision |
 |---|---|---|
 | Gate | Is the four-tier split right? | **Accepted** — reference / procedures / epd / milestone archive |
-| 2 | `outstanding-work.md` | **Split**, with the backlog in its own `docs/backlog.md`, not in `status.md` |
-| 3 | `handoff.md` | **Freeze** as `milestone-1-core/closing-notes.md`; `status.md` takes over. No third file |
+| 2 | `handoff.md` | **Freeze** as `milestone-1-core/closing-notes.md`; `status.md` takes over. No third file |
+| 3 | `outstanding-work.md` | **Split**, with the backlog in its own `docs/backlog.md`, not in `status.md` |
 | 4 | The capture | **`docs/captures/`** |
-| 5 | Numbering | **No prefixes** on reference docs; order lives in `reference/README.md` |
-| 6 | `Design decisions` | **Moves out whole** into `reference/design-decisions.md`; a titles-only table of contents stays in `CLAUDE.md` |
-| 7 | Size of `reference/` | ~~Six files~~ → **seven**, see #9 below. A 40-line growth rule for the rest |
+| 5 | `Design decisions` | **Moves out whole** into `reference/design-decisions.md`; a titles-only table of contents stays in `CLAUDE.md` |
+| 6 | Size of `reference/` | ~~Six files~~ → **seven**, see #9 below. A 40-line growth rule for the rest |
+| — | Numbering | **No prefixes** on reference docs; order lives in `reference/README.md`. Unnumbered in the EPD, which records it as a decision rather than a fork |
 | 8 | A manual | **`docs/README.md`**, written before any file moves |
 
 ### The second round, 2026-08-16
@@ -67,7 +72,7 @@ permission allowlist, branch naming, and how a milestone is opened and closed. F
 | 13 | Phase template | `plan.md`, `notes.md`, `evidence/` + its README, a "Verified by" line, and whether the notes were written while measuring. **One implementation plan per milestone** — which closes the `EPD-000:31` gap |
 | 14 | Branch naming | `feat/phase-N-<slug>`, `docs/`, `fix/`, `chore/`. **No planning suffix** — the plan opens the phase branch. `status.md` lists only in-flight branches; the phase note holds the permanent record |
 | 15 | Phase slugs | **Folders follow branch names.** Three change: `phase-3-failure-handling`, `phase-5-config-and-timeouts`, `phase-6-review-and-cleanup` |
-| 16 | The memory store | **All eight migrate into the repo**, shrinking to pointers. Three cite paths this restructure breaks; one is already stale. Was "six of nine" — the two harness rakes were reclassified as portable rather than machine-local, and **the machine-local category turned out to be empty** |
+| 16 | The memory store | **All nine migrate into the repo**, shrinking to pointers — seven rules to `CLAUDE.md`, two conventions to `docs/README.md`. Three cite paths this restructure breaks; one is already stale. Was "six of nine", then "eight": the two harness rakes were reclassified as portable, and a fresh-context review then found `ask-before-touching-the-machine` missing from the table altogether — **the entry whose subject is this machine, omitted from the count that concluded the machine-local category was empty** |
 | 17 | The permission allowlist | **Split** — a tracked `.claude/settings.json` policy, the untracked local file for machine accretions |
 | 18 | A portable methodology artifact | **Deferred, deliberately.** No `docs/method/` tier, no global `~/.claude/CLAUDE.md`, no separate repo. Extraction is a copy of `docs/README.md` plus the `CLAUDE.md` rule block, done when project #2 starts — a methodology extracted from n=1 is a guess about what generalises |
 | 19 | Enforcing the `$(...)` rule with a hook | **Rejected**, with the reasoning recorded so it is not re-proposed. The false positives are real here (the `Makefile` has six `$(VAR)`), quoting makes it undecidable without a shell parser, and it converts a recoverable prompt into a hard block on every Bash call |
@@ -162,10 +167,15 @@ Anthropic model IDs, Open proposals, Stack decisions and Style.
 
 **The caveat is the finding, and it must travel with the number.** A citation counts a section used
 as an *authority*, not one used as a *lookup table*. Nobody cites "Layout and commands" before
-running `make test`. Those zero-scoring sections split into genuinely inert (Status — 59 lines, the
-largest in the file, never cited in six phases) and silently-used (Layout and commands, Anthropic
-model IDs), and the second kind **must stay in `CLAUDE.md`**. The recipe is recorded in EPD-004 so
-the number is never quoted without its slice.
+running `make test`. Those zero-scoring sections split into genuinely inert (Status — 59 lines, never
+cited in six phases) and silently-used (Layout and commands, Anthropic model IDs). The recipe is
+recorded in EPD-004 so the number is never quoted without its slice.
+
+**Two corrections, 2026-08-16.** This called Status "the largest in the file", which is true by bytes
+and false by the lines it quotes — it is third, behind Observability at 62 and the architecture
+section at 61. And "the second kind must stay in `CLAUDE.md`" now holds only for `Layout and
+commands`: decision 10 sends `Anthropic model IDs` to `backend-anthropic.md`. Three counts in the
+paragraph above were also re-derived — see EPD-004's citation table.
 
 **The review found a class of defect worth remembering.** The plan originally listed the citations
 pointing *out* of `CLAUDE.md` into `docs/`, found by grepping `docs/` — a grep that structurally
@@ -177,8 +187,8 @@ moves will not find what gets cut.
 - ~~**Milestone 2's implementation plan has no home named.**~~ **Closed 2026-08-16 by decision 13:**
   one implementation plan per milestone, inside that milestone's folder, recorded in
   `docs/README.md`. `EPD-000:31` is edited in commit 13.
-- **The original five questions from before the decisions are all answered**, and so are the nine
-  from the second round.
+- **The original six forks from before the decisions are all answered** — this said "five
+  questions" — **and so are the eleven from the second round**, decisions 9–19.
 
 **One thing the second round added that has no home yet, and it is deliberate.** The *closing*
 playbook cannot be written until this restructure lands, because it is written from what the

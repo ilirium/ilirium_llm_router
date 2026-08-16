@@ -59,7 +59,7 @@ Per `EPD-000`'s convention, what in this proposal was counted against the tree a
 |---|---|
 | 65 files under `docs/`, 50 of them tracked, before this EPD was committed; 67 / 52 after | **Measured** — `git ls-files docs`, `git ls-tree -r 9dd907e`, `find` |
 | `CLAUDE.md` is 337 lines / 46725 bytes, loaded every session | **Measured** |
-| 253 mentions of the 22 documents and directories that would move | **Measured** — grep over `docs/`, `README.md`, `CLAUDE.md`, `src/`, `tests/`, `config.yaml`, `.gitignore` |
+| ~~253 mentions of the 22 documents and directories that would move~~ | **Withdrawn 2026-08-16** — it did not reproduce, no recipe was recorded, and on examination it had no job. See "The number that was withdrawn" below |
 | 11 doc citations from 7 code and config files — 8 naming a `docs/` path, 3 naming a `CLAUDE.md` section | **Measured** — `config.py:62`, `proxy.py:3,238,321`, `stats.py:3,26`, `observe.py:12`, `tests/test_observe.py:9`, `config.yaml:24,30,44` |
 | 4 `.gitignore` entries name `docs/` paths, one of them a negation | **Measured** — `.gitignore:229,231,233,237` |
 | `probe.py` breaks silently if its directory changes depth | **Measured** — `ROOT = HERE.parent.parent` at `probe.py:40`, used to locate the capture and `logs/calls.csv` |
@@ -71,6 +71,46 @@ Per `EPD-000`'s convention, what in this proposal was counted against the tree a
 **The first row was wrong in this document's first version**, which claimed 68 files. Corrected in
 place and left visible: an EPD whose argument rests on this repository's habit of quoting numbers
 forward should not quietly fix one of its own.
+
+**Two rows below it also need their slice, added 2026-08-16.** The file counts are measured *at
+`51b857b`* and are already stale as current state — `de4e28a` added a file, so the tree holds 68 / 53
+today. The citation row's per-section counts are corrected under "Which `CLAUDE.md` sections" below.
+
+### The number that was withdrawn
+
+**"253 mentions" was removed on 2026-08-16 after a fresh-context review could not reproduce it.**
+Counting over the stated scope at `51b857b` gives 340 occurrences, 301 line-hits, ~261 excluding the
+two restructure documents, or 199 restricted to `docs/*.md`, depending on whether prose references
+and fenced paths count. **No recipe was recorded**, which is the failure this document warns about in
+its own citation measurement.
+
+But the more useful finding is that **re-deriving it would have been the wrong fix, because the
+number had no job.** It was given two and can do neither:
+
+- **Sizing the work.** Already carried by facts that do not need it — 68 files, 22 moving, 15
+  commits, eight breakages. The count was decorative precision on a settled conclusion.
+- **The commit 13 work list.** Wrong population in both directions. It **overcounts**, because a
+  prose mention of "Phase 4" breaks nothing. It **undercounts**, because
+  `phase-4-evidence/README.md:4` cites `../../CLAUDE.md` and needs `../../../../` — the filename
+  never changes, so no grep for moving names can find it. `docs-restructure-plan.md` says exactly
+  this when it calls the link checker "the only practical check for links that break by *depth*
+  rather than by name."
+
+So the plan already knew why a mention count cannot size this job, in the same document that used a
+mention count to size it. **This is a different failure from the 26× episode:** that number was
+correct and quoted without its slice; this one was a number measured because it was measurable, then
+assigned jobs by proximity.
+
+**What replaces it.** Nothing, for sizing. For the work list, the link checker's output — precisely
+defined, produced by a tool the plan already mandates, and directly actionable. If a magnitude is
+ever wanted, the useful unit is **files, not hits**: you edit files, and a file count barely moves
+when the definition of "a mention" changes, while the hit count swings by tens.
+
+Two things the repository *should* keep tracking, and does: the **11 code and config citations**,
+because they rot silently, nothing tests them, and a markdown link checker cannot see inside a Python
+docstring — they are the chain from a rule in code back to the measurement that established it. And
+**broken links after the move**, via the checker. Re-checking the 11 is a standing item for the
+review phase (decision 11), not a number to maintain.
 
 ## The central claim: this is a split, not a move
 
@@ -125,6 +165,7 @@ docs/
     lmstudio-capability-probes/    (was phase-4-probes/)
     testing-against-claude-code.md
     anthropic-auth-check.md
+    read-timeout-semantics.py      (was phase-5-measurements/)
     dying-backend/                 (was phase-3-verification/, without runs/)
   captures/                  raw artefacts the reference docs are derived from
     log-the-whole-request.txt
@@ -165,6 +206,15 @@ recomputing over the whole file gives 3.9×. Both figures are right; they answer
 The prose fix was to write the recipe down once. The structural fix is to give every quoted number
 one canonical row, so quoting forward means linking rather than restating.
 
+**Which copy is canonical, added 2026-08-16.** Both of these files *harvest* material that also stays
+in the phase notes, so the restructure creates the duplication it exists to prevent unless the
+relationship is named. It is: **the archive is frozen-primary, and the harvest is
+canonical-for-quotation.** A phase note is never edited again — it records what was known when it was
+written. `measurements.md` and `lessons.md` are what any *other* document cites, and a correction is
+applied there, carrying a note of what the phase note said. Without this sentence the first
+correction after the restructure has two plausible homes, and that is exactly how the 26× figure
+survived three phases.
+
 **`lessons.md`.** Four times in six phases, a phase found its own premise wrong: Phase 3 found four
 of five items already built, Phase 4 found a third of its plan already measured, Phase 5 found work
 already misdescribed, and Phase 6 found its own review plan asserting something a five-minute
@@ -191,10 +241,10 @@ contain the captured system prompt, not a citation.
 | Section | Lines | Cited by name | In how many files |
 |---|---|---|---|
 | Design decisions | 179–236 | **8** | 6 — including 3 of the 4 EPDs |
-| Observability: log + CSV stats | 251–312 | **4** | 4 — including `stats.py:3` |
-| Observed request shape | 167–178 | **3** | 2 — including `proxy.py:3` |
+| Observability: log + CSV stats | 251–312 | **5** *(first written as 4)* | 4 — including `stats.py:3` |
+| Observed request shape | 167–178 | **4** *(first written as 3)* | 3 — including `proxy.py:3` |
 | Goal | 100–105 | 1 | 1 |
-| The central architectural problem | 106–166 | 1 | 1 |
+| The central architectural problem | 106–166 | **0** *(first written as 1)* | 0 |
 | **Status** | **5–63** | **0** | 0 |
 | **Layout and commands** | 64–99 | **0** | 0 |
 | **Anthropic model IDs** | 313–325 | **0** | 0 |
@@ -219,13 +269,28 @@ So the measurement splits `CLAUDE.md` in a way the original triage did not:
   has a natural home in `backend-anthropic.md` and keeping both copies is worse than the risk of the
   pointer being missed. `Layout and commands` stays, and the argument still holds for it — it has no
   destination that would want it.*
-- **Genuinely inert** — Status, at 59 lines the single largest section in the file, with **zero**
-  citations in six phases. Stack decisions and Style, 12 lines, likewise.
+- **Genuinely inert** — Status, at 59 lines and 11038 bytes, with **zero** citations in six phases.
+  Stack decisions and Style, 12 lines, likewise.
 
-**The strongest measured argument for cutting is `Status`**, and it is a stronger one than this
-document originally made: 18% of an auto-loaded file, never once cited as an authority, consisting
-almost entirely of Milestone 1 phase history. The triage table below already proposed moving it, for
-the weaker reason that it was long.
+**Three corrections to this section, made 2026-08-16 after a fresh-context review re-derived it.**
+
+**Status is not "the single largest section in the file"**, which is what this document said. It is
+*third* by lines — Observability is 62 and The central architectural problem 61 — and largest only
+by **bytes** (11038 against Observability's 10877). The original sentence gave a line figure and a
+superlative that holds only for bytes, and paired it with "18%", which is the line-based share; by
+bytes it is 23.6%. Two units in one sentence, and the claim was false for the one it named.
+
+**Two counts in the table were low and one was high**, corrected in place above. `EPD-003:396` names
+Design decisions *and* Observability on the same line and had been counted only for the first, which
+is what made 8 and 4 inconsistent under one rule. And "The central architectural problem" scores
+**zero**, not one: the only near-hit is `EPD-002:258` quoting the subtitle *"dispatch, not
+translation"* rather than the section title, which the recipe excludes.
+
+**None of it changes the argument**, and that is worth saying rather than leaving implied: every
+**zero** row reproduces exactly, and the zero rows are what the triage turns on. `Status` remains the
+clearest case for cutting — 17.5% of an auto-loaded file by lines, 23.6% by bytes, never once cited
+as an authority, and almost entirely Milestone 1 phase history. The triage table below already
+proposed moving it, for the weaker reason that it was long.
 
 Two results argue *against* parts of the original triage. **"Design decisions" is the most-cited
 section in the file, and three of the four EPDs cite it** — the EPDs are precisely the documents that
@@ -278,8 +343,8 @@ survives scoring zero: the ruff pin prevents a confident wrong action, and its s
 Nothing cites it and nothing ever will.
 
 Three things now push the length the other way and are accepted — the branch convention, the two
-milestone playbook pointers, and four rules migrating in from the session memory store (decisions 14,
-12 and 16). `Anthropic model IDs` leaving offsets part of it. And the surviving sections are to be
+milestone playbook pointers, and **seven** rules migrating in from the session memory store
+(decisions 14, 12 and 16). `Anthropic model IDs` leaving offsets part of it. And the surviving sections are to be
 rewritten **as rules rather than as history**: the ruff pin currently spends five paragraphs of
 narrative to state one rule and one trap, which in an auto-loaded file is four paragraphs of rent.
 The narrative is not lost — it is `reference/lessons.md` material.
@@ -294,6 +359,14 @@ of contents rather than by keeping the section. The bet is that a session which 
 decision exists will open the file before reversing it, and that a decisions document worth reading
 front to back is worth more than one guaranteed to be in context but never read as a whole. It is a
 bet, not a measurement, and it is the one place this restructure could make things worse.
+
+**Its trip-wire, added 2026-08-16**, because a risk this document calls its worst had no way to be
+noticed failing — decision 10 names one and this did not. **The signal is a design decision reversed,
+narrowed or contradicted without `reference/design-decisions.md` appearing in the reasoning.** The
+byte-relay rule and the no-special-case-for-background-traffic rule are the two most likely, both
+because they cost something visible and their rationale is a paragraph away. If that happens once,
+the titles-only table of contents was too thin and the statements belong back in `CLAUDE.md`. This is
+a standing item for the review phase (decision 11), not a one-off check at commit 14.
 
 ## Numbering
 
@@ -402,7 +475,9 @@ become a document and should be given its own file. Until then it is a section.
 
 ### Decision on fork 6 — six files, revised on 2026-08-16 to seven
 
-**Revised from "five" after measuring the source material**, and revised again by fork 5, which puts
+**Revised from the four proposed in fork 6 below** after measuring the source material — an earlier
+version of this line said "five", which matches neither the fork nor the outcome — and revised again
+by fork 5, which puts
 `design-decisions.md` back. The five that pass both tests plus `design-decisions.md`:
 `architecture.md`, `design-decisions.md`, `observability.md`, `backend-lmstudio.md`,
 `measurements.md`, `lessons.md`.
@@ -662,9 +737,10 @@ branch is **deleted, not renamed**.
   already holds that, and a hand-maintained list would drift.
 - **The phase note carries the permanent record** — branch, fork point, and merge commit.
 
-The second half needs repair, not merely recording. `Branch:` lines exist in five of six phases, in
-inconsistent places (Phase 4 in both plan and notes, Phase 5 only in the plan, Phases 1 and 6 in
-neither), and **only one records the merge commit**: `phase-4-notes.md:7`, *"Merged with `--no-ff` as
+The second half needs repair, not merely recording. **Five `Branch:` lines exist across four of the
+six phases** — an earlier version of this line said "five of six phases", which contradicted its own
+next clause — in inconsistent places (Phase 4 in both plan and notes, Phase 5 only in the plan,
+Phases 1 and 6 in neither), and **only one records the merge commit**: `phase-4-notes.md:7`, *"Merged with `--no-ff` as
 `50444c5`"*. The other four say "Merge back with `--no-ff`" — written before the merge and never
 closed out. That is this repository's signature failure in miniature, a document recording intent and
 never updated to outcome, and closing them is a review-phase checklist item.
@@ -690,15 +766,16 @@ name* is worth more than a better adjective, and it is only free if adopted befo
 
 **The finding that forces it:** this restructure exists to give every durable fact one home, and a
 second store of durable facts sits entirely outside it — untracked, machine-local, keyed on an
-absolute path, invisible to git and to any human contributor. Six of its nine entries are project
-conventions rather than facts about this machine, and **three carry paths this restructure breaks**.
-One is already stale, filing EPDs at `docs/EPD-NNN-…` when they have lived in `docs/epd/` since
-`8a10bc3`.
+absolute path, invisible to git and to any human contributor. **All nine entries** are project
+conventions or portable rules rather than facts about this machine, and **three carry paths this
+restructure breaks**. One is already stale, filing EPDs at `docs/EPD-NNN-…` when they have lived in
+`docs/epd/` since `8a10bc3`.
 
-The migration plan's 253-reference count could not have caught any of them, because they are not in
-the repository. And `docs-restructure-plan.md` already says "Merge `--no-ff` **per repository
-convention**" — a committed document depending on a convention that exists only in machine-local
-memory, which would silently not load if the repository were opened by its other path.
+**No count over the repository could have caught any of them, because they are not in the
+repository** — which is true whatever the count is, and is why this argument no longer quotes one.
+And `docs-restructure-plan.md` already says "Merge `--no-ff` **per repository convention**" — a
+committed document depending on a convention that exists only in machine-local memory, which would
+silently not load if the repository were opened by its other path.
 
 **The rule, as first written:** *memory holds what is true about working with an agent on this
 machine; the repository holds what is true about the project*, tested by asking whether a new human
@@ -723,11 +800,25 @@ material has three, and the missing one is the interesting one:
 | `redact-to-stable-placeholders` | `docs/README.md` — the evidence-filing convention |
 | `keep-bash-commands-statically-analyzable` | `CLAUDE.md`. **This table first said "stays — about the harness, not the router"**, which put it in the machine-local category. It is portable, not local: the harness is the same in every project this owner works on, and stepping on the rake twice is the cost of filing it as local |
 | `git-merge-cannot-read-message-from-stdin` | `CLAUDE.md`, appended to the `--no-ff` rule, since that is the operation that triggers it. **Also first recorded as "stays"** |
+| `ask-before-touching-the-machine` | `CLAUDE.md`, beside `propose-before-implementing` — it is a working agreement about consent. **Omitted entirely from this table until 2026-08-16; see below** |
 
-**So all eight migrate, and the machine-local category turns out to be empty.** The store's one
-genuinely local fact — that `~/Projects/code-2026/…` and the OneDrive path are the same inode — is
-**already in `CLAUDE.md` today**, and was before this work began. Stated plainly rather than dropped
-quietly: the third category was invented by this decision and holds nothing.
+**So all nine migrate, and the machine-local category is empty.**
+
+**That conclusion was first written from an inventory of eight, and the ninth was the one most likely
+to refute it.** `ask-before-touching-the-machine` — ask before GUI toggles, before reading `.env`,
+before starting long-running local processes — is the single entry whose subject *is* the state of
+this machine, and it appeared in no row of this table, no destination, and no verification item.
+Found by a fresh-context review on 2026-08-16.
+
+Recorded rather than quietly patched, because the failure is this document's own subject arriving in
+the decision written to fix it: **a conclusion asserted from a count that was not re-checked.** The
+conclusion survives — the owner's call is that it belongs in the project too, so nine of nine
+migrate — but it survives by luck rather than by method, and the corrected version is a count of nine
+actually verified against the directory rather than eight recalled.
+
+The store's one genuinely local fact — that `~/Projects/code-2026/…` and the OneDrive path are the
+same inode — is **already in `CLAUDE.md` today**, and was before this work began. So the third
+category was invented by this decision and holds nothing.
 
 Both migrating rules earn `CLAUDE.md` under the admission test rather than by association. A session
 writes `cd "$(git rev-parse --show-toplevel)"` or `git merge -F -` **confidently and wrongly**, with
@@ -777,7 +868,7 @@ yet.** Sorting this project's documents by whether they would survive a change o
 | Visible in-place correction | — |
 | The auto-load admission test | — |
 | The permission policy shape (decision 17) | — |
-| All eight migrating rules (decision 16) | The dual-path note |
+| All nine migrating rules (decision 16) | The dual-path note |
 
 **Nearly the whole methodology is portable, and what is not is the reference tier and the archive** —
 the same seam this restructure already cuts, one level up.
@@ -917,16 +1008,20 @@ Two further `EPD-000` edits fall out of the same decision:
 ## What this does not propose
 
 - **No rewriting of measured content.** Every number, table and finding moves verbatim. The
-  documents actually *rewritten* are five: `CLAUDE.md`, `README.md`, `outstanding-work.md` (split
-  into `backlog.md`), `EPD-000` (the graduation convention and its two body citations), and the
-  original brief in `README.md` — plus the new `docs/README.md`, `status.md`, `backlog.md` and the
-  `reference/` files assembled out of existing text. The first version of this list said three and
+  documents actually *rewritten* are **four**: `CLAUDE.md`, `README.md`, `outstanding-work.md` (split
+  into `backlog.md`) and `EPD-000` (the graduation convention and its two body citations) — plus the
+  new `docs/README.md`, `status.md`, `backlog.md` and the
+  `reference/` files assembled out of existing text. **This said "five" and reached it by naming
+  `README.md` twice**, once for the file and once for "the original brief in `README.md`" — which
+  `docs-restructure-plan.md` says stays **verbatim** and is therefore not rewritten at all. Corrected
+  2026-08-16, and pointedly, since this is the paragraph where the same list was already corrected
+  once. The first version of this list said three and
   omitted `outstanding-work.md`, eleven lines after calling it "the one item in this proposal that
   rewrites a document rather than moving it". If a fact changes during this work, that is a defect
   in the work.
 
   **Amended 2026-08-16:** `CLAUDE.md` now also *gains* material — the branch convention, the two
-  playbook pointers, and four rules migrating in from the session memory store — where this document
+  playbook pointers, and seven rules migrating in from the session memory store — where this document
   had only ever described it losing sections. None of that is newly invented: every rule is written
   down somewhere already, and three of the four memory rules are older than this document.
 - **No deletion.** Nothing is dropped, including the marginalia. The archive is where a thing goes
@@ -947,6 +1042,22 @@ With the split accepted, the cheapest first step is **not** moving files. It is 
 `phase-4-notes.md` — the one source most fused with its phase narrative. If that table cannot be
 lifted without dragging half the narrative with it, the tiers are wrong, and it is better to learn
 that from one file than from twenty-two.
+
+**What "cannot be lifted" means, added 2026-08-16.** A gate with no failure criterion is not a gate,
+and this repository states its other thresholds precisely — ~30 lines for "Where we stopped", ~40 for
+the growth rule. So: **the gate fails if the extracted file cannot state the parity findings without
+referring to Phase 4 as a phase** — its plan, its ordering, which probe ran when, what it expected
+versus found. Those are process, and a reference document that needs them has not separated durable
+from process, which is the whole proposition.
+
+Two things are explicitly *not* failure. Citing `phase-4-notes.md` as the **provenance** of a
+measurement is correct and expected — that is what the archive is for. And carrying the *conditions*
+of a measurement (model, window size, date, that authentication was off) is not narrative; it is the
+slice, and a number without it is the 26× error.
+
+**If the gate fails**, the fallback is the one named above: abandon the tier split, and the job
+collapses to `git mv docs/phase-* docs/milestone-1-core/` plus link fixes — roughly forty minutes.
+Commits 2 and 3 are cheap and reversible, which is what makes running the gate first worth it.
 
 **The first version of this document named a different first step**, writing `measurements.md` and
 `lessons.md`, and justified it by the parity table — a file it did not include. Those two are
