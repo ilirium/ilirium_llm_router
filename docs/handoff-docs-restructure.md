@@ -12,10 +12,10 @@ untouched.
 
 ## Where this stands
 
-Twelve commits, tree clean, **nothing moved yet — commits 2 to 5 all create, none relocate.** The
-gate passed. Three of the seven `reference/` files exist, the manual is written, and all three tier
-indexes are in place. No file has moved and no citation has been repointed; the first move is commit
-7.
+Thirteen commits, tree clean, **nothing moved yet — commits 2 to 6 all create, none relocate.** The
+gate passed. **All seven `reference/` files exist**, the manual is written, and all three tier indexes
+are in place. Four reference files currently duplicate a `CLAUDE.md` section still in the file; that
+is deliberate and ends at commit 11. No citation has been repointed; the first move is commit 7.
 
 | Commit | What |
 |---|---|
@@ -31,7 +31,8 @@ indexes are in place. No file has moved and no citation has been repointed; the 
 | `394d910` | **Commit 2 of the plan** — `reference/backend-lmstudio.md`, and the gate result written into `EPD-004` |
 | `5924bcc` | **Commit 3** — `reference/measurements.md` and `reference/lessons.md`, and the two corrections the register found |
 | `beddfaf` | **Commit 4** — `docs/README.md`, the manual, written before any file moves |
-| *(this one)* | **Commit 5** — the three tier indexes, and two gaps found in the plan while writing them |
+| `46c8321` | **Commit 5** — the three tier indexes, and two gaps found in the plan while writing them |
+| *(this one)* | **Commit 6** — the last four `reference/` files, assembled from `CLAUDE.md` |
 
 The two planning documents:
 
@@ -62,10 +63,18 @@ and `milestone-1-core/README.md` all exist. The reference index lists **all seve
 finished reading order rather than the three that exist — an index listing part of its tier is worse
 than one written slightly early, so nothing is owed at commit 6 beyond the files themselves.
 
-**The next action is commit 6: assemble `reference/architecture.md`, `design-decisions.md`,
-`observability.md` and `backend-anthropic.md` from `CLAUDE.md`.** Content composition, no moves.
-`CLAUDE.md` is **not** cut there — the text is duplicated for one commit, deliberately, and the cut
-happens at commit 11 once every destination exists.
+~~**The next action is commit 6**~~ **Done 2026-08-16.** All four assembled; `CLAUDE.md` untouched, so
+four sections are duplicated until commit 11. What the assembly decided is under "What commit 6
+found" below — the short version is that three paragraphs a reader would expect in
+`design-decisions.md` are deliberately in other files, and the file says so rather than leaving the
+absence to be noticed.
+
+**The next action is commit 7: move the procedures** — tracked contents by `git mv`, the gitignored
+`runs/` and `needle.json` by plain `mv`, **never the parent directory as a unit**, with `.gitignore`
+updated in the same commit. **This is the first commit that moves anything**, and the first that can
+break something silently. Read "The eight things that break silently" in the plan before starting; it
+is breakages 3, 4 and 8 that this commit is exposed to, and `git status --ignored` afterwards is the
+check.
 
 ---
 
@@ -342,6 +351,33 @@ commit and no visible boundary. The `--no-ff` convention starts at Phase 2 (`4d7
 every phase after it. This is *not* a defect to repair — rewriting history to add two merge commits
 would cost far more than the boundary is worth — but a reader checking the convention against the log
 finds two exceptions, so `milestone-1-core/README.md` now says why they are there.
+
+## What commit 6 found
+
+**Assembling the decisions file nearly created the duplication it exists to prevent.** A first draft
+of `design-decisions.md` pulled in the per-backend `read_timeout`, two recorder constraints
+("never let telemetry break a call", "don't store what a spreadsheet can derive") and the formatter
+pin — all of which read like design decisions and all of which already have homes:
+`backend-lmstudio.md`, `observability.md` and `CLAUDE.md`'s "Layout and commands", which stays.
+
+They were cut, and the file now carries a short table naming where each one lives **and the trigger
+that sends you there**. That table is worth more than the paragraphs would have been: the next person
+to feel that gap gets an answer instead of adding a second copy.
+
+**One decision was discharged rather than carried.** "First milestone is a minimal end-to-end proxy"
+is done. It is recorded under a `Discharged` heading rather than dropped, because a decision that
+disappears looks like one that was reversed.
+
+**`architecture.md` states where the premise stops**, which nothing did before: *dispatch, not
+translation* holds because both sides speak `/v1/messages`, and the four cloud backends named under
+`Goal` do not. A table names what each would actually require, and the paragraph is explicit that this
+is not an argument against adding them — it is an argument against treating "add a backend" as one
+kind of work.
+
+**The section-citation check passes for everything cut so far.** Each of the six `CLAUDE.md` section
+titles due to leave now resolves to a heading in a `reference/` file, and "Observed request shape"
+survives as a section heading inside `architecture.md`, which is what keeps `proxy.py:3` needing no
+edit at commit 14.
 
 ## Loose ends that are not blockers
 
