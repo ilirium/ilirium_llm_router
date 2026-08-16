@@ -1,13 +1,20 @@
 # Documentation restructure — the migration plan
 
-Written 2026-08-15 on `docs/milestone-boundary-restructure`. **The structure was decided the same
-day; nothing here has been executed yet.**
+Written 2026-08-15 on `docs/milestone-boundary-restructure`, **extended 2026-08-16. The structure was
+decided on the 15th and extended on the 16th; nothing here has been executed yet.**
 
 The shape and the argument for it are in `docs/epd/EPD-004-documentation-structure.md`, whose six
 forks are now answered — the tier split accepted, `Design decisions` moving out whole, the backlog
 split into its own file, the capture at `docs/captures/`, no numeric prefixes, and the reference tier
-starting at six files. Two documents were added by those decisions and are built here:
+starting at **seven** files. Two documents were added by those decisions and are built here:
 **`docs/README.md`**, the manual, and **`docs/backlog.md`**.
+
+**The 2026-08-16 round changed six things in this document**, all recorded in place below and all
+traceable to `EPD-004` decisions 9–17: the reference tier gains `backend-anthropic.md`;
+`Anthropic model IDs` leaves `CLAUDE.md`; three archive folder slugs change to match their branch
+names; `docs/README.md` grows the phase template, the branch convention and the opening playbook;
+the six migrating memories become a step; and a **fifteenth commit** writes the closing playbook from
+what this work actually cost.
 
 This file is the mechanical half: what moves where, what breaks when it does, and in which order to
 do it so that a mistake is recoverable.
@@ -27,7 +34,7 @@ Measured 2026-08-15 on `docs/milestone-boundary-restructure` at commit `51b857b`
 | Doc paths cited from code and config | **11**, in 7 files — 8 pointing *out* to `docs/`, 3 pointing *into* `CLAUDE.md` |
 | `.gitignore` entries naming `docs/` paths | **4**, one of them a negation |
 | Documents rewritten rather than moved | **4** — `CLAUDE.md`, `README.md`, `outstanding-work.md` (split), `EPD-000` |
-| Documents created | **11** — `docs/README.md` (the manual), `status.md`, `backlog.md`, six `reference/` files, and two tier `README.md` indexes |
+| Documents created | **12** — `docs/README.md` (the manual), `status.md`, `backlog.md`, **seven** `reference/` files, and two tier `README.md` indexes. Was 11 until `backend-anthropic.md` was added on 2026-08-16 |
 
 **The first row was wrong in this document's first version**, which said "68 files, 50 tracked". The
 50 was right; the 68 was not, and it contradicted the untracked row two lines below it — 50 + 15 is
@@ -159,16 +166,18 @@ contents, not the directory.
 These are the only files whose *content* is composed rather than moved. Every fact is lifted
 verbatim; the work is deciding which paragraph belongs to which file.
 
-**Six files, not ten** (EPD-004 decision on fork 6). Deferred: `configuration.md`, which has no
-source of its own; `backend-anthropic.md` and `request-shape.md`, at 13 and 12 lines, which start as
-sections of `architecture.md`.
+**Seven files, not ten** (EPD-004 fork 6, revised on 2026-08-16 from six). Deferred:
+`configuration.md`, which has no source of its own, and `request-shape.md` at 12 lines, which starts
+as a section of `architecture.md` — and stays there deliberately, since that is what keeps
+`proxy.py:3` needing no edit.
 
 | New file | Assembled from |
 |---|---|
-| `docs/reference/architecture.md` | `CLAUDE.md` "Goal" + the dispatch half of "The central architectural problem", long form. **Plus two sections**: "Observed request shape" verbatim, and the Anthropic surface (model IDs, the Result of `anthropic-auth-check.md`, the 429 findings from `handoff.md`) |
+| `docs/reference/architecture.md` | `CLAUDE.md` "Goal" + the dispatch half of "The central architectural problem", long form. **Plus one section**: "Observed request shape" verbatim. The Anthropic surface moved out on 2026-08-16 into its own file. **Must newly state where the premise stops**: "dispatch, not translation" holds because both sides speak `/v1/messages`, which OpenAI and Gemini do not — written down nowhere today |
 | `docs/reference/design-decisions.md` | `CLAUDE.md` "Design decisions" **entire, all 58 lines** — statements and reasoning together. `CLAUDE.md` keeps a titles-only table of contents |
 | `docs/reference/observability.md` | `CLAUDE.md` "Observability: log + CSV stats" entire |
 | `docs/reference/backend-lmstudio.md` | `CLAUDE.md` LM Studio bullets, including the timeout semantics; the parity table and context facts from `phase-4-notes.md` |
+| `docs/reference/backend-anthropic.md` | **added 2026-08-16.** `CLAUDE.md` "Anthropic model IDs" **entire** — the ID table and both rejections — plus the *Result* of `anthropic-auth-check.md` (the OAuth bearer forwarded and accepted, the ten-entry `anthropic-beta` list and the `oauth-2025-04-20` entry that makes it work, and that trimming the list turns a working request into a 401), `credential: forward` and why this is the one backend holding no secret, the 429 shape from `handoff.md`, `read_timeout: 600` and why, and the median time to first byte **with its slice** |
 | `docs/reference/measurements.md` | **new** — every quoted number, its date, its instrument, its slice |
 | `docs/reference/lessons.md` | **new** — the four "phase found its premise wrong" episodes, from the six phase notes |
 | `docs/reference/README.md` | **new** — reading order and what each file answers |
@@ -177,19 +186,25 @@ sections of `architecture.md`.
 request shape" by **section title**, not by path, and that section survives as a section of
 `architecture.md`. Only `stats.py:3` and `proxy.py:238` need repointing at a new file.
 
+**And `Anthropic model IDs` leaving `CLAUDE.md` breaks no citation either**, because nothing in
+`src/`, `tests/` or `config.yaml` names that section — it scored zero in the citation measurement,
+which is exactly why EPD-004 originally ruled it must stay. What it needs instead is a pointer in
+`CLAUDE.md` that names the **trigger**: *before naming an Anthropic model, read this file.* A pointer
+saying only that the file exists does not replace a section nobody knew they were reading.
+
 ### Tier 2 — procedures (re-runnable instruments)
 
 | From | To | Note |
 |---|---|---|
 | `docs/lmstudio-usage-check.md` | `docs/procedures/lmstudio-usage-check.md` | cited by `observe.py:12` and `tests/test_observe.py:9` |
-| `docs/anthropic-auth-check.md` | `docs/procedures/anthropic-auth-check.md` | cited by `config.yaml:30`; its *Result* is also lifted into the Anthropic section of `reference/architecture.md` (`backend-anthropic.md` is deferred) |
+| `docs/anthropic-auth-check.md` | `docs/procedures/anthropic-auth-check.md` | cited by `config.yaml:30`; its *Result* is also lifted into `reference/backend-anthropic.md`, which stopped being deferred on 2026-08-16 |
 | `docs/testing-against-claude-code.md` | `docs/procedures/testing-against-claude-code.md` | the procedure is reusable for any milestone |
 | `docs/testing-against-claude-code--results.md` | `docs/milestone-1-core/phase-1-proxy/evidence/session-results.md` | results are Phase 1 history, not a procedure |
 | `docs/phase-4-probes/{probe,make_needle,make_image}.py`, `README.md`, `bodies/` | `docs/procedures/lmstudio-capability-probes/` | **edit `probe.py:40,43` after the move** |
 | `docs/phase-4-probes/bodies/needle.json` | same directory | gitignored — plain `mv`, and update `.gitignore:237` |
 | `docs/phase-4-probes/runs/` | **stays beside the probe** at `docs/procedures/lmstudio-capability-probes/runs/`; the Milestone 1 transcripts are *copied* to `docs/milestone-1-core/phase-4-lmstudio-parity/evidence/probe-runs/` | gitignored — repoint `.gitignore:233` at the new probe path, and add the archive copy as an exception if it is to be committed |
 | `docs/phase-3-verification/{dying_backend.py,router.yaml,README.md}` | `docs/procedures/dying-backend/` | the stub is a tool. `router.yaml:5` comment and `README.md:25`'s `make run CONFIG=…` example both need the new path |
-| `docs/phase-3-verification/runs/` | **stays beside `router.yaml`** at `docs/procedures/dying-backend/runs/`; Milestone 1 transcripts *copied* to `docs/milestone-1-core/phase-3-error-handling/evidence/runs/` | breakage 8. Repoint `.gitignore:231` at the new procedures path — **not** at the archive, or the stub writes to an unignored directory |
+| `docs/phase-3-verification/runs/` | **stays beside `router.yaml`** at `docs/procedures/dying-backend/runs/`; Milestone 1 transcripts *copied* to `docs/milestone-1-core/phase-3-failure-handling/evidence/runs/` | breakage 8. Repoint `.gitignore:231` at the new procedures path — **not** at the archive, or the stub writes to an unignored directory |
 | `docs/phase-5-measurements/read_timeout_semantics.py` | `docs/procedures/read-timeout-semantics.py` | a twenty-minute measurement that settled two wrong claims; worth keeping runnable |
 | — | `docs/procedures/README.md` | **new** — the index, and when each check is worth re-running |
 
@@ -236,26 +251,33 @@ link-check script under Verification is what catches this class; reading for it 
 | `docs/phase-1-notes.md` | `docs/milestone-1-core/phase-1-proxy/notes.md` |
 | `docs/phase-2-notes.md` | `docs/milestone-1-core/phase-2-observability/notes.md` |
 | `docs/phase-2-step-6-session/` | `docs/milestone-1-core/phase-2-observability/evidence/step-6-session/` — **update `.gitignore:229`** |
-| `docs/phase-3-notes.md` | `docs/milestone-1-core/phase-3-error-handling/notes.md` |
+| `docs/phase-3-notes.md` | `docs/milestone-1-core/phase-3-failure-handling/notes.md` |
 | `docs/phase-4-notes.md` | `docs/milestone-1-core/phase-4-lmstudio-parity/notes.md` |
 | `docs/phase-4-plan.md` | `docs/milestone-1-core/phase-4-lmstudio-parity/plan.md` |
 | `docs/phase-4-evidence/` | `docs/milestone-1-core/phase-4-lmstudio-parity/evidence/` |
-| `docs/phase-5-notes.md` | `docs/milestone-1-core/phase-5-credentials-and-timeout/notes.md` |
-| `docs/phase-5-plan.md` | `docs/milestone-1-core/phase-5-credentials-and-timeout/plan.md` |
-| `docs/phase-5-measurements/*.txt`, `README.md` | `docs/milestone-1-core/phase-5-credentials-and-timeout/evidence/` — cited by `config.py:62` and `config.yaml:24` |
-| `docs/phase-6-notes.md` | `docs/milestone-1-core/phase-6-review/notes.md` |
-| `docs/phase-6-plan.md` | `docs/milestone-1-core/phase-6-review/plan.md` |
+| `docs/phase-5-notes.md` | `docs/milestone-1-core/phase-5-config-and-timeouts/notes.md` |
+| `docs/phase-5-plan.md` | `docs/milestone-1-core/phase-5-config-and-timeouts/plan.md` |
+| `docs/phase-5-measurements/*.txt`, `README.md` | `docs/milestone-1-core/phase-5-config-and-timeouts/evidence/` — cited by `config.py:62` and `config.yaml:24` |
+| `docs/phase-6-notes.md` | `docs/milestone-1-core/phase-6-review-and-cleanup/notes.md` |
+| `docs/phase-6-plan.md` | `docs/milestone-1-core/phase-6-review-and-cleanup/plan.md` |
 | — | `docs/milestone-1-core/README.md` — **new**: what the milestone was, what it proved, the index |
 
+**Three of these slugs changed on 2026-08-16** (EPD-004 decision 15) so that every folder matches its
+branch exactly: `phase-3-error-handling` → `phase-3-failure-handling`, `phase-5-credentials-and-timeout`
+→ `phase-5-config-and-timeouts`, `phase-6-review` → `phase-6-review-and-cleanup`. The other three
+already agreed. **Verify this after commit 10** — every `milestone-1-core/phase-*` directory name must
+appear verbatim after `feat/` in `git branch --list 'feat/*'`.
+
 Phase 0 has no notes file; it exists only as a section of `implementation-plan.md` and needs no
-directory.
+directory. Its branch, `feat/phase-0-skeleton`, would give it `phase-0-skeleton/` under the same rule
+if one is ever wanted.
 
 ### Tier 6 — rewritten at the root
 
 | File | What happens |
 |---|---|
-| `docs/README.md` | **new — the manual.** What each tier is for, what belongs in it, how to decide when a thing is ambiguous, the naming and numbering conventions, the 40-line growth rule, and how to open a new milestone. The entry point to `docs/`. Its acceptance test: **somebody who has never read `EPD-004` can file a new document correctly from this file alone** |
-| `CLAUDE.md` | Cut to ~100 lines per EPD-004's table. Sections leave; pointers naming their trigger replace them. "Design decisions" leaves whole, replaced by a **titles-only table of contents** — an index, not a summary, so there is nothing to drift |
+| `docs/README.md` | **new — the manual.** What each tier is for, what belongs in it, how to decide when a thing is ambiguous, the naming and numbering conventions, the 40-line growth rule, and how to open a new milestone. The entry point to `docs/`. Its acceptance test: **somebody who has never read `EPD-004` can file a new document correctly from this file alone**. **Widened 2026-08-16** — it also carries the phase template (`plan.md`, `notes.md`, `evidence/` with its README, the "Verified by" line), the branch convention, the two conventions migrating in from the memory store, the permission-file split, and both milestone playbooks. Playbooks go **last**, so a procedure used twice a year does not bury the filing rules read every week |
+| `CLAUDE.md` | Cut per EPD-004's table — the length is a **result of the admission test, not a budget**. Sections leave; pointers naming their trigger replace them. "Design decisions" leaves whole, replaced by a **titles-only table of contents** — an index, not a summary, so there is nothing to drift. Surviving sections are rewritten **as rules rather than as history**. **Gains, 2026-08-16:** the branch convention, four rules migrated from the memory store, and pointers at the two playbooks — the playbook pointer carrying an *instruction* (read it and work from it) rather than an address |
 | `README.md` | "What it does today" gains the Milestone 1 result in two sentences; the pointer to `CLAUDE.md` becomes a pointer to `docs/README.md`. The "Description" brief stays verbatim |
 | `docs/status.md` | **new** — three parts, most volatile first: "Where we stopped" (the handoff, every session), "Where the project is" (milestones → phases → tasks, every phase), "What is next" (two or three items drawn from `backlog.md` and cited to it). **No work items live here** |
 | `docs/backlog.md` | **new** — the live items lifted out of `outstanding-work.md`: the three EPDs (**cited, never restated**), the open measurements, the loose ends. Every item keeps the column that makes the survey worth more than a to-do list: **why it is parked, and why the question may be weaker than it looks** |
@@ -267,8 +289,12 @@ The first version of this plan placed every file under `docs/` except itself. Na
 | File | Destination |
 |---|---|
 | `docs/epd/EPD-004-documentation-structure.md` | **stays** in `docs/epd/`, per Tier 4. An EPD keeps its number and its home whatever is decided about it |
-| `docs/docs-restructure-plan.md` | `docs/milestone-1-core/docs-restructure-plan.md`, as the last step of commit 14 |
-| `docs/handoff-docs-restructure.md` | **deleted** in commit 14. It is the temporary handoff for this branch; its content becomes the "Where we stopped" section of `docs/status.md` in commit 12. Leaving it would create the second "where are we" document that the fork 2 decision exists to prevent |
+| `docs/docs-restructure-plan.md` | `docs/milestone-1-core/docs-restructure-plan.md`, as a step of **commit 15** (was commit 14) |
+| `docs/handoff-docs-restructure.md` | **deleted** in **commit 15** (was commit 14). It is the temporary handoff for this branch; its content becomes the "Where we stopped" section of `docs/status.md` in commit 12. Leaving it would create the second "where are we" document that the fork 2 decision exists to prevent |
+
+**Both moved from 14 to 15 on 2026-08-16, and the reason is the new commit's subject.** Commit 15
+writes the closing playbook *from what this restructure actually cost*, and this plan and that handoff
+are its two sources. They retire after it has been written, not before.
 
 The plan is process material, and this restructure is Milestone 1's closing act rather than
 Milestone 2's opening one — it exists because Milestone 1 ended, and its subject is Milestone 1's
@@ -282,7 +308,7 @@ neither slot. Archiving it beside `implementation-plan.md` is the closest availa
 
 ## Commit order
 
-Fourteen commits. The principle: **no commit both moves a file and edits it**, so rename detection
+**Fifteen commits**, raised from fourteen on 2026-08-16. The principle: **no commit both moves a file and edits it**, so rename detection
 survives (breakage 7), and any single step can be reverted without unpicking the rest. Each of the
 move commits below pairs its move with an edit to a *different* file — `.gitignore`, never the moved
 file itself — which is what keeps the principle true rather than merely stated.
@@ -292,17 +318,24 @@ file itself — which is what keeps the principle true rather than merely stated
 | 1 | `EPD-004` + this plan | Already on the branch. The decision record precedes the work |
 | 2 | Write `reference/backend-lmstudio.md`, extracting the parity table out of `phase-4-notes.md` | **The gate**, and it is an *extraction* — see below |
 | 3 | Write `reference/measurements.md` and `reference/lessons.md` | The highest-value output of the proposal, and worth having whatever is decided about the rest |
-| 4 | Write `docs/README.md`, the manual | **Before any file moves.** It states the rules the moves follow, so every later commit is checkable against it rather than against an argument in an EPD |
+| 4 | Write `docs/README.md`, the manual — including the phase template, the branch convention, the two migrated memory conventions, the permission-file split, and the **opening** playbook | **Before any file moves.** It states the rules the moves follow, so every later commit is checkable against it rather than against an argument in an EPD. The opening playbook can be written now because Milestone 1's opening already happened and is in the archive to be mined; the closing one cannot (commit 15) |
 | 5 | Create the remaining tier directories with their `README.md` index files | Gives every later move a destination that already explains itself |
-| 6 | Assemble `reference/architecture.md`, `design-decisions.md` and `observability.md` from `CLAUDE.md` | Content composition, no moves. `CLAUDE.md` is not yet cut — text is duplicated for one commit, deliberately |
+| 6 | Assemble `reference/architecture.md`, `design-decisions.md`, `observability.md` and `backend-anthropic.md` from `CLAUDE.md` | Content composition, no moves. `CLAUDE.md` is not yet cut — text is duplicated for one commit, deliberately. `backend-anthropic.md` joins here because it is assembled from `CLAUDE.md` sections like the other three, not extracted like commit 2 |
 | 7 | Move the procedures — tracked contents by `git mv`, the gitignored `runs/` and `needle.json` by plain `mv`, **never the parent directory as a unit** — and update `.gitignore` in the same commit | The ignore rules must never be out of step with the paths, not even for one commit (breakages 3, 4, 8) |
 | 8 | Fix `probe.py` (`ROOT` at `:40`, header paths at `:6,12,26`, usage examples at `:20-23`), `router.yaml:5`, and the moved `README.md` links | Separate from the move, so the move stays a clean rename. `RUNS` and `file: runs/…` need no edit under the instrument rule |
 | 9 | `git mv` the capture to `docs/captures/`, fix `probe.py:43` | Decided: `docs/captures/`. Small and isolated |
 | 10 | `git mv` the milestone archive; update `.gitignore:229` in the same commit; copy the Milestone 1 run transcripts into phase evidence | The `router.log` negation and its path move together (breakage 2) |
-| 11 | Rewrite `CLAUDE.md` — cut the moved sections, insert the pointers and the decisions table of contents | Only now, once every destination exists |
+| 11 | Rewrite `CLAUDE.md` — cut the moved sections, rewrite the survivors as rules, insert the pointers, the decisions table of contents, the branch convention and the four migrated memory rules | Only now, once every destination exists. **Then shrink the six migrated memories to pointers** — a step, not a commit, since those files are outside the repository (see below) |
 | 12 | Write `docs/status.md` and `docs/backlog.md`; archive `outstanding-work.md` | EPD-004's fork 3 decision. Its own commit because it rewrites rather than moves |
 | 13 | Rewrite the 253 cross-references, `README.md`, and `EPD-000`'s graduation convention, two body citations and closing section | The bulk edit, in one reviewable commit. The `EPD-004` index row is **already done** in `51b857b` |
-| 14 | Fix the 11 doc citations in `src/`, `tests/` and `config.yaml`; move this plan into the archive; run `make test` and `make lint` | Code last, so a test failure has one obvious cause |
+| 14 | Fix the 11 doc citations in `src/`, `tests/` and `config.yaml`; run `make test` and `make lint` | Code last, so a test failure has one obvious cause |
+| 15 | Write the **closing** playbook into `docs/README.md` from what this restructure actually cost; move this plan into the archive; delete `handoff-docs-restructure.md` | **New, 2026-08-16.** The playbook is mined from this plan and that handoff, so both retire only after it is written. Writing it earlier would commit an instrument that has never been run |
+
+**The memory step attached to commit 11 is the one part of this plan git cannot verify.** The six
+migrating memories live in `~/.claude/projects/<path-slug>/memory/`, outside the repository, so
+nothing in the working tree changes when they shrink to pointers and the link checker below cannot
+reach them. Three of them cite paths this restructure breaks and one is already stale. They are
+listed in `EPD-004` decision 16 and must be checked by hand.
 
 **Why the gate changed.** The first version of this plan made commit 2 the writing of
 `measurements.md` and `lessons.md`, on the grounds that it would discover whether the durable half
@@ -352,6 +385,25 @@ Green tests prove nothing about documents, so the checks are separate.
 - **Confirm `status.md` holds no work items** and `backlog.md` holds no state. The two files exist
   because mixing them is what made `handoff.md` and `outstanding-work.md` overlap; a backlog item
   that has migrated into the status file is the first sign of that recurring.
+
+Added 2026-08-16, for the material the second round of decisions introduced:
+
+- **Branch equals folder.** Every `milestone-1-core/phase-*` directory name must appear verbatim
+  after `feat/` in `git branch --list 'feat/*'`. Six folders, six branches, no exceptions. This is
+  the only check for decision 15, and reading for it will not catch a one-word slug difference.
+- **The migrated memories.** By hand, since they are outside the repository: each of the six holds a
+  pointer and no duplicated rule, no memory names a path that no longer exists, and
+  `propose-before-implementing` no longer claims commits are opt-in. **`document-decisions-in-separate-docs`
+  was already stale before this work started** — it files EPDs at `docs/EPD-NNN-…` — so finding it
+  correct afterwards is a real check, not a formality.
+- **The `Anthropic model IDs` pointer names its trigger.** This is the one section leaving
+  `CLAUDE.md` against the citation measurement's advice, so its pointer carries the whole risk. It
+  must say *when* to open the file, not that the file exists.
+- **The playbook pointers carry an instruction.** `CLAUDE.md` must tell a session opening or closing
+  a milestone to work *from* the playbook, not merely that one exists — EPD-004 decision 12.
+- **Both playbooks are present and distinguishable**, and the closing one is dated to when it was
+  written rather than to when it was planned. A closing playbook that reads as though written in
+  advance has lost the property it was delayed to gain.
 
 ## Rollback
 

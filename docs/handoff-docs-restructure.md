@@ -5,13 +5,14 @@
 the "Where we stopped" section of `docs/status.md` and **this file is deleted** — it must not become
 a second document answering "where are we", which is the exact failure the restructure is fixing.
 
-Written 2026-08-15. Branch: `docs/milestone-boundary-restructure`. `main` is untouched.
+Written 2026-08-15, extended 2026-08-16. Branch: `docs/milestone-boundary-restructure`. `main` is
+untouched.
 
 ---
 
 ## Where this stands
 
-Three commits, tree clean, nothing moved yet. **All planning is done and decided; execution has not
+Five commits, tree clean, nothing moved yet. **All planning is done and decided; execution has not
 started.**
 
 | Commit | What |
@@ -19,6 +20,8 @@ started.**
 | `51b857b` | `EPD-004` + `docs-restructure-plan.md`, written as a proposal |
 | `9202106` | Repairs after a fresh-context review found six defects, plus the `CLAUDE.md` section measurement |
 | `7da2f1b` | All six forks decided; the manual and the backlog file added |
+| `de4e28a` | This handoff |
+| *(this one)* | The 2026-08-16 round — nine further decisions, two of them revising decisions already taken |
 
 The two planning documents:
 
@@ -26,7 +29,7 @@ The two planning documents:
   the measurements, the decisions with the reasoning each one overrode or confirmed, and the original
   forks kept as written so the decisions stay checkable.
 - **`docs/docs-restructure-plan.md`** — the migration. Scale, **eight** silent breakages, file-by-file
-  mapping, **fourteen** commits, verification, rollback.
+  mapping, **fifteen** commits, verification, rollback.
 
 **The next action is commit 2 of the plan: write `docs/reference/backend-lmstudio.md`, extracting the
 parity table out of `phase-4-notes.md`.** That is the gate — if the table cannot be lifted without
@@ -45,8 +48,29 @@ from one file than from twenty-two.
 | 4 | The capture | **`docs/captures/`** |
 | 5 | Numbering | **No prefixes** on reference docs; order lives in `reference/README.md` |
 | 6 | `Design decisions` | **Moves out whole** into `reference/design-decisions.md`; a titles-only table of contents stays in `CLAUDE.md` |
-| 7 | Size of `reference/` | **Six files**, with a 40-line growth rule for the rest |
+| 7 | Size of `reference/` | ~~Six files~~ → **seven**, see #9 below. A 40-line growth rule for the rest |
 | 8 | A manual | **`docs/README.md`**, written before any file moves |
+
+### The second round, 2026-08-16
+
+From a discussion that started with *what is `CLAUDE.md` for* and ran into the memory store, the
+permission allowlist, branch naming, and how a milestone is opened and closed. Full reasoning in
+`EPD-004` under "Decisions taken, 2026-08-16".
+
+| # | Question | Decision |
+|---|---|---|
+| 9 | A file per backend? | **Yes — `backend-anthropic.md`**, making the reference tier seven files. Revises fork 6. `request-shape.md` stays deferred, so `proxy.py:3` still needs no edit |
+| 10 | `Anthropic model IDs` | **Leaves `CLAUDE.md`** into `backend-anthropic.md`. **Revises the triage table**, which said it must stay because it is silently used. The pointer must name the trigger |
+| 11 | A review phase | **Yes, closing every milestone**, specified as *measurement, not removal*. Phase 6 was the first instance. Refusals count as outcomes; a new check asks whether each phase completed the task list it published |
+| 12 | Playbooks | **Both in `docs/README.md`.** Opening written now from Milestone 1's archive; closing written **after this restructure lands**, from what it cost. `CLAUDE.md` points at both with an instruction, not an address |
+| 13 | Phase template | `plan.md`, `notes.md`, `evidence/` + its README, a "Verified by" line, and whether the notes were written while measuring. **One implementation plan per milestone** — which closes the `EPD-000:31` gap |
+| 14 | Branch naming | `feat/phase-N-<slug>`, `docs/`, `fix/`, `chore/`. **No planning suffix** — the plan opens the phase branch. `status.md` lists only in-flight branches; the phase note holds the permanent record |
+| 15 | Phase slugs | **Folders follow branch names.** Three change: `phase-3-failure-handling`, `phase-5-config-and-timeouts`, `phase-6-review-and-cleanup` |
+| 16 | The memory store | **Six of nine migrate into the repo**, shrinking to pointers. Three cite paths this restructure breaks; one is already stale |
+| 17 | The permission allowlist | **Split** — a tracked `.claude/settings.json` policy, the untracked local file for machine accretions |
+
+One behavioural change worth carrying: **commits no longer need a separate ask** (#16). The rest of
+`propose-before-implementing` stands — a design answer is still not a build order.
 
 ---
 
@@ -145,13 +169,18 @@ pointing *out* of `CLAUDE.md` into `docs/`, found by grepping `docs/` — a grep
 cannot find the three citations pointing *into* `CLAUDE.md` by section title. Searching for what
 moves will not find what gets cut.
 
-**Two things are still open and are not blockers:**
+**Nothing is open and nothing is waiting on the owner.**
 
-- **Milestone 2's implementation plan has no home named.** `EPD-000:31` points at
-  `implementation-plan.md`, which is archived. Proposed convention: one plan per milestone, inside
-  that milestone's folder, recorded in `docs/README.md`. Not decided.
-- **The original five questions from before the decisions are all answered.** Nothing else is
-  waiting on the owner.
+- ~~**Milestone 2's implementation plan has no home named.**~~ **Closed 2026-08-16 by decision 13:**
+  one implementation plan per milestone, inside that milestone's folder, recorded in
+  `docs/README.md`. `EPD-000:31` is edited in commit 13.
+- **The original five questions from before the decisions are all answered**, and so are the nine
+  from the second round.
+
+**One thing the second round added that has no home yet, and it is deliberate.** The *closing*
+playbook cannot be written until this restructure lands, because it is written from what the
+restructure actually cost. Until commit 15 exists, that procedure lives nowhere — which is correct,
+and is not the same as being forgotten.
 
 **Do not start executing from the numbers alone.** The plan's commit order exists because two of its
 breakages have already fired once in this repository, and one of them silently un-tracks a committed

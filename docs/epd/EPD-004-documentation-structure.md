@@ -1,9 +1,18 @@
 # EPD-004 — Documentation structure at the milestone boundary
 
-**Status: decided 2026-08-15 by the repository owner. Nothing has been moved yet.** Written the same
-day as a proposal; all six forks were answered, and the outcomes are recorded under "Decisions
-taken" below, each beside the reasoning it overrode or confirmed. The mechanical half — which file
-goes where, and everything that breaks when it does — is in `docs/docs-restructure-plan.md`.
+**Status: decided 2026-08-15 by the repository owner, extended 2026-08-16. Nothing has been moved
+yet.** Written the same day as a proposal; all six forks were answered, and the outcomes are
+recorded under "Decisions taken" below, each beside the reasoning it overrode or confirmed. The
+mechanical half — which file goes where, and everything that breaks when it does — is in
+`docs/docs-restructure-plan.md`.
+
+**A second round of decisions was taken on 2026-08-16**, from a discussion that ranged well past this
+document's original subject — into the session memory store, the permission allowlist, branch naming,
+and how a milestone is opened and closed. Two of them **revise decisions recorded here as taken**:
+the reference tier grows to seven files, and `Anthropic model IDs` now leaves `CLAUDE.md` rather than
+staying. Both are corrected in place above and recorded under "Decisions taken, 2026-08-16", in the
+same visible style this document already uses for its own errors. **A decided document that quietly
+changes its decisions is worth less than one that shows where it moved.**
 
 **Where this decision graduates to.** `EPD-000` says a decided EPD graduates into `CLAUDE.md` under
 "Design decisions". This one does not: its subject is how the documents are organised, so it
@@ -107,6 +116,7 @@ docs/
     design-decisions.md      the whole decisions section, statements and reasoning together
     observability.md         the CSV columns and the recorder's constraints
     backend-lmstudio.md      the measured parity table, context and window facts
+    backend-anthropic.md     model IDs and the rejections, OAuth forwarding, the 429 shape
     measurements.md          every number the docs quote, with its date and its slice
     lessons.md               how this project has been wrong, and what caught it
   procedures/                re-runnable. How to check something again
@@ -125,19 +135,23 @@ docs/
     implementation-plan.md
     outstanding-work.md      the survey, archived; its live items became backlog.md
     docs-restructure-plan.md
-    phase-1-proxy/           notes.md, evidence/
-    phase-2-observability/   notes.md, evidence/
-    phase-3-error-handling/  notes.md, evidence/
-    phase-4-lmstudio-parity/ notes.md, plan.md, evidence/
-    phase-5-credentials-and-timeout/
-    phase-6-review/
+    phase-1-proxy/                 notes.md, evidence/
+    phase-2-observability/         notes.md, evidence/
+    phase-3-failure-handling/      notes.md, evidence/
+    phase-4-lmstudio-parity/       notes.md, plan.md, evidence/
+    phase-5-config-and-timeouts/
+    phase-6-review-and-cleanup/    every slug matches its branch (decision 15)
 ```
 
 **Deferred, each with its reason** (decision 7): `configuration.md` — its material is credential
 modes, which are a design decision, and timeouts, which belong to `backend-lmstudio.md`; it has no
-source of its own. `backend-anthropic.md` and `request-shape.md` — 13 and 12 lines respectively,
-starting as sections of `architecture.md`. Each becomes a file when it has a nameable trigger *and*
-passes roughly 40 lines.
+source of its own. `request-shape.md` — 12 lines, starting as a section of `architecture.md`, and
+kept there deliberately, because that is what keeps `proxy.py:3` needing no edit at all. Each becomes
+a file when it has a nameable trigger *and* passes roughly 40 lines.
+
+**`backend-anthropic.md` was on that list until 2026-08-16 and is now a file** — see the fork 6
+revision below. At 13 lines it still fails the size test; the 40-line rule did not decide it and
+symmetry did.
 
 `milestone-2-*/` is created when Milestone 2 starts, with the same internal shape. That repetition is
 the point: the archive layout is a template, so the second milestone costs no design.
@@ -201,6 +215,10 @@ So the measurement splits `CLAUDE.md` in a way the original triage did not:
   are the sections a pointer genuinely replaces.
 - **Silently-used sections** — Layout and commands, Anthropic model IDs. Zero citations, constant
   use, and no link can be followed by someone who does not know they need it. **These must stay.**
+  *Half of this was overridden on 2026-08-16: `Anthropic model IDs` leaves after all, because it also
+  has a natural home in `backend-anthropic.md` and keeping both copies is worse than the risk of the
+  pointer being missed. `Layout and commands` stays, and the argument still holds for it — it has no
+  destination that would want it.*
 - **Genuinely inert** — Status, at 59 lines the single largest section in the file, with **zero**
   citations in six phases. Stack decisions and Style, 12 lines, likewise.
 
@@ -239,12 +257,32 @@ moves, with a pointer that names the trigger.**
 | Design decisions | 179–236 | **8** | **Leaves whole** (decision on fork 5). All 58 lines become `reference/design-decisions.md`, statements and reasoning together, readable front to back. `CLAUDE.md` keeps a **titles-only table of contents** plus "read the file before reversing any of these" — an index, not a summary, so there is nothing to drift. Repoint `proxy.py:238` |
 | Open proposals — the EPDs | 237–250 | 0 | **Stays**, cut to the table plus "do not build from one" |
 | Observability: log + CSV stats | 251–312 | 4 | **Leaves** to `reference/observability.md`. A pointer stays, triggered on "touching the recorder". Repoint `stats.py:3` |
-| Anthropic model IDs | 313–325 | 0 | **Stays** — silently used. Short, and getting it wrong produces a 400 |
+| Anthropic model IDs | 313–325 | 0 | **Leaves** to `reference/backend-anthropic.md`, decided 2026-08-16. **This document said "Stays"**, on the silently-used argument below. Overridden: the alternative was the same table in two files, and a duplicated fact is the failure this restructure exists to prevent. Mitigated by a pointer naming the trigger — *before naming an Anthropic model, read this file* — which turns a silently-used section into a cited one |
 | Stack decisions, Style | 326–337 | 0 | **Stays.** 12 lines; not worth a link |
 
 Target: roughly 100 lines — about 80 of surviving sections, plus a three-line status summary, a
 four-line architecture summary, two pointers, and the twelve-line table of contents for the
 decisions.
+
+**Revised 2026-08-16, and the revision is about what that number *is*.** The target is a **result,
+not a budget**. Every line earns its place by passing the admission test below, and the length is
+whatever that leaves. Stated as a budget, it invites the next session to trim a load-bearing line to
+reach a round number.
+
+**The admission test, which this document had been applying without stating:** *if this were missing,
+would a session do something wrong without knowing to look it up?* **Yes** — it stays. **It would
+only be slower** — a pointer. **Neither** — it leaves with nothing left behind.
+
+That test is also what the citation measurement above cannot see, and why `Layout and commands`
+survives scoring zero: the ruff pin prevents a confident wrong action, and its success is silent.
+Nothing cites it and nothing ever will.
+
+Three things now push the length the other way and are accepted — the branch convention, the two
+milestone playbook pointers, and four rules migrating in from the session memory store (decisions 14,
+12 and 16). `Anthropic model IDs` leaving offsets part of it. And the surviving sections are to be
+rewritten **as rules rather than as history**: the ruff pin currently spends five paragraphs of
+narrative to state one rule and one trap, which in an auto-loaded file is four paragraphs of rent.
+The narrative is not lost — it is `reference/lessons.md` material.
 
 The risk to state plainly is that this trades **certainty** for **size** — today every fact is
 guaranteed present; afterwards some facts depend on a pointer being followed. The measurement locates
@@ -362,12 +400,28 @@ So `status.md` has three parts, most volatile first:
 passes ~30 lines, or if it starts carrying material that outlives the session that wrote it, it has
 become a document and should be given its own file. Until then it is a section.
 
-### Decision on fork 6 — the reference tier starts at six files
+### Decision on fork 6 — six files, revised on 2026-08-16 to seven
 
 **Revised from "five" after measuring the source material**, and revised again by fork 5, which puts
 `design-decisions.md` back. The five that pass both tests plus `design-decisions.md`:
 `architecture.md`, `design-decisions.md`, `observability.md`, `backend-lmstudio.md`,
 `measurements.md`, `lessons.md`.
+
+**Revised again on 2026-08-16 to seven, adding `backend-anthropic.md`.** The two tests below did not
+decide it — at 13 lines it fails the size test exactly as this section says. **Symmetry decided it,
+and the argument is this document's own, turned around.** The reasoning that follows warns that too
+many files create ambiguous filing decisions. But a tier holding `backend-lmstudio.md` and *not*
+`backend-anthropic.md` creates precisely such an ambiguity for the next backend — does Anthropic
+material live in `architecture.md` or in a backend file? — and both answers are defensible, which is
+this section's own definition of the expensive mistake. **Here the asymmetry is what costs, not the
+extra file.**
+
+Starting thin is safe for a reason this section already gives: a thin file is only bad when nobody
+knows to open it, and its neighbour solves that completely.
+
+What tips it is the planned expansion. `Goal` names four more cloud backends and eight more
+harnesses. A convention invented at the third backend is a convention invented differently by
+whoever gets there first.
 
 **The two tests a reference file must pass.** A **nameable trigger** — a moment you would open *it*
 and not its neighbour — and **enough content that grep would not find the fact faster inside a bigger
@@ -407,11 +461,283 @@ in it, how to decide when a thing is ambiguous, the naming and numbering convent
 rule, and how to open a new milestone. It is the entry point to `docs/`, and it is the durable form
 of this EPD.
 
+**Widened on 2026-08-16.** It also carries the phase template, the branch convention, both milestone
+playbooks, and two conventions migrating in from the session memory store — decisions 12, 13, 14 and
+16 below. That is considerably more than this section scoped, and it creates a risk named there: **a
+procedure used twice a year must not bury the filing rules read every week.** The mitigation is
+placement plus this document's own growth rule — playbooks last, and out to
+`docs/procedures/closing-a-milestone.md` if one passes 40 lines.
+
 The test it must pass: **somebody who has never read `EPD-004` can file a new document correctly
 using only `docs/README.md`.** If they must consult the archive, the manual has failed.
 
 `reference/README.md` and `procedures/README.md` stay as they are — indexes of their own tier,
 setting reading order. The manual governs; the indexes list.
+
+## Decisions taken, 2026-08-16
+
+A second round, from a discussion that began with *what is `CLAUDE.md` for* and ran through the
+session memory store, the permission allowlist, branch naming, and how a milestone is opened and
+closed. Decisions 9 and 10 revise decisions above and are corrected there in place; the rest are new
+and were never in this document's scope.
+
+**Why they are recorded here rather than in a new EPD.** All of them answer the same question this
+document asks — *where does a durable fact live* — and splitting them across two documents would mean
+the next reader has to find both. That is precisely the failure this document exists to prevent.
+
+### 9 — `backend-anthropic.md` becomes the seventh reference file
+
+Recorded under fork 6 above. `request-shape.md` stays deferred, which is what keeps `proxy.py:3`
+needing no edit.
+
+**The boundary between the two files, since the split is only worth making if it is stateable:**
+
+| File | Answers |
+|---|---|
+| `architecture.md` | *How does a request flow, and why does this router exist* — the one-`ANTHROPIC_BASE_URL` problem, the prefix rule, the request path, the catch-all, and what the router deliberately does not do |
+| `backend-<name>.md` | *What does this endpoint actually do* — measured behaviour, credential mode, timeout, quirks |
+
+**And one thing `architecture.md` must now say that is written down nowhere today:** "dispatch, not
+translation" holds *because both sides speak `/v1/messages`*. OpenAI and Gemini do not. Where that
+premise stops is genuinely architectural, and it belongs in the architecture file rather than being
+rediscovered by whoever adds the third backend.
+
+### 10 — `Anthropic model IDs` leaves `CLAUDE.md`
+
+Recorded in the triage table above, overriding this document's own "silently used, must stay"
+finding. The replacement pointer must name the trigger, not the file.
+
+**The residual risk, stated plainly because the measurement argued the other way:** that section
+scores zero citations *because* it is a lookup table, and a pointer only helps a session that knows
+it needs one. If a wrong model ID and its 400 ever appear, this decision is the first suspect.
+
+### 11 — a review phase closes every milestone
+
+Milestone 1 already ran one without knowing it was a template: **Phase 6**, on branch
+`feat/phase-6-review-and-cleanup`, the only phase whose subject was the project rather than a
+capability. It found one real defect (the SSE scan cap counting a whole chunk instead of one line),
+one documentation defect that mattered (the 26× gap quoted without its slice), and one dependency
+defect (`pydantic` and `starlette` imported directly and declared nowhere for five phases).
+
+**It is specified as measurement, not as removal, and that is the whole design.** A phase chartered
+to "find and cut bloat" has a built-in success condition and cannot comfortably return *there was
+none*. Phase 6 is this repository's own counter-example: its plan asserted the source's 58% comment
+density was redundant, a five-minute measurement put the docstrings' overlap with `CLAUDE.md` at a
+mean **2.8%**, and the cut was refused. So each suspected defect is written as a claim, paired with
+the measurement that would refute it, measured, and only then decided.
+
+**Refusals are recorded as first-class outcomes.** Phase 6's two — not adopting `ty`, keeping the
+comment density — are worth more than most of its fixes, because they stop the same cut being
+re-proposed every milestone by the next person reading the same surface signal.
+
+The checklist, derived from what Phase 6 did rather than invented:
+
+| Check | Phase 6's result |
+|---|---|
+| Re-derive every quoted measurement from the frozen artefacts | 15 of 16 reproduced to the digit |
+| Read all source and tests | 1713 + 2220 lines |
+| Drive the software live | done, against local stubs |
+| Reachability — dead code, unused imports, unreachable branches | none found |
+| Declared dependencies against actual imports | **two undeclared** |
+| The documents against each other, not only against the code | Phase 5's finding: drift across four files |
+| **Did every phase complete the task list it published?** | **never done — new** |
+| Close out the `Branch:` lines (decision 14) | four of six left open |
+| Record refusals | two |
+
+The seventh row is new, and there is precedent pointing straight at it: Phases 3, 4 and 5 each found
+work already built or already misdescribed, and **nobody has ever checked the inverse** — a task
+published as done that was not.
+
+**The review phase and the milestone closing are one phase, in that order.** They were two separate
+efforts in Milestone 1 only because no template existed, and the order is not arbitrary: had the
+closing run first, `reference/measurements.md` would have canonised 26× without its slice, promoting
+a known defect into the durable tier where it is far more expensive to dislodge. **Harvesting facts
+into a permanent home requires first knowing which facts are true.**
+
+Scale it. This is proportionate to a six-phase milestone; for a two-phase one the questions stay and
+the depth follows what was actually touched. *Reviewed, nothing found, here is the evidence* is a
+legitimate one-day outcome — a phase that must produce findings will manufacture them.
+
+### 12 — both milestone playbooks live in `docs/README.md`
+
+**Closing:** freeze the plan and phase notes → write `milestone-N/README.md` → harvest durable facts
+into `reference/` → process lessons into `lessons.md` → numbers into `measurements.md` → live items
+into `backlog.md` → reset `status.md`.
+
+**Opening:** name the falsifiable central claim and the non-goals → run the cheapest experiment that
+could refute it → capture real inputs before specifying anything → spikes for whatever the
+architecture depends on, filed straight into `procedures/` or `captures/` → interview via EPD forks
+and settle the expensive-to-reverse questions → write the spec with confidence markers → write
+`implementation-plan.md` → open the folder and the branch.
+
+Both are mined from Milestone 1 rather than invented. Three things in them are load-bearing:
+
+**Capture the real input before specifying.** The highest-leverage thing Milestone 1 did at the front
+was capture 118 KB of actual request bytes on 2026-07-28. It produced three body fields nobody
+anticipated — `context_management`, `output_config`, `metadata.user_id` — and `CLAUDE.md` records the
+consequence: a full-body Pydantic model *"would have silently dropped all three"*. The capture did
+not inform the architecture, it **changed** it. Everything else in the opening was reasoning; this
+was the only step able to contradict the reasoning.
+
+**Plan at decreasing resolution, because four of six phases found their own plan wrong on contact.**
+Phase 3 found four of five items already built, Phase 4 a third already measured, Phase 5 work
+already misdescribed, Phase 6 its own premise refuted. So: the next phase in full, the one after in
+outline, the rest as a title and the question it exists to close. And **a phase's first act is to
+re-derive its own plan** against what is now known — Phase 4 did exactly that and deleted a step and
+a probe.
+
+**Mark every spec statement measured / inferred / assumed, and give each assumption the cheap check
+that would settle it.** `CLAUDE.md` was Milestone 1's spec and Phase 6 found it almost entirely
+right — but its errors are patterned: reliable where it recorded measurements, unreliable where it
+recorded predictions, with both in the same prose. *"Almost certainly unsupported by LM Studio"* was
+wrong, and `phase-4-notes.md` says it was wrong when written. Several such predictions were an hour's
+work to test and stood for five phases.
+
+**The two playbooks are written at different times, deliberately.** The **opening** playbook is
+written now, because Milestone 1's opening already happened and sits in the archive to be mined. The
+**closing** playbook is written *after this restructure lands, from what it actually cost* — writing
+it now would commit an instrument that has never been run, in a repository whose most reliable lesson
+is that plans are wrong on contact.
+
+**`CLAUDE.md` must point at both, and the pointer carries an instruction rather than an address.** A
+session opening or closing a milestone is to read the playbook and work from it rather than
+improvise. This is called out separately from the ordinary pointers because it is the one case where
+a missed pointer costs a whole milestone's worth of harvest.
+
+### 13 — the phase template
+
+`phase-N-<slug>/` holds `plan.md`, `notes.md` and `evidence/`.
+
+- **`evidence/` gets a `README.md`** — what produced it, what it proves, what was redacted and how,
+  and whether it can be regenerated. Practised throughout Milestone 1 and never written down; without
+  it a frozen artefact is unreadable three milestones later.
+- **`notes.md` carries a "Verified by" line** — what was run, when, what it produced. Every Milestone
+  1 phase was signed off by driving the real thing, and that definition of done lived only in a
+  session memory (decision 16).
+- **`notes.md` states whether it was written while measuring or afterwards.** Phases 3 and 4 say so;
+  Phase 2 says it did not. It changes how far a reader should trust the narrative, and this
+  repository cares more than most about that distinction.
+- **Milestone-root files are for work spanning phases** — the milestone's `implementation-plan.md`,
+  and documents like `docs-restructure-plan.md` that belong to no single phase.
+
+**One implementation plan per milestone, inside that milestone's folder.** This closes the gap left
+open under "One EPD-000 convention this changes": `EPD-000:31` names `docs/implementation-plan.md` as
+the home of the phases, and that file is being archived with no successor named.
+
+### 14 — branch naming, and where branches are recorded
+
+The convention already exists in the history and was never written down. Both prefixes are
+established — `docs/add-claude-md` and `docs/epd-index-and-corpus-proposal` predate this branch, and
+the latter was merged `--no-ff` as `acb399f`.
+
+| Prefix | For |
+|---|---|
+| `feat/phase-N-<slug>` | a numbered phase; the slug matches its archive folder exactly (decision 15) |
+| `docs/<slug>` | documentation work belonging to no phase — EPDs, a milestone's opening |
+| `fix/<slug>` | a defect outside a phase |
+| `chore/<slug>` | tooling, dependencies, formatter bumps (`d1def4f` is the precedent) |
+
+**No suffix for planning work, because the prefix already carries it.** Measured: each phase plan's
+creating commit is contained by that phase's own branch and nothing earlier — `7f68d02` on
+`feat/phase-4-lmstudio-parity`, `4f7856a` on `feat/phase-5-config-and-timeouts`, `8f4a46c` on
+`feat/phase-6-review-and-cleanup`. **The plan opens the phase branch**, so plan and execution share
+one branch and one merge commit, which is what keeps one archive folder mapping to one branch. A
+separate planning branch would give a single phase two merge commits. Planning that produces no code
+goes on `docs/<slug>` — `EPD-003` was born on `docs/epd-index-and-corpus-proposal`.
+
+The same rule settles whether a milestone's opening is a phase. It produces documents and instruments
+and changes nothing in `src/`, so it is a `docs/` branch. The review phase does touch `src/` — Phase
+6 fixed seven items there — so it is a numbered `feat/` phase. **One rule, opposite answers, no new
+convention.**
+
+**Work belonging to a later phase never goes on an earlier phase's branch, even documentation.** Two
+spec commits were moved off the Phase 1 branch for exactly this reason. One consequence: a
+`feat/phase-N+1-…` branch may sit holding only an unapproved plan, and if the plan is rejected the
+branch is **deleted, not renamed**.
+
+**Where branches are recorded**, following the one-home rule:
+
+- **`status.md` carries only in-flight branches** — name, purpose, tree state, next action. That is
+  what `handoff-docs-restructure.md` already does, generalised. Merged branches are not listed: git
+  already holds that, and a hand-maintained list would drift.
+- **The phase note carries the permanent record** — branch, fork point, and merge commit.
+
+The second half needs repair, not merely recording. `Branch:` lines exist in five of six phases, in
+inconsistent places (Phase 4 in both plan and notes, Phase 5 only in the plan, Phases 1 and 6 in
+neither), and **only one records the merge commit**: `phase-4-notes.md:7`, *"Merged with `--no-ff` as
+`50444c5`"*. The other four say "Merge back with `--no-ff`" — written before the merge and never
+closed out. That is this repository's signature failure in miniature, a document recording intent and
+never updated to outcome, and closing them is a review-phase checklist item.
+
+### 15 — the archive's phase slugs follow the branch names
+
+Three of six disagree, and the branches win, because the folders do not exist yet while the branch
+names are fixed in six merge commits and five `Branch:` lines.
+
+| Branch | This document's earlier slug | Now |
+|---|---|---|
+| `feat/phase-3-failure-handling` | `phase-3-error-handling/` | `phase-3-failure-handling/` |
+| `feat/phase-5-config-and-timeouts` | `phase-5-credentials-and-timeout/` | `phase-5-config-and-timeouts/` |
+| `feat/phase-6-review-and-cleanup` | `phase-6-review/` | `phase-6-review-and-cleanup/` |
+
+`phase-1-proxy`, `phase-2-observability` and `phase-4-lmstudio-parity` already agreed.
+
+**The cost is real and worth naming:** `credentials-and-timeout` describes Phase 5 more accurately
+than `config-and-timeouts` does. Accuracy loses to navigability here — *branch name equals folder
+name* is worth more than a better adjective, and it is only free if adopted before the folders exist.
+
+### 16 — the session memory store is folded into the repository
+
+**The finding that forces it:** this restructure exists to give every durable fact one home, and a
+second store of durable facts sits entirely outside it — untracked, machine-local, keyed on an
+absolute path, invisible to git and to any human contributor. Six of its nine entries are project
+conventions rather than facts about this machine, and **three carry paths this restructure breaks**.
+One is already stale, filing EPDs at `docs/EPD-NNN-…` when they have lived in `docs/epd/` since
+`8a10bc3`.
+
+The migration plan's 253-reference count could not have caught any of them, because they are not in
+the repository. And `docs-restructure-plan.md` already says "Merge `--no-ff` **per repository
+convention**" — a committed document depending on a convention that exists only in machine-local
+memory, which would silently not load if the repository were opened by its other path.
+
+**The rule: memory holds what is true about working with an agent on this machine; the repository
+holds what is true about the project.** The test is *would a new human contributor need to know
+this?*
+
+| Memory | Destination |
+|---|---|
+| `propose-before-implementing` | `CLAUDE.md` — the working agreement |
+| `merge-with-no-ff-for-visible-boundaries` | `CLAUDE.md` — already cited as a repository convention |
+| `exercise-it-before-committing` | rule to `CLAUDE.md`; the Phase 2 and 3 evidence to `lessons.md` |
+| `check-prior-evidence-before-planning-a-rerun` | rule to `CLAUDE.md`; evidence to `lessons.md` |
+| `document-decisions-in-separate-docs` | `docs/README.md` — it *is* the manual, written before the manual existed |
+| `redact-to-stable-placeholders` | `docs/README.md` — the evidence-filing convention |
+| `keep-bash-commands-statically-analyzable` | **stays** — about the harness, not the router |
+| `git-merge-cannot-read-message-from-stdin` | **stays** — a tool quirk |
+
+**Move, do not copy.** Each migrated memory shrinks to a pointer at its new home. A memory duplicated
+into the repository is exactly the drift this exercise fights.
+
+One clause is corrected during the move rather than carried across. `propose-before-implementing`
+ends *"Commits are also opt-in — they ask for each one"*, which the permission allowlist has
+contradicted for some time. **Resolved 2026-08-16 in the allowlist's favour: commits do not need a
+separate ask.** The rest of that memory is untouched — a design answer is still not a build order.
+
+### 17 — the permission allowlist is split, tracked from local
+
+Outside this branch's scope, decided in the same discussion, and recorded here because nothing in
+`docs/` currently admits the file exists.
+
+`.claude/settings.local.json` holds 51 entries, git-ignored, accreted by clicking *allow*. Roughly a
+dozen are single-use fossils — a literal PID, three separate `/tmp` scratch files, two full `curl`
+lines with a fixed port. Several are much broader than the fossils suggest: `Bash(curl *)` is
+arbitrary outbound network, `Bash(python3 *)` and `Bash(uv run *)` arbitrary execution.
+
+**Split it the way the documents are split.** A tracked `.claude/settings.json` holds the durable
+project policy — it encodes that `make test` is the test command and that ruff is pinned, which is
+project knowledge and belongs to the project rather than to one laptop. The untracked local file
+keeps machine-specific accretions and is pruned periodically. `docs/README.md` names the split in one
+line so it is not re-litigated.
 
 ## The original forks, as written before the decisions
 
@@ -486,11 +812,10 @@ Two further `EPD-000` edits fall out of the same decision:
   router. `EPD-000` should say that a decided EPD graduates into *the durable document that owns its
   subject*, and name the two that exist.
 - **`EPD-000:31`** names `docs/implementation-plan.md` as the home of the phases. That file is
-  archived into `milestone-1-core/`, and **nothing is named as Milestone 2's successor.**
-  `status.md` takes over `handoff.md`'s role, not the plan's. **This gap is still open** and belongs
-  to whoever writes Milestone 2's plan; `docs/README.md` should record the convention — one
-  implementation plan per milestone, inside that milestone's folder — so the answer is not invented
-  twice.
+  archived into `milestone-1-core/`, and nothing was named as Milestone 2's successor. `status.md`
+  takes over `handoff.md`'s role, not the plan's. **Closed on 2026-08-16 by decision 13: one
+  implementation plan per milestone, inside that milestone's folder**, recorded in `docs/README.md`
+  so the answer is not invented twice.
 
 ## What this does not propose
 
@@ -502,6 +827,11 @@ Two further `EPD-000` edits fall out of the same decision:
   omitted `outstanding-work.md`, eleven lines after calling it "the one item in this proposal that
   rewrites a document rather than moving it". If a fact changes during this work, that is a defect
   in the work.
+
+  **Amended 2026-08-16:** `CLAUDE.md` now also *gains* material — the branch convention, the two
+  playbook pointers, and four rules migrating in from the session memory store — where this document
+  had only ever described it losing sections. None of that is newly invented: every rule is written
+  down somewhere already, and three of the four memory rules are older than this document.
 - **No deletion.** Nothing is dropped, including the marginalia. The archive is where a thing goes
   to stop being in the way, not to stop existing.
 - **No change to `src/`, `tests/` or behaviour**, beyond updating the 11 doc citations in docstrings
