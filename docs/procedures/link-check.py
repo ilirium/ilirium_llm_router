@@ -1,4 +1,4 @@
-"""Reports every path in the documentation that no longer resolves.
+"""Reports every path in the documentation that no longer resolves, or resolves the long way round.
 
 Nothing tests a link. This repository's documents cite each other constantly — a reference file names
 the procedure that established it, a phase note names its evidence, a docstring names the measurement
@@ -18,7 +18,18 @@ Usage, from anywhere:
     python3 docs/procedures/link-check.py docs/reference    # one tier
     python3 docs/procedures/link-check.py CLAUDE.md
 
-Exits 1 if anything is broken, so it can gate a commit.
+Exits 1 if anything is broken **or roundabout**, so it can gate a commit.
+
+## Two kinds of finding
+
+**Broken** — the path does not resolve at all. **Roundabout** — it resolves, and a shorter relative
+form of the same target exists. The second was added 2026-08-16 after the archive repoint produced
+two paths that were valid and absurd: a file inside `milestone-1-core/` addressing its own sibling by
+going out to `docs/` and back, and a phase plan naming the file beside it by full path. Neither was
+broken, so nothing caught them but a human reading the diff.
+
+It reports zero on the tree it was written against, which is the property that makes it worth
+having — it is silent until something is actually wrong.
 
 ## What it deliberately ignores, and why
 
@@ -67,6 +78,7 @@ this script is measuring was still in flight.
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
@@ -136,19 +148,53 @@ def resolves(candidate: str, from_file: Path, root: Path) -> bool:
     return not candidate.startswith(("./", "../", "/")) and (root / candidate).exists()
 
 
+def roundabout(candidate: str, from_file: Path) -> str | None:
+    """The shorter relative form of a path that resolves, or None if it is already shortest.
+
+    A path can be valid and still wrong. Repointing the archive produced
+    `../../milestone-1-core/closing-notes.md` in a file that *is* inside `milestone-1-core/` — it
+    resolves, and it says "go out to `docs/` and come back" about the file next door. The same pass
+    gave a phase plan `../phase-4-lmstudio-parity/notes.md`, meaning `notes.md`. Both survived the
+    broken-link check because neither is broken.
+
+    Only paths used as *relative* addresses are compared. `docs/status.md` cited from `docs/README.md`
+    is resolved from the repository root, and rewriting it to `status.md` would be wrong — so the
+    test is whether the path resolves against the citing file's own directory.
+    """
+    target = from_file.parent / candidate
+    if not target.exists():
+        return None  # rooted, or broken; neither is this check's business
+    shortest = os.path.relpath(target.resolve(), from_file.parent.resolve())
+    if candidate.endswith("/") and not shortest.endswith("/"):
+        shortest += "/"
+    return shortest if len(shortest) < len(candidate) else None
+
+
 def check(paths: list[Path], root: Path) -> int:
     files = sorted({p for t in paths for p in ([t] if t.is_file() else t.rglob("*.md"))})
-    broken = 0
+    broken: list[str] = []
+    long_way: list[str] = []
     for f in files:
         for number, line in enumerate(f.read_text().splitlines(), start=1):
             for candidate in sorted(candidates(line)):
                 if not is_addressed(candidate, root):
                     continue
+                where = f"{f.relative_to(root)}:{number}"
                 if not resolves(candidate, f, root):
-                    print(f"{f.relative_to(root)}:{number}  {candidate}")
-                    broken += 1
-    print(f"\n{len(files)} files, {broken} broken", file=sys.stderr)
-    return broken
+                    broken.append(f"{where}  {candidate}")
+                elif (shorter := roundabout(candidate, f)) is not None:
+                    long_way.append(f"{where}  {candidate}  →  {shorter}")
+    for line in broken:
+        print(line)
+    if long_way:
+        print("\nresolves, but the long way round:")
+        for line in long_way:
+            print(line)
+    print(
+        f"\n{len(files)} files, {len(broken)} broken, {len(long_way)} roundabout",
+        file=sys.stderr,
+    )
+    return len(broken) + len(long_way)
 
 
 def main() -> int:

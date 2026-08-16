@@ -1061,7 +1061,57 @@ measuring.
 
 **The convention this decision states**, graduating into `docs/README.md`: **a path is written in
 backticks, and a rename is written with `→`.** The second half is not a style preference — the
-checker depends on it at `link-check.py:88`.
+checker depends on it in `candidates()`.
+
+### Asked again on 2026-08-16, from the other direction: a tool of our own
+
+Not an external checker this time but **a `markdown-file --move` of our own** — one command that
+moves a document and repoints every citation to it. Recorded under the same decision because it is
+the same subject, and splitting it would make the next reader find both halves.
+
+**Rejected, and the reason is a measurement the first half of this decision could not have made.**
+Commit 13 of the migration repointed every citation in the repository and produced five defects.
+Scored against the proposed tool:
+
+| Defect | Would the tool have prevented it? |
+|---|---|
+| Two paths valid but absurd — `../../milestone-1-core/…` from *inside* the archive, and a phase plan naming the file beside it by full path | **yes**, if it emits the shortest correct relative form |
+| A mechanical reflow joined `EPD-003`'s seven open questions into one run-on paragraph | maybe — and this is where automation did the most damage |
+| A runnable snippet inside a fence, introduced by *"run from the repository root"*, repointed relative to the citing file | **no** — the fix was to give both forms and say which is which |
+| Six stale `CLAUDE.md` section-title citations | **no** — these are not paths at all |
+| The permanent-hit count reported as three when it was seven | **no** |
+
+**Two of five, and both of those two are catchable far more cheaply.** A rule in the checker —
+*this path resolves, and a shorter relative form of the same target exists* — catches both, and it
+catches them however the bad path arrived: hand-typed, scripted, or moved. **The checker runs on
+every commit; a move tool would run at milestone boundaries.** Same defect class, a tenth of the
+machinery.
+
+Three further arguments, in descending order of how much they should matter:
+
+- **A tool used twice a year is never exercised enough to trust.** `exercise-it-before-committing`
+  applies directly, and this repository keeps proving it — the reflow script that corrupted a list
+  was written and mis-trusted within the same hour. Twenty-two documents moved in this restructure,
+  a milestone-boundary event; the six phases before it moved essentially nothing.
+- **It would have to hold a rule that is dangerous to get wrong.** `docs/README.md` requires that
+  captured output is *never* edited: a stale command line inside an `evidence/*.txt` transcript is
+  correct, because it is what was run that day. A move tool that rewrites a transcript falsifies the
+  record. That is a judgement about what a file *is*, and it is the last thing to put behind a flag.
+- **The mechanical half was never the expensive half.** Rewriting the paths took one throwaway
+  script. Deciding what a path should say took the afternoon.
+
+**The roundabout check was built on 2026-08-16**, at the owner's call, ahead of the rest of the
+backlog item — commit 13 had produced two live instances rather than a hypothetical one. It was
+verified by reintroducing both defects and confirming the checker reports them and exits 1, then
+reverting; it finds **zero** on the tree it was written against, which is the property that makes it
+worth having.
+
+**The wider lesson, since this is the third tooling proposal refused here** (a `$(...)` hook in
+decision 19, external link tooling above, a move tool now): *the automatable part of a problem is
+rarely the part that costs.* Each proposal was aimed at a mechanical step, and in each case the
+expense sat in a judgement the tool could not make. What has actually worked twice is **adding one
+rule to an instrument that already runs**, which is how the four-class filter and this check both
+arrived.
 
 ## The original forks, as written before the decisions
 

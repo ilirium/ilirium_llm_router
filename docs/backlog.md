@@ -84,12 +84,16 @@ then.
 
 **Teach `procedures/link-check.py` the two citation forms it cannot see.** It resolves paths and
 ignores everything else, so two forms this repository depends on go unchecked: **heading anchors**,
-stripped at `link-check.py:93` although `README.md`'s naming table says findings are "linked by
-anchor"; and **`file.py:N` line citations**, skipped by `is_candidate` for containing no `/`.
-*Parked because* both classes were verified by hand and both passed — the 11 code citations in a
-fresh-context review, the six section titles at commit 6 of the restructure — so this buys
-repeatability rather than fixing a known defect, and the population is small enough to check by hand
-again. From `EPD-004` decision 21, where the gap surfaced while rejecting a larger proposal.
+stripped in `candidates()` although `README.md`'s naming table says findings are "linked by anchor";
+and **`file.py:N` line citations**, skipped by `is_candidate` for containing no `/`. *Parked because*
+both classes were verified by hand and both passed — the 11 code citations in a fresh-context review,
+the six section titles at commit 6 of the restructure — so this buys repeatability rather than fixing
+a known defect, and the population is small enough to check by hand again. From `EPD-004`
+decision 21.
+
+> **The third gap in this item is closed.** A roundabout-path check was added on 2026-08-16, ahead of
+> the rest, because commit 13 produced two live instances of the defect rather than a hypothetical
+> one. See decision 21's second half.
 
 **Close out the four `Branch:` lines that record intent instead of outcome.** Five exist across four
 of the six phases, in inconsistent places, and only `phase-4-notes.md:7` records the merge commit.
