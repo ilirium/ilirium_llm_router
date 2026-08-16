@@ -26,14 +26,17 @@ untouched.
 
 ## Where this stands
 
-Eighteen commits, tree clean. **Commits 2 to 10 are done — everything has moved.** `docs/` now has
-its target shape: `reference/`, `procedures/`, `captures/`, `epd/`, `milestone-1-core/`, the manual,
-and the two migration documents that retire at commit 15. Only `status.md` and `backlog.md` are
-missing, and they are commit 12. The gate
-passed, all seven `reference/` files exist, the manual is written, and all three tier indexes are in
-place. Four reference files still duplicate a `CLAUDE.md` section; that is deliberate and ends at
-commit 11. **No citation has been repointed yet**, so a dozen documents and three code files name
-paths that no longer exist — commits 8, 13 and 14.
+20 commits on the branch, tree clean. **Commits 2 to 10 of the plan are done — everything has
+moved.** `docs/` now has its target shape: `reference/`, `procedures/`, `captures/`, `epd/`,
+`milestone-1-core/`, the manual, and the two migration documents that retire at commit 15. Only
+`status.md` and `backlog.md` are missing, and they are commit 12. The gate passed, all seven
+`reference/` files exist, the manual is written, and all three tier indexes are in place.
+
+**What is repointed and what is not.** The live tiers — `reference/`, `procedures/`, `captures/` —
+were repaired in the same commit as each move, so they resolve today. Still stale: `CLAUDE.md`
+(commit 11), the EPDs and the archive's own prose (commit 13), and the doc citations in `src/`,
+`tests/` and `config.yaml` (commit 14). Four reference files also still duplicate a `CLAUDE.md`
+section, which is deliberate and ends at commit 11.
 
 | Commit | What |
 |---|---|
