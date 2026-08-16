@@ -15,9 +15,9 @@ being built and awkward afterwards. They are specified, not written. Everything 
 
 ## Phase 4 addendum, 2026-08-06 — the gate is met; the decision is still not taken
 
-The deferral above names a condition: **how much of a real session a local model can carry.** Phase 4
-answers it, and the answer is *most of it*. Full detail in `../phase-4-notes.md`; the parts that bear
-on this document:
+The deferral above names a condition: **how much of a real session a local model can carry.** Phase
+4 answers it, and the answer is *most of it*. Full detail in
+`../milestone-1-core/phase-4-lmstudio-parity/notes.md`; the parts that bear on this document:
 
 - **Nothing was rejected.** Tool calls, tool results, images, `thinking` blocks, a system-role message
   inside `messages`, and the entire captured 118 KB Claude Code request all work against
@@ -25,9 +25,9 @@ on this document:
 - **A real session already happened.** The Phase 2 step 6 session ran 99 calls against this same model
   — multi-turn, subagents, tool use, file editing — which is why Phase 4 did not run another.
 - **Mixed-model sessions are measured, not hypothetical.** Two client sessions in
-  `../phase-2-step-6-session/calls.csv` reached both backends, and seven rows carry a subagent's
-  `agent_id`. The per-request dispatch this document says already satisfies the subagent requirement
-  does satisfy it.
+  `../milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv` reached both
+  backends, and seven rows carry a subagent's `agent_id`. The per-request dispatch this document
+  says already satisfies the subagent requirement does satisfy it.
 
 So the reason for waiting is discharged. **This does not accept the proposal** — an EPD is accepted
 deliberately, on a stated date, or not at all, and nobody has taken that decision. What has changed is
@@ -64,9 +64,9 @@ and `picker`:
 | Where | What it says | Gap |
 |---|---|---|
 | `README.md:12-14` | "pick up different models in LM Studio"; Claude Code has access to its own models and local ones "simultaneously" | Closest thing to the requirement. It is about *serving*, and "simultaneously" is never pinned down to mean *within one session* |
-| `docs/implementation-plan.md:66-68` | Phase 1 done-when is `claude --model claude-sonnet-5` and `claude --model <some-local-model>` | A launch flag, **one model per session**. Mid-session switching appears nowhere |
+| `../milestone-1-core/implementation-plan.md:66-68` | Phase 1 done-when is `claude --model claude-sonnet-5` and `claude --model <some-local-model>` | A launch flag, **one model per session**. Mid-session switching appears nowhere |
 | everywhere | — | **Subagents are mentioned zero times in the repository** |
-| `docs/implementation-plan.md:237` | a combined model list endpoint is "Not doing yet" | The mechanism that would populate the picker is explicitly out of scope |
+| `../milestone-1-core/implementation-plan.md:237` | a combined model list endpoint is "Not doing yet" | The mechanism that would populate the picker is explicitly out of scope |
 
 So requirement 1 is half-implied and requirement 2 is absent. That is the finding: these are not
 things the current specs promise, and they should be written down as requirements before anything
@@ -146,7 +146,7 @@ Limits that matter:
 `CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1` (Claude Code v2.1.129 or later) makes Claude Code
 query the gateway's `/v1/models` at startup and add what it finds to the picker, each row labelled
 "From gateway". It is off by default. This is the mechanism that would satisfy requirement 1
-properly, and it is the one `docs/implementation-plan.md` currently defers.
+properly, and it is the one `../milestone-1-core/implementation-plan.md` currently defers.
 
 The constraint that shapes the design, quoted verbatim from the source:
 
@@ -186,7 +186,7 @@ the existing rule. The routing rule needs no change.
 What remains is narrower: LM Studio needs **its own** ID in the request body, so anything advertised
 under an `anthropic…` alias must be mapped back before forwarding. That is a body rewrite, and body
 rewriting is the one thing the project has deliberately ruled out — the whole reason for byte relay is
-that prompt caching matches on exact prefix bytes (`CLAUDE.md`, "Design decisions"; the captured
+that prompt caching matches on exact prefix bytes (`../reference/design-decisions.md`; the captured
 request carries `cache_control` on the system blocks).
 
 Worth noting that the `model` field is small, sits in the body, and is *already* peeked at for
@@ -197,10 +197,11 @@ handling local ones with the custom-option variable, for instance). **No option 
 
 ## Two CSV columns — the one part of this that *is* decided
 
-**Accepted into the spec on 2026-07-30**, while the rest of this document stays deferred. `CLAUDE.md`
-now carries `session_id` and `agent_id` in the CSV column table, `docs/implementation-plan.md` carries
-them in the Phase 2 work list, and `stats.py`'s docstring records where they come from. They were
-accepted on the cheapness argument below, not because anything else here was settled.
+**Accepted into the spec on 2026-07-30**, while the rest of this document stays deferred.
+`CLAUDE.md` now carries `session_id` and `agent_id` in the CSV column table,
+`../milestone-1-core/implementation-plan.md` carries them in the Phase 2 work list, and `stats.py`'s
+docstring records where they come from. They were accepted on the cheapness argument below, not
+because anything else here was settled.
 
 Claude Code's gateway contract documents three headers on inference requests:
 
@@ -211,8 +212,8 @@ Claude Code's gateway contract documents three headers on inference requests:
 | `x-claude-code-parent-agent-id` | present only for nested agents |
 
 The session header is not merely documented: it is in this repository's own captured request, which
-is why `docs/handoff.md` records redacting an `X-Claude-Code-Session-Id`. The agent header is documented
-only — the capture predates any subagent use here.
+is why `../milestone-1-core/closing-notes.md` records redacting an `X-Claude-Code-Session-Id`. The
+agent header is documented only — the capture predates any subagent use here.
 
 If requirement 2 matters, the agent header is the *only* way the CSV can attribute a call to a
 subagent rather than the main loop, and without it a mixed-model session collapses into an
@@ -234,7 +235,7 @@ column is unverified against this router.**
 | Claim | Status |
 |---|---|
 | Per-request dispatch routes a mixed-model session correctly | **Measured** in the design sense — Phase 1 ran both backends through the same rule — but never with two models *inside one session* |
-| `x-claude-code-session-id` arrives on real requests | **Measured** — present in `docs/log-the-whole-request.txt` |
+| `x-claude-code-session-id` arrives on real requests | **Measured** — present in `../captures/log-the-whole-request.txt` |
 | `/model <local-id>` is accepted behind a custom base URL | Documented only |
 | Subagent frontmatter accepts a full local model ID and routes there | Documented only |
 | `ANTHROPIC_CUSTOM_MODEL_OPTION` produces a working picker row | Documented only |
@@ -283,6 +284,6 @@ machine:
 - Subagents, the `model` frontmatter field and its resolution order —
   <https://code.claude.com/docs/en/sub-agents>
 
-Local evidence: `routing.py:20-25` for the prefix rule, `docs/log-the-whole-request.txt` for the
-session header, `docs/testing-against-claude-code.md` for the Phase 1 session, and `CLAUDE.md`
-"Design decisions" for byte relay and prompt caching.
+Local evidence: `routing.py:20-25` for the prefix rule, `../captures/log-the-whole-request.txt` for
+the session header, `../procedures/testing-against-claude-code.md` for the Phase 1 session, and
+`../reference/design-decisions.md` for byte relay and prompt caching.

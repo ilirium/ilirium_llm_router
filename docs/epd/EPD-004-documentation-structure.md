@@ -710,8 +710,9 @@ a missed pointer costs a whole milestone's worth of harvest.
   and documents like `docs-restructure-plan.md` that belong to no single phase.
 
 **One implementation plan per milestone, inside that milestone's folder.** This closes the gap left
-open under "One EPD-000 convention this changes": `EPD-000:31` names `docs/implementation-plan.md` as
-the home of the phases, and that file is being archived with no successor named.
+open under "One EPD-000 convention this changes": `EPD-000:31` names
+`../milestone-1-core/implementation-plan.md` as the home of the phases, and that file is being
+archived with no successor named.
 
 ### 14 — branch naming, and where branches are recorded
 
@@ -1134,11 +1135,11 @@ Two further `EPD-000` edits fall out of the same decision:
   rather than into the design decisions, because its subject is the filing system rather than the
   router. `EPD-000` should say that a decided EPD graduates into *the durable document that owns its
   subject*, and name the two that exist.
-- **`EPD-000:31`** names `docs/implementation-plan.md` as the home of the phases. That file is
-  archived into `milestone-1-core/`, and nothing was named as Milestone 2's successor. `status.md`
-  takes over `handoff.md`'s role, not the plan's. **Closed on 2026-08-16 by decision 13: one
-  implementation plan per milestone, inside that milestone's folder**, recorded in `docs/README.md`
-  so the answer is not invented twice.
+- **`EPD-000:31`** names `../milestone-1-core/implementation-plan.md` as the home of the phases.
+  That file is archived into `milestone-1-core/`, and nothing was named as Milestone 2's successor.
+  `status.md` takes over `handoff.md`'s role, not the plan's. **Closed on 2026-08-16 by decision 13:
+  one implementation plan per milestone, inside that milestone's folder**, recorded in
+  `docs/README.md` so the answer is not invented twice.
 
 ## What this does not propose
 
@@ -1198,10 +1199,11 @@ Commits 2 and 3 are cheap and reversible, which is what makes running the gate f
 
 `docs/reference/backend-lmstudio.md` exists, at 228 lines, and states the parity findings without
 referring to Phase 4 as a phase. The four phase names it contains are all in **paths** —
-`../phase-4-notes.md`, `../phase-4-probes/`, `../phase-5-notes.md`,
-`../phase-2-step-6-session/calls.csv` — which is provenance, explicitly not a failure above. The
-conditions travel with the numbers as the slice: the model, the 44544-token window, the two dates,
-and that authentication was off.
+`../milestone-1-core/phase-4-lmstudio-parity/notes.md`, `../procedures/lmstudio-capability-probes/`,
+`../milestone-1-core/phase-5-config-and-timeouts/notes.md`,
+`../milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv` — which is provenance,
+explicitly not a failure above. The conditions travel with the numbers as the slice: the model, the
+44544-token window, the two dates, and that authentication was off.
 
 **What the extraction actually cost, since that is the part worth recording.** The parity table lifted
 verbatim; nothing had to be rewritten to survive the move. The work was **deciding what the file does

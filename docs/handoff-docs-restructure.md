@@ -14,11 +14,12 @@ untouched.
 
 1. **Read this section and "Where this stands" below.** Then `docs/docs-restructure-plan.md` for the
    commit you are on, and `docs/README.md` for the rules every commit is checked against.
-2. **The work is executing a fifteen-commit plan.** Commits 2 to 12 are done. **Commit 13 is next** —
-   the bulk repoint, whose work list is the link checker's own output.
-3. **Run `python3 docs/procedures/link-check.py` before and after anything that moves.** It reports
-   108 hits right now; half are noise by nature and three can never be fixed. Read "What commit 12
-   found" before treating the number as a work list.
+2. **The work is executing a fifteen-commit plan.** Commits 2 to 13 are done. **Commit 14 is
+   next** — the doc citations in `src/`, `tests/` and `config.yaml`, the only commit touching code.
+3. **Run `python3 docs/procedures/link-check.py` before and after anything that moves.** Everything
+   repointable now resolves. What it still reports is **76 hits in the two migration documents**,
+   which name old paths as their subject and retire at commit 15, and **seven that are correct and
+   permanent** — read that script's own docstring under "A clean run is not a zero run".
 4. **`make test` must report 158** before and after. This branch must not touch behaviour.
 5. The sections titled "What commit N found" are the record of what each step actually cost,
    including four places where the plan was wrong. Read the one for the commit before yours.
@@ -27,17 +28,15 @@ untouched.
 
 ## Where this stands
 
-24 commits on the branch, tree clean. **Commits 2 to 12 of the plan are done.** `docs/` has its
+25 commits on the branch, tree clean. **Commits 2 to 13 of the plan are done.** `docs/` has its
 full target shape: `reference/`, `procedures/`, `captures/`, `epd/`, `milestone-1-core/`, the manual,
 `status.md`, `backlog.md`, and the two migration documents that retire at commit 15. `CLAUDE.md` is
-cut and all nine memories are pointers. **Every file that will exist now exists**; commits 13 to 15
-are repair and retirement.
+cut and all nine memories are pointers.
 
-**What is repointed and what is not.** The live tiers — `reference/`, `procedures/`, `captures/` —
-were repaired in the same commit as each move, and `CLAUDE.md` at commit 11, so all of those resolve
-today. Still stale: the EPDs and the archive's own prose (commit 13), and the doc citations in
-`src/`, `tests/` and `config.yaml` (commit 14). The four reference files that duplicated a
-`CLAUDE.md` section no longer do — commit 11 ended that.
+**Every document now resolves.** The live tiers were repaired in the same commit as each move,
+`CLAUDE.md` at commit 11, and the EPDs and the archive's prose at commit 13. **The only stale
+citations left are in code** — `src/`, `tests/` and `config.yaml`, which is commit 14 — plus the two
+migration documents, which are meant to name old paths and are deleted or archived at commit 15.
 
 | Commit | What |
 |---|---|
@@ -63,7 +62,8 @@ today. Still stale: the EPDs and the archive's own prose (commit 13), and the do
 | `60174b0` | Decision 21 — paths stay backticked, no link tool, and the backlog item it exposed |
 | `d515763` | **Commit 11** — `CLAUDE.md` cut 337 → 188, and all nine memories shrunk to pointers |
 | `a778b8b` | What commit 11 cost, and the correction it found in a third file |
-| *(this one)* | **Commit 12** — `status.md` and `backlog.md`, split out of the archived survey |
+| `4f67b4a` | **Commit 12** — `status.md` and `backlog.md`, split out of the archived survey |
+| *(this one)* | **Commit 13** — every repointable citation, `EPD-000` and the root `README.md` |
 
 The two planning documents:
 
@@ -126,10 +126,14 @@ search for them found a third place carrying them — see "What commit 11 found"
 2026-08-16.** Both exist, the two forward references they were owed are cleared, and the backlog item
 decision 21 exposed was carried across. See "What commit 12 found" below.
 
-**The next action is commit 13: rewrite the cross-references the link checker reports**, plus
-`README.md` and `EPD-000`'s graduation convention, two body citations and closing section. **The work
-list is a command, not a number: `python3 docs/procedures/link-check.py`.** As of commit 12 it reports
-**108 hits across 11 files**, but half of that is noise by nature — see below before starting.
+~~**The next action is commit 13**~~ **Done 2026-08-16.** Every repointable path in the EPDs and the
+archive's prose now resolves, `EPD-000` and the root `README.md` are rewritten, and what is left is
+seven hits that are correct — see "What commit 13 found" below.
+
+**The next action is commit 14: fix the 10 doc citations in `src/`, `tests/` and `config.yaml`**,
+then `make test` and `make lint`. `proxy.py:3` is the eleventh and needs no edit — it cites
+"Observed request shape" by section title, which survives as a heading in
+`reference/architecture.md`.
 
 ---
 
@@ -424,6 +428,70 @@ commit and no visible boundary. The `--no-ff` convention starts at Phase 2 (`4d7
 every phase after it. This is *not* a defect to repair — rewriting history to add two merge commits
 would cost far more than the boundary is worth — but a reader checking the convention against the log
 finds two exceptions, so `milestone-1-core/README.md` now says why they are there.
+
+## What commit 13 found
+
+**A clean run is not a zero run, and the number is seven rather than the three commit 12 reported.**
+That estimate came from checking the live tiers only; the whole-repository run adds
+`.claude/agents/local-helper.md` (the subagent file `EPD-001` proposes creating) and
+`docs/procedures/closing-a-milestone.md` (`EPD-004`'s escape hatch if a playbook outgrows the
+manual), plus a third `.claude/settings.json` and a second `docs/method/`. **Undercounting a
+population by measuring a convenient slice of it** is the failure decision 20 names, arriving in the
+commit that was supposed to be mechanical. The list is now in `procedures/link-check.py`'s own
+docstring under "A clean run is not a zero run", which is where a session at commit 15 will look.
+
+**The archive files were repointed by depth, not by name — and the first pass got it wrong anyway.**
+A rewrite that turns `docs/handoff.md` into `../milestone-1-core/closing-notes.md` is correct from
+`docs/epd/`, and from `docs/milestone-1-core/phase-6-review-and-cleanup/` it produces
+`../../milestone-1-core/closing-notes.md` — which *resolves*, and is absurd: a file inside the
+archive addressing its own sibling by going out to `docs/` and back. Caught by reading the diff, not
+by the checker, which was satisfied. **This is commit 10's lesson with a new edge: a path can be
+simultaneously valid and wrong**, and only a human reading it says so.
+
+**Longer paths silently broke the wrap.** The new addresses are two to four times the length of the
+old ones, so 19 prose paragraphs spilled past the 100-column wrap the documents are written to.
+Mechanically reflowed, then checked in characters rather than bytes — an em-dash is three bytes, so
+counting with `awk` reported eight lines over the limit that were not.
+
+## What commit 13 found
+
+**A clean run is not a zero run, and the number is seven rather than the three commit 12 reported.**
+That estimate came from checking the live tiers only; the whole-repository run adds
+`.claude/agents/local-helper.md` (the subagent file `EPD-001` proposes creating) and
+`docs/procedures/closing-a-milestone.md` (`EPD-004`'s escape hatch if a playbook outgrows the
+manual), plus a third `.claude/settings.json` and a second `docs/method/`. **Undercounting a
+population by measuring a convenient slice of it** is exactly what decision 20 names, arriving in the
+commit that was supposed to be mechanical. The list now lives in `procedures/link-check.py`'s own
+docstring under "A clean run is not a zero run", which is where a session at commit 15 will look.
+
+**The rewrite was done by depth, and the first attempt still produced two wrong-but-valid paths.**
+Turning `docs/handoff.md` into `../milestone-1-core/closing-notes.md` is right from `docs/epd/`; from
+`docs/milestone-1-core/phase-6-review-and-cleanup/` the same rule yields
+`../../milestone-1-core/closing-notes.md`, which **resolves** and is absurd — a file inside the
+archive addressing its own sibling by going out to `docs/` and back. The same rule gave
+`phase-4-lmstudio-parity/plan.md` a reference to `../phase-4-lmstudio-parity/notes.md`, meaning the
+file next to it. Both were caught by reading the diff; the checker was satisfied by both. **A path
+can be simultaneously valid and wrong, and only a human reading it says so** — commit 10's lesson
+with a new edge on it.
+
+**The mechanical reflow corrupted a numbered list, and the checker could not see that either.** The
+new addresses are two to four times longer than the old ones, so prose spilled past the 100-column
+wrap. The first rewrapper treated a paragraph as one block and joined `EPD-003`'s seven open
+questions into a single run-on. Reverted the whole commit and redone with a list-aware version;
+`EPD-003`'s list is now the case it is checked against. **Fix the instrument before believing its
+result** — lesson 4, earned again by the tool written to obey it.
+
+**And one repointed path was made false by being correct.** `EPD-003` carries a runnable script
+inside a fence, introduced by "run from the repository root". The rewrite turned its
+`docs/log-the-whole-request.txt` into `../captures/…`, which is right for a reader of the EPD and
+wrong for the command the sentence tells you to run. Found by scanning specifically inside fences
+afterwards. The sentence now gives both forms and says which is which.
+
+**Six section-title citations were stale and no grep for a path would ever have found them.** Four
+EPDs cite `CLAUDE.md` "Design decisions" and "Observability" — sections that left at commit 11. This
+is the class the plan's own review named: *searching for what moves will not find what gets cut*.
+Repointed to `reference/design-decisions.md` and `reference/observability.md`, with the two that are
+statements about where a future decision belongs marked as revised rather than silently changed.
 
 ## What commit 12 found
 

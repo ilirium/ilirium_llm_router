@@ -25,9 +25,9 @@ whose input exceeds the loaded window comes back in under a second with
 > `The number of tokens to keep from the initial prompt is greater than the context length. Try to
 > load the model with a larger context length, or provide a shorter input`
 
-LM Studio drops nothing. So the harm this document is organised around — a degraded answer that never
-announces itself — **does not occur at the boundary**. What occurs instead is a hard failure carrying
-an actionable message. See `../phase-4-notes.md`.
+LM Studio drops nothing. So the harm this document is organised around — a degraded answer that
+never announces itself — **does not occur at the boundary**. What occurs instead is a hard failure
+carrying an actionable message. See `../milestone-1-core/phase-4-lmstudio-parity/notes.md`.
 
 That weakens the case for the **Scaled** option considerably, since "only the scaled option solves
 silent truncation" was its main argument and there is less silent truncation to solve. It does not
@@ -259,8 +259,9 @@ something untrue on purpose, which is a different kind of project from *"dispatc
 — and it carries an unquantified risk: if Claude Code uses absolute token counts anywhere else (to
 cap `max_tokens`, say), the lie breaks something not visible from here.
 
-**This is a decision for the repository owner, and it belongs in `CLAUDE.md` under "Design
-decisions" once taken, not in code before then.**
+**This is a decision for the repository owner, and it belongs in
+`../reference/design-decisions.md` once taken, not in code before then.** (Revised 2026-08-16: this
+named `CLAUDE.md` under "Design decisions", which is where decisions lived when it was written.)
 
 ## Documented versus measured
 
@@ -320,23 +321,25 @@ Step 2 is the gate. If content bytes do not predict, nothing else here is worth 
 ## Evidence
 
 All local, all 2026-07-31, all reproducible from this repository. **The session itself is frozen in
-`docs/phase-2-step-6-session/`** — `logs/` is gitignored and rotates, so that directory rather than
-`logs/` is the citable source for everything below.
+`../milestone-1-core/phase-2-observability/evidence/step-6-session/`** — `logs/` is gitignored and
+rotates, so that directory rather than `logs/` is the citable source for everything below.
 
-- `docs/phase-2-step-6-session/calls.csv` — 142 rows, the Phase 2 step 6 session. Rows 24–37 and 112–125
-  are the two `/context` bursts; row 69 is the one Anthropic `count_tokens`. Session and agent
-  identifiers are replaced with stable placeholders (`session-01`, `agent-01`), which preserves the
-  grouping the arguments here depend on; see that directory's `README.md`.
-- `docs/phase-2-step-6-session/router.log` — the same calls with uvicorn's own lines interleaved,
-  unredacted because it needed nothing. Note the log is naive **local** time and the CSV is **UTC**;
-  the offset was +3 on the day.
-- `docs/testing-against-claude-code--results.md` — the smoke test that preceded the session.
+- `../milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv` — 142 rows, the
+  Phase 2 step 6 session. Rows 24–37 and 112–125 are the two `/context` bursts; row 69 is the one
+  Anthropic `count_tokens`. Session and agent identifiers are replaced with stable placeholders
+  (`session-01`, `agent-01`), which preserves the grouping the arguments here depend on; see that
+  directory's `README.md`.
+- `../milestone-1-core/phase-2-observability/evidence/step-6-session/router.log` — the same calls
+  with uvicorn's own lines interleaved, unredacted because it needed nothing. Note the log is naive
+  **local** time and the CSV is **UTC**; the offset was +3 on the day.
+- `../milestone-1-core/phase-1-proxy/evidence/session-results.md` — the smoke test that preceded the
+  session.
 - LM Studio as installed on this machine (`lms` CLI commit `71bd99c`), serving `qwen/qwen3.5-9b` at
   262144 context. `CLAUDE.md` records 0.4.1+ as the release that added the Anthropic-compat surface.
 - Claude Code `/context` output, pasted above, from a short local session not present in
   `calls.csv`.
 
 Related: `EPD-001-model-selection-and-mixed-model-sessions.md` for the `/v1/models` and model
-discovery questions this touches; `docs/lmstudio-usage-check.md` for the `usage` shape the router reads;
-`CLAUDE.md` "Observability" for why the `path` column exists, which is the only reason any of this
-was noticed.
+discovery questions this touches; `../procedures/lmstudio-usage-check.md` for the `usage` shape the
+router reads; `../reference/observability.md` for why the `path` column exists, the only reason
+any of this was noticed.

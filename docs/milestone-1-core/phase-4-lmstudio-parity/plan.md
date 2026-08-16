@@ -64,8 +64,9 @@ it tests known content rather than assumed content.
 ### 1. The probe instrument
 
 - [x] Branch, and fix the one stale line in `handoff.md` that still calls Phase 3 unmerged
-- [x] `docs/phase-4-probes/` with a runner that sends a body through the router and records status,
-      headers, the stream and the CSV row. Committed, following `phase-3-verification/` rather than
+- [x] `../../procedures/lmstudio-capability-probes/` with a runner that sends a body through the
+      router and records status, headers, the stream and the CSV row. Committed, following
+      `phase-3-verification/` rather than
       `phase-2-step-6-session/`: this is a tool to re-run, not frozen evidence, because every finding
       here expires the next time LM Studio ships a release
 
@@ -113,8 +114,8 @@ error is the good outcome.
 
 ### 5. Write it up
 
-- [x] `docs/phase-4-notes.md` — procedure and findings, including everything that did not work, and
-      including that a third of this phase was already answered by a session run for another one.
+- [x] `notes.md` — procedure and findings, including everything that did not work, and including
+      that a third of this phase was already answered by a session run for another one.
       Phase 3 found four of its five items already built; this is the second instance, and a pattern
       worth naming rather than being surprised by a third time
 - [x] The parity table into `CLAUDE.md`, replacing the "still unmeasured" list

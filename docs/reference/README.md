@@ -49,5 +49,5 @@ Filing rules for the whole of `docs/` are in `../README.md`.
 ---
 
 *Written 2026-08-16 at commit 5 of `../docs-restructure-plan.md` and completed at commit 6. All seven
-files now exist. Until `CLAUDE.md` is cut at commit 11, four of them duplicate a section still in it —
-deliberately, so that no destination is missing when the cut happens.*
+files exist, and since commit 11 none of them duplicates a `CLAUDE.md` section — the four that did
+were deliberate, so that no destination was missing when the cut happened.*

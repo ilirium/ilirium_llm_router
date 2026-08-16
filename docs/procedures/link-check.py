@@ -45,6 +45,24 @@ fresh clone.
 paths on purpose. Use `→` when writing about a rename and both sides are skipped; a sentence that
 says "moving X to Y" in words will still be reported. Expect a migration plan to be noisy, and read
 its hits rather than fixing them.
+
+## A clean run is not a zero run
+
+**Some hits are correct and permanent.** A document that names a path in order to say *this
+deliberately does not exist* is right, and nothing distinguishes it from a broken link — the `→`
+convention covers renames, not deliberate absences. As of 2026-08-16 there are seven, and a session
+expecting zero would either "fix" the prose or conclude the work is unfinished:
+
+- `.claude/settings.json` ×3 — `EPD-004` decision 17 splits the permission allowlist and defers
+  building the tracked half.
+- `docs/method/` ×2 — decision 18 says do not build a methodology tier before project #2.
+- `.claude/agents/local-helper.md` — `EPD-001` naming the subagent file it *would* create.
+- `docs/procedures/closing-a-milestone.md` — `EPD-004`'s escape hatch if a playbook outgrows the
+  manual.
+
+Check the list before adding to it. Teaching this script to recognise them is filed in
+`../backlog.md` alongside the anchor and `file.py:N` gaps, deliberately not done while a migration
+this script is measuring was still in flight.
 """
 
 from __future__ import annotations
