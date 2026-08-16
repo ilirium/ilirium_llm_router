@@ -58,7 +58,9 @@ section, which is deliberate and ends at commit 11.
 | `f5b993c` | **Commit 8** — `probe.py` and the moved READMEs repaired; two plan corrections |
 | `6535d7f` | **Commit 9** — the capture to `captures/`, with a README it turned out to need |
 | `79214cb` | **Commit 9a** — the link checker filed as `procedures/link-check.py` |
-| *(this one)* | **Commit 10** — the milestone archive, and two plan instructions dropped |
+| `5dcd86f` | **Commit 10** — the milestone archive, and two plan instructions dropped |
+| `60174b0` | Decision 21 — paths stay backticked, no link tool, and the backlog item it exposed |
+| *(this one)* | **Commit 11** — `CLAUDE.md` cut 337 → 188, and all nine memories shrunk to pointers |
 
 The two planning documents:
 
@@ -113,12 +115,16 @@ is now `docs/procedures/link-check.py` rather than a file in `/tmp`. See "What c
 of the commit's instructions were dropped after reading what they applied to — see "What commit 10
 found" below.
 
-**The next action is commit 11: rewrite `CLAUDE.md`** — cut the six moved sections, rewrite the
-survivors as rules, insert the pointers (the `Anthropic model IDs` one must name its trigger), the
-titles-only decisions index, the branch convention and the seven migrated memory rules. **Then shrink
-all nine memories to pointers**, which is a step rather than a commit because those files are outside
-the repository and git cannot verify it. Two numeric corrections are owed here too: the 111-second
-warmup probe carried 1960 bytes, not 31 KB, and the probes cost 20.0 of **45.6** minutes.
+~~**The next action is commit 11: rewrite `CLAUDE.md`**~~ **Done 2026-08-16**, and the memory step
+with it. 337 lines to 188; all nine memories are pointers. Both numeric corrections landed, and the
+search for them found a third place carrying them — see "What commit 11 found" below.
+
+**The next action is commit 12: write `docs/status.md` and `docs/backlog.md`**, splitting
+`milestone-1-core/outstanding-work.md` and lifting its live items. Note the link checker now reports
+**three** expected hits rather than two: `CLAUDE.md:16` joins them, pointing forward at `status.md`.
+Commit 12 clears all three but `.claude/settings.json`. **And it must also carry the backlog item
+recorded below**, which was raised after `outstanding-work.md` was archived and has nowhere else to
+wait.
 
 ---
 
@@ -414,6 +420,37 @@ commit and no visible boundary. The `--no-ff` convention starts at Phase 2 (`4d7
 every phase after it. This is *not* a defect to repair — rewriting history to add two merge commits
 would cost far more than the boundary is worth — but a reader checking the convention against the log
 finds two exceptions, so `milestone-1-core/README.md` now says why they are there.
+
+## What commit 11 found
+
+**A reference file was repeating both errors the register had already corrected.** The plan said to
+fix two numbers "in `CLAUDE.md`". Grepping for every copy instead of the one named found
+`backend-lmstudio.md:174` carrying *"20.0 of 45.5 minutes"* and *"111 seconds for a 31 KB body"* —
+written at commit 6, four commits **after** `measurements.md` recorded the correction at commit 3.
+The canonical tier contradicted its own register within the same restructure. **A correction is not
+done when the document that prompted it is fixed; it is done when every copy is.** Fixed here, and
+`measurements.md` and `lessons.md` now speak of `CLAUDE.md` in the past tense, since after this commit
+it no longer says either thing.
+
+**The memory migration was checked as a move before anything was deleted.** Decision 16 says shrink,
+not copy, which only works if the destination genuinely holds the material. `lessons.md` 3 and 4 turn
+out to carry **more** than the two memories did — three green-suite failures and three instrument
+failures against their two apiece. Two memories held operational details worth keeping that the
+repository does not record, so those stayed in the pointers rather than being dropped: that a failed
+`git merge -F -` still performs the `git checkout` preceding it, and that
+`document-decisions-in-separate-docs` was stale in two ways rather than the one decision 16 named —
+it filed EPDs at the old path **and** pointed findings at `handoff.md`.
+
+**The result is 188 lines, not the ~100 the EPD estimated, and the estimate was not wrong so much as
+superseded.** It assumed two pointers; decisions 9 and 10 made four, each carrying the one fact that
+prevents a confident wrong action. The three accepted additions — branch convention, playbook
+pointers, seven memory rules — cost about 45 lines between them. Every line was admitted by the test
+rather than by a budget, which is what `EPD-004` asks for, and the file is still 44% shorter.
+
+**One survivor was quietly false.** The layout block described `.env.example` as *"normally empty; the
+router holds no secret"*. That stopped being true when `credential: inject` was built in Phase 5 — the
+router holds a key for any injecting backend. A line nobody was citing, in the one section that
+survives on the argument that it is silently used.
 
 ## What commit 10 found
 
