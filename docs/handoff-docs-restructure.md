@@ -10,6 +10,20 @@ untouched.
 
 ---
 
+## Start here, if you are picking this up cold
+
+1. **Read this section and "Where this stands" below.** Then `docs/docs-restructure-plan.md` for the
+   commit you are on, and `docs/README.md` for the rules every commit is checked against.
+2. **The work is executing a fifteen-commit plan.** Commits 2 to 10 are done. **Commit 11 is next**,
+   and it is the one that changes what every future session sees, because it cuts `CLAUDE.md`.
+3. **Run `python3 docs/procedures/link-check.py` before and after anything that moves.** Three hits
+   are expected right now and are listed under "What commit 10 found".
+4. **`make test` must report 158** before and after. This branch must not touch behaviour.
+5. The sections titled "What commit N found" are the record of what each step actually cost,
+   including four places where the plan was wrong. Read the one for the commit before yours.
+
+---
+
 ## Where this stands
 
 Eighteen commits, tree clean. **Commits 2 to 10 are done — everything has moved.** `docs/` now has
@@ -526,7 +540,12 @@ edit at commit 14.
 
 ## Loose ends that are not blockers
 
-- **`main` is 12 commits ahead of `origin/main`.** Milestone 1's merges are unpushed. Unrelated to
-  this branch, and this branch is unpushed too.
+- ~~**`main` is 12 commits ahead of `origin/main`.**~~ **Corrected 2026-08-16: it is level**, 0 ahead
+  and 0 behind. Milestone 1's merges were pushed at some point after that line was written, and
+  nobody updated it — which is this repository's signature failure appearing in the document whose
+  subject is that failure.
+- **This branch is pushed, but ten commits behind on the remote.** `origin/docs/milestone-boundary-restructure`
+  sits at `f473277`, the last commit before execution started. Everything from the gate onward is
+  local only. Pushing is a decision for the owner, not a step of this plan.
 - **The tracked `.claude/settings.json`** (decision 17) is its own work on its own branch, listed
   under "What this plan does not cover".
