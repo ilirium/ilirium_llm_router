@@ -94,7 +94,7 @@ it was written to do is wrong.
   number was chosen against a hazard that was not the one that arrived.
 
 **The rule: exercise the real thing before believing it works.** Every one of these was found by
-driving live traffic, and none of them by a test — which is also why `procedures/` exists as a tier:
+driving live traffic, and none of them by a test — which is also why `../procedures/` exists as a tier:
 the instruments that produce real traffic are kept runnable rather than described.
 
 ## 4. Fix the instrument before believing its result

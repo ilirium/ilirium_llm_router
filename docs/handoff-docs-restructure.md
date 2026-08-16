@@ -12,8 +12,8 @@ untouched.
 
 ## Where this stands
 
-Fifteen commits, tree clean. **Commits 2 to 8 are done — the procedures have moved and their own
-references are repaired.** The gate
+Sixteen commits, tree clean. **Commits 2 to 9 are done — the procedures and the capture have moved,
+and every live tier resolves.** The gate
 passed, all seven `reference/` files exist, the manual is written, and all three tier indexes are in
 place. Four reference files still duplicate a `CLAUDE.md` section; that is deliberate and ends at
 commit 11. **No citation has been repointed yet**, so a dozen documents and three code files name
@@ -36,7 +36,8 @@ paths that no longer exist — commits 8, 13 and 14.
 | `46c8321` | **Commit 5** — the three tier indexes, and two gaps found in the plan while writing them |
 | `a3e88bc` | **Commit 6** — the last four `reference/` files, assembled from `CLAUDE.md` |
 | `f729cbc` | **Commit 7** — the procedures moved, `.gitignore` repointed in the same commit |
-| *(this one)* | **Commit 8** — `probe.py` and the moved READMEs repaired; two plan corrections |
+| `f5b993c` | **Commit 8** — `probe.py` and the moved READMEs repaired; two plan corrections |
+| *(this one)* | **Commit 9** — the capture to `captures/`, with a README it turned out to need |
 
 The two planning documents:
 
@@ -81,10 +82,16 @@ not answer.
 resolving `CAPTURE` rather than by trusting the edit. Both additions landed, and the plan gained two
 corrections — see "What commit 8 found" below.
 
-**The next action is commit 9: `git mv docs/log-the-whole-request.txt docs/captures/`, and fix
-`probe.py:43`.** Small and isolated. Note it also invalidates the docstring path at `probe.py:6` and
-the one in `architecture.md`, both of which name the capture and were pointed at its *current* home
-on purpose — the alternative was writing links that stayed broken for two commits.
+~~**The next action is commit 9**~~ **Done 2026-08-16.** Less isolated than the plan's row implied —
+see "What commit 9 found" below.
+
+**The next action is commit 10: `git mv` the milestone archive**, update `.gitignore:229` in the same
+commit, copy the Milestone 1 run transcripts into phase evidence, and **write the three missing
+`evidence/README.md` files** (phases 1, 3 and 5). This is the largest move and it carries breakage 2 —
+the `!docs/phase-2-step-6-session/router.log` negation, the one trap in this plan that has already
+fired once. Also due here, from the Tier 2 table: `testing-against-claude-code--results.md` →
+`phase-1-proxy/evidence/session-results.md`, which was deliberately left out of commit 7 because its
+destination is under the archive.
 
 ---
 
@@ -361,6 +368,31 @@ commit and no visible boundary. The `--no-ff` convention starts at Phase 2 (`4d7
 every phase after it. This is *not* a defect to repair — rewriting history to add two merge commits
 would cost far more than the boundary is worth — but a reader checking the convention against the log
 finds two exceptions, so `milestone-1-core/README.md` now says why they are there.
+
+## What commit 9 found
+
+**The capture needed a README, which the plan did not budget for.** `captures/` was to hold one file
+and no index — but the redaction scheme lived in `handoff.md`, which is being archived, and
+`docs/README.md`'s own rule says the scheme belongs beside the data it describes. So
+`captures/README.md` now records the file's structure, the five `REDACTED-*` markers, what was left in
+deliberately, and one thing worth knowing before it causes alarm: **a grep for `sk-ant-` matches this
+file**, because the placeholder is `sk-ant-oat01-XXX`.
+
+**The body no longer matches its own `Content-Length`.** Line 29 says `118004`; the body is **117920
+bytes**, 84 short. Almost certainly the redaction — real UUIDs and an email are longer than their
+placeholders — but that is an **inference**, since the unredacted original was never committed. It
+matters for exactly one use: replaying these bytes raw down a socket would hang or truncate. Nothing
+in the repository does that.
+
+**The link checker was written early, and it changed the plan.** Run over the live tiers it found six
+real breaks from commits 7 and 9 — and **33 false positives** in four classes: template placeholders,
+repository-root paths named in prose, globs, and paths named inside a sentence *about* a rename. That
+filter is now recorded, because an unfiltered report at commit 13 is unusable.
+
+It also settled a question the plan left implicit. **The live tiers are repaired in the same commit as
+the move that breaks them**; only the archive waits for commit 13. A reference document that is wrong
+for four commits is a reference document nobody can trust while the restructure runs, and commit 13 is
+correspondingly smaller than the plan assumed.
 
 ## What commit 8 found
 

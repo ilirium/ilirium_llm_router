@@ -6,7 +6,7 @@ whether a given model can be used at all.
 LM Studio publishes **no feature-parity matrix** — its `/v1/messages` documentation does not spell out
 `system`, `tool_result`, `thinking` blocks or images — so everything here was measured against a
 running server rather than read. **Every answer expires with the next LM Studio release.** The
-instrument is `../phase-4-probes/`, committed to be re-run.
+instrument is `../procedures/lmstudio-capability-probes/`, committed to be re-run.
 
 **The slice every measurement below carries**, unless a line says otherwise: `qwen/qwen3.5-9b`
 (MLX 4-bit) loaded at **44544 tokens** of context out of a 262144 maximum, on one machine, with
@@ -25,7 +25,7 @@ the router dispatches rather than translates; the argument is in `design-decisio
 
 `usage` arrives in Anthropic's shape too, which is what lets one scanner serve both backends — with
 one trap: LM Studio repeats `input_tokens` in `message_delta` where Anthropic does not. The procedure
-that established this is `../lmstudio-usage-check.md`.
+that established this is `../procedures/lmstudio-usage-check.md`.
 
 **Only `/v1/messages` exists under the Anthropic-compat namespace.** There is no `/v1/models` there,
 and `POST /v1/messages/count_tokens` is answered with HTTP 200 and an error body rather than a count
@@ -57,7 +57,7 @@ body — so the probes look for an error shape regardless of status, and none of
 | The ten-entry `anthropic-beta` header | **yes** | n/a | Sent on every probe, never objected to |
 
 **And the whole real request works.** The captured Claude Code request
-(`../log-the-whole-request.txt`) — 27 tool schemas, a system-role message, two `cache_control`
+(`../captures/log-the-whole-request.txt`) — 27 tool schemas, a system-role message, two `cache_control`
 markers, `context_management`, `output_config`, `metadata`, `thinking`, and the ten-entry
 `anthropic-beta` header — replays against a local model unmodified and answers correctly. There was
 nothing to bisect.

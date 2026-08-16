@@ -38,7 +38,7 @@ router holds no Anthropic key of its own. That is a property of this one backend
 architecture — the modes and the reasoning are in `design-decisions.md`.
 
 Measured on 2026-07-28 by capturing what Claude Code actually sends and replaying it
-(`../anthropic-auth-check.md`):
+(`../procedures/anthropic-auth-check.md`):
 
 - **The credential is an OAuth subscription token** — `Authorization: Bearer sk-ant-oat01-…`. No
   `x-api-key` header is sent at all.
@@ -89,6 +89,6 @@ Note what `read` bounds: the longest permitted **silence between two reads**, re
 
 Far less than the local one, and deliberately so: Anthropic implements its own API, so parity is not a
 question here. What has been measured is that a real session works end to end
-(`../testing-against-claude-code.md`), that streamed replies scan exactly like LM Studio's, and the
+(`../procedures/testing-against-claude-code.md`), that streamed replies scan exactly like LM Studio's, and the
 failure shapes above. Anthropic was left alone during the review phase, so the claims resting on live
 behaviour are consistent with their committed transcripts rather than re-measured.

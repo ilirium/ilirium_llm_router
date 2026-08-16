@@ -82,7 +82,7 @@ in ordinary traffic.
 
 ## Observed request shape
 
-From one captured request (`../log-the-whole-request.txt` — token and account/device/session
+From one captured request (`../captures/log-the-whole-request.txt` — token and account/device/session
 identifiers redacted; it is one 120 KB line, so read it with `jq`). Concrete facts that constrain the
 proxy:
 

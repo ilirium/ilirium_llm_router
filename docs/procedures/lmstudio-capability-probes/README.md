@@ -63,7 +63,7 @@ a malformed reply, Claude Code complained, and **the complaint was worthless** b
 instrument as well as the subject.
 
 So: `bodies/image.json` was rendered and looked at before it was ever sent, and the headers come from
-`../../log-the-whole-request.txt` at runtime rather than being retyped here — including the ten-entry
+`../../captures/log-the-whole-request.txt` at runtime rather than being retyped here — including the ten-entry
 `anthropic-beta` list, which is itself one of the things under test.
 
 If a result from this directory is surprising, suspect the instrument first.

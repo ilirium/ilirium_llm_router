@@ -3,8 +3,8 @@
 Phase 4 asks where a local backend falls short. LM Studio publishes no compatibility table, so the
 only way to know is to send the shape and look at the answer. Each file in `bodies/` is a minimal
 request carrying exactly one unusual element, so a rejection names the element rather than the
-request. `replay` instead sends the real captured request from `../../log-the-whole-request.txt`,
-which carries several at once.
+request. `replay` instead sends the real captured request from
+`../../captures/log-the-whole-request.txt`, which carries several at once.
 
 Three things this checks that a bare curl would not:
 
@@ -44,7 +44,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent.parent.parent
 BODIES = HERE / "bodies"
 RUNS = HERE / "runs"
-CAPTURE = ROOT / "docs" / "log-the-whole-request.txt"
+CAPTURE = ROOT / "docs" / "captures" / "log-the-whole-request.txt"
 CALLS_CSV = ROOT / "logs" / "calls.csv"
 
 DEFAULT_ROUTER = "http://127.0.0.1:8787"

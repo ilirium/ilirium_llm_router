@@ -45,7 +45,7 @@ release, and the reason to record it next time rather than a reason to distrust 
 
 | Number | Measured | Instrument | Slice | What it is for |
 |---|---|---|---|---|
-| **Fixed preamble: 27924 input tokens** | 2026-08-06 | `probe.py replay` over `../log-the-whole-request.txt`, counted by LM Studio | One captured Claude Code request, a bare `hi` turn, 27 tools | Replaces the "~30k" estimate. It is what decides the minimum usable window for a local model — 63% of 44544 before the user types |
+| **Fixed preamble: 27924 input tokens** | 2026-08-06 | `probe.py replay` over `../captures/log-the-whole-request.txt`, counted by LM Studio | One captured Claude Code request, a bare `hi` turn, 27 tools | Replaces the "~30k" estimate. It is what decides the minimum usable window for a local model — 63% of 44544 before the user types |
 | **Cache: `cache_read_input_tokens` 0 → 27904 on the second identical replay; 99.93%** | 2026-08-06 | two replays, frozen in `../phase-4-evidence/` | Same bytes twice, cold then warm | Byte-relay stops being an argument and becomes a measurement. Worth ~147 s of prefill per turn |
 | **Time to first byte 196789 ms cold → 49629 ms warm** | 2026-08-06 | as above | Same request, cold and cached | The cache is worth 4× on first byte, and a 99.93% hit still costs 50 s — cache reads are cheap, not free |
 | **Prefill profile: 9166 → 115073 ms; 27924 → 196789 ms; 41595 → 461712 ms; ~41000 → killed at 600247 ms** | 2026-08-06 and 2026-08-07 | needle runs via `probe.py`; the last two frozen in `../phase-4-evidence/` and `../phase-5-measurements/` | Input tokens against first byte, cold, same model and machine | **The usable context of a local model is bounded by time, not by the window.** The last two rows are the same request size on different days — a ≥30% spread straddling the old fixed 600 s ceiling, which is the argument for configuring it |
@@ -81,7 +81,7 @@ was recomputed from that file on 2026-08-16; the first six were also recomputed 
 
 | Number | Measured | Instrument | Slice | What it is for |
 |---|---|---|---|---|
-| **118 KB request for a bare `hi`: 81 KB of tool schemas (27 tools), 28 KB of system prompt, 368 bytes of conversation** | 2026-07-28 | `../log-the-whole-request.txt`, read with `jq` | One captured request from one Claude Code version | Why `request_bytes` is a weak proxy for conversation size, and why a local model needs far more than the 25k LM Studio suggests |
+| **118 KB request for a bare `hi`: 81 KB of tool schemas (27 tools), 28 KB of system prompt, 368 bytes of conversation** | 2026-07-28 | `../captures/log-the-whole-request.txt`, read with `jq` | One captured request from one Claude Code version | Why `request_bytes` is a weak proxy for conversation size, and why a local model needs far more than the 25k LM Studio suggests |
 | **34304-token window ran a real session on `google/gemma-4-e4b`** | 2026-07-29 | a live Claude Code session | One model, tool use and multi-turn | The first evidence a local model could drive the harness at all. It worked because it fit — established two phases later |
 
 ## Failure behaviour
@@ -89,7 +89,7 @@ was recomputed from that file on 2026-08-16; the first six were also recomputed 
 | Number | Measured | Instrument | Slice | What it is for |
 |---|---|---|---|---|
 | **Claude Code retries a 502 ten times with backoff** | 2026-07-31 | a live session with LM Studio stopped | One client, one status | A session heals itself when a backend comes back — and **one turn becomes up to ten rows**, so a row count is not a turn count when a backend is down |
-| **`read` bounds silence, not duration: `/drip` ran 6.01 s against `read=2.0` and completed** | 2026-08-07 | `../phase-5-measurements/read_timeout_semantics.py` | httpx at the pinned version, three timing shapes | Retires "a timeout that resets on progress" as an option — it already is one — and narrows what the 600 s ever bought to "fails if it goes quiet" |
+| **`read` bounds silence, not duration: `/drip` ran 6.01 s against `read=2.0` and completed** | 2026-08-07 | `../procedures/read-timeout-semantics.py` | httpx at the pinned version, three timing shapes | Retires "a timeout that resets on progress" as an option — it already is one — and narrows what the 600 s ever bought to "fails if it goes quiet" |
 
 ## The router itself
 

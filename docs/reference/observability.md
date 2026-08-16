@@ -50,7 +50,7 @@ These are the ones a plausible-looking implementation quietly violates.
   for `usage`. Byte-relay fidelity is preserved; observation is passive. If `usage` can't be found,
   write empty token columns rather than failing the request.
 - **Take `input_tokens` from `message_start` and `output_tokens` from the final `message_delta`.**
-  Verified against LM Studio on 2026-07-29 (`../lmstudio-usage-check.md`); both backends
+  Verified against LM Studio on 2026-07-29 (`../procedures/lmstudio-usage-check.md`); both backends
   carry usage in Anthropic's shape, so one rule covers both. Resist the obvious simplification:
   LM Studio repeats `input_tokens` in `message_delta`, so a scanner keyed on that event alone would
   look correct locally and silently record empty input counts for every Anthropic call. Non-streaming

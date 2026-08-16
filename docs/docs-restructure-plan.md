@@ -35,7 +35,7 @@ Measured 2026-08-15 on `docs/milestone-boundary-restructure` at commit `51b857b`
 | Doc paths cited from code and config | **11**, in 7 files — 8 pointing *out* to `docs/`, 3 pointing *into* `CLAUDE.md` |
 | `.gitignore` entries naming `docs/` paths | **4**, one of them a negation |
 | Documents rewritten rather than moved | **4** — `CLAUDE.md`, `README.md`, `outstanding-work.md` (split), `EPD-000` |
-| Documents created | **at least 16** — `docs/README.md` (the manual), `status.md`, `backlog.md`, **seven** `reference/` files, two tier `README.md` indexes, `milestone-1-core/README.md`, and an `evidence/README.md` for each of phases 1, 3 and 5, which have none today (decision 13). **Said 11, then 12, and both undercounted**: the milestone index was listed in Tier 5 but never counted, and the evidence READMEs were required by a decision taken after the row was written |
+| Documents created | **at least 17** — **`captures/README.md`** was added at commit 9, since the capture's redaction scheme needs a home beside the data (`docs/README.md`'s own rule) and the count had only ever listed two tier indexes — `docs/README.md` (the manual), `status.md`, `backlog.md`, **seven** `reference/` files, two tier `README.md` indexes, `milestone-1-core/README.md`, and an `evidence/README.md` for each of phases 1, 3 and 5, which have none today (decision 13). **Said 11, then 12, and both undercounted**: the milestone index was listed in Tier 5 but never counted, and the evidence READMEs were required by a decision taken after the row was written |
 
 **The first row was wrong in this document's first version**, which said "68 files, 50 tracked". The
 50 was right; the 68 was not, and it contradicted the untracked row two lines below it — 50 + 15 is
@@ -354,7 +354,7 @@ file itself — which is what keeps the principle true rather than merely stated
 | 6 | Assemble `reference/architecture.md`, `design-decisions.md`, `observability.md` and `backend-anthropic.md` from `CLAUDE.md` | Content composition, no moves. `CLAUDE.md` is not yet cut — text is duplicated for one commit, deliberately. `backend-anthropic.md` joins here because it is assembled from `CLAUDE.md` sections like the other three, not extracted like commit 2 |
 | 7 | Move the procedures — tracked contents by `git mv`, the gitignored `runs/` and `needle.json` by plain `mv`, **never the parent directory as a unit** — and update `.gitignore` in the same commit | The ignore rules must never be out of step with the paths, not even for one commit (breakages 3, 4, 8) |
 | 8 | Fix `probe.py` (`ROOT` at `:40`, header paths at `:6,12,26`, usage examples at `:20-23`), **`make_image.py:11` and `make_needle.py:13-14`**, and the moved `README.md` links | Separate from the move, so the move stays a clean rename. `RUNS` and `file: runs/…` need no edit under the instrument rule — **and neither does `router.yaml:5`**, which this row used to list. Both corrections are the same rule paying off: the ignore comment stays true because `runs/` followed the instrument. The two generator scripts were **not** listed here and carry the same stale usage examples `probe.py` does |
-| 9 | `git mv` the capture to `docs/captures/`, fix `probe.py:43` | Decided: `docs/captures/`. Small and isolated |
+| 9 | `git mv` the capture to `docs/captures/`, fix `probe.py:43` **and `:6`**, write **`captures/README.md`**, and repoint the live tiers | Decided: `docs/captures/`. **Not as isolated as this row implied**: the capture is cited from `reference/` and `procedures/`, and those tiers are kept correct at every commit rather than waiting for 13 — see the rule below. The README is the seventeenth created document; the Scale row said sixteen |
 | 10 | `git mv` the milestone archive; update `.gitignore:229` in the same commit; copy the Milestone 1 run transcripts into phase evidence; **write the three missing `evidence/README.md` files** (phases 1, 3, 5) | The `router.log` negation and its path move together (breakage 2). The three READMEs are required by decision 13 and were counted in the Scale row above, but **no commit named them until 2026-08-16** — they belong here, where the evidence they describe arrives |
 | 11 | Rewrite `CLAUDE.md` — cut the moved sections, rewrite the survivors as rules, insert the pointers, the decisions table of contents, the branch convention and the seven migrated memory rules. **And fix the two numeric errors commit 3 found**: the 111-second warmup probe carried 1960 bytes, not 31 KB, and the probes cost 20.0 of **45.6** minutes | Only now, once every destination exists. **Then shrink all nine migrated memories to pointers** — a step, not a commit, since those files are outside the repository (see below) |
 | 12 | Write `docs/status.md` and `docs/backlog.md`; **split** `outstanding-work.md`, lifting its live items into `backlog.md` | EPD-004's fork 3 decision. Its own commit because it rewrites rather than moves. The *move* into the archive already happened at commit 10; this row used to say "archive", duplicating it |
@@ -398,6 +398,15 @@ Merge `--no-ff` per repository convention, so the boundary stays visible.
 
 Green tests prove nothing about documents, so the checks are separate.
 
+- **The live tiers are kept correct at every commit; only the archive waits for 13.** A move that
+  breaks a link in `reference/`, `procedures/` or `captures/` is repaired in the same commit as the
+  move, because those documents are in use while the restructure runs. Commit 13 is therefore the
+  *archive's* cross-reference commit, which is smaller than this document assumed.
+- **The checker needs an ignore list, or its output is unreadable.** Run early at commit 9, it
+  reported 39 hits of which 33 were false: template placeholders (`phase-N-<slug>/`,
+  `reference/backend-<name>.md`), repository-root paths mentioned in prose (`src/`, `logs/`,
+  `docs/`), globs (`bodies/*.json`), and paths named inside a sentence *about* a rename. Filter those
+  four classes before treating the output as a work list.
 - **The link checker's report is a work list for prose only.** Repointing a path inside an archived
   document is correct — a path is navigation, not a claim — but **nothing under `evidence/` is
   edited**, because a captured transcript's stale command line is what was actually run. The rule is
