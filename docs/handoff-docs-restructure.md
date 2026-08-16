@@ -12,10 +12,11 @@ untouched.
 
 ## Where this stands
 
-Thirteen commits, tree clean, **nothing moved yet — commits 2 to 6 all create, none relocate.** The
-gate passed. **All seven `reference/` files exist**, the manual is written, and all three tier indexes
-are in place. Four reference files currently duplicate a `CLAUDE.md` section still in the file; that
-is deliberate and ends at commit 11. No citation has been repointed; the first move is commit 7.
+Fourteen commits, tree clean. **Commits 2 to 7 are done — the procedures have moved.** The gate
+passed, all seven `reference/` files exist, the manual is written, and all three tier indexes are in
+place. Four reference files still duplicate a `CLAUDE.md` section; that is deliberate and ends at
+commit 11. **No citation has been repointed yet**, so a dozen documents and three code files name
+paths that no longer exist — commits 8, 13 and 14.
 
 | Commit | What |
 |---|---|
@@ -32,7 +33,8 @@ is deliberate and ends at commit 11. No citation has been repointed; the first m
 | `5924bcc` | **Commit 3** — `reference/measurements.md` and `reference/lessons.md`, and the two corrections the register found |
 | `beddfaf` | **Commit 4** — `docs/README.md`, the manual, written before any file moves |
 | `46c8321` | **Commit 5** — the three tier indexes, and two gaps found in the plan while writing them |
-| *(this one)* | **Commit 6** — the last four `reference/` files, assembled from `CLAUDE.md` |
+| `a3e88bc` | **Commit 6** — the last four `reference/` files, assembled from `CLAUDE.md` |
+| *(this one)* | **Commit 7** — the procedures moved, `.gitignore` repointed in the same commit |
 
 The two planning documents:
 
@@ -69,12 +71,16 @@ found" below — the short version is that three paragraphs a reader would expec
 `design-decisions.md` are deliberately in other files, and the file says so rather than leaving the
 absence to be noticed.
 
-**The next action is commit 7: move the procedures** — tracked contents by `git mv`, the gitignored
-`runs/` and `needle.json` by plain `mv`, **never the parent directory as a unit**, with `.gitignore`
-updated in the same commit. **This is the first commit that moves anything**, and the first that can
-break something silently. Read "The eight things that break silently" in the plan before starting; it
-is breakages 3, 4 and 8 that this commit is exposed to, and `git status --ignored` afterwards is the
-check.
+~~**The next action is commit 7**~~ **Done 2026-08-16, and it is the first commit that moved
+anything.** What it found is under "What commit 7 found" below, including one question the plan does
+not answer.
+
+**The next action is commit 8: fix `probe.py` (`ROOT` at `:40`, header paths at `:6,12,26`, usage
+examples at `:20-23`), `router.yaml:5`, and the moved `README.md` links** — separate from the move so
+the move stays a clean rename. `RUNS` and `file: runs/…` need no edit under the instrument rule, and
+that is now verified rather than assumed. **Two additions to that commit**, both from what commit 7
+found: the archive-versus-transcript rule goes into `docs/README.md` and the plan, and
+`phase-5-measurements/README.md` gains the line naming where its script went.
 
 ---
 
@@ -351,6 +357,32 @@ commit and no visible boundary. The `--no-ff` convention starts at Phase 2 (`4d7
 every phase after it. This is *not* a defect to repair — rewriting history to add two merge commits
 would cost far more than the boundary is worth — but a reader checking the convention against the log
 finds two exceptions, so `milestone-1-core/README.md` now says why they are there.
+
+## What commit 7 found — and one question the plan does not answer
+
+**The move itself went exactly as written.** Twenty tracked files moved as renames, the three
+gitignored paths moved with plain `mv`, and `.gitignore` was updated **before** the `mv` rather than
+after — so there was never a moment when the scratch directories were uncovered. `git status
+--ignored` afterwards shows the same four ignored paths at their new locations and **nothing newly
+tracked**, which is the check breakages 3, 4 and 8 exist for. 158 tests, unchanged.
+
+**Breakage 1 was demonstrated rather than assumed.** `probe.py`'s `ROOT = HERE.parent.parent` now
+resolves to `docs/`, so it looks for the capture at `docs/docs/log-the-whole-request.txt`. And
+`probe.py --list` still prints its probe names perfectly — confirming the plan's claim that `--list`
+is not the check for this. Fixed at commit 8.
+
+**The open question: commit 13 cannot repoint links inside the archive without contradicting the
+manual.** A dozen archived files name the old procedure paths, and two rules collide — *a phase note
+is never edited again*, and *no broken links*. The distinction that resolves it:
+
+- **Prose in the archive gets its paths repointed.** A path is navigation, not a claim; updating it
+  preserves what the document means. Phase notes, plans, and the evidence `README.md` files.
+- **Captured output never does.** `phase-4-evidence/*.txt` and `phase-5-measurements/*.txt` are
+  transcripts of what a command actually printed. Editing them would falsify the record, and a stale
+  command line inside a transcript is *correct* — it is what was run that day.
+
+This is not in the plan or the manual. **It goes into both at commit 8**, since two sessions would
+otherwise answer it differently and one of them would rewrite the evidence.
 
 ## What commit 6 found
 

@@ -227,11 +227,13 @@ __MACOSX/
 # Step: Router runtime output
 logs/
 !docs/phase-2-step-6-session/router.log
-# Phase 3's verification directory is a tool, not evidence: what a run of it produces is disposable.
-docs/phase-3-verification/runs/
-# Same for Phase 4's probes: the findings go in phase-4-notes.md, not into a committed transcript.
-docs/phase-4-probes/runs/
+# The dying-backend stub is a tool, not evidence: what a run of it produces is disposable. The path
+# follows the instrument — a run must never land somewhere nothing ignores.
+docs/procedures/dying-backend/runs/
+# Same for the LM Studio probes: the findings go in the phase notes and reference/, not into a
+# committed transcript. Anything worth keeping is copied into a phase's evidence/ instead.
+docs/procedures/lmstudio-capability-probes/runs/
 # needle.json is generated filler, and its size is an argument to make_needle.py rather than a
 # property of the probe — there is no one version of it worth keeping. image.json is committed
 # because it is small and fixed.
-docs/phase-4-probes/bodies/needle.json
+docs/procedures/lmstudio-capability-probes/bodies/needle.json
