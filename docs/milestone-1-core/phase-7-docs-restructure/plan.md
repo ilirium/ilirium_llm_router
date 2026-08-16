@@ -7,6 +7,12 @@ below rather than edited away. Read this for what was intended and `notes.md` fo
 Written 2026-08-15 on `docs/milestone-boundary-restructure`, extended 2026-08-16. The structure was
 decided on the 15th and extended on the 16th.
 
+**This plan numbers its units of work "commits", and the convention changed because of it.** From
+Phase 8 they are **tasks** — a task is a unit of work, a commit is a unit of review, and these
+fifteen produced twenty-one commits. Kept as written rather than renamed, because the commit
+messages implementing it say "Commit N of …" and cannot be rewritten. See `EPD-004` decision 22 and
+`../../README.md`.
+
 The shape and the argument for it are in `docs/epd/EPD-004-documentation-structure.md`, whose six
 forks are now answered — the tier split accepted, `Design decisions` moving out whole, the backlog
 split into its own file, the capture at `docs/captures/`, no numeric prefixes, and the reference tier

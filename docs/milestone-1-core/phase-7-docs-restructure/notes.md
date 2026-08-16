@@ -23,6 +23,11 @@ An absent `evidence/` here is correct rather than missing — the same call comm
 
 ## How to read this
 
+**"Commit N" here means a unit of the plan, not a git commit** — the fifteen produced twenty-one.
+That conflation is why the convention changed: from Phase 8 the unit of work is a **task**, and a
+task may take several commits. `EPD-004` decision 22. This file keeps the old word, since the
+history it describes uses it too.
+
 The sections titled **"What commit N found"** are the record of what each step actually cost,
 including the places the plan was wrong. **They run in commit order**, 2 to 15. Commit 2's is titled
 "Reading for commit 2, the gate" because it was written *before* the work and kept as the prediction

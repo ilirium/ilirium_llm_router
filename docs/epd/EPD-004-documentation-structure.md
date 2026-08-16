@@ -1204,6 +1204,43 @@ expense sat in a judgement the tool could not make. What has actually worked twi
 rule to an instrument that already runs**, which is how the four-class filter and this check both
 arrived.
 
+### 22 — the unit of work inside a plan is a task, not a commit
+
+Proposed by the owner on 2026-08-16, after Phase 7. **Accepted**, and it is less a new convention
+than the repair of a contradiction this document had already written into itself.
+
+**Two decisions above already use the vocabulary.** Decision 2 specifies `status.md`'s middle
+section as *"Milestones → phases → **tasks**"*. Decision 11 specifies the review phase's new check
+as *"did every phase complete the **task list** it published?"* — a check with nothing to run
+against, because no plan has ever published a task list. Phase 7's plan numbered its work "commit 1"
+to "commit 15", and naming the unit of work after the unit of version control quietly broke a check
+decided three paragraphs earlier.
+
+**The measurement, from the naming scheme's own first use.** Phase 7's fifteen planned units
+produced **21 commits**: unit 10 became three, units 11 and 13 became two each, and 9a had to be
+*lettered* because renumbering would have churned citations in three documents. **Six of fifteen
+were not one-to-one**, in the first plan ever written this way.
+
+**The rule.** A task is a unit of **work**; a commit is a unit of **review**. Each task is
+committed; a task may take several commits, split wherever the diff would otherwise be hard for a
+person to review in one sitting — most usefully where it mixes a mechanical change with a judgement.
+That is not a taste argument: Phase 7's two worst self-inflicted defects, a reflow that corrupted a
+numbered list and a section duplicated across two commits, both hid inside large diffs of exactly
+that shape, and neither was visible to any check in the repository.
+
+**A commit names its task in the body**, which is what makes decision 11's check answerable from
+`git log` rather than by reading two documents against each other. Task numbers are per phase and
+are never renumbered once published — insert with a letter, the same reasoning as decision 7's
+refusal of numeric filename prefixes. A task that produces no commit is still a task, and says why.
+
+**Forward-only, decided with the proposal.** Phase 7 keeps "commit N" in its own `plan.md` and
+`notes.md`. Twenty-one commit messages in the history say "Commit N of …" and cannot be rewritten,
+so renaming the archive would leave it permanently at odds with the history implementing it — the
+archive would look tidier and be less true. Both files carry one line saying the convention changed
+after them.
+
+Recorded in `../README.md` under the phase template.
+
 ## The original forks, as written before the decisions
 
 Kept because the reasoning is what makes the decisions checkable later.

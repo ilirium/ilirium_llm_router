@@ -279,6 +279,49 @@ Write the merge commit in when the merge happens — four of Milestone 1's six p
 
 `phase-N-<slug>/` holds `plan.md`, `notes.md` and `evidence/` with its README.
 
+### The unit of work inside a plan is a **task**
+
+**Milestone → phase → task.** `milestone-N-<slug>/implementation-plan.md` sequences the phases;
+`phase-N-<slug>/plan.md` publishes a numbered task list; `notes.md` records what each task found.
+
+**A task is a unit of work. A commit is a unit of review. They are not the same thing**, and naming
+one after the other is a mistake this project made once and measured. Phase 7's plan numbered its
+work "commit 1" to "commit 15". Executing it produced **21 commits from 15 units** — one became
+three, two became two each, and one had to be inserted as "9a" rather than 10 because renumbering
+would have churned citations in three documents. Six of fifteen were not one-to-one **in the naming
+scheme's own first use**.
+
+**Each task is committed; a task may take several commits.** Split a task when the commit would
+otherwise be hard for a person to review in one sitting — most usefully when it mixes a mechanical
+change with a judgement, since that is where a defect hides. Both of Phase 7's worst self-inflicted
+bugs, a reflow that corrupted a numbered list and a section duplicated across two commits, lived
+inside large diffs that mixed the two.
+
+**Name the task in the commit body**, on its own line before the prose:
+
+```
+moved: the instruments into procedures/
+
+Task 7 of phase-8-<slug>/plan.md.
+
+Twenty tracked files moved as renames, the three gitignored paths moved with
+plain mv, and .gitignore was updated before the mv rather than after.
+```
+
+That line is what makes the review phase's check — *did every phase complete the task list it
+published?* — answerable from `git log` instead of by reading two documents against each other.
+
+**Task numbers are per phase and are never renumbered once published.** Insert with a letter (`9a`)
+rather than shifting the rest; the plan, the notes and the commit messages all cite them, and the
+same reasoning keeps numeric prefixes off this tier's filenames. **A task that produces no commit is
+still a task** — Phase 7's memory migration changed only files outside the repository — and its row
+says why git cannot show it.
+
+*Adopted 2026-08-16 from Phase 7's experience, and forward-only: Phase 7's own plan and notes keep
+the word "commit", because 21 commit messages in the history say "Commit N of …" and renaming the
+archive would put it permanently at odds with the history that implements it. `EPD-004` decision
+22.*
+
 **A phase is numbered work with its own folder, whatever branch prefix it carried.** The usual case
 is a `feat/phase-N-<slug>` branch that changes `src/`. Phase 7 — the documentation restructure — ran
 on a `docs/` branch, changed no behaviour, and is still a phase: it had a plan, a fifteen-step
@@ -382,7 +425,8 @@ Mined from Milestone 1's opening rather than invented. In order:
    were an hour's work to test and stood for five phases.
 7. **Write `implementation-plan.md` at decreasing resolution** — the next phase in full, the one after
    in outline, the rest as a title and the question it exists to close. Plans here are wrong on
-   contact often enough that detail beyond the next phase is waste.
+   contact often enough that detail beyond the next phase is waste. The phase written in full gets a
+   numbered **task list** in its own `plan.md`; see "The unit of work inside a plan is a task".
 8. **Open the folder and the branch.**
 
 ### Closing a milestone
