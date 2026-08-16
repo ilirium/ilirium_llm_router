@@ -160,6 +160,7 @@ permission allowlist, branch naming, and how a milestone is opened and closed. F
 | 18 | A portable methodology artifact | **Deferred, deliberately.** No `docs/method/` tier, no global `~/.claude/CLAUDE.md`, no separate repo. Extraction is a copy of `docs/README.md` plus the `CLAUDE.md` rule block, done when project #2 starts — a methodology extracted from n=1 is a guess about what generalises |
 | 19 | Enforcing the `$(...)` rule with a hook | **Rejected**, with the reasoning recorded so it is not re-proposed. The false positives are real here (the `Makefile` has six `$(VAR)`), quoting makes it undecidable without a shell parser, and it converts a recoverable prompt into a hard block on every Bash call |
 | 20 | Meaningless numbers | **A number must have a job, and must be able to do it.** Generalised from withdrawing 253. Test: job, population, recipe, instrument. Enforced structurally by a fourth column in `measurements.md`, not by remembering. The sibling of the slice rule — 26× was unreadable, 253 was purposeless |
+| 21 | Markdown link syntax, and a link tool | **Rejected, both halves.** The checker already parses backticks, so conversion buys it nothing; 42% of the 451 addressed paths are in documents deleted at commit 15; and line citations, commands and placeholders cannot be links, so converting yields a *mixed* convention. No external tool fits — checkers lose the filter, fixers are editor-bound and would not fire on `git mv`. The convention is stated: **a path is backticked, a rename uses `→`** |
 
 One behavioural change worth carrying: **commits no longer need a separate ask** (#16). The rest of
 `propose-before-implementing` stands — a design answer is still not a build order.
@@ -272,7 +273,25 @@ moves will not find what gets cut.
   one implementation plan per milestone, inside that milestone's folder, recorded in
   `docs/README.md`. `EPD-000:31` is edited in commit 13.
 - **The original six forks from before the decisions are all answered** — this said "five
-  questions" — **and so are the twelve from the second round**, decisions 9–20.
+  questions" — **and so are the thirteen from the second round**, decisions 9–21.
+
+## One backlog item, owed to commit 12
+
+`docs/backlog.md` does not exist yet — it is written at commit 12 by splitting
+`milestone-1-core/outstanding-work.md`. This item was raised after that file was archived, so it has
+nowhere else to wait. **Commit 12 must carry it into `backlog.md` along with the lifted items.**
+
+> **Teach `link-check.py` the two citation forms it cannot see.** It resolves paths and ignores
+> everything else, so two forms this repository actually depends on go unchecked: **heading anchors**,
+> stripped at `link-check.py:93` although `docs/README.md`'s naming table says findings are "linked by
+> anchor"; and **`file.py:N` line citations**, skipped by `is_candidate` for containing no `/`.
+>
+> *Why it is parked, and why the question may be weaker than it looks.* Both classes were verified by
+> hand and both passed — the 11 code citations in the second fresh-context review, the six section
+> titles at commit 6. So this buys repeatability, not a known defect, and the population is small
+> enough to check by hand again. It is also a change to the instrument in the middle of a migration
+> that instrument is measuring, which is the wrong time. Comes from `EPD-004` decision 21, where the
+> gap was found while rejecting a larger proposal.
 
 **One thing the second round added that has no home yet, and it is deliberate.** The *closing*
 playbook cannot be written until this restructure lands, because it is written from what the

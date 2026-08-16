@@ -567,7 +567,8 @@ setting reading order. The manual governs; the indexes list.
 A second round, from a discussion that began with *what is `CLAUDE.md` for* and ran through the
 session memory store, the permission allowlist, branch naming, and how a milestone is opened and
 closed. Decisions 9 and 10 revise decisions above and are corrected there in place; the rest are new
-and were never in this document's scope.
+and were never in this document's scope. **Decision 21 came later the same day**, raised while
+commit 11 of the migration was pending.
 
 **Why they are recorded here rather than in a new EPD.** All of them answer the same question this
 document asks — *where does a durable fact live* — and splitting them across two documents would mean
@@ -988,6 +989,78 @@ purposeless number *unfileable* — the empty cell is visible, where a forgotten
 the same move the `measurements.md` proposal already makes for the slice: replacing "remember to
 quote it" with a row that cannot omit it. **The fix that works is the one you cannot skip, not the
 one you have to remember.**
+
+### 21 — paths stay backticked; no Markdown link syntax, and no external link tool
+
+Raised while commit 11 was pending, on the reasonable-sounding grounds that writing citations as
+`[text](path)` would let `grep` and `docs/procedures/link-check.py` parse them more reliably, and
+would open the door to a tool that rewrites links automatically when a file moves.
+
+**Rejected on both halves**, and recorded here rather than declined in conversation because the
+appeal is durable — the next person to notice 700 backticked paths and no Markdown links will have
+the same thought. Decision 19's principle: a refusal is an outcome, and the reasoning is the part
+worth keeping.
+
+**The measurement**, taken at `5dcd86f`. *Job:* size the conversion before arguing about it.
+*Population:* backticked strings in `*.md`, outside code fences and outside `→` lines, passing
+`link-check.py`'s own `is_candidate` and `is_addressed`. *Recipe:* reuse the script's regexes and
+predicates against the working tree. *Instrument:* an ad-hoc script; the checker itself does not
+report by form.
+
+| Where | Addressed paths | Survives the restructure |
+|---|---|---|
+| the two migration documents | **189** — 42% of the total | **no**, deleted at commit 15 |
+| `epd/` | 108 | yes |
+| `milestone-1-core/` | 63 | frozen; not edited again |
+| `reference/` | 33 | yes |
+| `CLAUDE.md` | 29 | yes |
+| `procedures/`, `README.md`, `captures/`, root `README.md` | 29 | yes |
+
+451 addressed paths, of which 42% evaporates on its own and 14% is uneditable by rule. And the repo
+contains **zero** Markdown-syntax path links today, so the convention is uniform rather than mixed —
+there is no inconsistency being tolerated.
+
+**Why it buys the checker nothing.** `link-check.py:57-59` already carries three regexes — `LINK`
+for `[text](path)`, `TICKED` for backticks, `BARE` for unadorned `docs|src|tests/…`. Conversion
+would move hits from one regex to another. The premise that it improves checking is false for the
+checker we have.
+
+**Why a mixed convention would be worse than either pure one.** A large class of citation here has
+no Markdown-link form at all:
+
+| Form | Example | Why it cannot be a link |
+|---|---|---|
+| line citation | `config.py:62`, `proxy.py:3,238,321` | the link drops the line, which is the citation's whole content |
+| command | `python3 docs/procedures/link-check.py` | it is something to run, not somewhere to go |
+| template placeholder | `phase-N-<slug>/` | deliberately does not exist |
+| name, not address | `runs/`, `evidence/` | a kind of directory, per `is_addressed` |
+| rename notation | anything on a `→` line | both sides are meant to be stale |
+
+Convert what can convert and a backtick stops meaning one thing. A reader can no longer tell "not an
+address" from "nobody got to it yet", and the checker needs both parsers regardless.
+
+**On the tool, which is the half worth taking seriously.** The category splits, and neither half
+fits:
+
+- **Checkers** — `lychee`, `remark-validate-links`, `markdown-link-check`, strict-mode site builds.
+  Any of them would *replace* `link-check.py` and lose the four filter classes commit 9a measured as
+  cutting 33 hits to 2. That filter is the script's value; resolving a path is ten lines.
+- **Fixers** — editor-bound only, VS Code and Obsidian. They fire on a rename performed inside the
+  editor. This project moves files with `git mv` inside a commit, and commit 7's record turns on
+  editing `.gitignore` *before* the `mv`. Such a tool would not have fired once during this
+  restructure.
+
+**What the question did expose, and it is real.** `README.md`'s naming table says findings are
+"linked by anchor", and the checker strips `#` at `link-check.py:93` and never resolves one. Commit
+6's section-citation check — the thing keeping `proxy.py:3` valid without an edit — was done by
+hand, as were the 11 verified `file:N` code citations, which `is_candidate` skips for having no `/`.
+Two citation forms this repository relies on are unchecked. That is filed as backlog rather than
+done here, because it is a change to an instrument in the middle of a migration the instrument is
+measuring.
+
+**The convention this decision states**, graduating into `docs/README.md`: **a path is written in
+backticks, and a rename is written with `→`.** The second half is not a style preference — the
+checker depends on it at `link-check.py:88`.
 
 ## The original forks, as written before the decisions
 
