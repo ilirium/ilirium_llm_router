@@ -1121,6 +1121,40 @@ slice, and a number without it is the 26× error.
 collapses to `git mv docs/phase-* docs/milestone-1-core/` plus link fixes — roughly forty minutes.
 Commits 2 and 3 are cheap and reversible, which is what makes running the gate first worth it.
 
+### The gate was run on 2026-08-16, and it passed
+
+`docs/reference/backend-lmstudio.md` exists, at 228 lines, and states the parity findings without
+referring to Phase 4 as a phase. The four phase names it contains are all in **paths** —
+`../phase-4-notes.md`, `../phase-4-probes/`, `../phase-5-notes.md`,
+`../phase-2-step-6-session/calls.csv` — which is provenance, explicitly not a failure above. The
+conditions travel with the numbers as the slice: the model, the 44544-token window, the two dates,
+and that authentication was off.
+
+**What the extraction actually cost, since that is the part worth recording.** The parity table lifted
+verbatim; nothing had to be rewritten to survive the move. The work was **deciding what the file does
+not take**, exactly as the reading for this commit predicted:
+
+| Material in `phase-4-notes.md` | Where it went |
+|---|---|
+| The parity table, the three findings, the context and window facts | Here, verbatim or nearly |
+| The cold/warm cache tables, the time-to-first-byte rows | **Kept here**, because they *are* the backend's capability profile — but each one is a `measurements.md` row when that file exists, and it is the register that will carry the instrument and the job |
+| "A third of this phase was already done, again" | `lessons.md` — it is a lesson about how the work is planned, not about LM Studio |
+| The paragraph where byte-relay stops being an argument and becomes a measurement | `design-decisions.md`; this file keeps the measured cache behaviour and cites it |
+| The plan's assumptions, what each probe expected, what the read-timeout run was *meant* to answer | Nowhere. It is process, and the archive already holds it |
+
+**Two things the extraction exposed that the source did not say.** The LM Studio **version was never
+recorded** on either measurement date, which is a hole in the slice of a document whose findings are
+expected to expire with a release — recorded in the file rather than silently smoothed over. And the
+material fell into two kinds that read alike in a phase note: **facts about LM Studio** and **facts
+about how the router is configured for it**. Timeout semantics is the second, and it is here because
+`configuration.md` is deferred (fork 6), which is the ambiguity that section predicted — resolved, for
+now, by the deferral rather than by a rule.
+
+**One consequence for the commit order.** The file cites `measurements.md` and `design-decisions.md`,
+which do not exist until commits 3 and 6. Those are forward references inside the branch and are
+resolved well before the link check at commit 13; they are named here so a reader of this file
+mid-branch knows they are deliberate rather than rotted.
+
 **The first version of this document named a different first step**, writing `measurements.md` and
 `lessons.md`, and justified it by the parity table — a file it did not include. Those two are
 *synthesis*: they harvest asides scattered across six phase notes, and harvesting asides succeeds

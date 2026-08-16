@@ -12,8 +12,8 @@ untouched.
 
 ## Where this stands
 
-Eight commits, tree clean, nothing moved yet. **All planning is done and decided; execution has not
-started.**
+Nine commits, tree clean, nothing moved yet. **All planning is done and decided; execution has
+started — commit 2 of the plan is done and the gate passed.**
 
 | Commit | What |
 |---|---|
@@ -24,7 +24,9 @@ started.**
 | `dff62a9` | The 2026-08-16 round — decisions 9–17, two of them revising decisions already taken |
 | `c9f1152` | Decisions 18 and 19, and the reclassification that empties decision 16's machine-local category |
 | `08280ed` | What a second fresh-context review found — a missing ninth memory, the withdrawal of "253 mentions", and eleven count and measurement corrections |
-| *(this one)* | Decision 20, generalised from that withdrawal |
+| `ad1d5ae` | Decision 20, generalised from that withdrawal |
+| `f473277` | What the review verified, and the reading for commit 2 |
+| *(this one)* | **Commit 2 of the plan** — `reference/backend-lmstudio.md`, 228 lines, and the gate result written into `EPD-004` |
 
 The two planning documents:
 
@@ -34,10 +36,14 @@ The two planning documents:
 - **`docs/docs-restructure-plan.md`** — the migration. Scale, **eight** silent breakages, file-by-file
   mapping, **fifteen** commits, verification, rollback.
 
-**The next action is commit 2 of the plan: write `docs/reference/backend-lmstudio.md`, extracting the
-parity table out of `phase-4-notes.md`.** That is the gate — if the table cannot be lifted without
-dragging half the phase narrative with it, the tier split is wrong and it is cheaper to learn that
-from one file than from twenty-two.
+~~**The next action is commit 2 of the plan**~~ **Done 2026-08-16, and the gate passed.** The parity
+table lifted verbatim out of `phase-4-notes.md`; the file states its findings without referring to
+Phase 4 as a phase, and the only phase names in it are paths. The result, what the extraction cost,
+and the two things it exposed are in `EPD-004` under "The gate was run on 2026-08-16, and it passed".
+
+**The next action is commit 3: write `reference/measurements.md` and `reference/lessons.md`.**
+Commit 2 leaves each of them a specific inheritance, listed under "What commit 3 inherits from the
+gate" below.
 
 ---
 
@@ -221,10 +227,13 @@ What did *not* reproduce was corrected in `08280ed`, and the withdrawn mention c
 both documents. **The eight silent breakages are the most reliable part of either document** and were
 confirmed mechanically.
 
-## Reading for commit 2, the gate
+## Reading for commit 2, the gate — and how it turned out
 
-Done 2026-08-16 by reading `phase-4-notes.md` end to end. The gate's pass/fail criterion is in
-`EPD-004` under "The cheapest next step, and the gate"; this is what the source actually looks like.
+Done 2026-08-16 by reading `phase-4-notes.md` end to end, then executed the same day. **Every
+prediction below held**, including the last one: the destination collisions were the work, not the
+narrative drag. Kept as written because it is the only record of what was expected before the
+extraction, and the extraction agreeing with it is itself the evidence the tiers are readable in
+advance.
 
 - **The parity table itself lifts cleanly.** Lines 27–37 are self-contained. The only phase-bound
   context they need is the model and window from lines 13–14 (`qwen/qwen3.5-9b`, 44544 tokens,
@@ -240,6 +249,33 @@ Done 2026-08-16 by reading `phase-4-notes.md` end to end. The gate's pass/fail c
   does not take.**
 - The Phase 5 correction block at lines 239–252 and the timeout table are what `CLAUDE.md`'s LM
   Studio bullets duplicate. That overlap is where "one home per fact" gets its first real test.
+
+## What commit 3 inherits from the gate
+
+Written while the material was in hand, so `measurements.md` and `lessons.md` do not start from a
+blank page.
+
+**Rows `measurements.md` must carry**, all of them now quoted in `reference/backend-lmstudio.md` and
+therefore needing a canonical home with instrument and job: the 27924-token preamble; the 44544
+window and the 63% it consumes; cold and warm time to first byte, 196789 → 49629 ms, with
+`cache_read_input_tokens` 0 → 27904; the prefill profile 9166 → 115073 ms, 27924 → 196789 ms,
+41595 → 461712 ms, ~41000 → killed at 600247 ms; the 908 ms over-window refusal; 41595 tokens at 93%
+of the window; the `read_timeout: 30` reproduction at 30343 ms; the 4 / 127 / 216 output-token
+`output_config` comparison; and the warmup-probe cost, 40 calls and 20.0 of 45.5 minutes. The two
+medians — 1426 ms Anthropic and 37136 ms LM Studio — are already known to need their slice.
+
+**The relationship to state, so it is not invented twice.** `backend-lmstudio.md` keeps the numbers
+in prose because they *are* the backend's capability profile; `measurements.md` is the register that
+says when each was taken, with what, over which slice, and what it is for. That is an index, not a
+second copy, and a correction still lands in the register first.
+
+**One row is a test of decision 20 rather than a transcription.** The LM Studio version was never
+recorded on either measurement date. Every row above inherits that hole, and the fourth column is
+where it becomes visible instead of implied.
+
+**`lessons.md` gains nothing new from the gate**, which is worth saying: the extraction found no
+fifth episode. It confirmed the one already recorded — a reference document is mostly a decision
+about what it does *not* take.
 
 ## Loose ends that are not blockers
 
