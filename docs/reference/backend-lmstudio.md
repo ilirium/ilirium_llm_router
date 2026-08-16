@@ -10,8 +10,8 @@ instrument is `../procedures/lmstudio-capability-probes/`, committed to be re-ru
 
 **The slice every measurement below carries**, unless a line says otherwise: `qwen/qwen3.5-9b`
 (MLX 4-bit) loaded at **44544 tokens** of context out of a 262144 maximum, on one machine, with
-"Require Authentication" off. Measured 2026-08-06 (`../phase-4-notes.md`) and 2026-08-07
-(`../phase-5-notes.md`). **The LM Studio version was not recorded at the time** — which is a gap in
+"Require Authentication" off. Measured 2026-08-06 (`../milestone-1-core/phase-4-lmstudio-parity/notes.md`) and 2026-08-07
+(`../milestone-1-core/phase-5-config-and-timeouts/notes.md`). **The LM Studio version was not recorded at the time** — which is a gap in
 the slice, given that these answers are expected to expire with a release. Numbers are dated and sliced here because they are part of the
 finding; `measurements.md` is the register that carries each one's instrument and what it is for.
 
@@ -65,7 +65,7 @@ nothing to bisect.
 One caveat on that replay: `probe.py` parses and re-serializes the captured body, so the bytes on the
 wire differ from the captured ones by JSON separator spacing (119797 against 118004). It proves the
 *shape* is accepted. That Claude Code's own bytes survive is a different claim, carried by the 24
-cache-hit rows in `../phase-2-step-6-session/calls.csv` from real traffic.
+cache-hit rows in `../milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv` from real traffic.
 
 ### `thinking` is unbounded
 
@@ -119,7 +119,7 @@ cost 50 seconds, so cache reads are much cheaper than prefill here, not free.
 **There is a floor.** Two identical 117-token runs with an `ephemeral`/`1h` marked system block read
 `cache_read_input_tokens: 0` both times. The marker is accepted and does nothing at probe scale.
 Anyone measuring caching with a small request will conclude it is broken. Real traffic is where it
-shows: **24 of the LM Studio rows** in `../phase-2-step-6-session/calls.csv` carry a non-zero
+shows: **24 of the LM Studio rows** in `../milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv` carry a non-zero
 `cache_read`, the largest 40879. (The whole file, both backends, is 52 rows and 70692 — a different
 number for a different question, and `measurements.md` carries both.)
 

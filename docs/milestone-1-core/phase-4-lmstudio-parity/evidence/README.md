@@ -1,12 +1,12 @@
 # Phase 4 evidence — the four measurements that cannot be taken again
 
-**Frozen. Do not regenerate.** These are the sources behind numbers quoted in `../phase-4-notes.md`,
-`../../CLAUDE.md`, `../implementation-plan.md` and `../epd/EPD-002-token-counting-for-local-backends.md`.
+**Frozen. Do not regenerate.** These are the sources behind numbers quoted in `../notes.md`,
+`../../../../CLAUDE.md`, `../../implementation-plan.md` and `../../../epd/EPD-002-token-counting-for-local-backends.md`.
 
-## Why this exists when `../phase-4-probes/runs/` is gitignored
+## Why this exists when `../../../procedures/lmstudio-capability-probes/runs/` is gitignored
 
 That rule was written on the assumption that Phase 4's probes are a tool like
-`../phase-3-verification/`, whose runs are disposable because the failures reproduce on demand — the
+`../../../procedures/dying-backend/`, whose runs are disposable because the failures reproduce on demand — the
 dying backend always dies. **Four of Phase 4's results do not reproduce**, and the rule missed it:
 
 | File | Why it cannot be re-obtained |
@@ -27,7 +27,7 @@ elsewhere.
 
 ## What is in them
 
-The replay is `../log-the-whole-request.txt` with only the model name changed: 27 tool schemas, a
+The replay is `../../../captures/log-the-whole-request.txt` with only the model name changed: 27 tool schemas, a
 `role: "system"` message inside `messages`, two `cache_control` markers, `context_management`,
 `output_config`, `metadata.user_id` and `thinking`, against `qwen/qwen3.5-9b` loaded at 44544 tokens.
 
@@ -41,7 +41,7 @@ files.
 A grep for `sk-ant`, `Bearer `, `oat01` and `authorization` matches twice in
 `replay-warm-cache-full-stream.txt`, and both are **false positives**: they are Claude Code's own
 system-prompt text about authorization scope for security work, which is already committed verbatim
-in `../log-the-whole-request.txt`. No credential is present.
+in `../../../captures/log-the-whole-request.txt`. No credential is present.
 
 ## The lesson, since this is the second time
 

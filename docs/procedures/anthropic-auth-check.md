@@ -125,7 +125,7 @@ the subscription's usage window was simply full at that moment.
 ### Mostly answered on 2026-07-31, without re-running the curl
 
 The Phase 2 step 6 session produced **eight more 429s** from Anthropic
-(`../phase-2-step-6-session/calls.csv`, rows 4, 6, 58, 61, 63, 73, 74, 85). They settle the `error.type`
+(`../milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv`, rows 4, 6, 58, 61, 63, 73, 74, 85). They settle the `error.type`
 half of the question above; the header half is still open.
 
 **The type was `rate_limit_error`.** Not read directly — the recorder was discarding `error.type` at

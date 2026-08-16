@@ -1,9 +1,9 @@
 # Phase 4 probes — sending LM Studio the awkward shapes
 
-The instrument behind the findings in `../../phase-4-notes.md`. LM Studio publishes no compatibility
+The instrument behind the findings in `../../milestone-1-core/phase-4-lmstudio-parity/notes.md`. LM Studio publishes no compatibility
 table, so the only way to learn what it supports is to send the shape and read the answer.
 
-**Meant to be re-run**, like `../dying-backend/` and unlike `../../phase-2-step-6-session/`.
+**Meant to be re-run**, like `../dying-backend/` and unlike `../../milestone-1-core/phase-2-observability/evidence/step-6-session/`.
 Every finding here expires the next time LM Studio ships a release, and re-running is how you find
 out that it has.
 
@@ -16,7 +16,7 @@ out that it has.
 | `make_image.py` | Regenerates `bodies/image.json`. Hand-rolled PNG; the project has no image dependency and needs none |
 | `runs/` | Full transcripts. Gitignored — this is a tool, and its findings belong in the notes. **Each probe overwrites its own file**, so a result worth keeping must be copied out before the next run |
 
-**Four results from this directory are frozen in `../../phase-4-evidence/`** and must not be regenerated
+**Four results from this directory are frozen in `../../milestone-1-core/phase-4-lmstudio-parity/evidence/`** and must not be regenerated
 from here. Re-running reproduces most of what these probes measure, which is why `runs/` is
 disposable — but not the cold-cache replay, not the over-window refusal, and not the read timeout.
 The rule is "does re-running produce the same number", not "is this a tool or evidence"; see that

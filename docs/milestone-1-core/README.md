@@ -70,8 +70,17 @@ later rather than because a merge was mishandled.
 phases 4, 5 and 6 wrote a separate one. The phase template in `../README.md` describes what Milestone
 2 onward should produce — this archive records what Milestone 1 actually produced.
 
-**Phase 6 has no `evidence/`.** Its findings were re-derivations of committed artefacts and live runs
-against local stubs, and they are recorded in its notes rather than as new frozen files.
+**Phases 3 and 6 have no `evidence/`.** Phase 6's findings were re-derivations of committed artefacts
+and live runs against local stubs, recorded in its notes rather than as new frozen files. Phase 3's
+transcripts were **deliberately not kept** — its own README says "the artefacts of a run are not
+evidence worth keeping, unlike Phase 2's", because the instrument that produces them is committed
+instead, at `../procedures/dying-backend/`. Re-running it is the point.
+
+The same reasoning applies to the probe transcripts: what could not be reproduced was frozen into
+`phase-4-lmstudio-parity/evidence/` and `phase-5-config-and-timeouts/evidence/` at the time, and the
+rest stays disposable beside the probe. **This restructure deliberately did not copy either `runs/`
+directory into the archive**, because doing so would commit material two phases had decided to throw
+away.
 
 ## What it cost, for whoever sizes the next one
 

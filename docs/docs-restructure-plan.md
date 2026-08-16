@@ -35,7 +35,7 @@ Measured 2026-08-15 on `docs/milestone-boundary-restructure` at commit `51b857b`
 | Doc paths cited from code and config | **11**, in 7 files — 8 pointing *out* to `docs/`, 3 pointing *into* `CLAUDE.md` |
 | `.gitignore` entries naming `docs/` paths | **4**, one of them a negation |
 | Documents rewritten rather than moved | **4** — `CLAUDE.md`, `README.md`, `outstanding-work.md` (split), `EPD-000` |
-| Documents created | **at least 17** — **`captures/README.md`** was added at commit 9, since the capture's redaction scheme needs a home beside the data (`docs/README.md`'s own rule) and the count had only ever listed two tier indexes — `docs/README.md` (the manual), `status.md`, `backlog.md`, **seven** `reference/` files, two tier `README.md` indexes, `milestone-1-core/README.md`, and an `evidence/README.md` for each of phases 1, 3 and 5, which have none today (decision 13). **Said 11, then 12, and both undercounted**: the milestone index was listed in Tier 5 but never counted, and the evidence READMEs were required by a decision taken after the row was written |
+| Documents created | **15** — **`captures/README.md`** was added at commit 9, since the capture's redaction scheme needs a home beside the data (`docs/README.md`'s own rule); and **two of the three planned evidence READMEs were not needed**, so the figure went 11 → 12 → 16 → 17 → 15 across this document's life. What it is: `docs/README.md` (the manual), `status.md`, `backlog.md`, **seven** `reference/` files, two tier `README.md` indexes, `captures/README.md`, `milestone-1-core/README.md`, and **one** `evidence/README.md`, for phase 1 |
 
 **The first row was wrong in this document's first version**, which said "68 files, 50 tracked". The
 50 was right; the 68 was not, and it contradicted the untracked row two lines below it — 50 + 15 is
@@ -231,6 +231,21 @@ saying only that the file exists does not replace a section nobody knew they wer
 | `docs/phase-5-measurements/read_timeout_semantics.py` | `docs/procedures/read-timeout-semantics.py` | a twenty-minute measurement that settled two wrong claims; worth keeping runnable. **It splits from its own README**, which goes to phase evidence with the `.txt` files — so the archived README documents a script no longer beside it, and the script arrives in a tier whose index is meant to say when each check is worth re-running. Write its entry into `procedures/README.md` at commit 7, and leave a line in the archived README naming where the script went. `config.py:62` and `config.yaml:24` cite the *directory*: they repoint at the archive, which holds the evidence they mean, but no longer reaches the script |
 | — | `docs/procedures/README.md` | **new** — the index, and when each check is worth re-running |
 
+**Both `runs/` copies were dropped on 2026-08-16, at commit 10.** This document said the Milestone 1
+transcripts should be copied into phase evidence. Reading what is actually in those directories
+refutes it: **the copies would commit material two phases explicitly decided to throw away.**
+`phase-4-notes.md` says everything in the probes' `runs/` "is disposable and gitignored, because
+re-running reproduces it", and names the four results that are *not* reproducible — which were frozen
+into `phase-4-evidence/` at the time. The dying-backend README says the same in its own words: "the
+artefacts of a run are not evidence worth keeping, unlike Phase 2's."
+
+So the archive takes neither. Phase 3 ends up with **no `evidence/` directory at all**, which is
+correct rather than missing: its instrument is committed instead, and re-running it is the point.
+
+**And two of the three planned evidence READMEs were not needed.** Phase 5's already existed — it is
+`phase-5-measurements/README.md`, which moves with the `.txt` files — and phase 3 has no evidence
+directory to describe. Only phase 1 needed one written.
+
 **The rule behind both `runs/` rows.** An instrument's output directory must follow the instrument,
 never the archive. If it follows the archive, the tool writes into a milestone folder — wrong for
 Milestone 2 — and the ignore rule that keeps disposable transcripts out of the repository stops
@@ -356,7 +371,7 @@ file itself — which is what keeps the principle true rather than merely stated
 | 8 | Fix `probe.py` (`ROOT` at `:40`, header paths at `:6,12,26`, usage examples at `:20-23`), **`make_image.py:11` and `make_needle.py:13-14`**, and the moved `README.md` links | Separate from the move, so the move stays a clean rename. `RUNS` and `file: runs/…` need no edit under the instrument rule — **and neither does `router.yaml:5`**, which this row used to list. Both corrections are the same rule paying off: the ignore comment stays true because `runs/` followed the instrument. The two generator scripts were **not** listed here and carry the same stale usage examples `probe.py` does |
 | 9 | `git mv` the capture to `docs/captures/`, fix `probe.py:43` **and `:6`**, write **`captures/README.md`**, and repoint the live tiers | Decided: `docs/captures/`. **Not as isolated as this row implied**: the capture is cited from `reference/` and `procedures/`, and those tiers are kept correct at every commit rather than waiting for 13 — see the rule below. The README is the seventeenth created document; the Scale row said sixteen |
 | 9a | Commit the link checker as `procedures/link-check.py` | **Inserted 2026-08-16**, at the owner's call. It was written as a throwaway at commit 9 and then acquired three jobs that outlive the throw: it is the commit 13 work list, the closing check after 15, and it carries the four-class filter that cost a run to work out. **Numbered 9a rather than 10** so that citations to commits 11, 13 and 15 in this document, `EPD-004` and the handoff stay valid |
-| 10 | `git mv` the milestone archive; update `.gitignore:229` in the same commit; copy the Milestone 1 run transcripts into phase evidence; **write the three missing `evidence/README.md` files** (phases 1, 3, 5) | The `router.log` negation and its path move together (breakage 2). The three READMEs are required by decision 13 and were counted in the Scale row above, but **no commit named them until 2026-08-16** — they belong here, where the evidence they describe arrives |
+| 10 | `git mv` the milestone archive; update the `router.log` negation in the same commit; **write `phase-1-proxy/evidence/README.md`** | The negation and its path move together (breakage 2). **Two instructions here were dropped on 2026-08-16 and the reasons are below**: the `runs/` copies, and two of the three evidence READMEs |
 | 11 | Rewrite `CLAUDE.md` — cut the moved sections, rewrite the survivors as rules, insert the pointers, the decisions table of contents, the branch convention and the seven migrated memory rules. **And fix the two numeric errors commit 3 found**: the 111-second warmup probe carried 1960 bytes, not 31 KB, and the probes cost 20.0 of **45.6** minutes | Only now, once every destination exists. **Then shrink all nine migrated memories to pointers** — a step, not a commit, since those files are outside the repository (see below) |
 | 12 | Write `docs/status.md` and `docs/backlog.md`; **split** `outstanding-work.md`, lifting its live items into `backlog.md` | EPD-004's fork 3 decision. Its own commit because it rewrites rather than moves. The *move* into the archive already happened at commit 10; this row used to say "archive", duplicating it |
 | 13 | Rewrite the cross-references **the link checker reports**, `README.md`, and `EPD-000`'s graduation convention, two body citations and closing section | The bulk edit, in one reviewable commit. Said "the 253 cross-references"; that number is withdrawn above, and the checker's output is the actual work list. The `EPD-004` index row is **already done** in `51b857b` |

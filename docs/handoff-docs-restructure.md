@@ -12,8 +12,10 @@ untouched.
 
 ## Where this stands
 
-Seventeen commits, tree clean. **Commits 2 to 9a are done — the procedures and the capture have
-moved, every live tier resolves, and the link checker is a committed instrument.** The gate
+Eighteen commits, tree clean. **Commits 2 to 10 are done — everything has moved.** `docs/` now has
+its target shape: `reference/`, `procedures/`, `captures/`, `epd/`, `milestone-1-core/`, the manual,
+and the two migration documents that retire at commit 15. Only `status.md` and `backlog.md` are
+missing, and they are commit 12. The gate
 passed, all seven `reference/` files exist, the manual is written, and all three tier indexes are in
 place. Four reference files still duplicate a `CLAUDE.md` section; that is deliberate and ends at
 commit 11. **No citation has been repointed yet**, so a dozen documents and three code files name
@@ -38,7 +40,8 @@ paths that no longer exist — commits 8, 13 and 14.
 | `f729cbc` | **Commit 7** — the procedures moved, `.gitignore` repointed in the same commit |
 | `f5b993c` | **Commit 8** — `probe.py` and the moved READMEs repaired; two plan corrections |
 | `6535d7f` | **Commit 9** — the capture to `captures/`, with a README it turned out to need |
-| *(this one)* | **Commit 9a** — the link checker filed as `procedures/link-check.py` |
+| `79214cb` | **Commit 9a** — the link checker filed as `procedures/link-check.py` |
+| *(this one)* | **Commit 10** — the milestone archive, and two plan instructions dropped |
 
 The two planning documents:
 
@@ -89,13 +92,16 @@ see "What commit 9 found" below.
 ~~**The next action was commit 10**~~ **Commit 9a came first, at the owner's call:** the link checker
 is now `docs/procedures/link-check.py` rather than a file in `/tmp`. See "What commit 9a found".
 
-**The next action is commit 10: `git mv` the milestone archive**, update `.gitignore:229` in the same
-commit, copy the Milestone 1 run transcripts into phase evidence, and **write the three missing
-`evidence/README.md` files** (phases 1, 3 and 5). This is the largest move and it carries breakage 2 —
-the `!docs/phase-2-step-6-session/router.log` negation, the one trap in this plan that has already
-fired once. Also due here, from the Tier 2 table: `testing-against-claude-code--results.md` →
-`phase-1-proxy/evidence/session-results.md`, which was deliberately left out of commit 7 because its
-destination is under the archive.
+~~**The next action is commit 10**~~ **Done 2026-08-16.** Breakage 2 is verified the hard way, and two
+of the commit's instructions were dropped after reading what they applied to — see "What commit 10
+found" below.
+
+**The next action is commit 11: rewrite `CLAUDE.md`** — cut the six moved sections, rewrite the
+survivors as rules, insert the pointers (the `Anthropic model IDs` one must name its trigger), the
+titles-only decisions index, the branch convention and the seven migrated memory rules. **Then shrink
+all nine memories to pointers**, which is a step rather than a commit because those files are outside
+the repository and git cannot verify it. Two numeric corrections are owed here too: the 111-second
+warmup probe carried 1960 bytes, not 31 KB, and the probes cost 20.0 of **45.6** minutes.
 
 ---
 
@@ -372,6 +378,33 @@ commit and no visible boundary. The `--no-ff` convention starts at Phase 2 (`4d7
 every phase after it. This is *not* a defect to repair — rewriting history to add two merge commits
 would cost far more than the boundary is worth — but a reader checking the convention against the log
 finds two exceptions, so `milestone-1-core/README.md` now says why they are there.
+
+## What commit 10 found
+
+**Breakage 2 was verified the strongest way available, not just repaired.** After moving the negation
+to `!docs/milestone-1-core/phase-2-observability/evidence/step-6-session/router.log`, the frozen log
+was removed from the index and re-added with `git add -A` — the exact scenario that failed the first
+time this trap fired. It came back tracked. `git check-ignore -v` names the new line.
+
+**Two of this commit's instructions were dropped, and the reason is the same for both.** The plan
+said to copy the Milestone 1 run transcripts into phase evidence. Reading what is in those
+directories refutes it: `phase-4-notes.md` calls everything in the probes' `runs/` "disposable and
+gitignored, because re-running reproduces it" and names the four results that are not — which were
+frozen at the time. The dying-backend README says the same. **Copying them would commit material two
+phases decided to throw away.** So phase 3 has no `evidence/` at all, which is correct rather than
+missing, and only phase 1 needed a new evidence README: phase 5's already existed and moved with its
+`.txt` files.
+
+**One of my own sweeps made the mistake breakage 5 is named for.** Repointing the live tiers by
+find-and-replace also rewrote two `evidence/README.md` files that had just moved *into* the archive —
+where `../` no longer means `docs/`. It produced paths like `../milestone-1-core/…` from a file
+already inside `milestone-1-core/`. Reverted and redone by hand, by depth:
+`../../../../CLAUDE.md` from an evidence directory, exactly as the plan predicted. **A name-based
+rewrite cannot fix a link that broke by depth, and will confidently make it worse.**
+
+**`docs/` reached its target shape**, and the link checker over every live tier plus the touched
+archive files reports **three hits, all expected**: `../backlog.md` twice (commit 12) and
+`.claude/settings.json`, which decision 17 defers.
 
 ## What commit 9a found
 

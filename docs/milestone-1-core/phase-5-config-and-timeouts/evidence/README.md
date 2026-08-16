@@ -1,10 +1,10 @@
 # Phase 5 measurements
 
-Three files behind the read-timeout half of `../phase-5-notes.md`. One is an instrument meant to be
+Three files behind the read-timeout half of `../notes.md`. One is an instrument meant to be
 re-run; two are evidence from live runs.
 
 > **The instrument left this directory on 2026-08-16.** `read_timeout_semantics.py` is now
-> `../procedures/read-timeout-semantics.py`, filed with the other re-runnable checks; the two `.txt`
+> `../../../procedures/read-timeout-semantics.py`, filed with the other re-runnable checks; the two `.txt`
 > files stay here as evidence. That split is the point of the two tiers — an instrument that lives
 > inside one phase's folder looks like a transcript, and the next person re-derives it.
 
@@ -33,21 +33,21 @@ threshold across runs.** That is the argument for a configurable number over a h
 `read_timeout_semantics.py` needs nothing — it starts its own backend and prints a table:
 
 ```
-uv run python docs/phase-5-measurements/read_timeout_semantics.py
+uv run python docs/procedures/read-timeout-semantics.py
 ```
 
 The needle runs need LM Studio with a model loaded, the router up on a config with the
 `read_timeout` under test, and the body regenerated at the size that fills most of the window:
 
 ```
-python3 docs/phase-4-probes/make_needle.py --tokens 41000
-python3 docs/phase-4-probes/probe.py needle --router http://127.0.0.1:<port>
+python3 docs/procedures/lmstudio-capability-probes/make_needle.py --tokens 41000
+python3 docs/procedures/lmstudio-capability-probes/probe.py needle --router http://127.0.0.1:<port>
 ```
 
 **Lower the config rather than enlarging the request** when the failure shape is what you want. The
 30-second run reproduces Phase 4's ten-minute timeout in thirty seconds.
 
-Note `make_needle.py` **overwrites** `../phase-4-probes/bodies/needle.json` in place, so running it
+Note `make_needle.py` **overwrites** `../../../procedures/lmstudio-capability-probes/bodies/needle.json` in place, so running it
 at a different size changes what `probe.py needle` does for whoever runs it next. These runs used
 `--tokens 41000`; the file has been put back to its committed 12000-token default afterwards, and
 anything reproducing them needs to regenerate it and put it back the same way.
