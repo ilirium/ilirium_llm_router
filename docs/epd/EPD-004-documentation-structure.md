@@ -405,9 +405,11 @@ If numeric prefixes on reference docs are wanted anyway, number **in tens** (`10
 `20-design-decisions.md`) so an insertion does not renumber anything. That is the mitigation, not a
 recommendation.
 
-**Phase numbers stay globally sequential, not per-milestone.** Milestone 2 starts at Phase 7. The
-alternative — restarting at Phase 1 inside each milestone — makes "Phase 3 found four of its five
-items already built" ambiguous forever, and that sentence appears in five documents.
+**Phase numbers stay globally sequential, not per-milestone.** The alternative — restarting at
+Phase 1 inside each milestone — makes "Phase 3 found four of its five items already built" ambiguous
+forever, and that sentence appears in five documents. *(This said "Milestone 2 starts at Phase 7"
+until 2026-08-16, when the restructure itself was filed as Phase 7. **Milestone 2 starts at Phase
+8** — see decision 15 and `../README.md`.)*
 
 ## Decisions taken, 2026-08-15
 
@@ -415,51 +417,46 @@ All six forks answered by the repository owner, plus two additions. Forks 5 and 
 same day, after a review found the first four attached to the least consequential questions in the
 document. The original reasoning is kept below each decision, including where it was overridden.
 
-**Gate — accepted.** The four-tier split stands, so the rest of this document applies.
+**Ordered and completed on 2026-08-16.** This section ran 5, 3, 2, 6, 8 — the order the discussion
+took — and three answers sat above it as one-line paragraphs rather than sections, which made them
+easy to read as preamble instead of as decisions. Forks 4 and 7 are now sections of their own, with
+no change to what they say. **Fork 1 had no recorded decision at all** and is reconstructed below,
+marked as such.
 
-**Decision on fork 4 — `docs/captures/`.** The alternative, `reference/captures/`, is dropped.
+**Why the gaps existed, since the pattern is the useful part:** a fork got its own section when the
+owner's answer *added* something — overrode the recommendation, revised it, or answered a question
+the fork had not asked. Forks 1, 4 and 7 were answered exactly as proposed, so there was nothing to
+argue and they were minuted in a line. That is defensible while a document is being written and
+indefensible once it is the record: **a decision taken without argument is still a decision, and it
+is the one most likely to be reversed by someone who cannot see it was ever made.**
 
-**Decision on numbering — no prefixes on reference documents.** Order lives in
-`reference/README.md`. The identity-versus-order rule below is adopted as written.
+### Gate — the four-tier split is accepted
 
-### Decision on fork 5 — `Design decisions` moves out whole
+**Accepted.** Reference / procedures / EPDs / milestone archive. The rest of this document applies.
 
-**Overrides this document's recommendation**, which was to keep the section in `CLAUDE.md` because
-the measurement showed it was the most-cited section in the file. The owner's reason is better than
-the objection: the decisions are worth reading *as a document*, front to back, and they cannot be
-while they are one section of an auto-loaded reference file nobody reads linearly.
+### Decision on fork 1 — no ID scheme for findings; start weak
 
-So `reference/design-decisions.md` holds the section entire — every statement with the reasoning and
-the measurement that produced it, in the order they were taken.
+**Reconstructed 2026-08-16 from the tree and from the numbering table above**, which already carries
+the answer as *"no ID scheme; one canonical row in `reference/measurements.md`, linked by anchor"*.
+No decision was ever minuted. This is the only entry in this section not written on the day, and it
+is inference from an implemented outcome rather than a record of the conversation.
 
-**What stays in `CLAUDE.md` is a table of contents: the decision titles only, and one line saying
-that reversing any of them means reading the file first.** This is deliberately not a summary. A
-one-line restatement of a decision *is* duplication and would drift; a list of titles is an index and
-cannot. It preserves the property the measurement was worried about — a session knows which
-decisions exist and that it must not quietly reverse one — at no risk of two copies disagreeing.
+**The weak version, as proposed.** Measurements do *not* get citable IDs (`M-014`). One canonical
+row per number lives in `reference/measurements.md`, cited by anchor. The strong version's benefit —
+a contradiction becomes findable by grep — is bought back instead by the register's four-column
+rule, which makes a number unfileable unless it names its slice and its job.
 
-The consequence for `EPD-000` is real and is recorded below: an accepted EPD now graduates into
-`reference/design-decisions.md`, not into `CLAUDE.md`.
+**What the tree confirms:** `measurements.md` was written at commit 3 with no ID scheme, its rows
+identified by their bolded claim. The fork's own revisit condition — *"only if a seventh phase finds
+another number quoted wrong"* — has since been met twice, by the 26× slice and the 111-second probe,
+and the answer both times was a better column rather than an ID. The weak version has held.
 
-### Decision on fork 3 — split, with the backlog in its own file
-
-`outstanding-work.md` is archived as the survey it is. Its live items move out — **but to
-`docs/backlog.md`, not into `status.md`.**
-
-The owner's distinction, and it is the right one: **status is state, backlog is inventory.** A status
-file that carries the work items themselves stops being readable at a glance, which is the only
-property that makes it worth having. `status.md` names what is done, what is in progress, and what
-is next; the *next* items are the two or three drawn out of the backlog, cited to it.
-
-One refinement, because `outstanding-work.md` is unusually good at something a plain to-do list
-loses: **every item there carries the reason it is parked**, and several carry the reason the
-question is weaker than it looks. `backlog.md` must keep that column. An item that has lost its
-"why it is here and why it has not been done" has become a to-do, and a to-do that nobody has
-justified in six months is indistinguishable from a to-do nobody wants.
-
-And the backlog **points at the EPDs rather than restating them.** Three of its heaviest items are
-`EPD-001`, `002` and `003`; copying their substance into the backlog would create the second copy
-this whole restructure exists to prevent.
+**One thing the reconstruction exposes that a same-day minute would not have.** The mechanism this
+fork chose is *citation by anchor*, and **nothing in the repository cites `measurements.md` by an
+anchor** — not once. The register is quoted by prose reference instead. Half the decided mechanism
+is unused, which is also why `procedures/link-check.py` never learned to resolve anchors; that gap
+is in `../backlog.md`. Not a defect, but worth knowing that the strong version lost to something
+only half in use.
 
 ### Decision on fork 2 — freeze the handoff, and do *not* create a third file
 
@@ -491,6 +488,56 @@ So `status.md` has three parts, most volatile first:
 **The split condition, so this is falsifiable rather than a preference:** if "Where we stopped"
 passes ~30 lines, or if it starts carrying material that outlives the session that wrote it, it has
 become a document and should be given its own file. Until then it is a section.
+
+### Decision on fork 3 — split, with the backlog in its own file
+
+`outstanding-work.md` is archived as the survey it is. Its live items move out — **but to
+`docs/backlog.md`, not into `status.md`.**
+
+The owner's distinction, and it is the right one: **status is state, backlog is inventory.** A status
+file that carries the work items themselves stops being readable at a glance, which is the only
+property that makes it worth having. `status.md` names what is done, what is in progress, and what
+is next; the *next* items are the two or three drawn out of the backlog, cited to it.
+
+One refinement, because `outstanding-work.md` is unusually good at something a plain to-do list
+loses: **every item there carries the reason it is parked**, and several carry the reason the
+question is weaker than it looks. `backlog.md` must keep that column. An item that has lost its
+"why it is here and why it has not been done" has become a to-do, and a to-do that nobody has
+justified in six months is indistinguishable from a to-do nobody wants.
+
+And the backlog **points at the EPDs rather than restating them.** Three of its heaviest items are
+`EPD-001`, `002` and `003`; copying their substance into the backlog would create the second copy
+this whole restructure exists to prevent.
+
+### Decision on fork 4 — the capture lives in `docs/captures/`
+
+**As proposed.** The alternative, `reference/captures/`, is dropped. The capture is raw input that
+several documents are derived from, not a reference document itself.
+
+The fork called itself *"the least consequential item in the document"* and was right in the sense
+it meant: the choice changes one path in `probe.py`. It was wrong about the consequence of the
+*directory*. Commit 9 found that `captures/` needed a `README.md` nobody had budgeted for, because
+the redaction scheme lived in the handoff being archived, and the manual's own rule puts that scheme
+beside the data it describes.
+
+### Decision on fork 5 — `Design decisions` moves out whole
+
+**Overrides this document's recommendation**, which was to keep the section in `CLAUDE.md` because
+the measurement showed it was the most-cited section in the file. The owner's reason is better than
+the objection: the decisions are worth reading *as a document*, front to back, and they cannot be
+while they are one section of an auto-loaded reference file nobody reads linearly.
+
+So `reference/design-decisions.md` holds the section entire — every statement with the reasoning and
+the measurement that produced it, in the order they were taken.
+
+**What stays in `CLAUDE.md` is a table of contents: the decision titles only, and one line saying
+that reversing any of them means reading the file first.** This is deliberately not a summary. A
+one-line restatement of a decision *is* duplication and would drift; a list of titles is an index and
+cannot. It preserves the property the measurement was worried about — a session knows which
+decisions exist and that it must not quietly reverse one — at no risk of two copies disagreeing.
+
+The consequence for `EPD-000` is real and is recorded below: an accepted EPD now graduates into
+`reference/design-decisions.md`, not into `CLAUDE.md`.
 
 ### Decision on fork 6 — six files, revised on 2026-08-16 to seven
 
@@ -545,6 +592,20 @@ repointing at commit 14, because it names `CLAUDE.md` as the file. It cites "Obs
 by **section
 title**, and that section survives as a section of `architecture.md`.
 
+### Decision on numbering — no prefixes on reference documents
+
+**Numbered 7** by the decisions table that cites these, while this document had recorded it as a
+decision rather than a fork and left it unnumbered — which is why the two disagreed for a day.
+
+**As proposed.** Reference documents take no numeric prefix; the reading order lives in
+`reference/README.md`. The identity-versus-order rule above is adopted as written: *number what
+needs a stable identity to be cited, do not number what only needs an order.*
+
+The reason is a cost in code rather than taste. Reference documents are cited by name from `src/`
+docstrings, so a numeric prefix would mean that inserting a seventh document renumbers the rest and
+churns citations in Python. The tier **did** grow from six files to seven while this restructure was
+running — exactly the case the rule was chosen against — and it cost nothing.
+
 ### Decision 8 — `docs/README.md`, the manual
 
 **New, raised by the owner, and it repairs a real gap in this proposal.** Everything above explains
@@ -569,6 +630,7 @@ using only `docs/README.md`.** If they must consult the archive, the manual has 
 
 `reference/README.md` and `procedures/README.md` stay as they are — indexes of their own tier,
 setting reading order. The manual governs; the indexes list.
+
 
 ## Decisions taken, 2026-08-16
 
