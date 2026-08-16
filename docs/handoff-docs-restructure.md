@@ -14,10 +14,11 @@ untouched.
 
 1. **Read this section and "Where this stands" below.** Then `docs/docs-restructure-plan.md` for the
    commit you are on, and `docs/README.md` for the rules every commit is checked against.
-2. **The work is executing a fifteen-commit plan.** Commits 2 to 10 are done. **Commit 11 is next**,
-   and it is the one that changes what every future session sees, because it cuts `CLAUDE.md`.
-3. **Run `python3 docs/procedures/link-check.py` before and after anything that moves.** Three hits
-   are expected right now and are listed under "What commit 10 found".
+2. **The work is executing a fifteen-commit plan.** Commits 2 to 12 are done. **Commit 13 is next** —
+   the bulk repoint, whose work list is the link checker's own output.
+3. **Run `python3 docs/procedures/link-check.py` before and after anything that moves.** It reports
+   108 hits right now; half are noise by nature and three can never be fixed. Read "What commit 12
+   found" before treating the number as a work list.
 4. **`make test` must report 158** before and after. This branch must not touch behaviour.
 5. The sections titled "What commit N found" are the record of what each step actually cost,
    including four places where the plan was wrong. Read the one for the commit before yours.
@@ -26,17 +27,17 @@ untouched.
 
 ## Where this stands
 
-20 commits on the branch, tree clean. **Commits 2 to 10 of the plan are done — everything has
-moved.** `docs/` now has its target shape: `reference/`, `procedures/`, `captures/`, `epd/`,
-`milestone-1-core/`, the manual, and the two migration documents that retire at commit 15. Only
-`status.md` and `backlog.md` are missing, and they are commit 12. The gate passed, all seven
-`reference/` files exist, the manual is written, and all three tier indexes are in place.
+24 commits on the branch, tree clean. **Commits 2 to 12 of the plan are done.** `docs/` has its
+full target shape: `reference/`, `procedures/`, `captures/`, `epd/`, `milestone-1-core/`, the manual,
+`status.md`, `backlog.md`, and the two migration documents that retire at commit 15. `CLAUDE.md` is
+cut and all nine memories are pointers. **Every file that will exist now exists**; commits 13 to 15
+are repair and retirement.
 
 **What is repointed and what is not.** The live tiers — `reference/`, `procedures/`, `captures/` —
-were repaired in the same commit as each move, so they resolve today. Still stale: `CLAUDE.md`
-(commit 11), the EPDs and the archive's own prose (commit 13), and the doc citations in `src/`,
-`tests/` and `config.yaml` (commit 14). Four reference files also still duplicate a `CLAUDE.md`
-section, which is deliberate and ends at commit 11.
+were repaired in the same commit as each move, and `CLAUDE.md` at commit 11, so all of those resolve
+today. Still stale: the EPDs and the archive's own prose (commit 13), and the doc citations in
+`src/`, `tests/` and `config.yaml` (commit 14). The four reference files that duplicated a
+`CLAUDE.md` section no longer do — commit 11 ended that.
 
 | Commit | What |
 |---|---|
@@ -60,7 +61,9 @@ section, which is deliberate and ends at commit 11.
 | `79214cb` | **Commit 9a** — the link checker filed as `procedures/link-check.py` |
 | `5dcd86f` | **Commit 10** — the milestone archive, and two plan instructions dropped |
 | `60174b0` | Decision 21 — paths stay backticked, no link tool, and the backlog item it exposed |
-| *(this one)* | **Commit 11** — `CLAUDE.md` cut 337 → 188, and all nine memories shrunk to pointers |
+| `d515763` | **Commit 11** — `CLAUDE.md` cut 337 → 188, and all nine memories shrunk to pointers |
+| `a778b8b` | What commit 11 cost, and the correction it found in a third file |
+| *(this one)* | **Commit 12** — `status.md` and `backlog.md`, split out of the archived survey |
 
 The two planning documents:
 
@@ -119,12 +122,14 @@ found" below.
 with it. 337 lines to 188; all nine memories are pointers. Both numeric corrections landed, and the
 search for them found a third place carrying them — see "What commit 11 found" below.
 
-**The next action is commit 12: write `docs/status.md` and `docs/backlog.md`**, splitting
-`milestone-1-core/outstanding-work.md` and lifting its live items. Note the link checker now reports
-**three** expected hits rather than two: `CLAUDE.md:16` joins them, pointing forward at `status.md`.
-Commit 12 clears all three but `.claude/settings.json`. **And it must also carry the backlog item
-recorded below**, which was raised after `outstanding-work.md` was archived and has nowhere else to
-wait.
+~~**The next action is commit 12: write `docs/status.md` and `docs/backlog.md`**~~ **Done
+2026-08-16.** Both exist, the two forward references they were owed are cleared, and the backlog item
+decision 21 exposed was carried across. See "What commit 12 found" below.
+
+**The next action is commit 13: rewrite the cross-references the link checker reports**, plus
+`README.md` and `EPD-000`'s graduation convention, two body citations and closing section. **The work
+list is a command, not a number: `python3 docs/procedures/link-check.py`.** As of commit 12 it reports
+**108 hits across 11 files**, but half of that is noise by nature — see below before starting.
 
 ---
 
@@ -281,11 +286,10 @@ moves will not find what gets cut.
 - **The original six forks from before the decisions are all answered** — this said "five
   questions" — **and so are the thirteen from the second round**, decisions 9–21.
 
-## One backlog item, owed to commit 12
+## ~~One backlog item, owed to commit 12~~ — carried across 2026-08-16
 
-`docs/backlog.md` does not exist yet — it is written at commit 12 by splitting
-`milestone-1-core/outstanding-work.md`. This item was raised after that file was archived, so it has
-nowhere else to wait. **Commit 12 must carry it into `backlog.md` along with the lifted items.**
+`docs/backlog.md` now exists and holds this item under "Instruments and housekeeping", with its
+reason for being parked intact. Kept here as written so the handover is checkable.
 
 > **Teach `link-check.py` the two citation forms it cannot see.** It resolves paths and ignores
 > everything else, so two forms this repository actually depends on go unchecked: **heading anchors**,
@@ -420,6 +424,43 @@ commit and no visible boundary. The `--no-ff` convention starts at Phase 2 (`4d7
 every phase after it. This is *not* a defect to repair — rewriting history to add two merge commits
 would cost far more than the boundary is worth — but a reader checking the convention against the log
 finds two exceptions, so `milestone-1-core/README.md` now says why they are there.
+
+## What commit 12 found
+
+**Commit 13's work list, measured now rather than recalled.** *Job:* size commit 13 and say where its
+work actually is. *Population:* every `*.md` in the repository. *Recipe:* `python3
+docs/procedures/link-check.py`. *Instrument:* the checker itself.
+
+| File | Hits | |
+|---|---|---|
+| `docs-restructure-plan.md` | **50** | Noise by nature — its subject *is* the migration, so it names old paths on purpose. It retires at commit 15 |
+| the five EPDs | 39 | The real work, and `EPD-000` and `EPD-004` need content edits anyway |
+| `handoff-docs-restructure.md` | 9 | Same class as the plan; also retires at 15 |
+| the archive's prose | 7 | Two files, `phase-6/notes.md` and `phase-4/plan.md` |
+| `backlog.md`, `README.md` | 3 | Not fixable — see below |
+
+So commit 13's genuine surface is **46 hits in seven files**, not 108. `CLAUDE.md` contributes zero,
+down from eight before commit 11.
+
+**This differs from the 97-across-55 recorded at commit 9a, and the difference is commit 10.** That
+run happened while the whole milestone archive still sat at `docs/*.md` citing procedures and
+captures that had already moved; moving the archive and repairing the files it touched cleared most
+of them. The earlier figure is not withdrawn — it was true of the tree it was taken on.
+
+**A class the checker cannot filter, and it changes what "done" looks like at commit 15.** Three hits
+name paths that **deliberately do not exist**: `.claude/settings.json` twice (decision 17 defers
+building the tracked half) and `docs/method/` once (decision 18 says do not build it). A document
+naming a thing it is telling you *not* to create is correct, and no rule distinguishes that from a
+broken link — the `→` convention covers renames, not deliberate absences. **So the closing check at
+commit 15 does not report zero. It reports three, and each one must be recognisable.** Recorded here
+because a session expecting zero would either "fix" the prose or assume the restructure was unfinished.
+
+**One decision the split forced, which neither the plan nor `EPD-004` had stated.** The restructure is
+still in flight, so `status.md` and `handoff-docs-restructure.md` both exist and both could answer
+"where are we" — the exact drift the split was designed to prevent, arriving in the commit that
+performs it. Resolved by making "Where we stopped" a **pointer** at the handoff rather than a copy of
+it, with the handover to commit 15 stated in both files. The section is 19 lines, well inside its own
+~30-line split condition.
 
 ## What commit 11 found
 
