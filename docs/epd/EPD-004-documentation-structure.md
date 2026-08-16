@@ -200,11 +200,17 @@ the point: the archive layout is a template, so the second milestone costs no de
 ### Two files in `reference/` that do not exist today
 
 **`measurements.md`.** One table of every number these documents quote, each row carrying the date,
-the instrument, and — the part that matters — **the exact slice the number describes**. Phase 6's
-single most consequential finding was the 26× gap quoted for three phases without the slice, where
-recomputing over the whole file gives 3.9×. Both figures are right; they answer different questions.
-The prose fix was to write the recipe down once. The structural fix is to give every quoted number
-one canonical row, so quoting forward means linking rather than restating.
+the instrument, **the exact slice the number describes**, and — added 2026-08-16 by decision 20 —
+**what the number is for**. Phase 6's single most consequential finding was the 26× gap quoted for
+three phases without the slice, where recomputing over the whole file gives 3.9×. Both figures are
+right; they answer different questions. The prose fix was to write the recipe down once. The
+structural fix is to give every quoted number one canonical row, so quoting forward means linking
+rather than restating.
+
+The fourth column exists because this restructure produced the opposite failure from the 26× one: a
+number that was not misread but had no job it could do. Both columns work the same way — a row that
+cannot be filled in is a number that should not be recorded, and an empty cell is visible where a
+forgotten rule is not.
 
 **Which copy is canonical, added 2026-08-16.** Both of these files *harvest* material that also stays
 in the phase notes, so the restructure creates the duplication it exists to prevent unless the
@@ -223,6 +229,13 @@ planning a run; check the claim you are planning against, including when it is y
 arguably the most valuable thing Milestone 1 produced. It currently exists only as asides at the
 bottom of six separate phase notes, which is precisely where it will not be read at the start of
 Milestone 2.
+
+**A fifth episode, added 2026-08-16, and it is a pair rather than a single.** The four above are all
+*a phase finding its own premise wrong*. This restructure produced a different kind: **the two ways a
+number fails.** The 26× gap was correct and quoted without its slice; the 253 mention count had no
+job it could do. They belong in `lessons.md` **together**, because either alone reads as a one-off
+while the pair is a rule — decision 20 — and because the second was found by the same fresh-context
+review that this file's own habits recommend.
 
 ## Which `CLAUDE.md` sections Milestone 1 actually consulted — measured 2026-08-15
 
@@ -926,6 +939,55 @@ alone** — decision 11's principle that refusals are first-class outcomes, appl
 
 If enforcement is ever revisited, the least-bad form is a **warning** matched to the specific reflex
 (`$(git rev-parse --show-toplevel)`) rather than a **block** matched to all of `$(`.
+
+### 20 — a number must have a job, and must be able to do it
+
+Generalised from decision 19's neighbour, the withdrawal of "253 mentions", and adopted as a
+documentation rule rather than left as one episode.
+
+**The rule.** Before recording a measurement in a document, say what it is *for* — what it sizes,
+decides, or lets a reader judge. Then check that **the thing counted is the thing that matters**. A
+number that cannot do its stated job is worse than no number: **no number provokes the question, a
+wrong one settles it.**
+
+**The test, before a figure goes in:**
+
+| | |
+|---|---|
+| **Job** | What does this let someone decide, size, or judge? |
+| **Population** | Is what I counted the thing that job acts on? |
+| **Recipe** | Could someone else reproduce this exact figure? |
+| **Instrument** | Does a tool already produce the true number? Prefer it to a proxy |
+
+Failing job or population, do not record it. Failing recipe, record the recipe. Failing instrument,
+use the tool.
+
+**Why it needs saying: the easy number attracts.** A `grep -c` is cheap and the real metric often
+needs an instrument that does not exist yet, so convenience selects what gets measured. That is
+exactly how 253 happened — mentions were greppable, broken links needed a checker nobody had written,
+and the greppable number took the job.
+
+**It is the sibling of the slice rule, not a restatement of it.** A figure fails two ways, and this
+repository has now produced one of each:
+
+| Failure | Episode | Symptom |
+|---|---|---|
+| **Unreadable** — no slice | the 26× time-to-first-byte gap | correct and useful, and misled by a factor of seven |
+| **Purposeless** — no job it can do | the 253 mention count | precise-sounding, unreproducible, and it displaced the real metric |
+
+One rule keeps a number meaningful; the other keeps it honest about its use.
+
+**What this does not prohibit: looking.** Explore data freely — measure anything, follow a hunch, run
+the grep. The rule governs what gets **written down and quoted forward**, which is where a number
+acquires authority it may not have earned. Stated explicitly because the rule is otherwise citable as
+an argument against measuring something inconvenient, which would invert it.
+
+**The enforcement is structural, not a habit.** `reference/measurements.md` gains a **"what it's
+for"** column beside date, instrument and slice. A table whose every row must name its job makes a
+purposeless number *unfileable* — the empty cell is visible, where a forgotten rule is not. This is
+the same move the `measurements.md` proposal already makes for the slice: replacing "remember to
+quote it" with a row that cannot omit it. **The fix that works is the one you cannot skip, not the
+one you have to remember.**
 
 ## The original forks, as written before the decisions
 

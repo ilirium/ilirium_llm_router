@@ -10,7 +10,7 @@ starting at **seven** files. Two documents were added by those decisions and are
 **`docs/README.md`**, the manual, and **`docs/backlog.md`**.
 
 **The 2026-08-16 round changed six things in this document**, all recorded in place below and all
-traceable to `EPD-004` decisions 9–19: the reference tier gains `backend-anthropic.md`;
+traceable to `EPD-004` decisions 9–20: the reference tier gains `backend-anthropic.md`;
 `Anthropic model IDs` leaves `CLAUDE.md`; three archive folder slugs change to match their branch
 names; `docs/README.md` grows the phase template, the branch convention and the opening playbook;
 the nine migrating memories become a step; and a **fifteenth commit** writes the closing playbook from
@@ -201,8 +201,8 @@ as a section of `architecture.md` — and stays there deliberately, since that i
 | `docs/reference/observability.md` | `CLAUDE.md` "Observability: log + CSV stats" entire |
 | `docs/reference/backend-lmstudio.md` | `CLAUDE.md` LM Studio bullets, including the timeout semantics; the parity table and context facts from `phase-4-notes.md` |
 | `docs/reference/backend-anthropic.md` | **added 2026-08-16.** `CLAUDE.md` "Anthropic model IDs" **entire** — the ID table and both rejections — plus the *Result* of `anthropic-auth-check.md` (the OAuth bearer forwarded and accepted, the ten-entry `anthropic-beta` list and the `oauth-2025-04-20` entry that makes it work, and that trimming the list turns a working request into a 401), `credential: forward` and why this is the one backend holding no secret, the 429 shape from `handoff.md`, `read_timeout: 600` and why, and the median time to first byte **with its slice** |
-| `docs/reference/measurements.md` | **new** — every quoted number, its date, its instrument, its slice |
-| `docs/reference/lessons.md` | **new** — the four "phase found its premise wrong" episodes, from the six phase notes |
+| `docs/reference/measurements.md` | **new** — every quoted number, its date, its instrument, its slice, and **what it is for** (EPD-004 decision 20). Four columns, and a row that cannot be filled in is a number that should not be recorded |
+| `docs/reference/lessons.md` | **new** — the four "phase found its premise wrong" episodes, from the six phase notes, **plus the two ways a number fails** — 26× quoted without its slice, 253 with no job it could do. The pair goes in together; either alone reads as a one-off |
 | `docs/reference/README.md` | **new** — reading order and what each file answers |
 
 **`request-shape.md` being folded in costs nothing at the citation.** `proxy.py:3` names "Observed
@@ -348,7 +348,7 @@ file itself — which is what keeps the principle true rather than merely stated
 |---|---|---|
 | 1 | `EPD-004` + this plan | Already on the branch. The decision record precedes the work |
 | 2 | Write `reference/backend-lmstudio.md`, extracting the parity table out of `phase-4-notes.md` | **The gate**, and it is an *extraction* — see below |
-| 3 | Write `reference/measurements.md` and `reference/lessons.md` | The highest-value output of the proposal, and worth having whatever is decided about the rest |
+| 3 | Write `reference/measurements.md` and `reference/lessons.md` | The highest-value output of the proposal, and worth having whatever is decided about the rest. **`measurements.md` carries four columns** including "what it's for" (decision 20), and **filling that column is the first test of the rule** — a number in these documents that cannot fill it is one to withdraw, as 253 was. **`lessons.md` takes the number-failure pair**, both episodes together |
 | 4 | Write `docs/README.md`, the manual — including the phase template, the branch convention, the two migrated memory conventions, the permission-file split, and the **opening** playbook | **Before any file moves.** It states the rules the moves follow, so every later commit is checkable against it rather than against an argument in an EPD. The opening playbook can be written now because Milestone 1's opening already happened and is in the archive to be mined; the closing one cannot (commit 15) |
 | 5 | Create the remaining tier directories with their `README.md` index files | Gives every later move a destination that already explains itself. **`reference/README.md` is written here but completed at commit 6**, since four of the seven files it must order do not exist yet — and its reading order is what substitutes for numeric prefixes, so an index listing four of seven is the wrong artifact to leave behind |
 | 6 | Assemble `reference/architecture.md`, `design-decisions.md`, `observability.md` and `backend-anthropic.md` from `CLAUDE.md` | Content composition, no moves. `CLAUDE.md` is not yet cut — text is duplicated for one commit, deliberately. `backend-anthropic.md` joins here because it is assembled from `CLAUDE.md` sections like the other three, not extracted like commit 2 |
@@ -448,6 +448,10 @@ Added 2026-08-16, for the material the second round of decisions introduced:
   `propose-before-implementing` no longer claims commits are opt-in. **`document-decisions-in-separate-docs`
   was already stale before this work started** — it files EPDs at `docs/EPD-NNN-…` — so finding it
   correct afterwards is a real check, not a formality.
+- **Every row of `measurements.md` fills all four columns**, including "what it's for" (decision 20).
+  An empty cell is the check working: it means a number was carried forward that nobody can say the
+  use of, and the answer is to withdraw it rather than invent a job for it. This is the one
+  verification step that is *expected* to find something.
 - **The `Anthropic model IDs` pointer names its trigger.** This is the one section leaving
   `CLAUDE.md` against the citation measurement's advice, so its pointer carries the whole risk. It
   must say *when* to open the file, not that the file exists.

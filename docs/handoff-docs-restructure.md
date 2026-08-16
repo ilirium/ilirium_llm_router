@@ -12,7 +12,7 @@ untouched.
 
 ## Where this stands
 
-Six commits, tree clean, nothing moved yet. **All planning is done and decided; execution has not
+Eight commits, tree clean, nothing moved yet. **All planning is done and decided; execution has not
 started.**
 
 | Commit | What |
@@ -21,8 +21,10 @@ started.**
 | `9202106` | Repairs after a fresh-context review found six defects, plus the `CLAUDE.md` section measurement |
 | `7da2f1b` | All six forks decided; the manual and the backlog file added |
 | `de4e28a` | This handoff |
-| `dff62a9` | The 2026-08-16 round — decisions 9–19, two of them revising decisions already taken |
-| *(this one)* | Decisions 18 and 19, and the reclassification that empties decision 16's machine-local category |
+| `dff62a9` | The 2026-08-16 round — decisions 9–17, two of them revising decisions already taken |
+| `c9f1152` | Decisions 18 and 19, and the reclassification that empties decision 16's machine-local category |
+| `08280ed` | What a second fresh-context review found — a missing ninth memory, the withdrawal of "253 mentions", and eleven count and measurement corrections |
+| *(this one)* | Decision 20, generalised from that withdrawal |
 
 The two planning documents:
 
@@ -76,6 +78,7 @@ permission allowlist, branch naming, and how a milestone is opened and closed. F
 | 17 | The permission allowlist | **Split** — a tracked `.claude/settings.json` policy, the untracked local file for machine accretions |
 | 18 | A portable methodology artifact | **Deferred, deliberately.** No `docs/method/` tier, no global `~/.claude/CLAUDE.md`, no separate repo. Extraction is a copy of `docs/README.md` plus the `CLAUDE.md` rule block, done when project #2 starts — a methodology extracted from n=1 is a guess about what generalises |
 | 19 | Enforcing the `$(...)` rule with a hook | **Rejected**, with the reasoning recorded so it is not re-proposed. The false positives are real here (the `Makefile` has six `$(VAR)`), quoting makes it undecidable without a shell parser, and it converts a recoverable prompt into a hard block on every Bash call |
+| 20 | Meaningless numbers | **A number must have a job, and must be able to do it.** Generalised from withdrawing 253. Test: job, population, recipe, instrument. Enforced structurally by a fourth column in `measurements.md`, not by remembering. The sibling of the slice rule — 26× was unreadable, 253 was purposeless |
 
 One behavioural change worth carrying: **commits no longer need a separate ask** (#16). The rest of
 `propose-before-implementing` stands — a design answer is still not a build order.
@@ -188,7 +191,7 @@ moves will not find what gets cut.
   one implementation plan per milestone, inside that milestone's folder, recorded in
   `docs/README.md`. `EPD-000:31` is edited in commit 13.
 - **The original six forks from before the decisions are all answered** — this said "five
-  questions" — **and so are the eleven from the second round**, decisions 9–19.
+  questions" — **and so are the twelve from the second round**, decisions 9–20.
 
 **One thing the second round added that has no home yet, and it is deliberate.** The *closing*
 playbook cannot be written until this restructure lands, because it is written from what the
