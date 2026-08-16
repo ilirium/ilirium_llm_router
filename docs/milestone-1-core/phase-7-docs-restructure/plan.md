@@ -1,7 +1,11 @@
-# Documentation restructure — the migration plan
+# Phase 7 — the documentation restructure: plan
 
-Written 2026-08-15 on `docs/milestone-boundary-restructure`, **extended 2026-08-16. The structure was
-decided on the 15th and extended on the 16th; nothing here has been executed yet.**
+**Executed in full on 2026-08-16 and frozen.** All fifteen commits are done; what each one actually
+cost is in `notes.md` beside this file, and the corrections this plan needed are marked in place
+below rather than edited away. Read this for what was intended and `notes.md` for what happened.
+
+Written 2026-08-15 on `docs/milestone-boundary-restructure`, extended 2026-08-16. The structure was
+decided on the 15th and extended on the 16th.
 
 The shape and the argument for it are in `docs/epd/EPD-004-documentation-structure.md`, whose six
 forks are now answered — the tier split accepted, `Design decisions` moving out whole, the backlog
@@ -378,7 +382,7 @@ file itself — which is what keeps the principle true rather than merely stated
 | 12 | Write `docs/status.md` and `docs/backlog.md`; **split** `outstanding-work.md`, lifting its live items into `backlog.md` | EPD-004's fork 3 decision. Its own commit because it rewrites rather than moves. The *move* into the archive already happened at commit 10; this row used to say "archive", duplicating it |
 | 13 | Rewrite the cross-references **the link checker reports**, `README.md`, and `EPD-000`'s graduation convention, two body citations and closing section | The bulk edit, in one reviewable commit. Said "the 253 cross-references"; that number is withdrawn above, and the checker's output is the actual work list. The `EPD-004` index row is **already done** in `51b857b` |
 | 14 | Fix the doc citations in `src/`, `tests/` and `config.yaml`; run `make test` and `make lint` | Code last, so a test failure has one obvious cause. **All 11 needed editing.** This row said 11, was corrected to 10 on the grounds that `proxy.py:3` cites a surviving section title, and was corrected back at commit 14: the citation names `CLAUDE.md` as the file |
-| 15 | Write the **closing** playbook into `docs/README.md` from what this restructure actually cost — replacing the "not yet written, deliberately" placeholder commit 4 left there — and **delete the dated migration note at the top of that file**; move this plan into the archive; delete `handoff-docs-restructure.md`; **repoint the four references to both, then re-run the link check** | **New, 2026-08-16.** The playbook is mined from this plan and that handoff, so both retire only after it is written. Writing it earlier would commit an instrument that has never been run |
+| 15 | Write the **closing** playbook into `docs/README.md` from what this restructure actually cost — replacing the "not yet written, deliberately" placeholder commit 4 left there — and **delete the dated migration note at the top of that file**; file this plan and the handoff as **Phase 7**; **repoint every reference to both, then re-run the link check** | **New, 2026-08-16.** The playbook is mined from this plan and that handoff, so both retire only after it is written. **Amended during execution, at the owner's call:** this row said *delete* the handoff and move this plan into the archive loose. Neither was deleted — both are filed as `phase-7-docs-restructure/plan.md` and `notes.md`, following the precedent this restructure had already set for Milestone 1's own handoff, which was frozen rather than deleted. The row also said "the four references"; there were **eighteen** |
 
 **Commit 15 breaks references that commit 13 repaired, and the link check must close after it, not
 after 14.** Moving this plan and deleting the handoff leaves four citations dangling: `EPD-004`'s

@@ -1,42 +1,46 @@
-# Temporary handoff — the documentation restructure
+# Phase 7 — the documentation restructure: notes
 
-**This file is temporary and self-terminating.** It exists only while
-`docs/milestone-boundary-restructure` is in flight. When the restructure lands, its content becomes
-the "Where we stopped" section of `docs/status.md` and **this file is deleted** — it must not become
-a second document answering "where are we", which is the exact failure the restructure is fixing.
+Branch: `docs/milestone-boundary-restructure`, off `main` at `9dd907e`. **Merge commit not yet
+recorded — the branch is unmerged as this is written.** That sentence is deliberate: four phase notes
+in this archive say "merge back with `--no-ff`" and were never closed out, which is the defect
+`../../backlog.md` carries. Whoever merges this fills the hash in, and that is the whole of the fix.
 
-Written 2026-08-15, extended 2026-08-16. Branch: `docs/milestone-boundary-restructure`. `main` is
-untouched.
+Written 2026-08-15 to 2026-08-16, **while the work was happening** rather than afterwards, which is
+what makes the "What commit N found" sections worth anything: several of them record the plan being
+wrong at the moment it was found wrong.
 
----
+**This began life as `docs/handoff-docs-restructure.md`**, a temporary file whose own first paragraph
+said it would be deleted at commit 15 and become `status.md`'s "Where we stopped". It was kept
+instead, at the owner's call on 2026-08-16, and filed here as this phase's note. The reasoning is in
+`plan.md` under commit 15, and it follows the precedent this restructure already set: Milestone 1's
+`handoff.md` was **frozen** as `../closing-notes.md`, not deleted.
 
-## Start here, if you are picking this up cold
-
-1. **Read this section and "Where this stands" below.** Then `docs/docs-restructure-plan.md` for the
-   commit you are on, and `docs/README.md` for the rules every commit is checked against.
-2. **The work is executing a fifteen-commit plan.** Commits 2 to 14 are done. **Commit 15 is
-   next, and it is the last** — the closing playbook, then retiring this file and the plan.
-3. **Run `python3 docs/procedures/link-check.py` before and after anything that moves.** Everything
-   repointable now resolves. What it still reports is **76 hits in the two migration documents**,
-   which name old paths as their subject and retire at commit 15, and **seven that are correct and
-   permanent** — read that script's own docstring under "A clean run is not a zero run".
-4. **`make test` must report 158** before and after. This branch must not touch behaviour.
-5. The sections titled "What commit N found" are the record of what each step actually cost,
-   including four places where the plan was wrong. Read the one for the commit before yours.
+**Phase 7 has no `evidence/`.** Its instrument is `../../procedures/link-check.py`, which follows the
+instrument rather than the phase, and its output is a work list rather than a result worth freezing.
+An absent `evidence/` here is correct rather than missing — the same call commit 10 made for phase 3.
 
 ---
 
-## Where this stands
+## How to read this
 
-27 commits on the branch, tree clean. **Commits 2 to 14 of the plan are done.** `docs/` has its
-full target shape: `reference/`, `procedures/`, `captures/`, `epd/`, `milestone-1-core/`, the manual,
-`status.md`, `backlog.md`, and the two migration documents that retire at commit 15. `CLAUDE.md` is
-cut and all nine memories are pointers.
+The sections titled **"What commit N found"** are the record of what each step actually cost,
+including the places the plan was wrong. They run newest first. `plan.md` beside this file is what
+was intended; this is what happened.
 
-**Every citation in the repository now resolves**, including the eleven in `src/`, `tests/` and
-`config.yaml` repointed at commit 14. The only paths that do not are in the two migration documents,
-which name old paths as their subject and retire at commit 15, and the seven permanent hits listed
-in `procedures/link-check.py`'s docstring.
+---
+
+## Where this ended
+
+**All fifteen commits done, tree clean, `main` untouched — and the branch unmerged as this is
+written.** `docs/` has its finished shape: `reference/`, `procedures/`, `captures/`, `epd/`,
+`milestone-1-core/`, the manual, `status.md` and `backlog.md`. `CLAUDE.md` is 188 lines, down from
+337, and all nine session memories are pointers into it.
+
+**Every citation in the repository resolves**, including the eleven in `src/`, `tests/` and
+`config.yaml`. The only paths that do not are the seven deliberate absences listed in
+`../../procedures/link-check.py`'s docstring, and the ones in this file and `plan.md` — which name
+pre-migration paths as their subject and always will, since that is what these two documents are
+about.
 
 | Commit | What |
 |---|---|
@@ -437,54 +441,42 @@ every phase after it. This is *not* a defect to repair — rewriting history to 
 would cost far more than the boundary is worth — but a reader checking the convention against the log
 finds two exceptions, so `milestone-1-core/README.md` now says why they are there.
 
-## What commit 14 found
+## What commit 15 found
 
-**All eleven citations needed editing, not ten — and the claim that one was free had been made four
-times across three documents.** `proxy.py:3` was said to need no edit because it names "Observed
-request shape" by *section title*, and that heading survives inside `reference/architecture.md`. The
-heading does survive. The citation reads `see CLAUDE.md ("Observed request shape")` — it names the
-**file**, and the file changed. Deferring `request-shape.md` saved repointing it *twice* rather than
-saving the edit; the file is still rightly deferred, for its own reasons.
+**The plan said "the four references"; there were eighteen.** Moving these two files broke citations
+in eight documents, not the four `plan.md` enumerated. The undercount has the same cause as commit
+13's — the four were found by recalling which documents *point at the plan*, and the real answer
+needed a grep. Third time this restructure has quoted a count that was never measured, after 253 and
+the "ten" code citations.
 
-Corrected where it lives permanently — `EPD-004` in three places and `reference/README.md` — and in
-the plan, each marked with what it used to say. **This is Phase 6's process lesson landing on the
-restructure that quotes it:** *check the claim you are planning against, including when it is your
-own.* It survived a fresh-context review that verified all 11 citations line for line, because the
-review checked that the citations *existed*, not what they would need.
+**Two commits' worth of my own edits had silently duplicated a section.** `notes.md` carried "What
+commit 14 found" and "What commit 13 found" **twice**: an earlier draft survived a revert that only
+covered `docs/epd/` and `docs/milestone-1-core/`, this file then being at `docs/`, and the next edit
+inserted before *both* copies because `str.replace` has no count. Committed in `b642619` and
+`da68dc6` and found only when the move made the two blocks adjacent enough to notice. **Nothing in
+this repository can see a duplicated section** — not the tests, not the link checker, not lint. The
+superseded pair is deleted; the fuller version is what remains.
 
-**The check that found it is one nothing in the repository runs.** `link-check.py` reads `*.md`
-only, so no citation in `src/`, `tests/` or `config.yaml` has ever been verified by anything but a
-person. All 11 were resolved by hand here, and all 11 point at files that exist. That is the same
-gap as the `file.py:N` half of the backlog item, seen from the other side: the checker cannot see
-these citations because of where they live, as well as because of how they are written.
+**The roundabout check fired twice within a minute of the move, on this file.** Both were false
+positives of an honest kind: the sentences are *about* bad paths, quoting the roundabout form
+`../../milestone-1-core/closing-notes.md` → `../closing-notes.md` as an example of what not to write,
+and the move put this file at a depth where the example accidentally resolved. Fixed by writing the
+example with the `→` convention, which the checker already skips — the escape hatch was there and the
+prose was not using it. **An instrument that reports its own subject matter is the cost of
+documenting the instrument**, and this paragraph tripped the same check a third time while being
+written.
 
-**`config.yaml` was exercised rather than assumed.** `make check` loads it and prints both backends
-with their timeouts and credential modes, which is the cheap version of driving the real thing for a
-file whose only change was comments — and comments are exactly what a test would not catch.
+**Filing this as Phase 7 needed three recorded decisions revised**, which is the price the owner
+accepted for it and is worth stating plainly: `EPD-004` decision 14 (read as "a `docs/` branch is not
+a phase" — it chooses a prefix, not phase-hood), decision 15 (folder slug equals branch slug, now
+with one standing exception), and `../../README.md`'s "Milestone 2 starts at Phase 7", which is now
+Phase 8. All three are amended in place with what they used to say.
 
-## What commit 13 found
-
-**A clean run is not a zero run, and the number is seven rather than the three commit 12 reported.**
-That estimate came from checking the live tiers only; the whole-repository run adds
-`.claude/agents/local-helper.md` (the subagent file `EPD-001` proposes creating) and
-`docs/procedures/closing-a-milestone.md` (`EPD-004`'s escape hatch if a playbook outgrows the
-manual), plus a third `.claude/settings.json` and a second `docs/method/`. **Undercounting a
-population by measuring a convenient slice of it** is the failure decision 20 names, arriving in the
-commit that was supposed to be mechanical. The list is now in `procedures/link-check.py`'s own
-docstring under "A clean run is not a zero run", which is where a session at commit 15 will look.
-
-**The archive files were repointed by depth, not by name — and the first pass got it wrong anyway.**
-A rewrite that turns `docs/handoff.md` into `../milestone-1-core/closing-notes.md` is correct from
-`docs/epd/`, and from `docs/milestone-1-core/phase-6-review-and-cleanup/` it produces
-`../../milestone-1-core/closing-notes.md` — which *resolves*, and is absurd: a file inside the
-archive addressing its own sibling by going out to `docs/` and back. Caught by reading the diff, not
-by the checker, which was satisfied. **This is commit 10's lesson with a new edge: a path can be
-simultaneously valid and wrong**, and only a human reading it says so.
-
-**Longer paths silently broke the wrap.** The new addresses are two to four times the length of the
-old ones, so 19 prose paragraphs spilled past the 100-column wrap the documents are written to.
-Mechanically reflowed, then checked in characters rather than bytes — an em-dash is three bytes, so
-counting with `awk` reported eight lines over the limit that were not.
+**And the handoff was kept rather than deleted, reversing this plan's own instruction.** Its first
+paragraph had promised its own deletion since 2026-08-15. The argument for keeping it is that the
+restructure had already set the precedent in the other direction: Milestone 1's `handoff.md` was
+**frozen** as `../closing-notes.md`, not deleted. A record of what fifteen commits cost is a phase
+note, and phase notes are the one thing this archive exists to hold.
 
 ## What commit 14 found
 
@@ -524,9 +516,9 @@ docstring under "A clean run is not a zero run", which is where a session at com
 
 **The rewrite was done by depth, and the first attempt still produced two wrong-but-valid paths.**
 Turning `docs/handoff.md` into `../milestone-1-core/closing-notes.md` is right from `docs/epd/`; from
-`docs/milestone-1-core/phase-6-review-and-cleanup/` the same rule yields
-`../../milestone-1-core/closing-notes.md`, which **resolves** and is absurd — a file inside the
-archive addressing its own sibling by going out to `docs/` and back. The same rule gave
+`docs/milestone-1-core/phase-6-review-and-cleanup/` the same rule yields the roundabout form
+`../../milestone-1-core/closing-notes.md` → `../closing-notes.md`, which **resolves** and is absurd —
+a file inside the archive addressing its own sibling by going out to `docs/` and back. The same rule gave
 `phase-4-lmstudio-parity/plan.md` a reference to `../phase-4-lmstudio-parity/notes.md`, meaning the
 file next to it. Both were caught by reading the diff; the checker was satisfied by both. **A path
 can be simultaneously valid and wrong, and only a human reading it says so** — commit 10's lesson

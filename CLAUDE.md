@@ -9,7 +9,7 @@ adding a document or moving one.
 
 ## Status
 
-**Milestone 1 is complete — six phases, 158 tests, all merged to `main`.** The router dispatches,
+**Milestone 1 is complete — seven phases, 158 tests.** The router dispatches,
 relays and records; the central claim is settled, that **no protocol translation is needed and a
 local model can drive a real coding session through the router.**
 

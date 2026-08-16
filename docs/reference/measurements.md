@@ -144,7 +144,7 @@ different row's value in another — two true numbers joined into a false one.
 says the expense of a warmup probe is not proportional to what it carries, which is a better argument
 against sending them to a local backend than the original sentence made. *Why* it costs that is not
 established here — a model load, or contention with another call, are both plausible and neither was
-recorded. **Both corrections landed at commit 11 of `../docs-restructure-plan.md`**, where
+recorded. **Both corrections landed at commit 11 of `../milestone-1-core/phase-7-docs-restructure/plan.md`**, where
 `CLAUDE.md` was rewritten and the paragraph carrying them left for `design-decisions.md`. The same
 pass found `backend-lmstudio.md` repeating both errors — a reference file contradicting this register
 four commits after it was written, which is the drift this tier exists to prevent, caught only

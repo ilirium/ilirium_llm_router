@@ -57,12 +57,22 @@ paths on purpose. Use `→` when writing about a rename and both sides are skipp
 says "moving X to Y" in words will still be reported. Expect a migration plan to be noisy, and read
 its hits rather than fixing them.
 
+**In this repository that class has a permanent address:**
+`docs/milestone-1-core/phase-7-docs-restructure/`, the 2026-08-16 restructure's plan and notes. Those
+two files account for **71** of the whole-repository run's 78 hits and always will — they are frozen
+archive describing paths that no longer exist, which is what they are *for*. The useful invocation is
+therefore usually:
+
+    python3 docs/procedures/link-check.py CLAUDE.md README.md docs/reference docs/procedures \
+        docs/epd docs/captures docs/README.md docs/status.md docs/backlog.md
+
 ## A clean run is not a zero run
 
 **Some hits are correct and permanent.** A document that names a path in order to say *this
 deliberately does not exist* is right, and nothing distinguishes it from a broken link — the `→`
-convention covers renames, not deliberate absences. As of 2026-08-16 there are seven, and a session
-expecting zero would either "fix" the prose or conclude the work is unfinished:
+convention covers renames, not deliberate absences. Outside the archived restructure documents there
+are **seven**, and a session expecting zero would either "fix" the prose or conclude the work is
+unfinished:
 
 - `.claude/settings.json` ×3 — `EPD-004` decision 17 splits the permission allowlist and defers
   building the tracked half.

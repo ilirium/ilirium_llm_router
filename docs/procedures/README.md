@@ -40,7 +40,7 @@ running again.
 
 ---
 
-*Written 2026-08-16 at commit 5 of `../docs-restructure-plan.md`. The instruments themselves arrive
+*Written 2026-08-16 at commit 5 of `../milestone-1-core/phase-7-docs-restructure/plan.md`. The instruments themselves arrive
 here at commit 7; three of them are renamed on the way — `phase-4-probes/` →
 `lmstudio-capability-probes/`, `phase-3-verification/` → `dying-backend/`, and
 `phase-5-measurements/read_timeout_semantics.py` → `read-timeout-semantics.py`, which splits from a

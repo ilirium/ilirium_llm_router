@@ -4,7 +4,7 @@
 yet.** Written the same day as a proposal; all six forks were answered, and the outcomes are
 recorded under "Decisions taken" below, each beside the reasoning it overrode or confirmed. The
 mechanical half — which file goes where, and everything that breaks when it does — is in
-`docs/docs-restructure-plan.md`.
+`../milestone-1-core/phase-7-docs-restructure/plan.md`.
 
 **A second round of decisions was taken on 2026-08-16**, from a discussion that ranged well past this
 document's original subject — into the session memory store, the permission allowlist, branch naming,
@@ -92,7 +92,7 @@ number had no job.** It was given two and can do neither:
 - **The commit 13 work list.** Wrong population in both directions. It **overcounts**, because a
   prose mention of "Phase 4" breaks nothing. It **undercounts**, because
   `phase-4-evidence/README.md:4` cites `../../CLAUDE.md` and needs `../../../../` — the filename
-  never changes, so no grep for moving names can find it. `docs-restructure-plan.md` says exactly
+  never changes, so no grep for moving names can find it. `../milestone-1-core/phase-7-docs-restructure/plan.md` says exactly
   this when it calls the link checker "the only practical check for links that break by *depth*
   rather than by name."
 
@@ -175,7 +175,7 @@ docs/
     closing-notes.md         (was handoff.md, frozen at the boundary)
     implementation-plan.md
     outstanding-work.md      the survey, archived; its live items became backlog.md
-    docs-restructure-plan.md
+    ../milestone-1-core/phase-7-docs-restructure/plan.md
     phase-1-proxy/                 notes.md, evidence/
     phase-2-observability/         notes.md, evidence/
     phase-3-failure-handling/      notes.md, evidence/
@@ -320,7 +320,7 @@ the number is not later quoted as though it were.
 
 The recipe, so this number is never quoted without its slice: *citations naming a section title in
 quotes, across `docs/`, `src/`, `tests/` and `README.md`, excluding `CLAUDE.md` itself, this
-document, `docs-restructure-plan.md`, and the three files containing replayed request captures.*
+document, `../milestone-1-core/phase-7-docs-restructure/plan.md`, and the three files containing replayed request captures.*
 
 ## What leaves `CLAUDE.md`, and the rule for deciding
 
@@ -715,7 +715,7 @@ a missed pointer costs a whole milestone's worth of harvest.
   Phase 2 says it did not. It changes how far a reader should trust the narrative, and this
   repository cares more than most about that distinction.
 - **Milestone-root files are for work spanning phases** — the milestone's `implementation-plan.md`,
-  and documents like `docs-restructure-plan.md` that belong to no single phase.
+  and documents like `../milestone-1-core/phase-7-docs-restructure/plan.md` that belong to no single phase.
 
 **One implementation plan per milestone, inside that milestone's folder.** This closes the gap left
 open under "One EPD-000 convention this changes": `EPD-000:31` names
@@ -748,6 +748,14 @@ and changes nothing in `src/`, so it is a `docs/` branch. The review phase does 
 6 fixed seven items there — so it is a numbered `feat/` phase. **One rule, opposite answers, no new
 convention.**
 
+**Revised 2026-08-16, at the owner's call, and the revision is that this conflated two questions.**
+The rule above answers *which branch prefix does this work take*, and was then used to answer *is
+this work a phase*, which is a different question. This restructure ran on a `docs/` branch and
+changed no behaviour, and it is a phase — `milestone-1-core/phase-7-docs-restructure/`. It had a
+plan, a fifteen-step execution and findings worth keeping, which is what a phase is. **The prefix
+rule stands unchanged; it just never governed phase-hood.** The corrected form is in
+`../README.md`: a phase is bounded work with a plan and a record, whatever prefix its branch used.
+
 **Work belonging to a later phase never goes on an earlier phase's branch, even documentation.** Two
 spec commits were moved off the Phase 1 branch for exactly this reason. One consequence: a
 `feat/phase-N+1-…` branch may sit holding only an unapproved plan, and if the plan is rejected the
@@ -756,7 +764,7 @@ branch is **deleted, not renamed**.
 **Where branches are recorded**, following the one-home rule:
 
 - **`status.md` carries only in-flight branches** — name, purpose, tree state, next action. That is
-  what `handoff-docs-restructure.md` already does, generalised. Merged branches are not listed: git
+  what `../milestone-1-core/phase-7-docs-restructure/notes.md` already does, generalised. Merged branches are not listed: git
   already holds that, and a hand-maintained list would drift.
 - **The phase note carries the permanent record** — branch, fork point, and merge commit.
 
@@ -768,7 +776,7 @@ Phases 1 and 6 in neither), and **only one records the merge commit**: `phase-4-
 closed out. That is this repository's signature failure in miniature, a document recording intent and
 never updated to outcome, and closing them is a review-phase checklist item.
 
-### 15 — the archive's phase slugs follow the branch names
+### 15 — the archive's phase slugs follow the branch names, with one standing exception
 
 Three of six disagree, and the branches win, because the folders do not exist yet while the branch
 names are fixed in six merge commits and five `Branch:` lines.
@@ -785,6 +793,19 @@ names are fixed in six merge commits and five `Branch:` lines.
 than `config-and-timeouts` does. Accuracy loses to navigability here — *branch name equals folder
 name* is worth more than a better adjective, and it is only free if adopted before the folders exist.
 
+**Amended 2026-08-16, and the amendment is the sentence above proving itself.** Phase 7 — this
+restructure — is filed as `milestone-1-core/phase-7-docs-restructure/` from the branch
+`docs/milestone-boundary-restructure`. They cannot agree: a folder name must carry the phase number,
+and this branch was named before there was any intention of numbering the work, so the rule was "only
+free if adopted before" and this was after. Renaming a pushed branch to buy the agreement costs more
+than the agreement is worth.
+
+**So the check runs one way only, which it already did.** Every `feat/phase-N-*` branch has a folder
+with its slug. The converse was never true — `feat/phase-0-skeleton` has no folder — and now fails in
+the other direction too, since Phase 7's folder has no matching branch. Recorded in `../README.md`
+beside the numbering rule, because a reader checking the convention against `git branch` will
+otherwise read the exception as a mistake.
+
 ### 16 — the session memory store is folded into the repository
 
 **The finding that forces it:** this restructure exists to give every durable fact one home, and a
@@ -796,7 +817,7 @@ restructure breaks**. One is already stale, filing EPDs at `docs/EPD-NNN-…` wh
 
 **No count over the repository could have caught any of them, because they are not in the
 repository** — which is true whatever the count is, and is why this argument no longer quotes one.
-And `docs-restructure-plan.md` already says "Merge `--no-ff` **per repository convention**" — a
+And `../milestone-1-core/phase-7-docs-restructure/plan.md` already says "Merge `--no-ff` **per repository convention**" — a
 committed document depending on a convention that exists only in machine-local memory, which would
 silently not load if the repository were opened by its other path.
 
@@ -1207,7 +1228,7 @@ Two further `EPD-000` edits fall out of the same decision:
   new `docs/README.md`, `status.md`, `backlog.md` and the
   `reference/` files assembled out of existing text. **This said "five" and reached it by naming
   `README.md` twice**, once for the file and once for "the original brief in `README.md`" — which
-  `docs-restructure-plan.md` says stays **verbatim** and is therefore not rewritten at all. Corrected
+  `../milestone-1-core/phase-7-docs-restructure/plan.md` says stays **verbatim** and is therefore not rewritten at all. Corrected
   2026-08-16, and pointedly, since this is the paragraph where the same list was already corrected
   once. The first version of this list said three and
   omitted `outstanding-work.md`, eleven lines after calling it "the one item in this proposal that
@@ -1295,4 +1316,4 @@ whether or not the tier split is sound. They would have passed the gate without 
 remain the highest-value output of this proposal and are worth writing second, whatever is decided
 about the rest.
 
-`docs/docs-restructure-plan.md` sequences the rest, and lists the eight things that break silently.
+`../milestone-1-core/phase-7-docs-restructure/plan.md` sequences the rest, and lists the eight things that break silently.

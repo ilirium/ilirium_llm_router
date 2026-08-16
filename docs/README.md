@@ -8,10 +8,6 @@ Its acceptance test: **somebody who has never read `EPD-004` can file a new docu
 this file alone.** If you had to open the archive to place something, that is a defect here — fix
 this file rather than remember the answer.
 
-> *Written 2026-08-16 at commit 4 of `docs-restructure-plan.md`, before any file moved. It describes
-> the target structure; several directories below arrive over the following commits. This note is
-> deleted at commit 15.*
-
 ---
 
 ## Where does it go?
@@ -149,8 +145,16 @@ single phase.
 | Reference documents | no prefix; the order lives in `reference/README.md` |
 | Findings and measurements | no ID scheme; one canonical row in `reference/measurements.md`, linked by anchor |
 
-**Phase numbers are globally sequential, not per-milestone.** Milestone 2 starts at Phase 7, so
-"Phase 3 found four of its five items already built" never becomes ambiguous.
+**Phase numbers are globally sequential, not per-milestone.** **Milestone 2 starts at Phase 8**, so
+"Phase 3 found four of its five items already built" never becomes ambiguous. *(This said Phase 7
+until 2026-08-16, when the documentation restructure took that number as
+`milestone-1-core/phase-7-docs-restructure/`.)*
+
+**A phase's folder normally takes its branch's slug, and Phase 7 is the standing exception.** Its
+branch is `docs/milestone-boundary-restructure`; its folder is `phase-7-docs-restructure`. The folder
+name has to carry the phase number and the branch name predates the decision to number it, so the two
+cannot agree. **Check folders against branches in that direction only** — every `feat/phase-N-*`
+branch has a folder with its slug; not every phase folder has a matching branch.
 
 ---
 
@@ -275,6 +279,16 @@ Write the merge commit in when the merge happens — four of Milestone 1's six p
 
 `phase-N-<slug>/` holds `plan.md`, `notes.md` and `evidence/` with its README.
 
+**A phase is numbered work with its own folder, whatever branch prefix it carried.** The usual case
+is a `feat/phase-N-<slug>` branch that changes `src/`. Phase 7 — the documentation restructure — ran
+on a `docs/` branch, changed no behaviour, and is still a phase: it had a plan, a fifteen-step
+execution, and findings worth keeping. **The test is whether the work is a bounded unit with a plan
+and a record, not which prefix its branch used.**
+
+**`evidence/` is omitted when there is nothing to freeze**, and that is correct rather than missing.
+Phase 3's instrument is re-runnable and lives in `procedures/`; Phase 7's output is a work list.
+Where a phase has no `evidence/`, its `notes.md` says why.
+
 - **`notes.md` carries a "Verified by" line** — what was run, when, and what it produced. Every phase
   here was signed off by driving the real thing; green tests are not a sign-off.
 - **`notes.md` states whether it was written while measuring or afterwards.** It changes how far a
@@ -373,12 +387,52 @@ Mined from Milestone 1's opening rather than invented. In order:
 
 ### Closing a milestone
 
-**Not yet written, deliberately.** It is written from what a milestone close actually costs, and this
-project's first one — the restructure that produced this file — is still in flight. Committing the
-procedure before running it once would be exactly the failure this repository keeps recording: an
-instrument published before it was used.
+**Written 2026-08-16, from running it once.** Milestone 1's close is
+`milestone-1-core/phase-7-docs-restructure/` — fifteen commits, and its `notes.md` records what each
+one actually cost. The order below is the order that worked; the warnings are things that went wrong.
 
-The shape it will take is known: freeze the plan and phase notes, write the milestone README, harvest
-durable facts into `reference/`, process lessons into `lessons.md`, numbers into `measurements.md`,
-live items into `backlog.md`, and reset `status.md`. It arrives at commit 15 of
-`docs-restructure-plan.md`.
+1. **Write this file's rules first, before anything moves.** Every later step is then checkable
+   against something. Doing it fourth in a fifteen-commit plan was right and would have been wrong
+   anywhere later.
+2. **Run one extraction as a gate before planning the rest.** Take the single hardest document and
+   pull its durable half into `reference/`. If the durable half does not separate from the process
+   half, the whole split is wrong and you have spent an hour instead of a week. Milestone 1's gate
+   passed and the plan survived.
+3. **Write the tier indexes for the finished shape, not the current one.** An index listing three of
+   its eventual seven files is worse than one written slightly early.
+4. **Assemble the reference tier.** The work is deciding what each file does *not* take. Expect a
+   first draft to pull in material that already has a home; cut it, and leave a table naming where
+   each cut thing lives **and the trigger that sends you there**.
+5. **Move the files, repairing each tier's links in the same commit as the move that breaks them.**
+   Only the archive waits. A reference document that is wrong for four commits is one nobody can
+   trust while the work runs.
+6. **Then cut `CLAUDE.md`**, once every destination exists. Not before.
+7. **Split state from inventory** — `status.md` and `backlog.md` — and keep the column that says
+   *why each backlog item is parked*.
+8. **Repoint everything the link checker reports**, then the citations in `src/`, `tests/` and config,
+   which the checker cannot see.
+9. **Write this playbook**, last, from what it cost.
+
+**Six things that will bite, all of which did:**
+
+- **Searching for what moves will not find what gets cut.** A grep for moving paths structurally
+  cannot find a citation that names a *section title*. Six of those were stale and were found by
+  reading, not grepping.
+- **A path can be simultaneously valid and wrong.** A file inside the archive addressing its own
+  sibling by going out and back resolves perfectly. `procedures/link-check.py` now reports this class;
+  it did not when it happened.
+- **A name-based rewrite cannot fix a link that broke by depth**, and will confidently make it worse.
+  Repoint by depth, and read the diff.
+- **Longer paths break the wrap**, and a mechanical reflow will corrupt a list if it is not written to
+  respect one. Check the reflow against a list before trusting it.
+- **A path inside a code fence may be relative to the repository root**, not to the citing file.
+  Rewriting it "correctly" makes the command wrong.
+- **Check the claim you are planning against, including when it is your own.** The plan asserted that
+  one code citation needed no edit, four times across three documents. It was wrong, and it survived a
+  fresh-context review that verified all eleven citations line for line — because that review checked
+  the citations existed, not what they would need.
+
+**And one thing that will feel like a rule and is not.** The plan predicted the narrative drag of
+phase notes would be the hard part of extraction. It was not; the hard part was **destination
+collision** — durable facts belonging to files that did not exist yet. Plan the reference tier before
+the extraction, not during it.

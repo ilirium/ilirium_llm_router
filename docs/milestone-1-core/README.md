@@ -36,7 +36,7 @@ documents cite.
 | `implementation-plan.md` | The phases and their "done when" — one plan per milestone |
 | `closing-notes.md` | The running handoff, frozen at the boundary |
 | `outstanding-work.md` | The survey that picked Phase 5's items; its live entries became `../backlog.md` |
-| `docs-restructure-plan.md` | The migration that created this archive |
+| `phase-7-docs-restructure/` | The restructure that created this archive — `plan.md` and `notes.md`. A phase on a `docs/` branch, which is why its folder and branch names disagree; see `../README.md` |
 | `phase-N-<slug>/` | `notes.md`, `plan.md` where one exists, and `evidence/` |
 
 **Where everything else went.** Durable facts were harvested into `../reference/`; instruments meant
@@ -54,9 +54,15 @@ to be re-run went to `../procedures/`; the raw captured request is in `../captur
 | 4 | `feat/phase-4-lmstudio-parity` | `50444c5` | What LM Studio supports, measured instead of guessed. **Nothing was rejected**; the gaps are things accepted and not honoured. Found the router's read timeout reachable by ordinary traffic |
 | 5 | `feat/phase-5-config-and-timeouts` | `c8401e9` | The three credential modes built and carried live against an authenticated LM Studio, and `read_timeout` made per backend — which unblocked ruling out silent trimming below the context boundary |
 | 6 | `feat/phase-6-review-and-cleanup` | `532dc86` | The review. Fifteen of sixteen quoted measurements reproduced to the digit; seven items fixed in about forty lines; two proposed cuts refused with the measurement that refused them |
+| 7 | `docs/milestone-boundary-restructure` | *unmerged as this is written* | The documentation restructure — this archive, the reference tier, the manual, and `CLAUDE.md` cut from 337 lines to 188. The only phase on a `docs/` branch, and the only one whose folder name does not match its branch |
 
-One documentation branch belongs to the milestone too: `docs/epd-index-and-corpus-proposal`, merged as
-`acb399f`, which created `EPD-000` and `EPD-003`.
+**Phase 7 is the milestone's close, and it is a phase for the same reason Phase 6 was.** `EPD-004`
+decision 14 had been read as "a `docs/` branch is not a phase"; that rule chooses a branch prefix, not
+phase-hood. Bounded work with a plan and a record is a phase. Recorded in `../README.md`, which also
+notes that **Milestone 2 therefore starts at Phase 8**.
+
+One documentation branch belongs to the milestone without being a phase:
+`docs/epd-index-and-corpus-proposal`, merged as `acb399f`, which created `EPD-000` and `EPD-003`.
 
 ## Three irregularities, so nobody concludes something was lost
 
@@ -95,5 +101,5 @@ artefacts before planning the run.
 
 ---
 
-*Written 2026-08-16 at commit 5 of `docs-restructure-plan.md`, before the files it indexes arrived
+*Written 2026-08-16 at commit 5 of `phase-7-docs-restructure/plan.md`, before the files it indexes arrived
 here at commit 10.*
