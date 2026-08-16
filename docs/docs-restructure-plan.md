@@ -355,7 +355,7 @@ file itself — which is what keeps the principle true rather than merely stated
 | 7 | Move the procedures — tracked contents by `git mv`, the gitignored `runs/` and `needle.json` by plain `mv`, **never the parent directory as a unit** — and update `.gitignore` in the same commit | The ignore rules must never be out of step with the paths, not even for one commit (breakages 3, 4, 8) |
 | 8 | Fix `probe.py` (`ROOT` at `:40`, header paths at `:6,12,26`, usage examples at `:20-23`), `router.yaml:5`, and the moved `README.md` links | Separate from the move, so the move stays a clean rename. `RUNS` and `file: runs/…` need no edit under the instrument rule |
 | 9 | `git mv` the capture to `docs/captures/`, fix `probe.py:43` | Decided: `docs/captures/`. Small and isolated |
-| 10 | `git mv` the milestone archive; update `.gitignore:229` in the same commit; copy the Milestone 1 run transcripts into phase evidence | The `router.log` negation and its path move together (breakage 2) |
+| 10 | `git mv` the milestone archive; update `.gitignore:229` in the same commit; copy the Milestone 1 run transcripts into phase evidence; **write the three missing `evidence/README.md` files** (phases 1, 3, 5) | The `router.log` negation and its path move together (breakage 2). The three READMEs are required by decision 13 and were counted in the Scale row above, but **no commit named them until 2026-08-16** — they belong here, where the evidence they describe arrives |
 | 11 | Rewrite `CLAUDE.md` — cut the moved sections, rewrite the survivors as rules, insert the pointers, the decisions table of contents, the branch convention and the seven migrated memory rules. **And fix the two numeric errors commit 3 found**: the 111-second warmup probe carried 1960 bytes, not 31 KB, and the probes cost 20.0 of **45.6** minutes | Only now, once every destination exists. **Then shrink all nine migrated memories to pointers** — a step, not a commit, since those files are outside the repository (see below) |
 | 12 | Write `docs/status.md` and `docs/backlog.md`; **split** `outstanding-work.md`, lifting its live items into `backlog.md` | EPD-004's fork 3 decision. Its own commit because it rewrites rather than moves. The *move* into the archive already happened at commit 10; this row used to say "archive", duplicating it |
 | 13 | Rewrite the cross-references **the link checker reports**, `README.md`, and `EPD-000`'s graduation convention, two body citations and closing section | The bulk edit, in one reviewable commit. Said "the 253 cross-references"; that number is withdrawn above, and the checker's output is the actual work list. The `EPD-004` index row is **already done** in `51b857b` |
@@ -441,8 +441,10 @@ Green tests prove nothing about documents, so the checks are separate.
 Added 2026-08-16, for the material the second round of decisions introduced:
 
 - **Branch equals folder.** Every `milestone-1-core/phase-*` directory name must appear verbatim
-  after `feat/` in `git branch --list 'feat/*'`. Six folders, six branches, no exceptions. This is
-  the only check for decision 15, and reading for it will not catch a one-word slug difference.
+  after `feat/` in `git branch --list 'feat/*'`. This is the only check for decision 15, and reading
+  for it will not catch a one-word slug difference. **Corrected 2026-08-16: it is six folders and
+  *seven* branches**, not six and six — `feat/phase-0-skeleton` exists and Phase 0 gets no folder. So
+  the check runs one way only, folders → branches, and an extra branch is not a failure.
 - **The migrated memories.** By hand, since they are outside the repository: each of the **nine**
   holds a pointer and no duplicated rule, no memory names a path that no longer exists, and
   `propose-before-implementing` no longer claims commits are opt-in. **`document-decisions-in-separate-docs`

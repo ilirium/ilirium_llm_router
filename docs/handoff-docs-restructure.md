@@ -12,9 +12,10 @@ untouched.
 
 ## Where this stands
 
-Eleven commits, tree clean, nothing moved yet. **Commits 2, 3 and 4 of the plan are done; the gate
-passed.** Three of the seven `reference/` files exist and the manual is written. No file has moved and
-no citation has been repointed.
+Twelve commits, tree clean, **nothing moved yet — commits 2 to 5 all create, none relocate.** The
+gate passed. Three of the seven `reference/` files exist, the manual is written, and all three tier
+indexes are in place. No file has moved and no citation has been repointed; the first move is commit
+7.
 
 | Commit | What |
 |---|---|
@@ -29,7 +30,8 @@ no citation has been repointed.
 | `f473277` | What the review verified, and the reading for commit 2 |
 | `394d910` | **Commit 2 of the plan** — `reference/backend-lmstudio.md`, and the gate result written into `EPD-004` |
 | `5924bcc` | **Commit 3** — `reference/measurements.md` and `reference/lessons.md`, and the two corrections the register found |
-| *(this one)* | **Commit 4** — `docs/README.md`, the manual, written before any file moves |
+| `beddfaf` | **Commit 4** — `docs/README.md`, the manual, written before any file moves |
+| *(this one)* | **Commit 5** — the three tier indexes, and two gaps found in the plan while writing them |
 
 The two planning documents:
 
@@ -55,10 +57,15 @@ redaction, the `CLAUDE.md` admission test, the permission-file split, branches, 
 the review-phase spec, three worked examples, and the **opening** playbook. The closing playbook is a
 placeholder naming why it is absent.
 
-**The next action is commit 5: create the remaining tier directories with their `README.md` index
-files.** Note the plan's own caveat on that commit — `reference/README.md` is written there but
-**completed at commit 6**, because four of the seven files it must order do not exist yet, and its
-reading order is what substitutes for numeric prefixes.
+~~**The next action is commit 5**~~ **Done 2026-08-16.** `reference/README.md`, `procedures/README.md`
+and `milestone-1-core/README.md` all exist. The reference index lists **all seven** files in their
+finished reading order rather than the three that exist — an index listing part of its tier is worse
+than one written slightly early, so nothing is owed at commit 6 beyond the files themselves.
+
+**The next action is commit 6: assemble `reference/architecture.md`, `design-decisions.md`,
+`observability.md` and `backend-anthropic.md` from `CLAUDE.md`.** Content composition, no moves.
+`CLAUDE.md` is **not** cut there — the text is duplicated for one commit, deliberately, and the cut
+happens at commit 11 once every destination exists.
 
 ---
 
@@ -316,6 +323,25 @@ second copy, and a correction still lands in the register first.
 **One row is a test of decision 20 rather than a transcription.** The LM Studio version was never
 recorded on either measurement date. Every row above inherits that hole, and the fourth column is
 where it becomes visible instead of implied.
+
+## What commit 5 found
+
+Writing an index means checking what it indexes, and two things did not survive that.
+
+**The three `evidence/README.md` files had no commit.** Decision 13 requires one per phase, the Scale
+row counts them, and no row of the commit table named them. They are now part of **commit 10**, where
+the evidence they describe arrives.
+
+**Decision 15's check said "six folders, six branches, no exceptions".** There are **seven**
+`feat/phase-*` branches — `feat/phase-0-skeleton` exists and Phase 0 gets no folder — so the check runs
+one way only, folders → branches. Corrected in the plan's verification section.
+
+**And one fact about the history that nothing recorded: phases 0 and 1 were fast-forwarded.** Their
+branch tips (`fc65233`, `8d335ab`) sit directly on `main`'s first-parent line; there is no merge
+commit and no visible boundary. The `--no-ff` convention starts at Phase 2 (`4d7d7f6`) and holds for
+every phase after it. This is *not* a defect to repair — rewriting history to add two merge commits
+would cost far more than the boundary is worth — but a reader checking the convention against the log
+finds two exceptions, so `milestone-1-core/README.md` now says why they are there.
 
 ## Loose ends that are not blockers
 
