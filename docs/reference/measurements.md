@@ -135,7 +135,7 @@ neither was readable. The split is now in the table above, and it also records a
 stated: **the catch-all forwarded one `count_tokens` call to Anthropic**, which is the route working
 as designed on a path nobody enumerated.
 
-**The 111-second warmup probe did not carry a 31 KB body.** `CLAUDE.md` says "One took 111 seconds
+**The 111-second warmup probe did not carry a 31 KB body.** `CLAUDE.md` said "One took 111 seconds
 for a 31 KB body". Recomputed, the longest warmup probe is **111559 ms with a 1960-byte body**, and
 the 31786-byte probe took **103395 ms**. The sentence pairs the maximum of one column with a
 different row's value in another — two true numbers joined into a false one.
@@ -144,11 +144,14 @@ different row's value in another — two true numbers joined into a false one.
 says the expense of a warmup probe is not proportional to what it carries, which is a better argument
 against sending them to a local backend than the original sentence made. *Why* it costs that is not
 established here — a model load, or contention with another call, are both plausible and neither was
-recorded. `CLAUDE.md` is rewritten at commit 11 of `../docs-restructure-plan.md`; this row is what it
-should say.
+recorded. **Both corrections landed at commit 11 of `../docs-restructure-plan.md`**, where
+`CLAUDE.md` was rewritten and the paragraph carrying them left for `design-decisions.md`. The same
+pass found `backend-lmstudio.md` repeating both errors — a reference file contradicting this register
+four commits after it was written, which is the drift this tier exists to prevent, caught only
+because commit 11 went looking for every copy rather than the one the plan named.
 
-**And one rounding slip, already fixed elsewhere:** the warmup probes take 20.0 of **45.6** minutes,
-not 45.5 as `CLAUDE.md` says. 44% either way.
+**And one rounding slip, corrected in the same place:** the warmup probes take 20.0 of **45.6**
+minutes, not the 45.5 `CLAUDE.md` had. 44% either way.
 
 ## Withdrawn
 

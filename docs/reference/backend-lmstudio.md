@@ -171,8 +171,9 @@ a model loaded near 44544 needs the timeout below to reach the top of its own wi
 **`max_tokens: 1` warmup probes are full prefills.** Claude Code sends them to create a cache entry;
 against Anthropic they are nearly free, and against LM Studio each one pays for the whole prompt and
 returns `content: []`, `output_tokens: 0`, `stop_reason: max_tokens`. In the frozen session that was
-40 calls and **20.0 of 45.5 minutes — 44% of all local wall-clock time**, one of them 111 seconds for
-a 31 KB body. Nothing is currently done about it; the trade is recorded in `design-decisions.md`.
+40 calls and **20.0 of 45.6 minutes — 44% of all local wall-clock time**, the longest of them
+**111559 ms for a 1960-byte body** — so the cost of a probe is not proportional to what it carries.
+Nothing is currently done about it; the trade is recorded in `design-decisions.md`.
 
 **The context length cannot be changed from the CLI.** `lms load -c 8192` and `--context-length 8192`
 are both silently ignored — the saved per-model configuration wins and the model reloads at its

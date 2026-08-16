@@ -70,7 +70,7 @@ be filled is a number to withdraw. Enforced by a shape, not by remembering.
 ### A third way, seen once
 
 Assembling `measurements.md` on 2026-08-16 produced a failure that is neither of the above: **two true
-numbers joined into a false one.** `CLAUDE.md` says a warmup probe "took 111 seconds for a 31 KB
+numbers joined into a false one.** `CLAUDE.md` said a warmup probe "took 111 seconds for a 31 KB
 body". The longest warmup probe took 111559 ms and carried **1960 bytes**; the 31786-byte probe took
 103395 ms. The maximum of one column had been paired with a different row's value in another.
 
