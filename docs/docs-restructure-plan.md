@@ -353,7 +353,7 @@ file itself — which is what keeps the principle true rather than merely stated
 | 5 | Create the remaining tier directories with their `README.md` index files | Gives every later move a destination that already explains itself. **`reference/README.md` is written here but completed at commit 6**, since four of the seven files it must order do not exist yet — and its reading order is what substitutes for numeric prefixes, so an index listing four of seven is the wrong artifact to leave behind |
 | 6 | Assemble `reference/architecture.md`, `design-decisions.md`, `observability.md` and `backend-anthropic.md` from `CLAUDE.md` | Content composition, no moves. `CLAUDE.md` is not yet cut — text is duplicated for one commit, deliberately. `backend-anthropic.md` joins here because it is assembled from `CLAUDE.md` sections like the other three, not extracted like commit 2 |
 | 7 | Move the procedures — tracked contents by `git mv`, the gitignored `runs/` and `needle.json` by plain `mv`, **never the parent directory as a unit** — and update `.gitignore` in the same commit | The ignore rules must never be out of step with the paths, not even for one commit (breakages 3, 4, 8) |
-| 8 | Fix `probe.py` (`ROOT` at `:40`, header paths at `:6,12,26`, usage examples at `:20-23`), `router.yaml:5`, and the moved `README.md` links | Separate from the move, so the move stays a clean rename. `RUNS` and `file: runs/…` need no edit under the instrument rule |
+| 8 | Fix `probe.py` (`ROOT` at `:40`, header paths at `:6,12,26`, usage examples at `:20-23`), **`make_image.py:11` and `make_needle.py:13-14`**, and the moved `README.md` links | Separate from the move, so the move stays a clean rename. `RUNS` and `file: runs/…` need no edit under the instrument rule — **and neither does `router.yaml:5`**, which this row used to list. Both corrections are the same rule paying off: the ignore comment stays true because `runs/` followed the instrument. The two generator scripts were **not** listed here and carry the same stale usage examples `probe.py` does |
 | 9 | `git mv` the capture to `docs/captures/`, fix `probe.py:43` | Decided: `docs/captures/`. Small and isolated |
 | 10 | `git mv` the milestone archive; update `.gitignore:229` in the same commit; copy the Milestone 1 run transcripts into phase evidence; **write the three missing `evidence/README.md` files** (phases 1, 3, 5) | The `router.log` negation and its path move together (breakage 2). The three READMEs are required by decision 13 and were counted in the Scale row above, but **no commit named them until 2026-08-16** — they belong here, where the evidence they describe arrives |
 | 11 | Rewrite `CLAUDE.md` — cut the moved sections, rewrite the survivors as rules, insert the pointers, the decisions table of contents, the branch convention and the seven migrated memory rules. **And fix the two numeric errors commit 3 found**: the 111-second warmup probe carried 1960 bytes, not 31 KB, and the probes cost 20.0 of **45.6** minutes | Only now, once every destination exists. **Then shrink all nine migrated memories to pointers** — a step, not a commit, since those files are outside the repository (see below) |
@@ -398,6 +398,11 @@ Merge `--no-ff` per repository convention, so the boundary stays visible.
 
 Green tests prove nothing about documents, so the checks are separate.
 
+- **The link checker's report is a work list for prose only.** Repointing a path inside an archived
+  document is correct — a path is navigation, not a claim — but **nothing under `evidence/` is
+  edited**, because a captured transcript's stale command line is what was actually run. The rule is
+  in `docs/README.md` under "Editing the archive"; it is recorded here because commit 13 is where
+  somebody would otherwise fix a transcript to make a checker quiet.
 - **Link check.** A throwaway script over every `.md` in the repository: resolve each relative link
   and each backticked path that looks like a file, report the ones that do not exist. Run it before
   commit 13 to size the job and **after commit 15** to close it — not after 14, since commit 15 moves

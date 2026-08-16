@@ -3,13 +3,13 @@
 Phase 4 asks where a local backend falls short. LM Studio publishes no compatibility table, so the
 only way to know is to send the shape and look at the answer. Each file in `bodies/` is a minimal
 request carrying exactly one unusual element, so a rejection names the element rather than the
-request. `replay` instead sends the real captured request from `../log-the-whole-request.txt`, which
-carries several at once.
+request. `replay` instead sends the real captured request from `../../log-the-whole-request.txt`,
+which carries several at once.
 
 Three things this checks that a bare curl would not:
 
 - **An error hiding inside a 200.** LM Studio answers `count_tokens` with HTTP 200 and an error body
-  (`../epd/EPD-002-token-counting-for-local-backends.md`), so a status code is not a verdict here.
+  (`../../epd/EPD-002-token-counting-for-local-backends.md`), so a status code is not a verdict here.
 - **Accepted versus honoured.** A field can be taken without being acted on. Listing the content
   block types that come back is what separates "did not reject `thinking`" from "actually thought".
 - **The CSV row.** Every probe tags itself with a session id, so the row it wrote can be found and
@@ -17,13 +17,14 @@ Three things this checks that a bare curl would not:
 
 Usage, from the repository root, with the router running (`make run`) and LM Studio loaded:
 
-    python3 docs/phase-4-probes/probe.py --list
-    python3 docs/phase-4-probes/probe.py baseline
-    python3 docs/phase-4-probes/probe.py replay
-    python3 docs/phase-4-probes/probe.py replay --max-tokens 2048
+    python3 docs/procedures/lmstudio-capability-probes/probe.py --list
+    python3 docs/procedures/lmstudio-capability-probes/probe.py baseline
+    python3 docs/procedures/lmstudio-capability-probes/probe.py replay
+    python3 docs/procedures/lmstudio-capability-probes/probe.py replay --max-tokens 2048
 
 The full transcript of every run lands in `runs/`, which is gitignored: this directory is a tool, and
-the findings it produces belong in `../phase-4-notes.md` rather than in a committed log.
+the findings it produces belong in `../../reference/backend-lmstudio.md` rather than in a committed
+log. A run worth keeping is copied into a phase's `evidence/` instead.
 """
 
 from __future__ import annotations
@@ -37,7 +38,10 @@ import urllib.request
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ROOT = HERE.parent.parent
+# docs/procedures/lmstudio-capability-probes/ → three levels to the repository root. This was two
+# until 2026-08-16, when the probes moved a directory deeper; nothing raised on import and `--list`
+# went on working, because only `replay` and the CSV lookup reach outside this directory.
+ROOT = HERE.parent.parent.parent
 BODIES = HERE / "bodies"
 RUNS = HERE / "runs"
 CAPTURE = ROOT / "docs" / "log-the-whole-request.txt"

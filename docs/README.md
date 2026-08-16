@@ -171,6 +171,21 @@ how a wrong figure survived three phases here.
 **When you record a finding, sweep the other documents for claims it makes stale.** That sweep is
 expected, not optional — it is half of what filing a finding means.
 
+### Editing the archive: paths yes, claims no, transcripts never
+
+"A phase note is never edited again" collides with "no broken links" the first time anything moves.
+The distinction that resolves it, and it is not a judgement call:
+
+| | Editable | Why |
+|---|---|---|
+| A **path** in archived prose | **yes** | A path is navigation, not a claim. Repointing it preserves what the document means; leaving it broken degrades it |
+| A **claim** in archived prose | **no** | It records what was believed then. Corrections go to `reference/`, which is what other documents cite |
+| Anything in a **captured transcript** | **never** | A `.txt` of what a command printed is evidence. A stale command line inside one is *correct* — it is what was run that day, and rewriting it falsifies the record |
+
+So a link checker's report is a work list for prose and **not** for `evidence/`. If a moved path makes
+a transcript unreadable, the fix is a line in that evidence directory's `README.md`, never an edit to
+the transcript.
+
 ## Numbers
 
 Every number quoted outside the document that measured it gets a row in

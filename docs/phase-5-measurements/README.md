@@ -3,9 +3,14 @@
 Three files behind the read-timeout half of `../phase-5-notes.md`. One is an instrument meant to be
 re-run; two are evidence from live runs.
 
+> **The instrument left this directory on 2026-08-16.** `read_timeout_semantics.py` is now
+> `../procedures/read-timeout-semantics.py`, filed with the other re-runnable checks; the two `.txt`
+> files stay here as evidence. That split is the point of the two tiers — an instrument that lives
+> inside one phase's folder looks like a transcript, and the next person re-derives it.
+
 | | |
 |---|---|
-| `read_timeout_semantics.py` | **Re-runnable.** Drives a backend at three timing shapes to establish what httpx's `read` timeout applies to. A fact about a pinned library, so re-run it after a httpx bump |
+| `read_timeout_semantics.py` | **Re-runnable, and no longer here** — see above. Drives a backend at three timing shapes to establish what httpx's `read` timeout applies to. A fact about a pinned library, so re-run it after a httpx bump |
 | `needle-completes-at-1800.txt` | A 135391-byte request completing through the router at `read_timeout: 1800` — 41595 input tokens, first byte at 461712 ms, codeword returned |
 | `needle-dies-at-30.txt` | The identical request at `read_timeout: 30`, dying at 30343 ms with Phase 4's exact failure signature |
 

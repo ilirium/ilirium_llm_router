@@ -12,7 +12,8 @@ untouched.
 
 ## Where this stands
 
-Fourteen commits, tree clean. **Commits 2 to 7 are done — the procedures have moved.** The gate
+Fifteen commits, tree clean. **Commits 2 to 8 are done — the procedures have moved and their own
+references are repaired.** The gate
 passed, all seven `reference/` files exist, the manual is written, and all three tier indexes are in
 place. Four reference files still duplicate a `CLAUDE.md` section; that is deliberate and ends at
 commit 11. **No citation has been repointed yet**, so a dozen documents and three code files name
@@ -34,7 +35,8 @@ paths that no longer exist — commits 8, 13 and 14.
 | `beddfaf` | **Commit 4** — `docs/README.md`, the manual, written before any file moves |
 | `46c8321` | **Commit 5** — the three tier indexes, and two gaps found in the plan while writing them |
 | `a3e88bc` | **Commit 6** — the last four `reference/` files, assembled from `CLAUDE.md` |
-| *(this one)* | **Commit 7** — the procedures moved, `.gitignore` repointed in the same commit |
+| `f729cbc` | **Commit 7** — the procedures moved, `.gitignore` repointed in the same commit |
+| *(this one)* | **Commit 8** — `probe.py` and the moved READMEs repaired; two plan corrections |
 
 The two planning documents:
 
@@ -75,12 +77,14 @@ absence to be noticed.
 anything.** What it found is under "What commit 7 found" below, including one question the plan does
 not answer.
 
-**The next action is commit 8: fix `probe.py` (`ROOT` at `:40`, header paths at `:6,12,26`, usage
-examples at `:20-23`), `router.yaml:5`, and the moved `README.md` links** — separate from the move so
-the move stays a clean rename. `RUNS` and `file: runs/…` need no edit under the instrument rule, and
-that is now verified rather than assumed. **Two additions to that commit**, both from what commit 7
-found: the archive-versus-transcript rule goes into `docs/README.md` and the plan, and
-`phase-5-measurements/README.md` gains the line naming where its script went.
+~~**The next action is commit 8**~~ **Done 2026-08-16.** Breakage 1 is fixed and verified by
+resolving `CAPTURE` rather than by trusting the edit. Both additions landed, and the plan gained two
+corrections — see "What commit 8 found" below.
+
+**The next action is commit 9: `git mv docs/log-the-whole-request.txt docs/captures/`, and fix
+`probe.py:43`.** Small and isolated. Note it also invalidates the docstring path at `probe.py:6` and
+the one in `architecture.md`, both of which name the capture and were pointed at its *current* home
+on purpose — the alternative was writing links that stayed broken for two commits.
 
 ---
 
@@ -357,6 +361,24 @@ commit and no visible boundary. The `--no-ff` convention starts at Phase 2 (`4d7
 every phase after it. This is *not* a defect to repair — rewriting history to add two merge commits
 would cost far more than the boundary is worth — but a reader checking the convention against the log
 finds two exceptions, so `milestone-1-core/README.md` now says why they are there.
+
+## What commit 8 found
+
+**`router.yaml:5` needed no edit, and the plan said it would.** Breakage 8 predicted the comment
+asserting the runs are gitignored would be made false by the move. It was not — because the mapping
+was later fixed so `runs/` follows the instrument rather than the archive, and the ignore rule moved
+with it. The same rule already spared `probe.py`'s `RUNS` and `router.yaml:28,33`. **Three predicted
+edits, none of them needed**, all for one reason, which is the strongest evidence so far that the
+instrument rule is right.
+
+**Two files the plan never listed carry the same stale usage examples `probe.py` does.**
+`make_image.py:11` and `make_needle.py:13-14` print `python3 docs/phase-4-probes/…`. Breakage 6 names
+this class — "cites sibling documents by relative path" — but the commit row enumerated one file of
+three. Fixed, and the row now names all three.
+
+**`make_image.py` was run after the move** and regenerated `bodies/image.json` byte-identically at the
+new path, which is the cheap version of "exercise it": the script resolves its own directory, so it
+was never at risk, and now that is measured rather than assumed.
 
 ## What commit 7 found — and one question the plan does not answer
 
