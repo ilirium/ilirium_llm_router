@@ -12,8 +12,9 @@ untouched.
 
 ## Where this stands
 
-Ten commits, tree clean, nothing moved yet. **Commits 2 and 3 of the plan are done; the gate passed.**
-Three of the seven `reference/` files exist. No file has moved and no citation has been repointed.
+Eleven commits, tree clean, nothing moved yet. **Commits 2, 3 and 4 of the plan are done; the gate
+passed.** Three of the seven `reference/` files exist and the manual is written. No file has moved and
+no citation has been repointed.
 
 | Commit | What |
 |---|---|
@@ -27,7 +28,8 @@ Three of the seven `reference/` files exist. No file has moved and no citation h
 | `ad1d5ae` | Decision 20, generalised from that withdrawal |
 | `f473277` | What the review verified, and the reading for commit 2 |
 | `394d910` | **Commit 2 of the plan** — `reference/backend-lmstudio.md`, and the gate result written into `EPD-004` |
-| *(this one)* | **Commit 3** — `reference/measurements.md` and `reference/lessons.md`, and the two corrections the register found |
+| `5924bcc` | **Commit 3** — `reference/measurements.md` and `reference/lessons.md`, and the two corrections the register found |
+| *(this one)* | **Commit 4** — `docs/README.md`, the manual, written before any file moves |
 
 The two planning documents:
 
@@ -45,11 +47,18 @@ and the two things it exposed are in `EPD-004` under "The gate was run on 2026-0
 ~~**The next action is commit 3**~~ **Done 2026-08-16.** Both files exist; the four-column rule found
 two defects and one rounding slip, all recorded under "What commit 3 found" below.
 
-**The next action is commit 4: write `docs/README.md`, the manual** — the tiers and what belongs in
-each, the phase template, the branch convention, the two migrating memory conventions, the
-permission-file split, and the **opening** playbook. It comes before any file moves so that every
-later commit is checkable against it, and its acceptance test is in the plan: somebody who has never
-read `EPD-004` can file a new document from it alone.
+~~**The next action is commit 4**~~ **Done 2026-08-16.** `docs/README.md` is 365 lines and carries
+everything decision 12 and the plan's Tier 6 row asked of it: the six-row filing table and a
+tie-breaker for the ambiguous case, the four tiers, naming and numbering, one-home-per-fact with the
+frozen-primary / canonical-for-quotation rule, the four-column rule for numbers, evidence and
+redaction, the `CLAUDE.md` admission test, the permission-file split, branches, the phase template,
+the review-phase spec, three worked examples, and the **opening** playbook. The closing playbook is a
+placeholder naming why it is absent.
+
+**The next action is commit 5: create the remaining tier directories with their `README.md` index
+files.** Note the plan's own caveat on that commit — `reference/README.md` is written there but
+**completed at commit 6**, because four of the seven files it must order do not exist yet, and its
+reading order is what substitutes for numeric prefixes.
 
 ---
 
