@@ -13,7 +13,7 @@ starting at **seven** files. Two documents were added by those decisions and are
 traceable to `EPD-004` decisions 9–17: the reference tier gains `backend-anthropic.md`;
 `Anthropic model IDs` leaves `CLAUDE.md`; three archive folder slugs change to match their branch
 names; `docs/README.md` grows the phase template, the branch convention and the opening playbook;
-the six migrating memories become a step; and a **fifteenth commit** writes the closing playbook from
+the eight migrating memories become a step; and a **fifteenth commit** writes the closing playbook from
 what this work actually cost.
 
 This file is the mechanical half: what moves where, what breaks when it does, and in which order to
@@ -325,17 +325,20 @@ file itself — which is what keeps the principle true rather than merely stated
 | 8 | Fix `probe.py` (`ROOT` at `:40`, header paths at `:6,12,26`, usage examples at `:20-23`), `router.yaml:5`, and the moved `README.md` links | Separate from the move, so the move stays a clean rename. `RUNS` and `file: runs/…` need no edit under the instrument rule |
 | 9 | `git mv` the capture to `docs/captures/`, fix `probe.py:43` | Decided: `docs/captures/`. Small and isolated |
 | 10 | `git mv` the milestone archive; update `.gitignore:229` in the same commit; copy the Milestone 1 run transcripts into phase evidence | The `router.log` negation and its path move together (breakage 2) |
-| 11 | Rewrite `CLAUDE.md` — cut the moved sections, rewrite the survivors as rules, insert the pointers, the decisions table of contents, the branch convention and the four migrated memory rules | Only now, once every destination exists. **Then shrink the six migrated memories to pointers** — a step, not a commit, since those files are outside the repository (see below) |
+| 11 | Rewrite `CLAUDE.md` — cut the moved sections, rewrite the survivors as rules, insert the pointers, the decisions table of contents, the branch convention and the six migrated memory rules | Only now, once every destination exists. **Then shrink the eight migrated memories to pointers** — a step, not a commit, since those files are outside the repository (see below) |
 | 12 | Write `docs/status.md` and `docs/backlog.md`; archive `outstanding-work.md` | EPD-004's fork 3 decision. Its own commit because it rewrites rather than moves |
 | 13 | Rewrite the 253 cross-references, `README.md`, and `EPD-000`'s graduation convention, two body citations and closing section | The bulk edit, in one reviewable commit. The `EPD-004` index row is **already done** in `51b857b` |
 | 14 | Fix the 11 doc citations in `src/`, `tests/` and `config.yaml`; run `make test` and `make lint` | Code last, so a test failure has one obvious cause |
 | 15 | Write the **closing** playbook into `docs/README.md` from what this restructure actually cost; move this plan into the archive; delete `handoff-docs-restructure.md` | **New, 2026-08-16.** The playbook is mined from this plan and that handoff, so both retire only after it is written. Writing it earlier would commit an instrument that has never been run |
 
-**The memory step attached to commit 11 is the one part of this plan git cannot verify.** The six
-migrating memories live in `~/.claude/projects/<path-slug>/memory/`, outside the repository, so
-nothing in the working tree changes when they shrink to pointers and the link checker below cannot
-reach them. Three of them cite paths this restructure breaks and one is already stale. They are
-listed in `EPD-004` decision 16 and must be checked by hand.
+**The memory step attached to commit 11 is the one part of this plan git cannot verify.** All
+**eight** migrating memories live in `~/.claude/projects/<path-slug>/memory/`, outside the
+repository, so nothing in the working tree changes when they shrink to pointers and the link checker
+below cannot reach them. Three of them cite paths this restructure breaks and one is already stale.
+They are listed in `EPD-004` decision 16 and must be checked by hand.
+
+Six rules land in `CLAUDE.md` and two conventions in `docs/README.md` (commit 4), so commit 11 is
+where the `CLAUDE.md` half arrives.
 
 **Why the gate changed.** The first version of this plan made commit 2 the writing of
 `measurements.md` and `lessons.md`, on the grounds that it would discover whether the durable half
@@ -391,8 +394,8 @@ Added 2026-08-16, for the material the second round of decisions introduced:
 - **Branch equals folder.** Every `milestone-1-core/phase-*` directory name must appear verbatim
   after `feat/` in `git branch --list 'feat/*'`. Six folders, six branches, no exceptions. This is
   the only check for decision 15, and reading for it will not catch a one-word slug difference.
-- **The migrated memories.** By hand, since they are outside the repository: each of the six holds a
-  pointer and no duplicated rule, no memory names a path that no longer exists, and
+- **The migrated memories.** By hand, since they are outside the repository: each of the eight holds
+  a pointer and no duplicated rule, no memory names a path that no longer exists, and
   `propose-before-implementing` no longer claims commits are opt-in. **`document-decisions-in-separate-docs`
   was already stale before this work started** — it files EPDs at `docs/EPD-NNN-…` — so finding it
   correct afterwards is a real check, not a formality.

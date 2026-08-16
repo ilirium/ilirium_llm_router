@@ -700,9 +700,18 @@ the repository. And `docs-restructure-plan.md` already says "Merge `--no-ff` **p
 convention**" — a committed document depending on a convention that exists only in machine-local
 memory, which would silently not load if the repository were opened by its other path.
 
-**The rule: memory holds what is true about working with an agent on this machine; the repository
-holds what is true about the project.** The test is *would a new human contributor need to know
-this?*
+**The rule, as first written:** *memory holds what is true about working with an agent on this
+machine; the repository holds what is true about the project*, tested by asking whether a new human
+contributor would need to know it.
+
+**That rule was wrong on one axis, corrected the same day.** It offered two categories where the
+material has three, and the missing one is the interesting one:
+
+| Category | Home |
+|---|---|
+| **Project-specific** — the parity table, the measurements | this repository's `docs/` |
+| **Portable across this owner's projects** — how to work, and what breaks | this repository's `CLAUDE.md`, copied forward at the next project (decision 18) |
+| **Genuinely local to one laptop** | session memory |
 
 | Memory | Destination |
 |---|---|
@@ -712,8 +721,17 @@ this?*
 | `check-prior-evidence-before-planning-a-rerun` | rule to `CLAUDE.md`; evidence to `lessons.md` |
 | `document-decisions-in-separate-docs` | `docs/README.md` — it *is* the manual, written before the manual existed |
 | `redact-to-stable-placeholders` | `docs/README.md` — the evidence-filing convention |
-| `keep-bash-commands-statically-analyzable` | **stays** — about the harness, not the router |
-| `git-merge-cannot-read-message-from-stdin` | **stays** — a tool quirk |
+| `keep-bash-commands-statically-analyzable` | `CLAUDE.md`. **This table first said "stays — about the harness, not the router"**, which put it in the machine-local category. It is portable, not local: the harness is the same in every project this owner works on, and stepping on the rake twice is the cost of filing it as local |
+| `git-merge-cannot-read-message-from-stdin` | `CLAUDE.md`, appended to the `--no-ff` rule, since that is the operation that triggers it. **Also first recorded as "stays"** |
+
+**So all eight migrate, and the machine-local category turns out to be empty.** The store's one
+genuinely local fact — that `~/Projects/code-2026/…` and the OneDrive path are the same inode — is
+**already in `CLAUDE.md` today**, and was before this work began. Stated plainly rather than dropped
+quietly: the third category was invented by this decision and holds nothing.
+
+Both migrating rules earn `CLAUDE.md` under the admission test rather than by association. A session
+writes `cd "$(git rev-parse --show-toplevel)"` or `git merge -F -` **confidently and wrongly**, with
+no reason to look anything up first. That is the definition of a rule that must be in context.
 
 **Move, do not copy.** Each migrated memory shrinks to a pointer at its new home. A memory duplicated
 into the repository is exactly the drift this exercise fights.
@@ -738,6 +756,85 @@ project policy — it encodes that `make test` is the test command and that ruff
 project knowledge and belongs to the project rather than to one laptop. The untracked local file
 keeps machine-specific accretions and is pruned periodically. `docs/README.md` names the split in one
 line so it is not re-litigated.
+
+### 18 — the methodology is portable, and extraction is deliberately deferred
+
+The owner asked for a **splittable artifact** — playbooks, development methodology, guardrails — that
+can be lifted into the next project.
+
+**The inventory finding is striking and worth recording even though nothing is being built from it
+yet.** Sorting this project's documents by whether they would survive a change of subject:
+
+| Portable | Project-specific |
+|---|---|
+| The EPD system and its conventions | Everything about LM Studio, Anthropic and the router |
+| The four-tier structure | The reference tier's contents |
+| The milestone and phase template | The measurements and their slices |
+| Both playbooks (decision 12) | The archive |
+| The review-phase spec (decision 11) | Phase 6's actual findings |
+| Branch naming (decision 14) | — |
+| Measured / inferred / assumed marking | — |
+| Visible in-place correction | — |
+| The auto-load admission test | — |
+| The permission policy shape (decision 17) | — |
+| All eight migrating rules (decision 16) | The dual-path note |
+
+**Nearly the whole methodology is portable, and what is not is the reference tier and the archive** —
+the same seam this restructure already cuts, one level up.
+
+Three mechanisms were considered and **all three were declined**:
+
+- **A `docs/method/` tier**, holding the portable documents so extraction is a directory copy.
+  Declined: it splits the manual, and `docs/README.md`'s acceptance test — *file a new document
+  correctly from this file alone* — would then span two files.
+- **`~/.claude/CLAUDE.md`**, which is auto-loaded into every project on this machine and **does not
+  currently exist**. Declined for now; the rules stay project-local. The mechanism is recorded here
+  because it costs nothing to know about and remains available.
+- **A separate method repository.** Declined as premature.
+
+**Decided: one file, extract by copying when project #2 starts.** The reasoning is this document's
+own, applied to itself: **a methodology extracted from n=1 is a guess about what generalises.** Which
+rules survive contact with a different problem is not knowable yet, and it is exactly the shape of
+argument that defers the closing playbook in decision 12 — do not commit an instrument that has never
+been run.
+
+**The cost is named rather than waved away:** the sorting work does not disappear, it moves to a
+moment when the material is colder. That is accepted because the alternative pays a structural cost
+now, every day, for a benefit that arrives once.
+
+Concretely, extraction is: copy `docs/README.md`, delete the rows naming a backend, and copy the
+`CLAUDE.md` rule block. Not a build step, and nothing in this plan produces it.
+
+### 19 — the `$(...)` rule is documented, not enforced
+
+Raised under decision 17 and **investigated before deciding**, because a `PreToolUse` hook could
+reject any Bash command containing command substitution, which is stronger than a written rule: it
+cannot be forgotten.
+
+**Rejected, and the reasoning is recorded so it is not re-proposed from the appeal of enforcement
+alone** — decision 11's principle that refusals are first-class outcomes, applied here.
+
+- **The false positives are real in this repository, not hypothetical.** The `Makefile` contains six
+  `$(VAR)` occurrences. Any command that greps, seds, prints or writes Makefile content carries `$(`
+  as literal data. **The grep that measured this would itself have been blocked**, since it searches
+  for the pattern.
+- **Quoting makes it undecidable without a shell parser.** `echo '$(date)'` is inert. Separating that
+  from live substitution requires parsing shell quoting — the exact capability whose absence causes
+  the original problem. A hook attempting it reimplements the guardrails firewall, less well.
+- **It converts a recoverable prompt into a hard block.** The firewall already handles this case by
+  asking. The rule exists because that prompt is *friction*, not because anything dangerous happened,
+  and a hard failure on a false positive is strictly worse than a prompt that can be approved.
+- **It sits in the path of every Bash call.** A bad pattern or a crashing hook blocks all shell work
+  until someone hand-edits `settings.json`.
+- **The written rule is holding.** Zero occurrences of `cd "$(` across the session history since the
+  rule was written. Weak evidence — one agent, one project — but it is the only evidence available
+  and it points away from enforcement.
+- **Enforcement cannot teach the alternative.** What changed behaviour was the rule's second half —
+  *absolute paths, and prefer Read/Grep/Glob* — not the prohibition. A block with no explanation
+  invites working around it rather than using the better tool.
+
+If enforcement is ever revisited, the least-bad form is a **warning** matched to the specific reflex
+(`$(git rev-parse --show-toplevel)`) rather than a **block** matched to all of `$(`.
 
 ## The original forks, as written before the decisions
 

@@ -12,7 +12,7 @@ untouched.
 
 ## Where this stands
 
-Five commits, tree clean, nothing moved yet. **All planning is done and decided; execution has not
+Six commits, tree clean, nothing moved yet. **All planning is done and decided; execution has not
 started.**
 
 | Commit | What |
@@ -21,7 +21,8 @@ started.**
 | `9202106` | Repairs after a fresh-context review found six defects, plus the `CLAUDE.md` section measurement |
 | `7da2f1b` | All six forks decided; the manual and the backlog file added |
 | `de4e28a` | This handoff |
-| *(this one)* | The 2026-08-16 round — nine further decisions, two of them revising decisions already taken |
+| `dff62a9` | The 2026-08-16 round — decisions 9–17, two of them revising decisions already taken |
+| *(this one)* | Decisions 18 and 19, and the reclassification that empties decision 16's machine-local category |
 
 The two planning documents:
 
@@ -66,8 +67,10 @@ permission allowlist, branch naming, and how a milestone is opened and closed. F
 | 13 | Phase template | `plan.md`, `notes.md`, `evidence/` + its README, a "Verified by" line, and whether the notes were written while measuring. **One implementation plan per milestone** — which closes the `EPD-000:31` gap |
 | 14 | Branch naming | `feat/phase-N-<slug>`, `docs/`, `fix/`, `chore/`. **No planning suffix** — the plan opens the phase branch. `status.md` lists only in-flight branches; the phase note holds the permanent record |
 | 15 | Phase slugs | **Folders follow branch names.** Three change: `phase-3-failure-handling`, `phase-5-config-and-timeouts`, `phase-6-review-and-cleanup` |
-| 16 | The memory store | **Six of nine migrate into the repo**, shrinking to pointers. Three cite paths this restructure breaks; one is already stale |
+| 16 | The memory store | **All eight migrate into the repo**, shrinking to pointers. Three cite paths this restructure breaks; one is already stale. Was "six of nine" — the two harness rakes were reclassified as portable rather than machine-local, and **the machine-local category turned out to be empty** |
 | 17 | The permission allowlist | **Split** — a tracked `.claude/settings.json` policy, the untracked local file for machine accretions |
+| 18 | A portable methodology artifact | **Deferred, deliberately.** No `docs/method/` tier, no global `~/.claude/CLAUDE.md`, no separate repo. Extraction is a copy of `docs/README.md` plus the `CLAUDE.md` rule block, done when project #2 starts — a methodology extracted from n=1 is a guess about what generalises |
+| 19 | Enforcing the `$(...)` rule with a hook | **Rejected**, with the reasoning recorded so it is not re-proposed. The false positives are real here (the `Makefile` has six `$(VAR)`), quoting makes it undecidable without a shell parser, and it converts a recoverable prompt into a hard block on every Bash call |
 
 One behavioural change worth carrying: **commits no longer need a separate ask** (#16). The rest of
 `propose-before-implementing` stands — a design answer is still not a build order.
