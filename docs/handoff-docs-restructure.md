@@ -201,3 +201,49 @@ and is not the same as being forgotten.
 **Do not start executing from the numbers alone.** The plan's commit order exists because two of its
 breakages have already fired once in this repository, and one of them silently un-tracks a committed
 file. Read "The eight things that break silently" before commit 7.
+
+## What has already been verified, 2026-08-16
+
+Recorded so the executing session does not re-derive it. A second fresh-context review checked every
+citable claim in both documents against the tree. **These reproduce exactly and can be trusted
+without re-checking:**
+
+- All **11** code and config citations, line for line — `config.py:62`, `proxy.py:3,238,321`,
+  `stats.py:3,26`, `observe.py:12`, `tests/test_observe.py:9`, `config.yaml:24,30,44`. A repo-wide
+  grep finds exactly these plus `README.md:44`, which Tier 6 handles.
+- All **11 commit hashes**, each saying what the documents claim it says.
+- Every `.gitignore`, `probe.py`, `router.yaml`, `EPD-000`, `EPD-001` and `EPD-002` line number.
+- All ten `CLAUDE.md` section line ranges, and 158 tests.
+- **The mapping is complete** — all 68 files under `docs/` were enumerated against the seven tiers
+  and every one has a destination.
+
+What did *not* reproduce was corrected in `08280ed`, and the withdrawn mention count is recorded in
+both documents. **The eight silent breakages are the most reliable part of either document** and were
+confirmed mechanically.
+
+## Reading for commit 2, the gate
+
+Done 2026-08-16 by reading `phase-4-notes.md` end to end. The gate's pass/fail criterion is in
+`EPD-004` under "The cheapest next step, and the gate"; this is what the source actually looks like.
+
+- **The parity table itself lifts cleanly.** Lines 27–37 are self-contained. The only phase-bound
+  context they need is the model and window from lines 13–14 (`qwen/qwen3.5-9b`, 44544 tokens,
+  authentication off) — and that is the *slice*, not narrative, so it travels with the table.
+- **The three findings also lift** — the ignored thinking budget, `output_config` billing invisible
+  reasoning, `cache_control` doing nothing at probe scale — but each carries a sentence of phase glue
+  that has to be cut deliberately.
+- **The real risk is not narrative drag, it is destination collision.** Several durable facts in that
+  file belong to documents that do not exist until commit 3: the time-to-first-byte table and the
+  cold/warm cache numbers are `measurements.md` rows; "a third of this phase was already done, again"
+  is a `lessons.md` entry; the paragraph where byte-relay stops being an argument and becomes a
+  measurement argues a `design-decisions.md` entry. **So writing this file is mostly deciding what it
+  does not take.**
+- The Phase 5 correction block at lines 239–252 and the timeout table are what `CLAUDE.md`'s LM
+  Studio bullets duplicate. That overlap is where "one home per fact" gets its first real test.
+
+## Loose ends that are not blockers
+
+- **`main` is 12 commits ahead of `origin/main`.** Milestone 1's merges are unpushed. Unrelated to
+  this branch, and this branch is unpushed too.
+- **The tracked `.claude/settings.json`** (decision 17) is its own work on its own branch, listed
+  under "What this plan does not cover".
