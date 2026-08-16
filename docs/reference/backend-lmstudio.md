@@ -119,8 +119,9 @@ cost 50 seconds, so cache reads are much cheaper than prefill here, not free.
 **There is a floor.** Two identical 117-token runs with an `ephemeral`/`1h` marked system block read
 `cache_read_input_tokens: 0` both times. The marker is accepted and does nothing at probe scale.
 Anyone measuring caching with a small request will conclude it is broken. Real traffic is where it
-shows: 24 rows in `../phase-2-step-6-session/calls.csv` carry a non-zero `cache_read`, the largest
-40879.
+shows: **24 of the LM Studio rows** in `../phase-2-step-6-session/calls.csv` carry a non-zero
+`cache_read`, the largest 40879. (The whole file, both backends, is 52 rows and 70692 — a different
+number for a different question, and `measurements.md` carries both.)
 
 ## Context: what fits, and what it costs in time
 

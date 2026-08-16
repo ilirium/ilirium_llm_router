@@ -12,8 +12,8 @@ untouched.
 
 ## Where this stands
 
-Nine commits, tree clean, nothing moved yet. **All planning is done and decided; execution has
-started — commit 2 of the plan is done and the gate passed.**
+Ten commits, tree clean, nothing moved yet. **Commits 2 and 3 of the plan are done; the gate passed.**
+Three of the seven `reference/` files exist. No file has moved and no citation has been repointed.
 
 | Commit | What |
 |---|---|
@@ -26,7 +26,8 @@ started — commit 2 of the plan is done and the gate passed.**
 | `08280ed` | What a second fresh-context review found — a missing ninth memory, the withdrawal of "253 mentions", and eleven count and measurement corrections |
 | `ad1d5ae` | Decision 20, generalised from that withdrawal |
 | `f473277` | What the review verified, and the reading for commit 2 |
-| *(this one)* | **Commit 2 of the plan** — `reference/backend-lmstudio.md`, 228 lines, and the gate result written into `EPD-004` |
+| `394d910` | **Commit 2 of the plan** — `reference/backend-lmstudio.md`, and the gate result written into `EPD-004` |
+| *(this one)* | **Commit 3** — `reference/measurements.md` and `reference/lessons.md`, and the two corrections the register found |
 
 The two planning documents:
 
@@ -41,9 +42,14 @@ table lifted verbatim out of `phase-4-notes.md`; the file states its findings wi
 Phase 4 as a phase, and the only phase names in it are paths. The result, what the extraction cost,
 and the two things it exposed are in `EPD-004` under "The gate was run on 2026-08-16, and it passed".
 
-**The next action is commit 3: write `reference/measurements.md` and `reference/lessons.md`.**
-Commit 2 leaves each of them a specific inheritance, listed under "What commit 3 inherits from the
-gate" below.
+~~**The next action is commit 3**~~ **Done 2026-08-16.** Both files exist; the four-column rule found
+two defects and one rounding slip, all recorded under "What commit 3 found" below.
+
+**The next action is commit 4: write `docs/README.md`, the manual** — the tiers and what belongs in
+each, the phase template, the branch convention, the two migrating memory conventions, the
+permission-file split, and the **opening** playbook. It comes before any file moves so that every
+later commit is checkable against it, and its acceptance test is in the plan: somebody who has never
+read `EPD-004` can file a new document from it alone.
 
 ---
 
@@ -250,10 +256,39 @@ advance.
 - The Phase 5 correction block at lines 239–252 and the timeout table are what `CLAUDE.md`'s LM
   Studio bullets duplicate. That overlap is where "one home per fact" gets its first real test.
 
-## What commit 3 inherits from the gate
+## What commit 3 found
 
-Written while the material was in hand, so `measurements.md` and `lessons.md` do not start from a
-blank page.
+**The four-column rule works, and the verification step that was "expected to find something" found
+three things.** All are in `reference/measurements.md` under "Corrections this register made"; this
+is the part that becomes work for a later commit.
+
+**`CLAUDE.md` carries one sentence that is false and must be fixed at commit 11.** It says a warmup
+probe "took 111 seconds for a 31 KB body". Recomputed from the frozen CSV: the longest warmup probe
+is **111559 ms with a 1960-byte body**, and the 31786-byte probe took **103395 ms**. Two true numbers
+joined into a false one. **The correction strengthens the argument it was making** — a two-kilobyte
+request costing 111 seconds says the cost of a probe is not proportional to what it carries. Why it
+cost that is not established; a model load and contention are both plausible and neither was
+recorded.
+
+**`count_tokens` is 33 rows or 32 depending on the slice, and neither document said which.** 33 on
+that path in the whole file, **32 LM Studio and 1 Anthropic**. `CLAUDE.md` quotes the first,
+`handoff.md` the second, both correctly and neither readably. The split also records something nobody
+had stated: the catch-all forwarded one `count_tokens` call to Anthropic.
+
+**And the warmup probes cost 20.0 of 45.6 minutes, not 45.5.** 44% either way; already right in
+Phase 6's notes and wrong in `CLAUDE.md`.
+
+**A third failure mode for numbers, seen once**, is recorded in `lessons.md` as an instance rather
+than a rule — two true numbers joined into a claim neither supports. One occurrence is exactly what
+the 26×/253 pair says not to generalise from.
+
+**`lessons.md` also gained nothing from the gate itself**, which is worth saying: the extraction found
+no fifth "premise wrong" episode. It confirmed the one already recorded — a reference document is
+mostly a decision about what it does *not* take.
+
+### The inheritance as it was written before commit 3 ran
+
+Kept because it is the list the register was checked against, and everything on it landed.
 
 **Rows `measurements.md` must carry**, all of them now quoted in `reference/backend-lmstudio.md` and
 therefore needing a canonical home with instrument and job: the 27924-token preamble; the 44544
@@ -272,10 +307,6 @@ second copy, and a correction still lands in the register first.
 **One row is a test of decision 20 rather than a transcription.** The LM Studio version was never
 recorded on either measurement date. Every row above inherits that hole, and the fourth column is
 where it becomes visible instead of implied.
-
-**`lessons.md` gains nothing new from the gate**, which is worth saying: the extraction found no
-fifth episode. It confirmed the one already recorded — a reference document is mostly a decision
-about what it does *not* take.
 
 ## Loose ends that are not blockers
 
