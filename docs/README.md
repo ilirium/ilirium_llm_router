@@ -262,14 +262,15 @@ is the whole test. A rule you would look up before acting belongs here instead.
 
 ## Where the harness configuration lives
 
-The permission allowlist is split the way the documents are. A **tracked `.claude/settings.json`**
-holds durable project policy — it encodes things like which command runs the tests and that the
-formatter is pinned, which is project knowledge rather than one laptop's. The untracked
-`.claude/settings.local.json` keeps machine-specific accretions and is pruned periodically.
+**`method/IDM-002-harness-configuration.md`** holds all of it, and is canonical. **Open it before adding
+a permission, before reaching for `/fewer-permission-prompts`, or before deciding that an entry looks
+like a fossil.** The allowlist is split the way the documents are — a tracked `.claude/settings.json`
+for durable project policy, an untracked `.claude/settings.local.json` for machine accretion, pruned
+periodically — and `IDM-002` carries the admission test that decides which is which, the exact-match
+`.env` deny and its `.env.example` trap, and why none of it reopens `epd/EPD-004`'s decision 19.
 
-**The tracked half is decided and not yet built** (`epd/EPD-004`, decision 17); today only the local
-file exists. This paragraph is the convention, so that whoever builds it does not re-litigate the
-split.
+*Both halves now exist. This paragraph said the tracked half was **not yet built** until 2026-08-17,
+which Phase 8's Task 9 made false.*
 
 ---
 
