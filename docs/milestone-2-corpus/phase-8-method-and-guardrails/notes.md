@@ -263,3 +263,64 @@ rejected: it produced warnings without useful information. The entry was pinned 
 first pass read it as an unresolved question — it is neither. This paragraph exists because the deleted
 file is gitignored and Task 15 is five tasks away; `IDM-003` is its permanent home, and this is the
 committed record that closes the window in between.
+
+### Tasks 11, 12, 12a, 13
+
+`IDM-002` gained one thing the plan did not specify, found by Task 14 and folded back in — see check 6
+below. Nothing else found. *(The plan says Task 14 is "four checks" and then lists six. Harmless, and
+noted because a count nobody re-derives is this repository's subject.)*
+
+### Task 14 — driving group B. **Four pass, one passes differently, one is not testable here**
+
+| # | Check | Result |
+|---|---|---|
+| 1 | `make test` reports 158, no prompt | ✅ **158 passed** |
+| 2 | The `.env` deny fires | ✅ **refused** — *"File is in a directory that is denied by your permission settings"*, no contents exposed |
+| 3 | `.env.example` still readable | ✅ **readable**, all 11 lines |
+| 4 | No new prompts, and **`lms load` prompts** | ⚠️ **half testable** — see below |
+| 5 | `git check-ignore -v` resolves to this repository's `.gitignore` | ✅ `.gitignore:253` |
+| 6 | `/permissions` shows the effective merged set | ⚠️ **substituted** — see below |
+
+**Checks 2 and 3 are the pair that matters and they pass together.** The trap the plan named is real:
+a globbed deny would have taken `.env.example` with it, and `.env.example` is the file that documents
+which key each backend needs. Driving both is what distinguishes "the deny works" from "the deny works
+and did not overreach". The plan predicted check 3 was the one most likely to be skipped because the
+file feels unimportant; it is the one that carries the information.
+
+**Check 4 is not testable in this session, and saying so is the honest result.** `lms load --help` — the
+help form, which loads nothing — ran **without a prompt**. The reason is not a mistake in Task 10: the
+merged allow set was enumerated and contains no rule matching `lms load`, `lms unload` or `uvx ty`.
+**This session is not enforcing the allowlist for Bash at all** — demonstrated by `mkdir -p docs/method`,
+which appears in neither file and ran silently. Allowlist *absence* therefore cannot be observed from
+inside it. **The deny half was observable**, because a deny is enforced regardless of mode, which is
+why check 2 is real evidence and check 4's second clause is not. The verifiable part — that no allow
+rule matches — was verified mechanically:
+
+```
+'Bash(lms load *)'                     present in merged set: False
+'Bash(lms unload *)'                   present in merged set: False
+'Bash(uvx ty@0.0.14 check src tests)'  present in merged set: False
+```
+
+**Check 6 could not be run as written, and the substitute found something.** `/permissions` is an
+interactive slash command; a session cannot invoke it and read the result back, so the merge was
+computed from the two files instead: **14 tracked + 21 local, overlap 0, effective allow 35**, plus 3
+deny. *That is a defect in the plan rather than in the work* — it specifies a verification step that only
+a human at the terminal can perform, and says nothing about what to do when the executor is not one.
+`/permissions` remains the right tool and `IDM-002` still names it; the owner should open it once.
+
+**What the substitute found, and it is worth more than the check was.** A set intersection of zero is
+**not** the same as no overlap. `Bash(uvx ruff *)` sits in the local file and
+`Bash(uvx ruff@0.16.1 format --check src tests)` in the tracked one; they intersect in nothing, and the
+glob already grants any ruff version — so the tracked entry, whose whole purpose is to encode the pin
+`CLAUDE.md` calls non-negotiable, **grants nothing that was not granted anyway.** It is documentation of
+policy, not enforcement of it. Both are kept, and the distinction is now stated in `IDM-002` where
+"the two files must not overlap" is defined, because the one-line check I used to verify that rule would
+have missed the one case that matters.
+
+**One defect found in passing and fixed.** `.env.example:5` cited `docs/anthropic-auth-check.md`, which
+moved into `docs/procedures/` during the restructure. **A whole-repository `link-check.py` run cannot
+see it**: `check()` globs `*.md`, so every citation in `.env.example`, `config.yaml`, the `Makefile`,
+`pyproject.toml` and `src/` is unchecked unless the file is named on the command line. Repointed — it is
+a path, not a claim. The rest were swept at the same time and are clean, which is why this is one line
+rather than a work list.

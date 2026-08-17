@@ -16,10 +16,17 @@
 works*, which is knowledge belonging to the project rather than to one laptop. An untracked one records
 what one session happened to need.
 
-**The two files must not overlap.** Every permission has exactly one home, and the check is a set
-intersection rather than a reading — it takes one line and it is the only way to be sure. A duplicated
-entry looks harmless and is not: narrowing the tracked file later *appears to do nothing*, because the
-local copy still grants it.
+**The two files must not overlap.** Every permission has exactly one home. A duplicated entry looks
+harmless and is not: narrowing the tracked file later *appears to do nothing*, because the local copy
+still grants it.
+
+**A set intersection is the cheap check and it is not sufficient.** A **glob** in one file silently
+subsumes an **exact** entry in the other while intersecting nothing. Live example, and it is left in
+place deliberately: `Bash(uvx ruff *)` is local, `Bash(uvx ruff@0.16.1 format --check src tests)` is
+tracked, and the intersection is empty — but the glob already grants any ruff version, so the tracked
+entry grants nothing that was not granted anyway. **It is there to write the pin down, not to enforce
+it**, and `IDM-003-development-tooling.md` says why the pin is not enforceable by an allowlist. Read the
+intersection as *no literal duplicate*, and then read the globs.
 
 **The local file is pruned periodically**, and pruning is the point rather than housekeeping. Phase 8
 took it from 53 entries to 21; fifteen were fossils and duplicates that no longer described anything.
