@@ -1,9 +1,17 @@
 # EPD-003 — Capturing bodies for a corpus
 
-**Status: proposal. Written 2026-07-31. No decision is taken here.** Nothing in this document is
-implemented. Unlike EPD-001 and EPD-002 it does not wait on Phase 4 — it waits on a decision the
-repository owner has to take first, about what the corpus is *for*. See "The fine-tuning half runs
-into the terms" below; that question changes the design, not merely its priority.
+**Status: partly accepted. Written 2026-07-31.** One named piece was decided on **2026-08-17**:
+**fine-tuning is dropped, and the corpus is for analysis only** — open question 1, which everything
+else was downstream of. See "The fine-tuning half runs into the terms" below, where the decision is
+recorded in place.
+
+**The rest is still a proposal and nothing in it is implemented.** What remains open is the storage
+question — per-call files or per-session streams, open question 2 — which waits on the gate in "The
+cheapest next step". That gate is Phase 9;
+`../milestone-2-corpus/phase-9-corpus-gate/plan.md` runs it, and records **five findings against this
+document** that were made while planning it. Two matter before reading further and are marked in place
+below: this document's own gate trains on its test set, and `calls.csv` cannot serve as the corpus's
+join table.
 
 ## The requirement this document is about
 
@@ -174,6 +182,22 @@ do most of the work.
   empty when nothing was stored. The CSV becomes the join table it already almost is.
 - Export to JSONL or Parquet as an offline command over the store, never on the request path.
 
+> **The second bullet is wrong, found 2026-08-17 while planning Phase 9.** `calls.csv` **cannot** be
+> the corpus's join table, because it **expires**. `config.yaml` sets `max_bytes: 5 MiB` with
+> `backup_count: 10`, and `stats.py` rides `RotatingFileHandler`, which discards the oldest segment at
+> each rollover — so the file is a capped rolling window of ~55 MiB, not an archive. A corpus keyed to
+> it outlives its own index: the bodies persist and nothing is left saying which call, model, backend
+> or session produced them.
+>
+> "Constraints this inherits from the router" below came close — *"refs must survive rotation"* — but
+> read rotation as a ref-integrity problem rather than as the index being **deleted**.
+>
+> **The defect is in borrowing the file, not in the file.** Size rotation is correct for the CSV's own
+> purpose, which `../reference/observability.md` states is model/backend comparison — a recent-window
+> question that has no use for last year's latencies. The repair is for the corpus to carry its own
+> durable index; the columns this bullet names are right, the file it names is not. **Independent of
+> the gate:** true whatever the compression numbers say.
+
 **The known weakness, stated up front.** Content addressing catches *identical* bodies. It does not
 catch the dominant case, which is bodies that share a 100 KB prefix and differ in the tail — each
 one hashes differently and is stored whole. Per-file zstd then only gets the ~3× a single body
@@ -213,6 +237,24 @@ Three consequences:
    Retrofitting a provenance split into an undifferentiated pile is much worse.
 3. **This is a decision for the repository owner, not a design question.** It is stated here so it is
    taken deliberately rather than discovered after the corpus exists.
+
+> ### Decided 2026-08-17 — fine-tuning is dropped. The corpus is for analysis only
+>
+> Taken by the repository owner in the interview that opened `docs/phase-9-corpus-gate`. This is the
+> "named piece" the status line refers to, and it settles **open question 1** below.
+>
+> **What it changes.** The Anthropic/LM Studio partition becomes **optional rather than structural** —
+> consequence 2 above no longer forces it from day one. `backend` remains a CSV column and any export
+> can still filter on it; nothing has to be designed around provenance.
+>
+> **What it does not change.** Consequence 1 stands untouched: *"the analysis goal is unaffected"*, and
+> this document already calls it *"the stronger half of the requirement anyway"*. Nothing in Anthropic's
+> terms restricts keeping bodies to understand what the router carries, debug parity, or measure prefix
+> cache behaviour.
+>
+> **And it does not weaken the gate.** The gate decides per-call files against per-session streams —
+> open question 2 — which is downstream of the *measurement*, not of the terms. Dropping fine-tuning
+> makes the design simpler; it does not make the storage question any less load-bearing.
 
 ## Constraints this inherits from the router
 
@@ -311,6 +353,27 @@ lands near the stream figure, the sketch above works as written. If it lands nea
 figure, then per-call files are the wrong unit and the design should be per-session streams instead —
 which changes everything downstream, including how a partial body is stored.
 
+> **This measurement, run exactly as written above, trains on its test set. Found 2026-08-17.** The
+> dictionary is trained *"on the session"* and then compresses that same session — but in use a
+> dictionary is trained once and applied to sessions that did not exist when it was trained. The
+> figure is an upper bound, not a deployment figure, and it is biased toward *"the sketch survives"* —
+> which is the wrong direction for a gate.
+>
+> **Phase 9 runs it with a held-out split** and reports both numbers. That turns out to buy more than
+> rigour: a self-trained dictionary **can** memorise session-local content, while a held-out one can
+> only carry the static preamble, so **the gap between the two figures is the static-versus-
+> session-local decomposition, measured directly** — and that decomposition is what decides the design.
+>
+> Two further corrections to the method, same date. **Sweep `--maxdict`**: it defaults to 112,640 bytes
+> and `stats.py` measures the static preamble at ~110 KB, so a single run at the default cannot
+> distinguish *"a dictionary cannot recover this"* from *"the dictionary was capped below the thing it
+> needed to hold"*. And **capture concurrency**: subagents and parallel sessions each add a preamble
+> family the dictionary must cover, and a single-conversation capture would flatter the result.
+>
+> **"Any throwaway means" is also not free.** `../captures/` holds **one** body, and one body cannot
+> exercise a cross-body dictionary — so this step is a live capture session *plus* twenty minutes of
+> `zstd`, not twenty minutes of `zstd`.
+
 **2. Does compaction actually destroy history?** Run one local session long enough to trigger
 auto-compaction and keep the captured requests. Diff the last request against an earlier one. This
 converts the shortcut above from "probably fails" to a fact either way, and it happens to be the same
@@ -318,9 +381,10 @@ session EPD-002's step 1 asks for — worth running once and using for both.
 
 ## Open questions
 
-1. **Is fine-tuning still a goal, given the terms?** Everything else is downstream of this. If the
-   answer is "analysis only", the design gets simpler and the Anthropic/LM Studio partition becomes
-   optional rather than structural.
+1. ~~**Is fine-tuning still a goal, given the terms?**~~ **Decided 2026-08-17: no — analysis only.**
+   The design gets simpler and the Anthropic/LM Studio partition becomes optional rather than
+   structural, exactly as this question anticipated. Recorded in place above, under "The fine-tuning
+   half runs into the terms".
 2. **Per-call files or per-session streams?** Measurement 1 decides it. Per-session is far better on
    size and far worse on everything else — random access, partial writes, a process that stops
    mid-session.
@@ -335,9 +399,12 @@ session EPD-002's step 1 asks for — worth running once and using for both.
    IDs, and the credential. Interesting for analysis, and the credential makes it the single most
    sensitive thing the router touches. Currently the router tees bodies only, which is also why the
    `anthropic-ratelimit-*` question in `../milestone-1-core/closing-notes.md` is still open.
-7. **Does this land before or after Phase 3?** Phase 3 adds `stream_error` and firms up
-   `client_disconnect`, and both change what a partial body means. Building capture first means
-   revisiting it.
+7. ~~**Does this land before or after Phase 3?**~~ **Stale, struck 2026-08-17.** Phase 3 shipped on
+   2026-08-05 (`cc65aed`); `stream_error` and `client_disconnect` both exist, and this document's own
+   "Constraints this inherits" section already reasons from them. The question answered itself by
+   being outlived. **Struck rather than deleted**, per `EPD-000`'s vocabulary — a question that stopped
+   being open is worth as much as one that stayed open, and silently removing it would leave the next
+   reader unable to tell whether it was answered or forgotten.
 
 ## Evidence
 
