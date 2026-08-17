@@ -3,9 +3,13 @@
 **Written 2026-08-17 on `docs/phase-8-method-and-guardrails`, forked from `main` at `6253cbc`.
 Nothing in it has been executed.**
 
-Two pieces of housekeeping that share a branch because both are small, both are about how the work
-is done rather than about the router, and neither depends on `EPD-003` or on Milestone 2's central
+**Sixteen tasks in three groups.** They share a branch because each is small, each is about how the
+work is done rather than about the router, and none depends on `EPD-003` or on Milestone 2's central
 claim — which is not yet named, and `../implementation-plan.md` says why.
+
+*It opened as two groups. Group C emerged from group B's review — reading the permission allowlist
+turned up an entry that looked like a fossil and was a decided refusal. That is the phase's own
+"re-derive the plan on contact" rule firing before execution rather than during it.*
 
 **This is the first plan to number its units of work as tasks rather than commits**, per `EPD-004`
 decision 22 and `../../README.md`. A task is a unit of work; a commit is a unit of review. Each task
