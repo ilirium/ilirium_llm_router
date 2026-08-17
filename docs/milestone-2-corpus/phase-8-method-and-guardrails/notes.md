@@ -58,6 +58,11 @@ document that is itself still growing is the same class of defect as a number no
 
 ### Finding 2 — Task 17's expected end state is wrong. It is **76**, not 77
 
+> **This finding is itself wrong, and it is left standing because being wrong here is the result.** The
+> answer is **68**. Task 17 below says why, and the reason this prediction failed is the same reason the
+> plan's failed. Corrected in place rather than rewritten, because a note that quietly acquires the right
+> number teaches nothing about how the wrong one was reached.
+
 `plan.md` predicts 77 broken and 2 roundabout, as 82 minus the five permanent hits Phase 8 resolves.
 It also says: *"derive it by running the checker, and if it disagrees with 77, find out why before
 editing the number."* Done — and it disagrees.
@@ -318,9 +323,80 @@ policy, not enforcement of it. Both are kept, and the distinction is now stated 
 "the two files must not overlap" is defined, because the one-line check I used to verify that rule would
 have missed the one case that matters.
 
-**One defect found in passing and fixed.** `.env.example:5` cited `docs/anthropic-auth-check.md`, which
-moved into `docs/procedures/` during the restructure. **A whole-repository `link-check.py` run cannot
-see it**: `check()` globs `*.md`, so every citation in `.env.example`, `config.yaml`, the `Makefile`,
-`pyproject.toml` and `src/` is unchecked unless the file is named on the command line. Repointed — it is
-a path, not a claim. The rest were swept at the same time and are clean, which is why this is one line
-rather than a work list.
+**One defect found in passing and fixed.** `.env.example:5` cited the pre-restructure path
+`docs/anthropic-auth-check.md` → `docs/procedures/anthropic-auth-check.md`. **A whole-repository
+`link-check.py` run cannot see it**: `check()` globs `*.md`, so every citation in `.env.example`,
+`config.yaml`, the `Makefile`, `pyproject.toml` and `src/` is unchecked unless the file is named on the
+command line. Repointed — it is a path, not a claim. The rest were swept at the same time and are clean,
+which is why this is one line rather than a work list.
+
+*This sentence is written with `→` deliberately: it is a sentence about a rename, and the arrow is how
+the checker is told to skip both sides. Writing it in prose put a broken hit into this file, which the
+checker duly reported.*
+
+---
+
+## Task group C — development tooling
+
+### Tasks 15 and 16
+
+**Three subjects was the right validation and the shape held**, which is what Task 15 was for beyond its
+content. Writing `IDM-003` produced one thing neither the plan nor `IDM-002` had: **the ruff pin is
+written in three places and enforced in none.** `.claude/settings.json`'s
+`Bash(uvx ruff@0.16.1 format --check src tests)` reads as enforcement and is not, because
+`Bash(uvx ruff *)` in the local half already grants any version. What stops a bump is the written rule
+and the review of the diff. Folded into `IDM-002`'s overlap rule and `IDM-003` both.
+
+### Task 17 — the count was **68**, not 77, and not the 76 this note predicted
+
+**The plan predicted 77. The re-derivation at the top of this file predicted 76. The tool says 68.**
+Three attempts, two wrong, and wrong in the same direction — which is the finding, not the number.
+
+| | Broken | Roundabout |
+|---|---|---|
+| Docstring's committed claim, written 2026-08-16 | 82 | 2 |
+| This branch before Task 1 | 105 | 2 |
+| **After Phase 8, re-derived by running it** | **68** | **2** |
+
+The 68, accounted for: **61** in `phase-7-docs-restructure/`, **3** in
+`documentation-review-2026-08-16.md`, **2** deliberate absences, and **2** in this phase's own `plan.md`
+quoting that list of deliberate absences.
+
+**Why both predictions were wrong, and it is the same reason twice.** The docstring's prose partitions
+its hits by **where they live** — 71 in the archive, seven "outside the archive", four in the review
+document. What actually resolves a hit is **which path it names**. `.claude/settings.json` and
+`docs/method/` are cited *sixteen* times across the repository, not five: five in the outside-the-archive
+list, one in the review document, and **ten inside the frozen `phase-7-docs-restructure/` files** — which
+is why the docstring's `71` is now `61`, directly under a sentence that said those 71 would be broken
+**"and always will"**. Anybody reading the docstring to predict the new count reads the partition that
+cannot answer the question.
+
+**So: could the permanent-hits list have been got right without running the checker? No, and that is
+measured rather than asserted.** Two independent attempts, one of them written specifically to catch the
+first one's error, both failed on the same structural feature of the prose.
+
+### The cost of hand-maintaining that docstring
+
+The plan asks for this because it is the first time anybody has done it, and the cost is the evidence for
+whether the instrument should change.
+
+| | |
+|---|---|
+| Numbers that had to be re-derived | **4** — the `71`, the `82`, the `2` roundabout, and the `seven` permanent hits |
+| Prose claims falsified by the re-derivation | **2** — *"and always will"*, and *"outside the archive there are seven"* as a usable partition |
+| Runs of the checker needed to get it right | **4** — whole-repository before, the archive alone, a before/after diff to find the ten hidden copies, and whole-repository after |
+| Could the list have been written correctly by reading? | **No.** Demonstrated twice |
+| Wall-clock | minutes, not hours — **the cost is not the time, it is that the answer is unreachable without the tool** |
+
+**That last row is the whole result.** A docstring that can only be maintained by running the thing it
+documents is not documentation of the tool's behaviour; it is *state* the tool declines to hold. The
+redesign is argued from this in `../../backlog.md`, and deliberately not attempted here — `EPD-004`
+decision 12's reasoning applies: an instrument that has never been run should not be committed, and by
+the same token a redesign should be argued from a measurement rather than from the irritation of having
+done the work once.
+
+**Two further blind spots found while measuring**, both now in the docstring and the backlog item: the
+whole-repository run globs `*.md`, so `config.yaml`, `Makefile`, `pyproject.toml`, `.env.example` and
+`src/` go unchecked — that is how `.env.example:5` survived the restructure — and a line containing `→`
+is skipped whole, which leaves all five of `CLAUDE.md`'s `→` pointer lines unchecked. All five were
+verified by hand and all five resolve.

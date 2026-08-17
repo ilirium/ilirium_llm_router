@@ -59,36 +59,52 @@ its hits rather than fixing them.
 
 **In this repository that class has a permanent address:**
 `docs/milestone-1-core/phase-7-docs-restructure/`, the 2026-08-16 restructure's plan and notes. Those
-two files account for **71** of the whole-repository run's 82 broken hits and always will — they are
-frozen archive describing paths that no longer exist, which is what they are *for*. The useful
-invocation is therefore usually:
+two files account for **61** of the whole-repository run's 68 broken hits — they are frozen archive
+describing paths that no longer exist, which is what they are *for*. The useful invocation is therefore
+usually:
 
     python3 docs/procedures/link-check.py CLAUDE.md README.md docs/reference docs/procedures \
         docs/epd docs/captures docs/README.md docs/status.md docs/backlog.md
 
 ## A clean run is not a zero run
 
-**A whole-repository run reports 82 broken and 2 roundabout, and every one of them is correct.**
-71 broken are the restructure plan and notes above; 7 broken are deliberate absences, listed next; the
-last 4 broken and both roundabout are in `docs/milestone-1-core/documentation-review-2026-08-16.md`,
-whose own header explains them — it quotes broken paths as its subject, and two of its paths are
-written in another file's frame of reference, so shortening them would falsify a finding.
+**A whole-repository run reports 68 broken and 2 roundabout, and every one of them is correct.**
+Re-derived 2026-08-17 by running it, at the close of Phase 8:
+
+- **61** — the restructure plan and notes above.
+- **3** — `docs/milestone-1-core/documentation-review-2026-08-16.md`, whose own header explains them: it
+  quotes broken paths as its subject. Both **roundabout** hits are in that file too, written in another
+  file's frame of reference, so shortening them would falsify a finding.
+- **2** — the deliberate absences, listed next.
+- **2** — `docs/milestone-2-corpus/phase-8-method-and-guardrails/plan.md` quoting that same list of
+  deliberate absences, which makes them the same class rather than a new one.
 
 **Some hits are correct and permanent.** A document that names a path in order to say *this
 deliberately does not exist* is right, and nothing distinguishes it from a broken link — the `→`
-convention covers renames, not deliberate absences. Outside the archive there are **seven**, and a
+convention covers renames, not deliberate absences. Outside the archive there are **two**, and a
 session expecting zero would either "fix" the prose or conclude the work is unfinished:
 
-- `.claude/settings.json` ×3 — `EPD-004` decision 17 splits the permission allowlist and defers
-  building the tracked half.
-- `docs/method/` ×2 — decision 18 says do not build a methodology tier before project #2.
 - `.claude/agents/local-helper.md` — `EPD-001` naming the subagent file it *would* create.
 - `docs/procedures/closing-a-milestone.md` — `EPD-004`'s escape hatch if a playbook outgrows the
   manual.
 
+**This list was seven until 2026-08-17, and five of the seven stopped being permanent in a single
+phase.** Phase 8 built the tracked `.claude/settings.json` and the `docs/method/` tier, so
+`.claude/settings.json` ×3 and `docs/method/` ×2 now resolve. **That is the argument for not trusting
+any of the numbers above without re-running this script**, and it is stronger than it looks: the ten
+*further* copies of those two paths inside the frozen archive resolved at the same moment, which is why
+the 71 above is now 61 — and the sentence that used to follow it said those 71 would be broken "always".
+Two attempts at predicting this count from the old prose, one in Phase 8's plan and one in its
+re-derivation, were both wrong and wrong in the same direction, because the prose partitions hits by
+*where they live* while what resolves them is *which path they name*.
+
+**Also worth knowing before trusting a clean run:** this script reads `*.md` only when handed a
+directory, so citations in `config.yaml`, the `Makefile`, `pyproject.toml`, `.env.example` and `src/` are
+unchecked unless named on the command line — one stale path was found that way in Phase 8. And a line
+containing `→` is skipped whole, which means `CLAUDE.md`'s five `→` pointer lines are not checked at all.
+
 Check the list before adding to it. Teaching this script to recognise them is filed in
-`../backlog.md` alongside the anchor and `file.py:N` gaps, deliberately not done while a migration
-this script is measuring was still in flight.
+`../backlog.md`, which also carries what Phase 8 measured about maintaining this docstring by hand.
 """
 
 from __future__ import annotations

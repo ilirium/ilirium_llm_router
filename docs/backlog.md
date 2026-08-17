@@ -120,18 +120,43 @@ methodology extracted from n=1 is a guess about what generalises. Do not create 
 
 ## Instruments and housekeeping
 
-**Teach `procedures/link-check.py` the two citation forms it cannot see.** It resolves paths and
-ignores everything else, so two forms this repository depends on go unchecked: **heading anchors**,
-stripped in `candidates()` although `README.md`'s naming table says findings are "linked by anchor";
-and **`file.py:N` line citations**, skipped by `is_candidate` for containing no `/`. *Parked because*
-both classes were verified by hand and both passed — the 11 code citations in a fresh-context review,
-the six section titles at commit 6 of the restructure — so this buys repeatability rather than fixing
-a known defect, and the population is small enough to check by hand again. From `EPD-004`
-decision 21.
+**`procedures/link-check.py`'s exit code carries no information.** `link-check.py:222` is
+`return 1 if check(...) else 0` and **there is no expected-failures mechanism in the code** — the
+correct-and-permanent hits exist only as prose in the docstring. So the tool exits 1 permanently, can
+never gate a commit or a hook despite its own docstring saying *"exits 1 … so it can gate a commit"*, and
+reading its output requires a human holding a number from a comment.
 
-> **The third gap in this item is closed.** A roundabout-path check was added on 2026-08-16, ahead of
-> the rest, because commit 13 produced two live instances of the defect rather than a hypothetical
-> one. See decision 21's second half.
+**Four pieces of evidence, all from Phase 8, all new:**
+
+- The docstring's counts are **hand-maintained state**, re-derived by Phase 8's Task 17 rather than by
+  the tool. A number nobody re-derives is this repository's signature failure.
+- **Five of seven "permanent" hits stopped being permanent in a single phase**, and ten further copies of
+  the same two paths resolved inside the frozen archive at the same moment — which is why the docstring's
+  71 became 61, under a sentence that had said "always".
+- **Two independent attempts to predict the new count from the old prose were both wrong**, in the same
+  direction, before anyone ran the tool. The prose partitions hits by *where they live*; what resolves
+  them is *which path they name*.
+- **Every phase plan legitimately cites files it will create.** Phase 8's added 23, all correct, all
+  reported as breakage. That is a recurring false-positive class rather than drift.
+
+**Two narrower gaps ride along**, and they are what this item used to be *about* rather than what it is
+for. **Heading anchors** are stripped in `candidates()` although `README.md`'s naming table says findings
+are "linked by anchor", and **`file.py:N` line citations** are skipped by `is_candidate` for containing
+no `/`. Both were verified by hand and both passed — the 11 code citations in a fresh-context review, the
+six section titles at commit 6 of the restructure — so they buy repeatability rather than fixing a known
+defect. From `EPD-004` decision 21. **Two more were found in Phase 8:** the whole-repository run globs
+`*.md`, so citations in `config.yaml`, the `Makefile`, `pyproject.toml`, `.env.example` and `src/` are
+unchecked — one stale path was found that way — and a line containing `→` is skipped whole, which leaves
+`CLAUDE.md`'s five `→` pointer lines unchecked.
+
+*Parked because* the redesign should be argued from the measurement Task 17 produced, not from the
+irritation of having done it once — `EPD-004` decision 12's reasoning, that an instrument which has never
+been run should not be committed, applied to an instrument that has. **Decide at Milestone 2's close.**
+The cost measured in `milestone-2-corpus/phase-8-method-and-guardrails/notes.md` is the input.
+
+> **The roundabout gap this item once listed is closed.** A roundabout-path check was added on
+> 2026-08-16, ahead of the rest, because commit 13 produced two live instances of the defect rather than
+> a hypothetical one. See decision 21's second half.
 
 **Static analysis beyond ruff.** Other type checkers, AST-level linters, a language server — over a CLI
 or over MCP. `ruff` is all this project runs today; `method/IDM-003-development-tooling.md` records the
