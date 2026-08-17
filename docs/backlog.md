@@ -27,10 +27,17 @@ stands. **Nothing in it has been acted on.**
 building router features. It is not blocked on anything and it is not scheduled; picking it up is a
 decision to spend a session on documentation instead of on the router.
 
-*Weaker than it looks?* **Two items are not.** `reference/measurements.md:34` states a slice that
-recomputes to **0.245×** rather than 26.6× — the sign reversed — and `README.md:381`'s worked example
-tells a filer to create a **second Phase 7**, contradicting the rule 233 lines above it. Both make a
-future session act confidently and wrongly, and both are cheap. Everything else in the file can wait.
+*Weaker than it looks?* **One item is not.** `reference/measurements.md:34` states a slice that
+recomputes to **0.245×** rather than 26.6× — the sign reversed. It makes a future session act
+confidently and wrongly, and it is cheap. Everything else in the file can wait.
+
+> **The second of the two was fixed on 2026-08-17 by Phase 8, and is recorded here rather than
+> dropped.** `README.md`'s closing worked example told a filer to create a **second Phase 7**,
+> contradicting "Naming and numbering" in the same file. Phase 8's Task 4 was already rewriting that
+> sentence for two unrelated reasons of its own, so leaving a known bug inside it would not have been
+> scope discipline. See `milestone-2-corpus/phase-8-method-and-guardrails/notes.md`. *This paragraph
+> said "two items" and named both until then; silently deleting one would leave the next reader unable
+> to tell whether it was fixed or forgotten.*
 
 **This entry points and does not restate, deliberately.** The findings, their evidence and the six
 questions stay in that one file; copying any of it here would create the second copy this structure
@@ -102,9 +109,19 @@ branch. `README.md` currently describes the split and names it as not yet built.
 
 **Extract the portable methodology.** `EPD-004` decision 18 defers this **with a trigger rather than
 a date**: when project #2 starts, extraction is a copy of `docs/README.md` with the backend rows
-deleted, plus `CLAUDE.md`'s rule block. *Parked because* a methodology extracted from n=1 is a guess
-about what generalises. Do not build a `docs/method/` tier or a global `~/.claude/CLAUDE.md` before
-then.
+deleted, plus `CLAUDE.md`'s rule block, plus the whole of `method/` unfiltered — `IDM-000` settles that
+the tier needs no such filter, because no IDM contains a fact about the router. *Parked because* a
+methodology extracted from n=1 is a guess about what generalises. Do not create a global
+`~/.claude/CLAUDE.md` before then.
+
+> **Narrowed 2026-08-17. This item is now the extraction only.** The `docs/method/` tier itself was
+> **built** in Phase 8 — `IDM-000` through `IDM-003`. Decision 18 declined the tier on a *structural*
+> ground, that it would split `docs/README.md`'s acceptance test across two files, and that objection
+> was answered rather than overruled: the manual answers *where does a document go* and the tier
+> answers *how is the work done*. The n=1 reasoning above is untouched and is still the whole reason
+> extraction waits — it was aimed at copying to project #2, which it always was, and never at the tier.
+> *This item said "do not build a `docs/method/` tier" until then, which is why the change is recorded
+> in place instead of edited away.*
 
 ## Instruments and housekeeping
 
@@ -120,6 +137,18 @@ decision 21.
 > **The third gap in this item is closed.** A roundabout-path check was added on 2026-08-16, ahead of
 > the rest, because commit 13 produced two live instances of the defect rather than a hypothetical
 > one. See decision 21's second half.
+
+**`status.md`'s shape — one row per milestone rather than per phase.** Proposed 2026-08-17 during
+Phase 8 and deliberately not done there. *The proposal:* "Where the project is" currently carries a
+per-phase table of merge commits, which duplicates what `README.md` assigns to the **phase note** —
+branch, fork point, merge commit — and what each milestone's archive `README.md` already indexes.
+Replace it with one row per milestone pointing at that archive. *Parked because* it is a filing
+question rather than a branching one, and Phase 8 was scoped small on purpose. *Weaker than it looks?*
+**Yes.** Only one of the file's four sections grows without bound: "Where we stopped" self-limits at
+~30 lines by its own rule, and "In-flight branches" empties at every merge. So the file is not
+actually accreting — the duplication is the whole of the complaint. **Carry the counter-argument:** a
+separate `history.md` was considered in the same conversation and declined as a **third** copy of those
+facts, with nothing forcing it to stay correct.
 
 **Close out the four `Branch:` lines that record intent instead of outcome.** Five exist across four
 of the six phases, in inconsistent places, and only `phase-4-notes.md:7` records the merge commit.
