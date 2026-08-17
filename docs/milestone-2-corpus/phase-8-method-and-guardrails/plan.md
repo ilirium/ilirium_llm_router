@@ -51,6 +51,7 @@ Decided by the owner on 2026-08-17 in the interview that opened this branch:
 | The local file | **53 → 37.** Thirteen fossils; `lms load`/`lms unload`, which had repealed a `CLAUDE.md` non-negotiable; and `uvx ty@0.0.14`, which is a refusal rather than a fossil |
 | `ty` | **tried and refused** — warnings without useful information. Recorded in `IDM-003`, not deleted silently |
 | Harness tooling | `settings.json` **hand-written**; `/permissions` verifies the merged result at Task 14; `/fewer-permission-prompts` named in `IDM-002` as writing into the wrong file |
+| `README.md:381` | **all three errors fixed in Task 4.** Two are Phase 8's own doing; the second-Phase-7 half is borrowed from the parked review, and `backlog.md` is corrected in Task 5 so it stops listing a fixed finding |
 | `~/.config/git/ignore` | **not touched.** Task 8 edits this repository's own `.gitignore` only |
 | Harness rules | **`IDM-002`**, with `README.md:236` becoming a pointer — and the tier's second subject is its cheapest validation |
 | A rejected plan | **merged and marked, not deleted** — reversing `EPD-004` decision 14. Status line in the plan, row in the milestone plan, no rename, no folder suffix. The phase number is spent |
@@ -258,12 +259,46 @@ Three edits, one commit:
 3. **The `method/` row in the "Where does it go?" table, plus a `method/` subsection under "The
    tiers".** This is the edit that keeps the acceptance test passing — see the section above.
 
+4. **The worked example at `README.md:381`**, which is wrong in three ways:
+
+```
+- **A Milestone 2 phase note.** `milestone-2-<slug>/phase-7-<slug>/notes.md`, the slug identical to
+- `feat/phase-7-<slug>`.
++ **A Milestone 2 phase note.** `milestone-2-corpus/phase-9-<slug>/notes.md`, the slug identical to
++ its branch's — whatever prefix that branch carries.
+```
+
+**Two of the three are Phase 8's own doing.** `feat/` is wrong as of Task 2's orthogonality
+decision, and `milestone-2-<slug>` is now concretely `milestone-2-corpus`. **The `feat/` assumption
+appears twice in this file** and edit 2 above already fixes the other instance at `README.md:156` —
+fixing one and leaving its twin 225 lines away is the restructure's own documented failure, where
+*"a grep for moving paths structurally cannot find a citation that names a section title"* and six
+stale ones were found by reading rather than grepping.
+
+**The third — `phase-7-<slug>`, a second Phase 7 contradicting `README.md:148`** — belongs to the
+parked documentation review. Taken here anyway, because leaving a known bug inside a sentence this
+task is already rewriting is not scope discipline. `notes.md` records where it came from.
+
+*Phase 9 is used because it does not exist yet*, which keeps it a worked example rather than a
+description of something real.
+
 Also check "When two answers are defensible", rule 3: *"Is it a rule about how the work is done,
 rather than about the router? Then it is this file, or `CLAUDE.md`…"* — that routing rule is now
 wrong and must name `method/`.
 
-**Task 5 — `docs/backlog.md`: narrow the park, and record the `status.md` proposal.**
-Two edits, one commit:
+**Task 5 — `docs/backlog.md`: narrow the park, record the `status.md` proposal, and close out
+`README.md:381`.**
+Three edits, one commit:
+
+0. **The documentation-review item must stop claiming `README.md:381` is outstanding.** It currently
+   reads *"**Two items are not** [weaker than they look]"* and names `measurements.md:34` and
+   `README.md:381`. Task 4 fixes the second, so **one** remains. Rewrite the paragraph to say one,
+   name which, and record that the other was taken by Phase 8 — **do not silently drop it**, or the
+   next reader cannot tell whether it was fixed or forgotten.
+
+   *This edit exists because of a cross-file dependency inside a single phase, which is the drift
+   this whole phase is about.* Fixing a finding in one file while another file still lists it as
+   open is how a work list stops being trustworthy.
 
 1. "Extract the portable methodology" is rewritten so the park covers **the extraction only** —
    copying to project #2, a global `~/.claude/CLAUDE.md` — and records that the tier itself was
@@ -481,23 +516,6 @@ A direct consequence of Task 15, and the same pattern already accepted for branc
 stays** — *never bump the ruff pin as a side effect* is exactly a thing a session does confidently
 and wrongly, and it has already happened once here. **The reasoning, the `E501` explanation and the
 AST-comparison procedure go to `IDM-003`**, behind a pointer naming when to open it.
-
----
-
-## Proposed additions, not yet accepted
-
-Deliberately unnumbered — a number allocated to a task that is then struck is a number that cannot
-come back. If accepted, each takes the next free number.
-
-**Fix `docs/README.md:381`.** Its worked example tells a filer to create
-`milestone-2-<slug>/phase-7-<slug>/` — a **second Phase 7**, contradicting the rule 233 lines above
-it. `backlog.md` names this as one of two findings that *"make a future session act confidently and
-wrongly"*, and it is one line. It is in scope-adjacent territory: Phase 8 is creating
-`milestone-2-corpus/` right now, which is precisely the situation the broken example misdirects.
-**Not done unless the owner says so** — it belongs to the parked documentation review, and picking
-one finding out of a parked work list is a decision about that list.
-
----
 
 ## Done when
 
