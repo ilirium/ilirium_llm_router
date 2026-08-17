@@ -128,3 +128,4 @@ exist yet.
 |---|---|---|---|
 | **000** | About these documents | 2026-08-17 | This file: what a method document is, how they are numbered, and the index |
 | **001** | [Git branches, and where a branch is recorded](IDM-001-git-branching.md) | 2026-08-17 | The four prefixes by kind of work, `phase-N-` as an orthogonal form any of them may take, `--no-ff` always, the folder⇄branch slug rule, and what happens to a rejected plan |
+| **002** | [Harness configuration: the permission allowlist](IDM-002-harness-configuration.md) | 2026-08-17 | The tracked/local split and its admission test, the exact-match `.env` deny and why it does not reopen `EPD-004` decision 19, and what an allowlist entry does to a rule nobody re-read |
