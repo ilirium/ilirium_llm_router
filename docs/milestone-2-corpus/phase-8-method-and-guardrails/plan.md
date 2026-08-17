@@ -52,7 +52,7 @@ Decided by the owner on 2026-08-17 in the interview that opened this branch:
 | Scope | `IDM-000` + `IDM-001` + the citations. **No list of further split candidates** — the shape of the rest of the `docs/README.md` split stays undecided |
 | The tracked allowlist | **project knowledge only, 14 entries** — `make` targets, the ruff pin, the pytest path, the two backend doc domains, plus four read-only entries derived from `config.yaml`. Arbitrary execution and network stay local |
 | Deny rules | **yes, for `.env`**, exact-match. Not a reversal of decision 19 |
-| The local file | **53 → 35.** Fifteen fossils and duplicates; `lms load`/`lms unload`, which had repealed a `CLAUDE.md` non-negotiable; and `uvx ty@0.0.14`, which is a refusal rather than a fossil |
+| The local file | **53 → 21.** Fifteen fossils and duplicates; `lms load`/`lms unload`, which had repealed a `CLAUDE.md` non-negotiable; `uvx ty@0.0.14`, a refusal rather than a fossil; and the fourteen that move to the tracked file, so each permission has one home |
 | `ty` | **tried and refused** — warnings without useful information. Recorded in `IDM-003`, not deleted silently |
 | Harness tooling | `settings.json` **hand-written**; `/permissions` verifies the merged result at Task 14; `/fewer-permission-prompts` named in `IDM-002` as writing into the wrong file |
 | `README.md:381` | **all three errors fixed in Task 4.** Two are Phase 8's own doing; the second-Phase-7 half is borrowed from the parked review, and `backlog.md` is corrected in Task 5 so it stops listing a fixed finding |
@@ -409,7 +409,7 @@ without a shell parser, converting a recoverable prompt into a hard block, and s
 every Bash call. **An exact-path deny has none of those properties.** Say so in `IDM-002`, or the
 next reader will see enforcement and think the refusal was quietly overturned.
 
-**Task 10 — prune the local file: eighteen entries out, in three groups.**
+**Task 10 — prune the local file: thirty-two entries out, in four groups. 53 → 21.**
 
 *Fifteen fossils and duplicates.* The fourteen listed above, plus
 `Bash(curl -s --max-time 4 http://localhost:1234/api/v1/models)` — **not** a fossil, since the URL
@@ -436,9 +436,20 @@ unresolved question on the first pass — pinned like policy, absent from the `M
 records the refusal first**; delete it without that and the next session sees a project with no type
 checker and adds one.
 
+*Fourteen that now live in the tracked file.* Every entry Task 9 writes into `settings.json` is
+deleted from `settings.local.json`, so **each permission has exactly one home** — which is this
+phase's whole subject, applied to itself. The four promoted entries matter most: calling them
+project knowledge and then keeping a machine-local copy would be incoherent.
+
+> *Decided 2026-08-17, reversing a narrower answer given earlier in the same interview. That answer
+> was given when the tracked file was hypothetical and ten entries; it is now fourteen, four of them
+> moved out of this very file. The cost of the reversal is named in the option it replaces: the local
+> file no longer stands alone if `settings.json` is deleted. The cost of **not** reversing is worse —
+> narrowing the tracked file later would appear to do nothing, because the local copy still grants it.*
+
 **This task produces no commit** — the file is gitignored — and that is expected rather than
 missing, per the rule that a task producing no commit is still a task. Record before and after
-counts in `notes.md`; it is the only evidence it happened. **53 → 35.**
+counts in `notes.md`; it is the only evidence it happened. **53 → 21.**
 
 **Task 11 — write `docs/method/IDM-002-harness-configuration.md`.**
 The second method document, which is also **the cheapest available validation that the tier works
@@ -484,8 +495,11 @@ file for different decisions.
    the test, not a violation of the rule; the attempt is blocked and no contents are exposed.*
 3. **`.env.example` is still readable.** This is the check that catches a globbed deny pattern, and
    it is the one most likely to be skipped because the file feels unimportant.
-4. The pruned local file still covers the session's actual work — no new prompts for things that
-   worked before Task 10, and **`lms load` does prompt**, which is the point of removing it.
+4. **The two files together still cover the session's actual work** — no new prompts for anything
+   that worked before Task 10, and **`lms load` does prompt**, which is the point of removing it.
+   After deduplication this is no longer a formality: the fourteen entries deleted from the local
+   file are covered *only* by `settings.json` now, so a mistake in Task 9 shows up here as a prompt
+   for `make test`.
 5. **`git check-ignore -v .claude/settings.local.json` resolves to this repository's `.gitignore`**,
    not to `~/.config/git/ignore`. That is the whole of Task 8's effect and it is one command to
    confirm.
