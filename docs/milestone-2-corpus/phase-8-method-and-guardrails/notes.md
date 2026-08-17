@@ -140,3 +140,75 @@ constraint is met at the moment the entry disappears rather than at the end of t
 
 *Written before Task 1. Verified by: `python3 docs/procedures/link-check.py` (105 broken, 2
 roundabout), `make test` (158 passed), and a hand enumeration of all 53 allowlist entries.*
+
+---
+
+## Task group A — the method tier and the branching rules
+
+### Task 1 — `IDM-000`
+
+**The plan left one thing to the writer and it turned out to be the load-bearing one: whose method it
+is.** The plan says only *"settle it here rather than by accident later; it decides what `EPD-004`
+decision 18's extraction copies."* Settled as **the owner's method, evidenced from this repository**,
+and the reason to prefer that over "this repository's practice" is that it yields a usable admission
+test in one step: **no IDM contains a fact about the router.** Which in turn answers the extraction
+question concretely — extraction copies the whole tier **unfiltered**, where `docs/README.md` has to be
+copied *and* have its backend rows deleted. A tier that needs no filter is worth more than one that
+does, and that is an argument for the test rather than a consequence of it.
+
+### Task 2 — `IDM-001`
+
+Nothing found. Every row of the seven-disagreement table resolved as written, and the two consequences
+the plan predicted for row 1 both landed: `docs/` loses its "belonging to no phase" definition, and
+decision 15's one-way check generalises to `*/phase-N-*`.
+
+### Task 3 — `CLAUDE.md`
+
+**The plan was right that the reshaped table removes the `feat/`-only inference by itself.** No wording
+change to "one phase means one branch and one merge commit" was needed; once the table is organised by
+kind of work and the `<prefix>/phase-N-<slug>` line sits under it, the sentence reads as it was
+measured to be true.
+
+### Task 4 — `docs/README.md`
+
+**`feat/` went from six lines to two, exactly as the plan's fresh-context review predicted, and `:326`
+survives for the reason it gave.** Verified rather than trusted: *"The usual case is a
+`feat/phase-N-<slug>` branch that changes `src/`"* is hedged, and under orthogonality the usual case
+really is `feat/`. It stays.
+
+**One thing the plan did not anticipate.** Edit 3 changes the sentence introducing the "Where does it
+go?" table from *"one of these six rows"* to *seven*. A count in prose immediately above the table it
+counts — the cheapest possible instance of a number nobody re-derives, and it would have been missed by
+a diff that only read the table.
+
+### Task 5 — `docs/backlog.md`
+
+Nothing found beyond what Task 0 already recorded as Finding 3.1, which becomes Task 12a.
+
+### Task 6 — `EPD-004`
+
+**Writing decision 14's addendum showed the orthogonality change is smaller than the plan makes it
+sound.** Decision 14 had *already* been revised on 2026-08-16 to separate *which prefix* from *is this
+a phase* — and then left its own table stating the conflation. So the addendum finishes an existing
+revision rather than reversing a decision. Only the rejected-plan half is an actual reversal.
+
+### Task 7 — verifying group A
+
+| Check | Result |
+|---|---|
+| `link-check.py`, whole repository | **105 → 93 broken**, 2 roundabout |
+| `make test` | **158 passed** |
+| Citations of the two replaced sections, by **title** rather than by path | none stale outside the archive |
+
+The remaining 93 are accounted for: 71 in `phase-7-docs-restructure/`, 4 in
+`documentation-review-2026-08-16.md`, 2 permanent deliberate absences, and 16 forward citations of
+`.claude/settings.json`, `IDM-002` and `IDM-003` — which Tasks 9, 11 and 15 create. Every
+`docs/method/` hit outside those two resolved.
+
+**The title-grep found two stale claims and both are correctly left alone.**
+`documentation-review-2026-08-16.md:281` says the "Where does it go?" table *"has six rows"* and `:328`
+cites "Naming and numbering" as lines 136–157. Both are now false. Both are **claims in archived
+prose**, which `../../README.md`'s editable-paths-yes-claims-no table says are not edited — they record
+what was believed then, and a review document's findings are the last thing that should be quietly
+updated to match the thing it was reviewing. Recorded here so the next reader knows they were seen
+rather than missed.
