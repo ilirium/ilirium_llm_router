@@ -10,45 +10,33 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-17 — Phase 8 is merged.** `docs/phase-8-method-and-guardrails` merged into `main` with
-`--no-ff` as **`22a6d20`**, and the hash is in
-`milestone-2-corpus/phase-8-method-and-guardrails/notes.md`, which is the permanent record. All
-seventeen tasks are done, plus two inserted by the phase's own re-derivation (**12a** and **17a**,
-lettered rather than renumbered). `docs/method/` now holds `IDM-000` through `IDM-003`; the tracked
-`.claude/settings.json` exists; the local allowlist went **53 → 21** with zero overlap between the two
-files. `procedures/link-check.py` reports **68 broken and 2 roundabout**, its docstring re-derived to
-match, and `make test` reports **158**. `main` is ahead of `origin/main` and nothing has been pushed.
+**2026-08-17 — Phase 9 is open and paused after Task 4.** `docs/phase-9-corpus-gate`, forked from
+`main` at `97f6563`. **Sixteen tasks in four groups**; Group A (1–4) is done, and the phase is
+deliberately stopped **before anything touches the machine**. Nothing is captured, no `src/` is
+patched, and no measurement has been run.
 
-**Phase 8's one open check is discharged.** The owner opened `/permissions` on 2026-08-17 and confirmed
-the merged rule set, including that nothing matches `lms load` — the check the phase note records as
-substituted, because a session cannot invoke `/permissions` and read the result back. **The tracked file
-is now 17 entries, not 14:** all eight `make` targets rather than six, added immediately after the phase
-on a `chore/` branch, for the reason recorded in `method/IDM-002-harness-configuration.md`. Nothing else
-about Phase 8 is outstanding.
+**`EPD-003` is now partly accepted.** The owner decided its open question 1 on 2026-08-17:
+**fine-tuning is dropped and the corpus is for analysis only.** Everything else in that document was
+downstream of it. What stays open is per-call files against per-session streams, which its gate
+decides — that is Group C.
 
-**The phase's own re-derivation found its plan wrong in four places**, which is the fifth of Milestone
-1's-and-2's phases to find that. The one worth carrying forward: **nobody can predict
-`link-check.py`'s hit count by reading its docstring.** The plan said 77, the re-derivation written to
-catch the plan's error said 76, the tool says 68 — because the docstring partitions hits by where they
-live and what resolves them is which path they name. Five of its seven "permanent" hits stopped being
-permanent in one phase, and ten more copies of the same two paths resolved inside the frozen archive,
-under a sentence saying they never would.
+**The opening interview found five things wrong, three of them about `EPD-003` itself**, and they are
+in `milestone-2-corpus/phase-9-corpus-gate/plan.md`. Two matter beyond this phase:
 
-**Earlier that day — Phase 7 was merged and Milestone 1 closed.** `docs/milestone-boundary-restructure`
-merged into `main` with `--no-ff` as **`9c30924`**, and the hash is recorded in
-`milestone-1-core/phase-7-docs-restructure/notes.md` — the one closeout four earlier phase notes
-never got. All fifteen tasks done; `docs/` has its finished shape and `CLAUDE.md` is 188 lines, down
-from 337 — **203 after Phase 8**, which cut two sections to pointers and added one.
-`main` is ahead of `origin/main` and nothing has been pushed.
+- **The capture is *not* discharged.** `implementation-plan.md` hedged that it might be; it is not.
+  `captures/` holds **one** body, and one body cannot exercise a cross-body dictionary. **The gate is a
+  live capture session plus twenty minutes of `zstd`, not twenty minutes of `zstd`.**
+- **`calls.csv` expires**, so `EPD-003`'s plan to make it the corpus's join table fails — `backup_count:
+  10` discards the oldest segment, leaving bodies that outlive their own index. **Independent of the
+  gate**, and marked in place in `EPD-003`.
 
-**The documentation review is still parked whole**, findings and open questions alike, in `backlog.md`
-under "Documentation defects found and not fixed". **One** cheap finding that would make a session act
-wrongly remains — `reference/measurements.md:34`, a slice whose sign reverses on recomputation. The
-second was `README.md`'s closing worked example, which Phase 8 took because it was already rewriting the
-sentence.
+**Phase 8 merged as `22a6d20` and Phase 7 as `9c30924`, both 2026-08-17**; their permanent records are
+their phase notes, and nothing about either is outstanding. `main` is ahead of `origin/main` and
+nothing has been pushed.
 
-**The next work is the router, not the documentation.** Phase 8 was the last of the housekeeping;
-Phase 9 decides `EPD-003` and runs its gate.
+**The documentation review is still parked whole** in `backlog.md`. One cheap finding that would make a
+session act wrongly remains — `reference/measurements.md:34`, a slice whose sign reverses on
+recomputation.
 
 **Before touching anything:** `procedures/link-check.py` before and after anything that moves, and
 `make test` must report **158**. The checker **does not report zero** — its docstring says which hits are
@@ -80,11 +68,11 @@ since 7 is taken.
 session through the router. Both halves were measured rather than argued — one session reached both
 backends, and a local model handled tool use, file editing and multi-turn conversation.
 
-**Milestone 2 is open, and its subject is `EPD-003`** — capturing bodies for a corpus.
-`milestone-2-corpus/` holds its `implementation-plan.md`. **Its central claim is deliberately not
-named yet**: EPD-003 is still a proposal, so a claim written now would be a prediction wearing a
-measurement's clothes. It gets written at the end of Phase 9, from what the gate returns. The plan
-says so in place.
+**Milestone 2 is open, and its subject is `EPD-003`** — capturing bodies for a corpus, **partly
+accepted 2026-08-17**. `milestone-2-corpus/` holds its `implementation-plan.md`. **Its central claim
+is still deliberately not named**: the fine-tuning half is decided, but the storage question is not,
+and a claim written before the gate would be a prediction wearing a measurement's clothes. It gets
+written at the end of Phase 9, from what the gate returns. The plan says so in place.
 
 **One phase of it is done: Phase 8** — the method tier and the guardrails, merged as **`22a6d20`**. It
 changed no `src/` and was housekeeping that would have been worth doing under any claim, which is the
@@ -97,13 +85,12 @@ milestone, and building a second such table would pre-empt that decision.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Plan and execute Phase 9** — decide `EPD-003` and run its gate. The gate is a twenty-minute
-   measurement with no router code kept: whether a `zstd --train` dictionary recovers the cross-body
-   ratio for per-file storage. If it does not, per-call files are the wrong unit and everything
-   downstream changes. `milestone-2-corpus/implementation-plan.md` has it in outline; EPD-003's
-   "cheapest next step" specifies it. **Its other half is a decision only a person can make** — whether
-   the fine-tuning goal survives Anthropic's terms — and EPD-003's open question 1 says everything else
-   is downstream of it. **The milestone's central claim is written at the end of this phase.**
+1. **Continue Phase 9 at Task 5** — the branch is open and paused after Group A. What remains: capture
+   real bodies (Group B), run the gate (Group C), then decide and harvest (Group D). **The decision
+   half is done** — fine-tuning is dropped. **The gate is no longer a twenty-minute measurement**: it
+   needs a live capture first, because `captures/` holds one body and the gate is about what happens
+   *between* bodies. `milestone-2-corpus/phase-9-corpus-gate/plan.md` has all sixteen tasks. **The
+   milestone's central claim is written at the end of this phase.**
 2. **Decide `EPD-001` or `002`.** Both are blocked on a person rather than on work, and both are argued
    on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions waiting on a person". Deciding
    one is cheaper than any measurement in the list. (`EPD-003` is item 1 now, since Phase 9 takes it.)
@@ -116,8 +103,14 @@ is the full inventory.*
 *Merged branches are not listed — git already holds that, and a hand-maintained list would drift.
 The permanent record of a phase's branch, fork point and merge commit belongs in its phase note.*
 
-**None.** Phase 8 merged as `22a6d20` on 2026-08-17 and the table is empty until the next phase opens a
-branch.
+| Branch | Purpose | Tree state | Next action |
+|---|---|---|---|
+| `docs/phase-9-corpus-gate` | Phase 9 — decide `EPD-003`, run its gate | clean; four commits, Group A only | **Task 5.** Verify the capture directory's ignore coverage, then Task 6's capture — which needs the owner's go-ahead, since it patches `proxy.py`, runs the router and makes real API calls |
+
+**It is a `docs/` branch although the phase is about the router**, because no `src/` change survives
+it: Task 6 patches `proxy.py` and restores it, and `git diff main -- src/` must be empty at the merge.
+`method/IDM-001-git-branching.md` is what makes that the right prefix — the prefix says what kind of
+work it is, and `phase-N-` says it is numbered work.
 
 `docs/phase-8-method-and-guardrails` was the first branch to **carry a phase number on a `docs/`
 prefix** — the form it settled: the prefix says what kind of work it is, `phase-N-` says it is a phase.

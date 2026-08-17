@@ -14,10 +14,14 @@ Milestone 1's six phases found their own plan wrong on contact.
 The opening playbook's first step is to name a falsifiable central claim. **It is not written here,
 and the blank is the honest state rather than an omission.**
 
-Milestone 2's subject is `../epd/EPD-003-capturing-bodies-for-a-corpus.md`, which is still a
-**proposal** — its status line says so and `../backlog.md` lists it under "Decisions waiting on a
-person". A central claim written now would be written against a document that may not survive its
-own gate. Milestone 1's spec is the precedent and the warning: it was *"reliable where it recorded
+Milestone 2's subject is `../epd/EPD-003-capturing-bodies-for-a-corpus.md`, which was still a
+**proposal** when this was written. A central claim written then would have been written against a
+document that may not survive its own gate.
+
+*Updated 2026-08-17, Phase 9 Task 4. `EPD-003` is now **partly accepted**: fine-tuning is dropped and
+the corpus is for analysis only. **The blank still stands**, because the half that was decided is not
+the half a central claim would rest on — the storage question is open until the gate runs, and that is
+exactly the document-may-not-survive risk this section was written about.* Milestone 1's spec is the precedent and the warning: it was *"reliable where it recorded
 measurements and unreliable where it recorded predictions, with both in the same prose"*, and
 several of those predictions stood unchallenged for five phases.
 
@@ -60,9 +64,16 @@ the owner has not been interviewed on it", and that Phase 8 was done when "both 
 three were true when written on 2026-08-17 and false by the end of the same day. Corrected in place at
 Task 17a, which the plan did not contain — the phase's own re-derivation found it.*
 
-### Phase 9 — decide EPD-003, and run its gate *(outline)*
+### Phase 9 — decide EPD-003, and run its gate *(in full)*
+
+`phase-9-corpus-gate/plan.md`, beside this file. **Sixteen tasks in four groups**, on
+`docs/phase-9-corpus-gate` — a `docs/` prefix because no `src/` change survives the phase.
 
 **The question it closes:** does the corpus proposal survive its own cheapest test?
+
+*Raised from outline to full on 2026-08-17, when the phase opened. The two halves below are what this
+file said then, and both still hold — but the outline **understated the first**, which is Finding 1 of
+the phase's re-derivation.*
 
 Two halves, in this order:
 
@@ -71,7 +82,8 @@ Two halves, in this order:
   unit and the sketch does not survive.** Stated in `../backlog.md` and argued in EPD-003.
 - **The decision the gate cannot make.** Whether the fine-tuning half of the goal survives
   Anthropic's terms. That is a person's call, not a measurement's, and the corpus may be worth
-  building for analysis alone even if fine-tuning is cut.
+  building for analysis alone even if fine-tuning is cut. **Taken 2026-08-17: fine-tuning is dropped,
+  analysis only.** The last clause of that sentence is what happened.
 
 **The milestone's central claim is written at the end of this phase**, from what the gate returned.
 
@@ -100,17 +112,21 @@ later session does not read their absence as an oversight.
 |---|---|
 | 1. Name the falsifiable central claim, and the non-goals | **deferred to Phase 9** — see above |
 | 2. Run the cheapest experiment that could refute it | deferred; it *is* Phase 9's gate |
-| 3. Capture the real input | **may already be discharged** — `docs/captures/` holds Milestone 1's 118 KB of request bytes, and EPD-003's compression findings were computed from it. Re-check before spending on it again |
+| 3. Capture the real input | **NOT discharged** — settled 2026-08-17 by Phase 9's re-derivation. `docs/captures/` holds **one** body, and one body cannot exercise a cross-body dictionary. Phase 9's Group B spends it |
 | 4. Spike whatever the architecture depends on | not started |
 | 5. Settle the expensive-to-reverse questions as EPD forks | **EPD-003 already is one.** Whether it needs a sibling is unknown |
 | 6. Write the spec, marking every statement measured / inferred / assumed | not started |
 | 7. Write `implementation-plan.md` at decreasing resolution | **this file, partially** — Phase 8 in full, Phase 9 in outline, the rest as titles |
 | 8. Open the folder and the branch | **done** — this folder, and `docs/phase-8-method-and-guardrails` |
 
-**Step 3 is the one worth re-reading before Phase 9.** The playbook calls it the highest-leverage
-step and the easiest to skip, and Milestone 1's capture *changed* the architecture rather than
-informing it. It may be discharged here and it may not — EPD-003 wants response bodies too, and the
-existing capture is requests.
+**Step 3 was the one worth re-reading before Phase 9**, and re-reading it paid. The playbook calls it
+the highest-leverage step and the easiest to skip, and Milestone 1's capture *changed* the
+architecture rather than informing it.
+
+*Settled 2026-08-17. It is **not** discharged, and the hedge above was right to exist. `docs/captures/`
+holds one 119 KB request; the frozen CSV holds body lengths and no bodies; the probe bodies are
+synthetic and under a kilobyte. **The consequence is that the gate is not the twenty-minute measurement
+this plan and `EPD-003` both call it** — it is a live capture session plus twenty minutes of `zstd`.*
 
 ---
 

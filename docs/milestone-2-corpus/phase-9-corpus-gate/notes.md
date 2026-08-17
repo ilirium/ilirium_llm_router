@@ -73,6 +73,57 @@ of thing that is expensive to rediscover.
 
 ---
 
-## Tasks 3 and 4
+## Task 3 — the decision, and the sweep it grew
 
-*(recorded as they complete)*
+`EPD-003` → **partly accepted**, `EPD-000`'s vocabulary for *"one named piece was accepted on a stated
+date; the rest is still a proposal"*. Open question 1 decided; open question 7 struck as stale, since
+it asks whether capture lands before or after Phase 3 and Phase 3 shipped as `cc65aed`.
+
+**The task as published named three edits and took five.** `../../README.md`: *"When you record a
+finding, sweep the other documents for claims it makes stale. That sweep is expected, not optional —
+it is half of what filing a finding means."* So the sweep is part of the task rather than a new one,
+and no task letter was spent.
+
+| Swept | Was |
+|---|---|
+| `EPD-000`'s index row | `proposal`, waiting on *"a decision on the fine-tuning goal"* |
+| `CLAUDE.md`'s EPD table | same, and `CLAUDE.md` is auto-loaded — a stale row there is the "acts confidently and wrongly" case its own admission test is about |
+| `../../backlog.md`'s "Decisions waiting on a person" row | **struck, not deleted.** What remains of `EPD-003` is its gate, which is *work*, and that section's premise is *"None of these is blocked on work"* |
+
+**Two findings were marked in place inside `EPD-003` rather than only in this phase folder** — the
+gate training on its test set, and `calls.csv` being unable to serve as the join table. A finding
+recorded only next to the phase that made it leaves the wrong document still saying the wrong thing to
+whoever opens it next.
+
+## Task 4 — the in-flight branch, and three stale claims
+
+`../../status.md` gains the branch row. Two things worth recording about the edit:
+
+**"Where we stopped" was already over its own limit.** The section's rule is that it gets its own file
+past ~30 lines; it was at ~44 before this task. So Phase 8's and Phase 7's closed narrative was cut to
+two sentences — their permanent records are their phase notes, and `status.md` is state. Adding Phase 9
+on top without cutting would have pushed it to ~60.
+
+**The task also took `../implementation-plan.md`,** which was stale in three places the moment Task 3
+landed: `EPD-003` described as *"still a proposal"*; step 3 of the opening playbook described as *"may
+already be discharged"*, which Finding 1 disproves; and Phase 9 marked *(outline)* when its plan is now
+published in full. Corrected **in place with dated notes**, not rewritten — that file is a live
+milestone plan rather than a frozen phase note, and Phase 8's Task 17a set the precedent for correcting
+it in place.
+
+**The central-claim blank survives the decision, and this is worth being explicit about.** `EPD-003`
+being partly accepted might look like grounds to name the milestone's claim now. It is not: the half
+that was decided is not the half a claim would rest on. The storage question is what the milestone is
+*about*, and it is open until the gate runs.
+
+---
+
+## Paused here, deliberately
+
+**Group A is complete and nothing has touched the machine.** No body captured, no `src/` patched, no
+measurement run, no API call made. `git diff main -- src/` is empty.
+
+Task 6 needs the owner's go-ahead in its own right: it patches `proxy.py`, runs the router, and makes
+real API calls. `CLAUDE.md`'s working agreement — *"Ask before touching the machine … consent for one
+is not consent for the next"* — is why that is a separate ask rather than covered by the go-ahead that
+opened this branch.
