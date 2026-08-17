@@ -168,17 +168,24 @@ The honest reading is that the useful signal may be scarce generally rather than
 tool, which was at version 0.0.14. **So the next attempt states what it expects to catch *before* it is
 run**, and is judged against that rather than against whether it produced output.
 
-**`status.md`'s shape — one row per milestone rather than per phase.** Proposed 2026-08-17 during
-Phase 8 and deliberately not done there. *The proposal:* "Where the project is" currently carries a
-per-phase table of merge commits, which duplicates what `README.md` assigns to the **phase note** —
-branch, fork point, merge commit — and what each milestone's archive `README.md` already indexes.
-Replace it with one row per milestone pointing at that archive. *Parked because* it is a filing
-question rather than a branching one, and Phase 8 was scoped small on purpose. *Weaker than it looks?*
-**Yes.** Only one of the file's four sections grows without bound: "Where we stopped" self-limits at
-~30 lines by its own rule, and "In-flight branches" empties at every merge. So the file is not
-actually accreting — the duplication is the whole of the complaint. **Carry the counter-argument:** a
-separate `history.md` was considered in the same conversation and declined as a **third** copy of those
-facts, with nothing forcing it to stay correct.
+~~**`status.md`'s shape — one row per milestone rather than per phase.**~~ **Done 2026-08-17.**
+Proposed during Phase 8, deliberately not done there, executed once Phase 9 supplied the evidence it
+was missing. `status.md` now carries one row per milestone pointing at that milestone's index.
+
+*Two things checked before executing it, because the proposal rested on both.* **Milestone 1's hashes
+were safe to remove** — `milestone-1-core/README.md` holds a strictly richer table (branch, merge hash,
+and what each phase settled), and every hash has three to five homes. **But the proposal's "point at
+that archive" does not hold for an open milestone:** `milestone-2-corpus/` has no `README.md`, because
+per `README.md`'s template that is a *closing* artefact — *"what the milestone was, what it proved"*.
+Milestone 2 points at its `implementation-plan.md` until it closes, and `status.md` says so in place.
+
+*The counter-argument this item carried is preserved and was not overturned:* a separate `history.md`
+is still declined as a third copy. **What decided it was new evidence rather than the old argument.**
+The item said the file "is not actually accreting — the duplication is the whole of the complaint",
+and that stayed true. What changed is that Milestone 2's state had been written as **prose** precisely
+to avoid pre-empting this decision, and that prose went stale invisibly — it said "one phase of it is
+done" after Phase 9 merged. The per-phase table beside it never went stale. **So the axis that decided
+it was not duplication but what goes stale visibly**, which the item had not considered.
 
 **Close out the four `Branch:` lines that record intent instead of outcome.** Five exist across four
 of the six phases, in inconsistent places, and only `phase-4-notes.md:7` records the merge commit.
