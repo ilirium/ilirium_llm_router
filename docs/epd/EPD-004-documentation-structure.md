@@ -994,6 +994,37 @@ project knowledge and belongs to the project rather than to one laptop. The untr
 keeps machine-specific accretions and is pruned periodically. `docs/README.md` names the split in one
 line so it is not re-litigated.
 
+**Addendum 2026-08-17 — the split is built, and it now lives in
+`../method/IDM-002-harness-configuration.md`.** Four things this decision could not know:
+
+**The entry count above had drifted.** It says 51; the file held **53** when Phase 8 opened it. The
+prune took it to **21**, with **14** moving to the tracked file rather than being deleted, so the
+effective merged allow set is 35 and the two files overlap in nothing. *"Roughly a dozen are single-use
+fossils"* was close: fifteen were fossils or strict duplicates.
+
+**A `.gitignore` gap was found and closed, and it is this document's decision 16 again.**
+`.claude/settings.local.json` was kept out of the repository only by the owner's **global**
+`~/.config/git/ignore` — which does not travel. On another machine, or for a contributor, the file was
+plain untracked, and `Bash(git add *)` is itself in the allowlist. A committed convention depending on
+something that exists only outside the repository is exactly decision 16's finding, and the fix is one
+line in this repository's own `.gitignore`. **That had to happen before the tracked file existed**: the
+moment `.claude/` stops being uniformly untracked, an accidental `git add .claude/` becomes plausible.
+
+**The tracked half deliberately excludes the broad entries this decision flagged.** `Bash(curl *)`,
+`Bash(python3 *)` and `Bash(uv run *)` — named above as *"much broader than the fossils suggest"* — stay
+in the local file. They are how the project is actually worked on, and a file whose job is to state
+policy should not bless them. Accepted cost: a fresh clone prompts for them.
+
+**Two findings the decision's own inventory would have got wrong.** `Bash(lsof … 8787)` and
+`Bash(curl … localhost:1234)` read as fossils and are `config.yaml:10` and `config.yaml:40` — a literal
+in a committed file is a constant. And `Bash(lms load *)` / `Bash(lms unload *)` had **silently repealed
+a `CLAUDE.md` non-negotiable**, since loading a model evicts what is loaded and takes minutes. Both are
+stated in `IDM-002` as classes rather than as instances.
+
+The tracked file also carries an exact-match `.env` **deny**, which does **not** reopen decision 19
+below; `IDM-002` argues that in place, because the next reader will otherwise see enforcement where a
+refusal is on file.
+
 ### 18 — the methodology is portable, and extraction is deliberately deferred
 
 The owner asked for a **splittable artifact** — playbooks, development methodology, guardrails — that
