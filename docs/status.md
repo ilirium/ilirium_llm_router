@@ -21,9 +21,13 @@ per-file with no dictionary **3.12×**, per-file with a dictionary trained on *o
 "near the 3×"; 12.10× is four times the failure threshold. **Per-call files are the unit**, and the
 decision is in `reference/design-decisions.md`.
 
-**Read the 12.10× as optimistic.** The corpus is headless — its static preamble is ~28 KB smaller than
-an interactive one — 70 of 73 bodies are Anthropic, and the sessions are short. All three flatter a
-dictionary. `reference/measurements.md` carries the slice with the number.
+**Read the 12.10× as optimistic** — three biases flatter it, and `reference/measurements.md` carries
+them in the slice beside the number. Do not quote it without them.
+
+**`IDM-001` gained a rule afterwards, from two defects the owner found in this session's own output:**
+status placeholders — `*(not started)*`, "fifteen of sixteen", "not yet merged" — are closed out **as
+part of the merge**, in every form and not just the `Merge commit` row. Both misses happened *after*
+reading `IDM-001`, because it named a row and so got obeyed as a row.
 
 **Two findings against `EPD-003` are independent of the gate** and hold whatever the numbers said:
 **`calls.csv` expires** (`backup_count: 10`), so it cannot be the corpus's join table as the sketch
