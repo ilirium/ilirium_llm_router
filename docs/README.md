@@ -30,6 +30,14 @@ And two files at the root of `docs/` that are neither durable nor archived:
 |---|---|
 | `status.md` | **State.** Where we stopped, where the project is, what is next. No work items live here |
 | `backlog.md` | **Inventory.** Unscheduled work, each item with why it is parked and why the question may be weaker than it looks. No state lives here |
+| `prompt.md` | **The next session's opening instruction, and nothing else.** Added 2026-08-17. It names what to read and what to distrust; it must never summarise what those documents say. **It expires when the phase it opens is merged** — check `status.md` before trusting it |
+
+**`prompt.md` is the one file here that is allowed to go stale**, which is why it carries its own
+expiry rule. It exists because sessions are cleared deliberately and a fresh one starts cold; it is
+*not* a handoff note, and the moment it starts carrying findings rather than pointers it has become the
+second copy this structure exists to prevent. **Its paths are written from the repository root**, since
+that is where a session starts — so `link-check.py`, which resolves relative to the citing file, does
+not check them. They were verified by hand when it was written and must be again when it is rewritten.
 
 **Mixing those two is what made Milestone 1's handoff and its outstanding-work survey overlap** — both
 now in that milestone's archive — which is the failure this whole structure exists to fix. A backlog item that has migrated into the status file is the first
