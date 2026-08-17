@@ -439,6 +439,93 @@ Stated here so the gate's verdict is read against them rather than in spite of t
 
 ---
 
+## Tasks 8–10 — the gate. **It passes, and EPD-003's own anchors reproduce**
+
+`evidence/gate.py`, output frozen verbatim in `evidence/results.txt`. Held-out slice: run-03's whole
+session, 20 bodies, 2,102,371 bytes. Training set: run-01's three sessions, 48 bodies. **Split by
+session, never shuffled** — within a session an earlier body is nearly a prefix of a later one, so a
+shuffled split would leak the answer.
+
+### The bracket
+
+| On the held-out slice | Bytes | Ratio |
+|---|---:|---:|
+| raw | 2,102,371 | 1.00x |
+| **per-file, no dictionary** | 673,087 | **3.12x** |
+| **one long-window stream** | 70,282 | **29.91x** |
+
+**`EPD-003`'s synthetic figures reproduce on real traffic**, which was not guaranteed — that document
+grew twenty bodies by appending random dictionary words and flagged the tail as synthetic. It predicted
+3.1x and 28.6–31.3x. Measured: **3.12x and 29.91x.** The synthetic construction was sound.
+
+### The answer to the load-bearing hypothesis
+
+| `--maxdict` | self-trained | held-out | gap closed |
+|---:|---:|---:|---:|
+| 112,640 *(default)* | 12.08x | **10.94x** | 79.8% |
+| 262,144 | 21.76x | **12.03x** | 82.7% |
+| 524,288 | 16.44x | **12.10x** | 82.8% |
+| 1,048,576 | 16.44x | **12.10x** | 82.8% |
+
+**Held-out, a dictionary reaches 12.10x against 3.12x without one.** It closes **82.8%** of the byte
+gap, leaving the per-file store at **2.47x** the size of a stream — not the **9.6x** it would be
+unaided.
+
+### Verdict: **per-call files survive. The sketch ships as written**
+
+`EPD-003` set the test: *"If the dictionary lands near the stream figure, the sketch above works as
+written. If it lands near the 3x per-file figure, then per-call files are the wrong unit."*
+
+**12.10x is not near 3.12x** — it is four times better, and it closes five-sixths of the distance to
+the stream. The residual is 2.47x, and that is the price of everything per-file buys, which `EPD-003`
+itself enumerates as the reason per-session is *"far worse on everything else"*: random access, partial
+writes, a process that stops mid-session, content addressing, and date-partitioned pruning by `rm -rf`.
+
+**On the projection that motivated the question:** ~3 GB a year naive becomes ~100 MB streamed or
+~250 MB per-file-with-dictionary. `EPD-003`'s own criterion was that *"neither figure justifies special
+storage infrastructure"* — and both of these are still the low hundreds of megabytes it was talking
+about. **The 2.47x does not change the conclusion the number was for.**
+
+### Three things the sweep found that were not the question
+
+**Finding 3 is answered, and it was a real effect but a small one.** The 112,640 default **does** bind
+— the trained dictionary comes out at exactly 112,640 bytes, capped. Lifting it to 256 KB buys 10%
+(10.94x → 12.03x) and then saturates: at 512 KB and 1 MB the dictionary settles at ~178 KB of its own
+accord and the figures stop moving. So the concern that a single run at the default might report a
+false negative was justified — but it would have understated the answer by a tenth, not reversed it.
+
+**`zstd --train` is unstable at this sample count, and says so.** The self-trained column is
+**non-monotonic**: 12.08x → 21.76x → 16.44x as the cap rises, and the dictionary *sizes* wobble the same
+way (112,640 → 212,215 → 197,926). More budget producing a worse dictionary is not a property of
+compression; it is the cover algorithm sampling differently on 68 inputs. **The held-out column is
+stable** (10.94 → 12.03 → 12.10 → 12.10), which is the one being relied on — but this is direct evidence
+that a Phase 10 retraining policy must **measure the new dictionary before adopting it** rather than
+assume a retrain is an improvement.
+
+**Finding 5 measured: a second preamble family costs about 20%.** With one dictionary trained on
+run-01 — which contains **zero** subagent bodies — the held-out slice splits:
+
+| | Bodies | Ratio |
+|---|---:|---:|
+| main conversation | 10 | **13.39x** |
+| subagent | 10 | **10.75x** |
+
+The subagent's preamble was never seen in training and still compresses at 10.75x, so a dictionary
+**generalises across preamble families rather than collapsing** — at a measurable ~20% penalty. This is
+the concern that made parallel sessions and subagents worth capturing, and the answer is that dilution
+is real, bounded, and does not threaten the design.
+
+### What this verdict is *not* good for
+
+**All three biases recorded before the run flatter the dictionary**, and none is repaired by the
+result: the headless preamble is ~28 KB smaller than interactive, LM Studio is 3 bodies of 73, and the
+sessions are short. **12.10x should be read as an optimistic estimate**, and the honest claim is
+directional: a dictionary recovers *most* of the cross-body ratio, not that it recovers 82.8% of it in
+every setting. The verdict survives the biases because the margin is large — 12.10x against a 3.12x
+failure threshold — not because the biases are small.
+
+---
+
 ## Superseded: the pause after run 1
 
 *Kept rather than rewritten. This is what was true after run 1, and the runs above are what resolved

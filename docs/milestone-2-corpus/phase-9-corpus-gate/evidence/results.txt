@@ -1,0 +1,36 @@
+corpus     : 68 bodies, 6,962,630 bytes
+train      : 48 bodies, 4,860,259 bytes
+held-out   : 20 bodies, 2,102,371 bytes (10 main + 10 subagent)
+zstd level -19
+
+=== the two figures that bracket the question, on the held-out slice ===
+    raw                            2,102,371    1.00x
+    per-file, no dictionary          673,087    3.12x
+    one long-window stream            70,282   29.91x
+
+    the gap a dictionary must close: 9.6x
+
+=== per-file with a dictionary, swept over --maxdict ===
+  --maxdict=112,640
+    per-file, self-trained dict      174,025   12.08x
+    per-file, held-out dict          192,143   10.94x
+                                              recovers  79.8% of the gap
+
+  --maxdict=262,144
+    per-file, self-trained dict       96,613   21.76x
+    per-file, held-out dict          174,719   12.03x
+                                              recovers  82.7% of the gap
+
+  --maxdict=524,288
+    per-file, self-trained dict      127,905   16.44x
+    per-file, held-out dict          173,771   12.10x
+                                              recovers  82.8% of the gap
+
+  --maxdict=1,048,576
+    per-file, self-trained dict      127,905   16.44x
+    per-file, held-out dict          173,771   12.10x
+                                              recovers  82.8% of the gap
+
+=== does a second preamble family dilute it? (held-out dict, 512 KB) ===
+    main conversation (10 bodies)      88,671   13.39x
+    subagent (10 bodies)              85,100   10.75x
