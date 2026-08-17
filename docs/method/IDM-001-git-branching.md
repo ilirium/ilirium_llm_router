@@ -145,6 +145,63 @@ closed out — and `../backlog.md` still carries the repair as a review-phase it
 placeholder.** Writing "not yet merged" while it is true is correct; leaving it there afterwards is
 what four phase notes did.
 
+## Closing out a status placeholder is part of the merge
+
+**Generalised 2026-08-17, after the rule above was followed and the defect happened anyway — twice in
+one phase.**
+
+**The rule is not about the `Merge commit` row. It is about any statement of unfinished state.** A
+placeholder is correct while it is true and becomes a lie the moment the state changes, wherever it
+sits and whatever form it takes:
+
+| Form | Seen as |
+|---|---|
+| A table row | `Merge commit \| not yet merged` |
+| A section marker | `### Group C — the gate *(not started)*` |
+| A count in prose | *"Fifteen of sixteen tasks done; only the close-out and merge remain"* |
+| A status line | *"Only tasks 1–4 have been executed"* |
+| A claim of absence | *"the tracked half is **not yet built**"* |
+
+**Why the narrow wording was not enough, which is the part worth keeping.** Phase 9 read this document
+during the phase, followed it, and committed a closeout titled *"closed out: phase 9's merge hash, in
+the three places that said otherwise"* — which filled in three `Merge commit` rows and **left the prose
+four lines above one of them saying the work was unfinished.** The owner found it. The same session
+then left `plan.md`'s group markers reading `*(not started)*` after all four groups had run; the owner
+found that too.
+
+**Neither miss came from not knowing the rule. Both came from the rule naming a *row*, so the check
+was applied to rows.** A rule stated as an instance gets obeyed as an instance.
+
+**So: closing out placeholders is part of the merge, not tidying afterwards.** Before writing the merge
+message, sweep the phase's own documents — the plan, the note, `../status.md`, and the milestone plan —
+for every form above.
+
+The grep, with a warning attached:
+
+```
+grep -rniE "\(not started\)|\(in progress\)|not yet (merged|done|run|written|built|started)" docs
+```
+
+**Widen it rather than trust it.** The first sweep run against this defect used `is not started` and
+matched nothing, because the target was written `*(not started)*` — **a grep narrow enough to miss its
+own target is worse than no grep**, since it returns clean and reads as proof. Expect hits that are
+statements *of* this rule and Phase 8's plan describing a condition it then fixed; both are correct.
+
+### What is **not** closed out, and the line between them
+
+This licenses nothing in the archive beyond status. The distinction is sharp and it decides every case:
+
+| | Edit it? | Because |
+|---|---|---|
+| A **status placeholder** — the document's own execution state | **Yes, at the merge** | It describes *this document's* progress, which is a fact about the present. Left stale it says work is outstanding when it is done |
+| A **claim** — what was believed about the world | **No, ever** | `../README.md`: corrections go to `reference/`, not into archived prose |
+
+Phase 9's `plan.md` is the worked example of both in one file. Its group markers were closed out; its
+settled-decisions table still says `EPD-003` *"is now partly accepted"*, which was true when written
+and is not now — **and was deliberately left**, with a header added saying the body records what was
+believed before the work ran. **Closing out a marker is bookkeeping; rewriting a claim is falsifying
+the record.**
+
 ## The one accepted duplication
 
 `CLAUDE.md` keeps the prefix table, the `<prefix>/phase-N-<slug>` line, `--no-ff`, the
@@ -161,6 +218,15 @@ block says it is restated from this file, that this file is canonical, and that 
 first. Compare `CLAUDE.md`'s design-decisions index, which dodges the problem by listing titles only —
 *"a one-line restatement would drift, a title cannot."* Here a title cannot carry the rule, so the
 restatement is accepted with its risk labelled rather than denied.
+
+**"Closing out a status placeholder" was considered for `CLAUDE.md` on 2026-08-17 and refused.**
+Recorded because the argument for adding it looks strong and is wrong. `../README.md`'s admission test
+is whether a session would act *confidently and wrongly* **without being told** — and Phase 9 failed
+this rule twice having **already read this document during the phase**. It did not fail from ignorance;
+it failed because the rule was scoped to a row. **The repair is scope, not location**, and it has been
+made above. Copying it into `CLAUDE.md` would grow the accepted duplication to six facts to fix a
+defect that a sixth copy would not have prevented. The existing pointer already names the trigger —
+*read it before recording where a branch went* — and that is the moment this rule applies.
 
 ## Provenance
 

@@ -16,23 +16,25 @@ permanent record. **All sixteen tasks done**, no letters inserted. `git diff mai
 the capture patch was applied, used and restored — and `make test` reports **158**.
 
 **The corpus proposal survives its own cheapest test.** On a held-out session of 20 real bodies:
-per-file with no dictionary **3.12×**, per-file with a dictionary trained on *other* sessions
-**12.10×**, one long-window stream **29.91×**. `EPD-003` set the test as "near the stream" against
-"near the 3×"; 12.10× is four times the failure threshold. **Per-call files are the unit**, and the
-decision is in `reference/design-decisions.md`.
+**3.12×** per-file, **12.10×** per-file with a dictionary trained on *other* sessions, **29.91×**
+streamed. **Per-call files are the unit**; the decision and the test it had to beat are in
+`reference/design-decisions.md`.
 
-**Read the 12.10× as optimistic.** The corpus is headless — its static preamble is ~28 KB smaller than
-an interactive one — 70 of 73 bodies are Anthropic, and the sessions are short. All three flatter a
-dictionary. `reference/measurements.md` carries the slice with the number.
+**Read the 12.10× as optimistic** — three biases flatter it, and `reference/measurements.md` carries
+them in the slice beside the number. Do not quote it without them.
+
+**`IDM-001` gained a rule afterwards, from two defects the owner found in this session's own output:**
+status placeholders — `*(not started)*`, "fifteen of sixteen", "not yet merged" — are closed out **as
+part of the merge**, in every form and not just the `Merge commit` row. Both misses happened *after*
+reading `IDM-001`, because it named a row and so got obeyed as a row.
 
 **Two findings against `EPD-003` are independent of the gate** and hold whatever the numbers said:
 **`calls.csv` expires** (`backup_count: 10`), so it cannot be the corpus's join table as the sketch
 proposed; and **the capture missed 9 of 158 calls in testing**, all error paths — the rows `EPD-003`
 calls the interesting ones. Both are marked in place and carried into Phase 10.
 
-**Phase 8 merged as `22a6d20` and Phase 7 as `9c30924`, both 2026-08-17**; their permanent records are
-their phase notes, and nothing about either is outstanding. `main` is ahead of `origin/main` and
-nothing has been pushed.
+`main` is ahead of `origin/main` and nothing has been pushed. Phases 7 and 8 are closed with nothing
+outstanding; their hashes are below and in their phase notes.
 
 **The documentation review is still parked whole** in `backlog.md`. One cheap finding that would make a
 session act wrongly remains — `reference/measurements.md:34`, a slice whose sign reverses on
