@@ -10,7 +10,15 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-17 — Phase 7 is merged and Milestone 1 is closed.** `docs/milestone-boundary-restructure`
+**2026-08-17 — Milestone 2 is open and Phase 8 is planned but not started.**
+`docs/phase-8-method-and-guardrails` holds seventeen tasks across three groups and **not one line of
+execution**. It was planned, then checked twice: a mechanical pass found the prune arithmetic wrong
+(53 → 35, later 21, not 37), and a fresh-context review verified 31 factual claims, of which three
+failed. The best of those: `procedures/link-check.py`'s docstring is a **third home** for the
+`EPD-004` decision-18 park, alongside `backlog.md` and the EPD itself — invisible to any search of
+`docs/`, because it lives in an instrument.
+
+**Earlier that day — Phase 7 was merged and Milestone 1 closed.** `docs/milestone-boundary-restructure`
 merged into `main` with `--no-ff` as **`9c30924`**, and the hash is recorded in
 `milestone-1-core/phase-7-docs-restructure/notes.md` — the one closeout four earlier phase notes
 never got. All fifteen tasks done; `docs/` has its finished shape and `CLAUDE.md` is 188 lines, down
@@ -52,18 +60,21 @@ since 7 is taken.
 session through the router. Both halves were measured rather than argued — one session reached both
 backends, and a local model handled tool use, file editing and multi-turn conversation.
 
-**Milestone 2 is not open.** When it is, its plan goes in its own `milestone-N-<slug>/` folder, and
-`README.md`'s opening playbook is the procedure.
+**Milestone 2 is open, and its subject is `EPD-003`** — capturing bodies for a corpus.
+`milestone-2-corpus/` holds its `implementation-plan.md`. **Its central claim is deliberately not
+named yet**: EPD-003 is still a proposal, so a claim written now would be a prediction wearing a
+measurement's clothes. It gets written at the end of Phase 9, from what the gate returns. The plan
+says so in place.
 
 ## What is next
 
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Open Milestone 2 — features in the router, not in the documentation.** Its subject is functions
-   the router still lacks; which ones is named when it opens. `README.md`'s opening playbook is the
-   procedure, and its first step is the one that matters: name a central claim that could come out
-   false. Phase 8 is the first phase number available.
+1. **Execute Phase 8** — `milestone-2-corpus/phase-8-method-and-guardrails/plan.md`, seventeen tasks
+   in three groups, planned and reviewed but **not started**. It unifies the Git branching rules into
+   a new `docs/method/` tier, builds the tracked `.claude/settings.json`, and records two tooling
+   decisions that have no home. Its own first instruction is to re-derive it before Task 1.
 2. **Decide `EPD-001`, `002` or `003`.** All three are blocked on a person rather than on work, and
    two of them are argued on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions
    waiting on a person". Deciding one is cheaper than any measurement in the list.
@@ -76,6 +87,11 @@ is the full inventory.*
 *Merged branches are not listed — git already holds that, and a hand-maintained list would drift.
 The permanent record of a phase's branch, fork point and merge commit belongs in its phase note.*
 
-**None.** Phase 7 merged as `9c30924` on 2026-08-17 and the table is empty until Milestone 2 opens a
-branch. `main` is ahead of `origin/main`; `docs/milestone-boundary-restructure` still exists locally
-and its remote is stale at `f473277`, from before execution started.
+| Branch | Purpose | Tree state | Next action |
+|---|---|---|---|
+| `docs/phase-8-method-and-guardrails` | Phase 8 — the method tier and the guardrails | **Plan only.** 15 commits, all of them the plan and its corrections. No task executed; `src/` untouched | Re-derive the plan, then Task 1 |
+
+Forked from `main` at `6253cbc` on 2026-08-17. **The branch carries a phase number on a `docs/`
+prefix**, which is the form settled on it — the prefix says what kind of work it is, `phase-N-` says
+it is a phase. `main` is ahead of `origin/main`; `docs/milestone-boundary-restructure` still exists
+locally and its remote is stale at `f473277`, from before execution started.
