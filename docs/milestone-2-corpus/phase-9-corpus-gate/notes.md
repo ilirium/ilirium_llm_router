@@ -118,10 +118,60 @@ that was decided is not the half a claim would rest on. The storage question is 
 
 ---
 
+## Task 5 — the ignore, and a rotation risk that was not in the plan
+
+**Verify, not add.** Both checks pass, and neither needed a new rule.
+
+| Check | Result |
+|---|---|
+| Every path Task 6 writes — `requests/`, `responses/`, `*.dict`, `manifest.csv` | all covered by **`.gitignore:228`**, a bare `logs/` |
+| `make clean` | `rm -rf .pytest_cache .ruff_cache build dist *.egg-info` plus a `find` over `src tests` only. **Never touches `logs/`** |
+
+**The `make clean` check was run against the Makefile target, not against `CLAUDE.md`'s claim that it
+leaves `logs/` alone.** Both agree — but a phase whose whole first finding is that a document
+overstated what was already done should not verify one document with another.
+
+**The rule is in this repository's own tracked `.gitignore`,** not in a global exclude. That matters
+here for the reason Phase 8 recorded when it added `.claude/settings.local.json`: a convention resting
+on a store that exists only outside the repository protects this machine and nothing else. The corpus
+is the most sensitive thing this project will ever write, so the rule that keeps it out has to travel
+with the repository.
+
+### The baseline, for Task 7's cross-check
+
+Task 7 verifies captured bodies against **the same run's** `calls.csv` rows, which means knowing where
+the existing rows stop.
+
+| | |
+|---|---|
+| `logs/calls.csv` before the capture | **177 lines** — 176 rows and a header — **29,831 bytes** |
+| Last existing row | `2026-08-07T14:15:14.218+00:00` |
+| Rotated backups present | **none.** `calls.csv.1` does not exist; this file has never rolled over |
+
+**A risk the plan did not name, now retired.** `stats.max_bytes` is 5 MiB and the file is at 29,831
+bytes, leaving room for roughly **36,900** more rows at the ~141 bytes/row the frozen session measures.
+A capture of a few hundred rows cannot trigger a rollover — so Task 7's cross-check cannot be
+confounded by rows moving into `calls.csv.1` mid-capture, and the header re-emission that would follow
+cannot land in the middle of the slice being read.
+
+Had this gone the other way it would have been found *after* the capture, while trying to explain a
+row count that did not match. It cost one `wc`.
+
+**One discipline carried into Group B:** Tasks 6–10 stage with **explicit paths**, not `git add -A`.
+The ignore makes `-A` safe and it is verified above — but "verified safe" and "not relied upon" are
+different, and the cost of being wrong once is a committed body.
+
+---
+
 ## Paused here, deliberately
 
-**Group A is complete and nothing has touched the machine.** No body captured, no `src/` patched, no
-measurement run, no API call made. `git diff main -- src/` is empty.
+**Group A and Task 5 are complete, and nothing has touched the machine.** No body captured, no `src/`
+patched, no measurement run, no API call made. `git diff main -- src/` is empty.
+
+**Task 5 sits in Group B but is read-only**, which is why it ran without a second ask: it reads a
+Makefile target, asks `git check-ignore` about paths that do not exist yet, and counts lines in a file
+the router wrote three weeks ago. Nothing was created, and `logs/corpus-gate/` still does not exist —
+Task 6's patch creates it. **The group boundary is not the consent boundary; the first write is.**
 
 Task 6 needs the owner's go-ahead in its own right: it patches `proxy.py`, runs the router, and makes
 real API calls. `CLAUDE.md`'s working agreement — *"Ask before touching the machine … consent for one
