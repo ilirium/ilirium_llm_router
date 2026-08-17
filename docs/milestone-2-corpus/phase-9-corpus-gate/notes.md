@@ -127,3 +127,22 @@ Task 6 needs the owner's go-ahead in its own right: it patches `proxy.py`, runs 
 real API calls. `CLAUDE.md`'s working agreement — *"Ask before touching the machine … consent for one
 is not consent for the next"* — is why that is a separate ask rather than covered by the go-ahead that
 opened this branch.
+
+### Verified by, Group A — run 2026-08-17, after Task 4's commit
+
+| Check | Result |
+|---|---|
+| `make test` | **158 passed**, 1 warning, 0.68 s |
+| `procedures/link-check.py` | **68 files, 68 broken, 2 roundabout** — the broken count **unchanged** from the fork |
+| `git diff main --stat -- src/` | **empty** — the `docs/` prefix still holds |
+| `git status --porcelain` | clean; no captured body or dictionary exists yet to leak |
+
+**The link-checker's file count rose 66 → 68 while its broken count did not move**, and that is
+checked rather than assumed: `link-check.py` reports **zero** hits from `phase-9-corpus-gate/`, and the
+only `epd/` hits are the two that predate this branch. So the two new documents cite nothing that does
+not exist, and nothing edited in Tasks 3–4 broke a path.
+
+**That differs from Phase 8, whose plan contributed 23 forward citations** to files it intended to
+create — a false-positive class `../../backlog.md` records as recurring. This plan has none, because
+Group B's and C's outputs live under `logs/`, which is gitignored and therefore never cited as a
+repository path. Not a virtue of this plan; a property of where its outputs go.
