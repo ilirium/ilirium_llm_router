@@ -19,6 +19,13 @@ lettered rather than renumbered). `docs/method/` now holds `IDM-000` through `ID
 files. `procedures/link-check.py` reports **68 broken and 2 roundabout**, its docstring re-derived to
 match, and `make test` reports **158**. `main` is ahead of `origin/main` and nothing has been pushed.
 
+**Phase 8's one open check is discharged.** The owner opened `/permissions` on 2026-08-17 and confirmed
+the merged rule set, including that nothing matches `lms load` — the check the phase note records as
+substituted, because a session cannot invoke `/permissions` and read the result back. **The tracked file
+is now 17 entries, not 14:** all eight `make` targets rather than six, added immediately after the phase
+on a `chore/` branch, for the reason recorded in `method/IDM-002-harness-configuration.md`. Nothing else
+about Phase 8 is outstanding.
+
 **The phase's own re-derivation found its plan wrong in four places**, which is the fifth of Milestone
 1's-and-2's phases to find that. The one worth carrying forward: **nobody can predict
 `link-check.py`'s hit count by reading its docstring.** The plan said 77, the re-derivation written to
@@ -90,14 +97,16 @@ milestone, and building a second such table would pre-empt that decision.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Open `/permissions` once.** The one Phase 8 check a session cannot run for itself: tracked and local
-   settings are merged by the harness, and the merge is the thing that was designed. It was verified by
-   computing it from the two files — 14 + 21, overlap 0, 35 effective allow, 3 deny — which is not the
-   same as reading the harness's own view. See `milestone-2-corpus/phase-8-method-and-guardrails/notes.md`,
-   Task 14 check 6. Worth confirming `lms load` prompts while there; that could not be tested either.
-2. **Decide `EPD-001`, `002` or `003`.** All three are blocked on a person rather than on work, and
-   two of them are argued on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions
-   waiting on a person". Deciding one is cheaper than any measurement in the list.
+1. **Plan and execute Phase 9** — decide `EPD-003` and run its gate. The gate is a twenty-minute
+   measurement with no router code kept: whether a `zstd --train` dictionary recovers the cross-body
+   ratio for per-file storage. If it does not, per-call files are the wrong unit and everything
+   downstream changes. `milestone-2-corpus/implementation-plan.md` has it in outline; EPD-003's
+   "cheapest next step" specifies it. **Its other half is a decision only a person can make** — whether
+   the fine-tuning goal survives Anthropic's terms — and EPD-003's open question 1 says everything else
+   is downstream of it. **The milestone's central claim is written at the end of this phase.**
+2. **Decide `EPD-001` or `002`.** Both are blocked on a person rather than on work, and both are argued
+   on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions waiting on a person". Deciding
+   one is cheaper than any measurement in the list. (`EPD-003` is item 1 now, since Phase 9 takes it.)
 3. **Measure whether Claude Code shows LM Studio's context error.** The strongest of the open
    measurements: it decides whether the most actionable message the local backend produces is ever
    seen. `backlog.md`, "Measurements left open".
