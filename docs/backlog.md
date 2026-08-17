@@ -15,6 +15,32 @@ copy the documentation structure exists to prevent.
 
 ---
 
+## Documentation defects found and not fixed
+
+**The whole of `milestone-1-core/documentation-review-2026-08-16.md`.** A fresh-context agent
+reviewed the documentation Phase 7 produced — 23 files, ~5400 lines — and returned a work list:
+**five findings verified independently**, roughly 25 more reported but not re-checked, and **six
+questions for the owner (Q1–Q6)**. Its Part 5 orders the work by consequence and that order still
+stands. **Nothing in it has been acted on.**
+
+*Parked because* the owner parked it whole on 2026-08-17, in favour of opening Milestone 2 and
+building router features. It is not blocked on anything and it is not scheduled; picking it up is a
+decision to spend a session on documentation instead of on the router.
+
+*Weaker than it looks?* **Two items are not.** `reference/measurements.md:34` states a slice that
+recomputes to **0.245×** rather than 26.6× — the sign reversed — and `README.md:381`'s worked example
+tells a filer to create a **second Phase 7**, contradicting the rule 233 lines above it. Both make a
+future session act confidently and wrongly, and both are cheap. Everything else in the file can wait.
+
+**This entry points and does not restate, deliberately.** The findings, their evidence and the six
+questions stay in that one file; copying any of it here would create the second copy this structure
+exists to prevent, and the file is far too long to live in an inventory.
+
+**Two consequences of it already landed and are not parked.** Phase 7 is **not** treated as
+open — Q2 asked whether it was closed at all, and the owner closed it. And Q5 — where a finding goes
+when it belongs to no phase — was answered **for that file only**, by filing it in the archive at the
+milestone root; as a general rule for `README.md` it is still open, inside the file with the rest.
+
 ## Decisions waiting on a person
 
 None of these is blocked on work. Each is blocked on somebody deciding, and each is argued in full in

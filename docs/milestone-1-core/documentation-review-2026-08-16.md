@@ -1,17 +1,23 @@
 # Documentation review — 2026-08-16
 
-**Temporary, and it names its own problem.** This file has no home under `README.md`'s filing rules,
-and that gap is one of its own findings — see **Q5** below: *where does a finding go when there is
-no phase?* Every worked example in the manual routes a finding through "the phase note that made
-it", and this review belongs to no phase. It sits at the root of `docs/` until that question is
-answered, then moves.
+**A live work list filed in the archive.** Written at the end of the session that finished the
+documentation restructure (Phase 7), reviewing the documentation that phase produced. Nothing here
+is fixed. **The whole file is a work list**, and none of it has been acted on.
 
-Written at the end of the session that finished the documentation restructure (Phase 7). Nothing
-here is fixed. **The whole file is a work list**, and none of it has been acted on.
+**It is in `milestone-1-core/` because it is a review of Phase 7's product**, filed at the milestone
+root rather than inside `phase-7-docs-restructure/` because it reviews the whole finished tree and
+not one phase's folder — the same reason `outstanding-work.md` sits beside it. This answers **Q5**
+below (*where does a finding go when there is no phase?*) **for this file only**: Q5 as a general
+filing rule for `README.md` is still open. It is **not frozen archive** — unlike a phase note it is
+worked through and struck out as items are done, and it leaves the archive only by being emptied.
 
-*`procedures/link-check.py` reports about six broken paths inside this file. They are correct: this
-document quotes broken paths **as its subject**, which is the one class the checker documents as
-unfilterable. Do not "fix" them — fix the files they are reported against.*
+*`procedures/link-check.py` reports four broken paths and two roundabout ones inside this file, and
+**all six are correct**. The broken ones are paths this document quotes **as its subject** — the one
+class the checker documents as unfilterable — so fix the files they are reported against, never this
+one. The two roundabout ones appeared when this file moved down a level on 2026-08-17 and are
+artefacts of the checker resolving every path against the citing file: `:499` is a path relative to
+`reference/measurements.md`, and `:620` is a verbatim quotation of `EPD-004`. Shortening either
+would falsify a finding.*
 
 ---
 

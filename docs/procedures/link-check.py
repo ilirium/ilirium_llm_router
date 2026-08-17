@@ -59,20 +59,25 @@ its hits rather than fixing them.
 
 **In this repository that class has a permanent address:**
 `docs/milestone-1-core/phase-7-docs-restructure/`, the 2026-08-16 restructure's plan and notes. Those
-two files account for **71** of the whole-repository run's 78 hits and always will — they are frozen
-archive describing paths that no longer exist, which is what they are *for*. The useful invocation is
-therefore usually:
+two files account for **71** of the whole-repository run's 82 broken hits and always will — they are
+frozen archive describing paths that no longer exist, which is what they are *for*. The useful
+invocation is therefore usually:
 
     python3 docs/procedures/link-check.py CLAUDE.md README.md docs/reference docs/procedures \
         docs/epd docs/captures docs/README.md docs/status.md docs/backlog.md
 
 ## A clean run is not a zero run
 
+**A whole-repository run reports 82 broken and 2 roundabout, and every one of them is correct.**
+71 broken are the restructure plan and notes above; 7 broken are deliberate absences, listed next; the
+last 4 broken and both roundabout are in `docs/milestone-1-core/documentation-review-2026-08-16.md`,
+whose own header explains them — it quotes broken paths as its subject, and two of its paths are
+written in another file's frame of reference, so shortening them would falsify a finding.
+
 **Some hits are correct and permanent.** A document that names a path in order to say *this
 deliberately does not exist* is right, and nothing distinguishes it from a broken link — the `→`
-convention covers renames, not deliberate absences. Outside the archived restructure documents there
-are **seven**, and a session expecting zero would either "fix" the prose or conclude the work is
-unfinished:
+convention covers renames, not deliberate absences. Outside the archive there are **seven**, and a
+session expecting zero would either "fix" the prose or conclude the work is unfinished:
 
 - `.claude/settings.json` ×3 — `EPD-004` decision 17 splits the permission allowlist and defers
   building the tracked half.

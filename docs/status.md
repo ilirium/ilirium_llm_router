@@ -10,22 +10,23 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-16 — the restructure is complete and a review of it is outstanding.** Branch
-`docs/milestone-boundary-restructure`, tree clean at `32bf409`, unmerged, `main` untouched. All
-fifteen tasks done; `docs/` has its finished shape and `CLAUDE.md` is 188 lines, down from 337.
+**2026-08-17 — Phase 7 is finished and its review is parked.** Branch
+`docs/milestone-boundary-restructure`, unmerged, `main` untouched. All fifteen tasks done; `docs/`
+has its finished shape and `CLAUDE.md` is 188 lines, down from 337.
 
-**Do not merge yet.** A fresh-context agent reviewed the current documentation and found defects,
-including two that would make a future session act wrongly. **Everything is in
-`documentation-review-2026-08-16.md`** — findings, the five verified independently, six open
-questions for the owner, and a suggested order. Nothing in it has been acted on.
+**The documentation review is no longer a blocker — the owner parked it whole**, findings and open
+questions alike, and it is now `backlog.md`, "Documentation defects found and not fixed". Nothing in
+it has been acted on and nothing is scheduled. The next work is **Milestone 2 and the router itself**,
+not more documentation.
 
-The two worth knowing before touching anything: `reference/measurements.md:34` states a slice that
-recomputes to **0.245×** rather than 26.6× — the sign reversed — and `README.md:381`'s worked
-example tells a filer to create a **second Phase 7**, contradicting the rule 233 lines above it.
+**The branch is ready to merge and the merge is the owner's to call.** Do not merge unasked. When
+asked: `--no-ff`, then write the merge hash into
+`milestone-1-core/phase-7-docs-restructure/notes.md` — leaving that hash unrecorded is the exact
+defect `backlog.md` carries against four earlier phase notes.
 
-**Before touching anything else:** `procedures/link-check.py` before and after anything that moves,
-and `make test` must report **158**. The checker **does not report zero** — seven hits are correct
-and permanent, plus 71 inside the archived restructure documents. Its docstring lists both classes.
+**Before touching anything:** `procedures/link-check.py` before and after anything that moves, and
+`make test` must report **158**. The checker **does not report zero** — its docstring says which hits
+are correct and permanent, and the count it states is current.
 
 ## Where the project is
 
@@ -60,10 +61,10 @@ backends, and a local model handled tool use, file editing and multi-turn conver
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Work through `documentation-review-2026-08-16.md`**, then merge with `--no-ff` and write the
-   merge hash into `milestone-1-core/phase-7-docs-restructure/notes.md` — leaving that hash
-   unrecorded is the exact defect `backlog.md` carries against four earlier phase notes. Six of the
-   review's questions need the owner before the rest can be finished.
+1. **Open Milestone 2 — features in the router, not in the documentation.** Its subject is functions
+   the router still lacks; which ones is named when it opens. `README.md`'s opening playbook is the
+   procedure, and its first step is the one that matters: name a central claim that could come out
+   false. Phase 8 is the first phase number available.
 2. **Decide `EPD-001`, `002` or `003`.** All three are blocked on a person rather than on work, and
    two of them are argued on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions
    waiting on a person". Deciding one is cheaper than any measurement in the list.
@@ -78,4 +79,4 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | State |
 |---|---|---|
-| `docs/milestone-boundary-restructure` | `EPD-004`'s migration — Phase 7 | **All fifteen tasks done, tree clean — but a review is outstanding and it is not ready to merge.** See `documentation-review-2026-08-16.md`. Pushed but well behind: the remote sits at `f473277`, before execution started |
+| `docs/milestone-boundary-restructure` | `EPD-004`'s migration — Phase 7 | **All fifteen tasks done, tree clean, ready to merge.** The merge is the owner's call and is not to be made unasked. Pushed but well behind: the remote sits at `f473277`, before execution started |

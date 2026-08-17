@@ -36,8 +36,14 @@ documents cite.
 | `implementation-plan.md` | The phases and their "done when" — one plan per milestone |
 | `closing-notes.md` | The running handoff, frozen at the boundary |
 | `outstanding-work.md` | The survey that picked Phase 5's items; its live entries became `../backlog.md` |
+| `documentation-review-2026-08-16.md` | A fresh-context review of the documentation Phase 7 produced. **Not frozen** — it is an open work list of findings and six questions for the owner, worked through rather than read. Moved here 2026-08-17 |
 | `phase-7-docs-restructure/` | The restructure that created this archive — `plan.md` and `notes.md`. A phase on a `docs/` branch, which is why its folder and branch names disagree; see `../README.md` |
 | `phase-N-<slug>/` | `notes.md`, `plan.md` where one exists, and `evidence/` |
+
+**One file here is live rather than frozen**, and it is the exception rather than a crack in the
+rule: `documentation-review-2026-08-16.md` is a work list produced *about* this archive's last
+phase, and it is edited as its items are closed. Everything else in this folder records what was
+believed at the time and is not edited again.
 
 **Where everything else went.** Durable facts were harvested into `../reference/`; instruments meant
 to be re-run went to `../procedures/`; the raw captured request is in `../captures/`. The EPDs did
