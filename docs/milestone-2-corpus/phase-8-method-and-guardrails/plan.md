@@ -52,7 +52,7 @@ Decided by the owner on 2026-08-17 in the interview that opened this branch:
 | Scope | `IDM-000` + `IDM-001` + the citations. **No list of further split candidates** — the shape of the rest of the `docs/README.md` split stays undecided |
 | The tracked allowlist | **project knowledge only, 14 entries** — `make` targets, the ruff pin, the pytest path, the two backend doc domains, plus four read-only entries derived from `config.yaml`. Arbitrary execution and network stay local |
 | Deny rules | **yes, for `.env`**, exact-match. Not a reversal of decision 19 |
-| The local file | **53 → 37.** Thirteen fossils; `lms load`/`lms unload`, which had repealed a `CLAUDE.md` non-negotiable; and `uvx ty@0.0.14`, which is a refusal rather than a fossil |
+| The local file | **53 → 35.** Fifteen fossils and duplicates; `lms load`/`lms unload`, which had repealed a `CLAUDE.md` non-negotiable; and `uvx ty@0.0.14`, which is a refusal rather than a fossil |
 | `ty` | **tried and refused** — warnings without useful information. Recorded in `IDM-003`, not deleted silently |
 | Harness tooling | `settings.json` **hand-written**; `/permissions` verifies the merged result at Task 14; `/fewer-permission-prompts` named in `IDM-002` as writing into the wrong file |
 | `README.md:381` | **all three errors fixed in Task 4.** Two are Phase 8's own doing; the second-Phase-7 half is borrowed from the parked review, and `backlog.md` is corrected in Task 5 so it stops listing a fixed finding |
@@ -342,11 +342,15 @@ file and an untracked local one; only the local half exists.
 
 **Two findings from reading the file, both of which change the work:**
 
-**The file has drifted since decision 17 measured it — 53 entries, not 51.** Thirteen are provably
-dead: a literal PID (`ps -p 90607`), three `/tmp/lms*.json` curl lines, two curl lines against port
-8799, one-off import checks for `PIL`, `starlette` and `zstandard`, `Bash(echo "exit=$?")`,
+**The file has drifted since decision 17 measured it — 53 entries, not 51.** **Fourteen** are
+provably dead: a literal PID (`ps -p 90607`), three `/tmp/lms*.json` curl lines, two curl lines
+against port 8799, **four** one-off import checks — `PIL`, `starlette`, and `zstandard` **twice**
+(`import zstandard` and `from compression import zstd`) — `Bash(echo "exit=$?")`,
 `Bash(sort -t: -k2 -rn)`, `WebFetch(domain:www.letta.com)`, and `Bash(git -C /Users/ilirium/Library/…)` —
 an absolute path to this machine duplicating `Bash(git -C . status --short)` two lines above it.
+
+> *An earlier draft of this plan said thirteen. It counted **subjects** and reported **entries** —
+> `zstandard` is one subject and two allowlist lines. Recounted mechanically on 2026-08-17.*
 
 > **Two entries were misfiled as fossils on the first pass and are project knowledge.**
 > `Bash(lsof -nP -iTCP:8787 -sTCP:LISTEN)` uses the router's own configured port, `config.yaml:10`,
@@ -405,9 +409,12 @@ without a shell parser, converting a recoverable prompt into a hard block, and s
 every Bash call. **An exact-path deny has none of those properties.** Say so in `IDM-002`, or the
 next reader will see enforcement and think the refusal was quietly overturned.
 
-**Task 10 — prune the local file: sixteen entries out, in three groups.**
+**Task 10 — prune the local file: eighteen entries out, in three groups.**
 
-*Thirteen fossils*, listed above. Six of them are specific `curl` lines that `Bash(curl *)` already
+*Fifteen fossils and duplicates.* The fourteen listed above, plus
+`Bash(curl -s --max-time 4 http://localhost:1234/api/v1/models)` — **not** a fossil, since the URL
+is `config.yaml:40`, but a strict duplicate of the entry Task 9 promotes, differing only in
+`--max-time 4` versus `5`. Six of them are specific `curl` lines that `Bash(curl *)` already
 subsumes — which is exactly why they are dead weight rather than protection. `Bash(curl *)` itself
 **stays**: it is how probes get written, and removing it buys a prompt on every one-off.
 
@@ -431,7 +438,7 @@ checker and adds one.
 
 **This task produces no commit** — the file is gitignored — and that is expected rather than
 missing, per the rule that a task producing no commit is still a task. Record before and after
-counts in `notes.md`; it is the only evidence it happened. **53 → 37.**
+counts in `notes.md`; it is the only evidence it happened. **53 → 35.**
 
 **Task 11 — write `docs/method/IDM-002-harness-configuration.md`.**
 The second method document, which is also **the cheapest available validation that the tier works
