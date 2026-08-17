@@ -241,3 +241,13 @@ docs/procedures/lmstudio-capability-probes/runs/
 # property of the probe — there is no one version of it worth keeping. image.json is committed
 # because it is small and fixed.
 docs/procedures/lmstudio-capability-probes/bodies/needle.json
+
+# Step: Harness configuration
+# .claude/settings.json IS tracked — it is this project's permission policy, and docs/method/IDM-002
+# says what earns a place in it. Its sibling is machine accretion and must never be committed. Until
+# 2026-08-17 the only thing keeping it out was the owner's global ~/.config/git/ignore, which does not
+# travel: on another machine, or for a contributor, the file is plain untracked and `git add *` — which
+# is itself in the allowlist — would take it, along with whatever has accreted into it. This line makes
+# that impossible everywhere, for everyone. Same defect and same fix as EPD-004 decision 16, where a
+# committed convention depended on a store that existed only outside the repository.
+.claude/settings.local.json
