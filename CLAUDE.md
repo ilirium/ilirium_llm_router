@@ -145,12 +145,19 @@ was accepted. Do not build from one.**
 
 ## Git and branches
 
+**Restated from `docs/method/IDM-001-git-branching.md`, which is canonical. A change goes there
+first.** This block is here because these are things a session gets confidently wrong with no reason to
+look anything up; it is a second copy of a fact, and that is the risk it carries.
+
 | Prefix | For |
 |---|---|
-| `feat/phase-N-<slug>` | a numbered phase; the slug matches its archive folder exactly |
-| `docs/<slug>` | documentation work belonging to no phase |
-| `fix/<slug>` | a defect outside a phase |
+| `feat/<slug>` | product work — anything that changes `src/` |
+| `docs/<slug>` | documentation work |
+| `fix/<slug>` | a defect |
 | `chore/<slug>` | tooling, dependencies, formatter bumps |
+
+**Any prefix may carry a phase number: `<prefix>/phase-N-<slug>`.** The prefix says what kind of work
+it is; `phase-N-` says it is numbered work with a plan and a record.
 
 **The plan opens the phase branch** — no separate planning branch, so one phase means one branch and
 one merge commit. Work belonging to a later phase never goes on an earlier phase's branch, even
@@ -159,6 +166,12 @@ documentation.
 **Merge with `--no-ff`, always.** A phase or feature boundary must stay visible in the history; a
 fast-forward erases it. And **`git merge` cannot read its message from stdin** — `-F -` works for
 `git commit` and fails for `git merge`, so write the message to a temp file.
+
+→ `docs/method/IDM-001-git-branching.md` — **read it before naming a phase folder, before rejecting a
+plan, or before recording where a branch went.** It holds the folder⇄branch slug rule and its one-way
+check, what happens to a rejected plan (merged and marked, not deleted — the phase number is spent),
+and the split between `docs/status.md` for in-flight branches and the phase note for the permanent
+record.
 
 ## Shell
 
