@@ -636,4 +636,4 @@ close.
 |---|---|
 | Branch | `docs/phase-8-method-and-guardrails` |
 | Fork point | `6253cbc` |
-| Merge commit | *not yet merged* |
+| Merge commit | `22a6d20` — merged 2026-08-17 with `--no-ff` |

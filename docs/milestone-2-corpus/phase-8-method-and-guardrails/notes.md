@@ -1,9 +1,11 @@
 # Phase 8 — the method tier and the guardrails: notes
 
-Branch: `docs/phase-8-method-and-guardrails`, off `main` at `6253cbc`. **Merge commit: not yet
-merged.** That sentence is deliberate rather than lazy — `../../backlog.md` carries the defect of four
-Milestone 1 phase notes that said "merge back with `--no-ff`" and never recorded what happened, and
-`IDM-001` now states the rule this line has to obey.
+Branch: `docs/phase-8-method-and-guardrails`, off `main` at `6253cbc`, **merged 2026-08-17 with
+`--no-ff` as `22a6d20`.** The sentence this replaces said "not yet merged", which was deliberate rather
+than lazy: `../../backlog.md` carries the defect of four Milestone 1 phase notes that said "merge back
+with `--no-ff`" and never recorded what happened. **Filling this hash in is the one edit this note takes
+after being written**, and `../../method/IDM-001-git-branching.md` — written on this branch — is the rule
+it obeys.
 
 Written **while the work was happening**, task by task, rather than assembled afterwards. That matters
 for the re-derivation section below: it records the plan being wrong at the moment it was found wrong,

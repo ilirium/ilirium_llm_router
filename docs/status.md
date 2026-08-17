@@ -10,13 +10,14 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-17 — Phase 8 is executed on its branch and not yet merged.** All seventeen tasks are done,
-plus two inserted by the phase's own re-derivation (**12a** and **17a**, lettered rather than
-renumbered). `docs/method/` now holds `IDM-000` through `IDM-003`; the tracked `.claude/settings.json`
-exists; the local allowlist went **53 → 21** with zero overlap between the two files.
-`procedures/link-check.py` reports **68 broken and 2 roundabout**, its docstring re-derived to match, and
-`make test` reports **158**. The permanent record is
-`milestone-2-corpus/phase-8-method-and-guardrails/notes.md`.
+**2026-08-17 — Phase 8 is merged.** `docs/phase-8-method-and-guardrails` merged into `main` with
+`--no-ff` as **`22a6d20`**, and the hash is in
+`milestone-2-corpus/phase-8-method-and-guardrails/notes.md`, which is the permanent record. All
+seventeen tasks are done, plus two inserted by the phase's own re-derivation (**12a** and **17a**,
+lettered rather than renumbered). `docs/method/` now holds `IDM-000` through `IDM-003`; the tracked
+`.claude/settings.json` exists; the local allowlist went **53 → 21** with zero overlap between the two
+files. `procedures/link-check.py` reports **68 broken and 2 roundabout**, its docstring re-derived to
+match, and `make test` reports **158**. `main` is ahead of `origin/main` and nothing has been pushed.
 
 **The phase's own re-derivation found its plan wrong in four places**, which is the fifth of Milestone
 1's-and-2's phases to find that. The one worth carrying forward: **nobody can predict
@@ -78,15 +79,22 @@ named yet**: EPD-003 is still a proposal, so a claim written now would be a pred
 measurement's clothes. It gets written at the end of Phase 9, from what the gate returns. The plan
 says so in place.
 
+**One phase of it is done: Phase 8** — the method tier and the guardrails, merged as **`22a6d20`**. It
+changed no `src/` and was housekeeping that would have been worth doing under any claim, which is the
+only reason it could run before the claim existed. *Recorded here in prose rather than as a per-phase
+table on purpose: `backlog.md` carries a proposal to replace Milestone 1's table above with one row per
+milestone, and building a second such table would pre-empt that decision.*
+
 ## What is next
 
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Merge Phase 8**, `--no-ff`, and write the hash into its `notes.md` and `implementation-plan.md` —
-   both say "not yet merged" today, which is correct while it is true and is this repository's signature
-   failure the moment it is not. **One thing needs a person first:** `/permissions` should be opened once
-   to confirm the merged rule set, which a session cannot do for itself. See `notes.md`, Task 14 check 6.
+1. **Open `/permissions` once.** The one Phase 8 check a session cannot run for itself: tracked and local
+   settings are merged by the harness, and the merge is the thing that was designed. It was verified by
+   computing it from the two files — 14 + 21, overlap 0, 35 effective allow, 3 deny — which is not the
+   same as reading the harness's own view. See `milestone-2-corpus/phase-8-method-and-guardrails/notes.md`,
+   Task 14 check 6. Worth confirming `lms load` prompts while there; that could not be tested either.
 2. **Decide `EPD-001`, `002` or `003`.** All three are blocked on a person rather than on work, and
    two of them are argued on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions
    waiting on a person". Deciding one is cheaper than any measurement in the list.
@@ -99,11 +107,11 @@ is the full inventory.*
 *Merged branches are not listed — git already holds that, and a hand-maintained list would drift.
 The permanent record of a phase's branch, fork point and merge commit belongs in its phase note.*
 
-| Branch | Purpose | Tree state | Next action |
-|---|---|---|---|
-| `docs/phase-8-method-and-guardrails` | Phase 8 — the method tier and the guardrails | **Executed.** All 17 tasks plus 12a and 17a; `src/` untouched, 158 tests, link-check 68/2 | Open `/permissions` once, then merge `--no-ff` and record the hash |
+**None.** Phase 8 merged as `22a6d20` on 2026-08-17 and the table is empty until the next phase opens a
+branch.
 
-Forked from `main` at `6253cbc` on 2026-08-17. **The branch carries a phase number on a `docs/`
-prefix**, which is the form settled on it — the prefix says what kind of work it is, `phase-N-` says
-it is a phase. `main` is ahead of `origin/main`; `docs/milestone-boundary-restructure` still exists
-locally and its remote is stale at `f473277`, from before execution started.
+`docs/phase-8-method-and-guardrails` was the first branch to **carry a phase number on a `docs/`
+prefix** — the form it settled: the prefix says what kind of work it is, `phase-N-` says it is a phase.
+`method/IDM-001-git-branching.md` now states that as the rule, with Phase 7 as the old form and Phase 8
+as the new one. `main` is ahead of `origin/main` and nothing has been pushed;
+`docs/milestone-boundary-restructure` and `docs/phase-8-method-and-guardrails` both still exist locally.

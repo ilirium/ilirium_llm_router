@@ -120,8 +120,13 @@ existing capture is requests.
 |---|---|
 | Branch | `docs/phase-8-method-and-guardrails` |
 | Fork point | `6253cbc` |
-| Merge commit | *not yet merged* |
+| Merge commit | `22a6d20` — merged 2026-08-17 with `--no-ff` |
 
 *A `Merge commit` row that still says "not yet merged" after the branch is gone is this
-repository's signature failure — four of Milestone 1's six phase notes did exactly that. Close it
-out at the merge.*
+repository's signature failure — four of Milestone 1's six phase notes did exactly that. **Closed out at
+the merge, 2026-08-17.** The permanent record is the phase note, per
+`../method/IDM-001-git-branching.md`; this row and the plan's repeat it because a merge hash is immutable
+and therefore cannot drift, which is what the one-home rule is protecting against.*
+
+*This table records the branch **this file** was created on. Milestone 2's opening shared Phase 8's
+branch, which is why the two Record tables carry the same three values.*
