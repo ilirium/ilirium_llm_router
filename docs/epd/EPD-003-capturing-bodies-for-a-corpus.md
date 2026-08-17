@@ -23,13 +23,13 @@ a large enough window. That is one flag, not an architecture. The measurements a
 This matters more than the storage format, because the project has an explicit rule about bodies and
 this proposal is adjacent to it.
 
-**Not reversed.** `CLAUDE.md`, "Design decisions": *"Forward the request body byte-for-byte … never
-deserialize or re-serialize the payload."* Storing an opaque copy of bytes that already exist in
-memory is not deserialization. It is the same discipline the response tee already follows — watch,
-copy, never touch. The rule that protects prompt-cache prefixes is untouched, because nothing here
-changes what gets forwarded.
+**Not reversed.** `../reference/design-decisions.md`, "Relay the body, log only metadata":
+*"Forward the request body byte-for-byte … never deserialize or re-serialize the payload."* Storing
+an opaque copy of bytes that already exist in memory is not deserialization. It is the same
+discipline the response tee already follows — watch, copy, never touch. The rule that protects
+prompt-cache prefixes is untouched, because nothing here changes what gets forwarded.
 
-**Reversed, deliberately, and this is the thing to agree to.** `CLAUDE.md`, "Observability":
+**Reversed, deliberately, and this is the thing to agree to.** `../reference/observability.md`:
 
 > Same for anything body-shaped — no prompts, no message counts, no tool names. Those are steps
 > toward parsing what the router promised only to relay.
@@ -45,9 +45,10 @@ router process. That keeps the reversal to one sentence rather than to the whole
 
 ## How much data this actually is
 
-From `docs/phase-2-step-6-session/calls.csv` — 142 calls, 2026-07-31, 08:21:15 to 09:38:12 UTC,
-**77 minutes** of real work across eleven sessions. The CSV does not hold bodies, but it holds their
-lengths, so the corpus that *would* have been captured is exactly known:
+From `../milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv` — 142 calls,
+2026-07-31, 08:21:15 to 09:38:12 UTC, **77 minutes** of real work across eleven sessions. The CSV
+does not hold bodies, but it holds their lengths, so the corpus that *would* have been captured is
+exactly known:
 
 | Backend | Path | Calls | Request bytes | Response bytes |
 |---|---|---:|---:|---:|
@@ -79,7 +80,8 @@ captured, this is a category worth being able to exclude.
 The instinct that a plain text file is the wrong answer is right, but for a reason worth measuring
 rather than assuming. Here is the measurement.
 
-**Control, on one body.** The real captured request, `docs/log-the-whole-request.txt`, 119,018 bytes:
+**Control, on one body.** The real captured request, `../captures/log-the-whole-request.txt`,
+119,018 bytes:
 
 ```
 gzip -9    41,054  (2.9x)
@@ -282,7 +284,7 @@ to session-final bodies — would become attractive.
 
 | Claim | Status |
 |---|---|
-| 142 calls over 77 minutes would have produced 10.35 MB of bodies | **Measured** — summed from `docs/phase-2-step-6-session/calls.csv` |
+| 142 calls over 77 minutes would have produced 10.35 MB of bodies | **Measured** — summed from `../milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv` |
 | Requests are 93% of the volume; median request 20.5 KB, median response 0.3 KB | **Measured** — same file |
 | gzip achieves 2.4× and zstd 28.6× across twenty growing bodies | **Measured** — reproducible script, see Evidence |
 | Within one body the two are within 7% of each other (2.9× / 3.1×) | **Measured** — same script's control |
@@ -332,7 +334,7 @@ session EPD-002's step 1 asks for — worth running once and using for both.
 6. **Does the corpus store request *headers*?** They carry `anthropic-beta`, the session and agent
    IDs, and the credential. Interesting for analysis, and the credential makes it the single most
    sensitive thing the router touches. Currently the router tees bodies only, which is also why the
-   `anthropic-ratelimit-*` question in `docs/handoff.md` is still open.
+   `anthropic-ratelimit-*` question in `../milestone-1-core/closing-notes.md` is still open.
 7. **Does this land before or after Phase 3?** Phase 3 adds `stream_error` and firms up
    `client_disconnect`, and both change what a partial body means. Building capture first means
    revisiting it.
@@ -340,12 +342,13 @@ session EPD-002's step 1 asks for — worth running once and using for both.
 ## Evidence
 
 **Measured on this machine, 2026-07-31.** Volume figures are summed from
-`docs/phase-2-step-6-session/calls.csv` — 142 rows, identifiers mapped to stable placeholders; see
-that directory's `README.md`. `logs/` is gitignored and rotates, so the frozen copy is the citable
-source.
+`../milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv` — 142 rows,
+identifiers mapped to stable placeholders; see that directory's `README.md`. `logs/` is gitignored
+and rotates, so the frozen copy is the citable source.
 
-The compression figures come from this script, run from the repository root against
-`docs/log-the-whole-request.txt` (the real 119 KB capture) with `zstd` 1.5.x from Homebrew:
+The compression figures come from this script, **run from the repository root** against the real
+119 KB capture — `docs/captures/log-the-whole-request.txt` from there, `../captures/…` from here —
+with `zstd` 1.5.x from Homebrew:
 
 ```python
 import gzip, json, pathlib, random, subprocess
@@ -353,7 +356,7 @@ random.seed(1)
 WORDS = open("/usr/share/dict/words").read().split()
 turn = lambda n: " ".join(random.choices(WORDS, k=n))
 
-base = pathlib.Path("docs/log-the-whole-request.txt").read_bytes().rstrip(b"\n")
+base = pathlib.Path("docs/captures/log-the-whole-request.txt").read_bytes().rstrip(b"\n")
 bodies, tail = [], ""
 for _ in range(20):                      # twenty turns of a growing conversation
     tail += json.dumps({"role": "user", "content": turn(300)})

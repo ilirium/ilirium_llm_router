@@ -8,7 +8,7 @@ received". A single solid colour would not: one lucky guess reads as a pass.
 Written by hand rather than with Pillow because the project has no image dependency and this needs
 none: a PNG is a signature, three chunks and a zlib stream.
 
-    python3 docs/phase-4-probes/make_image.py
+    python3 docs/procedures/lmstudio-capability-probes/make_image.py
 """
 
 from __future__ import annotations

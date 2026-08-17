@@ -23,7 +23,7 @@ cut. Measured, they share a mean of **2.8%** of their wording with it. See B1.
 
 Verified rather than re-asserted. Each of these was recomputed or re-run, not read.
 
-### The Phase 2 frozen session (`docs/phase-2-step-6-session/calls.csv`)
+### The Phase 2 frozen session (`../phase-2-observability/evidence/step-6-session/calls.csv`)
 
 Every structural claim in `CLAUDE.md` reproduces exactly:
 
@@ -78,7 +78,7 @@ Both modes checked against a backend that prints what it received:
 
 `inject` with the environment variable unset is refused at startup with the message the design
 called for. An older config carrying **no** `read_timeout` still loads and defaults to 600 s
-(`docs/phase-3-verification/router.yaml`, checked directly) — the backward-compatibility claim.
+(`../../procedures/dying-backend/router.yaml`, checked directly) — the backward-compatibility claim.
 
 ### Everything else checked
 
@@ -89,8 +89,9 @@ called for. An older config carrying **no** `read_timeout` still loads and defau
 - **No dead module-level names** anywhere in `src/` — an AST inventory of every name defined against
   every name referenced in `src/` and `tests/` found nothing unreferenced. `backend_name_for_model`,
   the review's leading suspect, is used by `backend_for_model` one line below it.
-- `docs/log-the-whole-request.txt` is **still redacted** — no `sk-ant-` tokens, no UUID-shaped
-  identifiers, 5 `REDACTED` markers — and is still referenced by eight documents. It earns its 119 KB.
+- `../../captures/log-the-whole-request.txt` is **still redacted** — no `sk-ant-` tokens, no
+  UUID-shaped identifiers, 5 `REDACTED` markers — and is still referenced by eight documents. It
+  earns its 119 KB.
 - `.env.example` is accurate and current, including the `inject` instructions.
 
 ---
@@ -323,12 +324,12 @@ reviewer does not re-open it either.
 
 ### H2 — one document is self-terminating by its own instruction
 
-`docs/handoff.md` (28 KB) says in its first paragraph that it should be deleted once the project
+`../closing-notes.md` (28 KB) says in its first paragraph that it should be deleted once the project
 speaks for itself. It does not yet — it still carries session state nothing else holds. Not a
 finding, and **not recommended for deletion this phase**; noted because the review was asked whether
 anything should be removed, and this is the only file that has ever nominated itself.
 
-`docs/testing-against-claude-code--results.md` (3 KB) was the other deletion candidate. It holds the
+`../phase-1-proxy/evidence/session-results.md` (3 KB) was the other deletion candidate. It holds the
 Phase 1 verification results and is referenced by `testing-against-claude-code.md`. **Keep** — it is
 small and it is the only record of that run.
 

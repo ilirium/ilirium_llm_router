@@ -10,8 +10,8 @@ So: a codeword at the very start, filler in the middle, and a question at the en
 codeword back. If it comes back, nothing was dropped from the front. If it does not, something was —
 and the `input_tokens` LM Studio reports says whether it admits to it.
 
-    python3 docs/phase-4-probes/make_needle.py --tokens 12000
-    python3 docs/phase-4-probes/probe.py needle
+    python3 docs/procedures/lmstudio-capability-probes/make_needle.py --tokens 12000
+    python3 docs/procedures/lmstudio-capability-probes/probe.py needle
 
 The codeword is deliberately not a word: a model that lost it cannot reconstruct it by being sensible.
 """

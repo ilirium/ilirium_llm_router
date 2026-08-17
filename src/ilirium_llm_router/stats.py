@@ -1,7 +1,7 @@
 """One CSV row per call, so models and backends can be compared in a spreadsheet.
 
-The columns and the reason each one earns its place are in CLAUDE.md under "Observability: log + CSV
-stats". This file owns the row's *shape* and the file it goes into; `observe.py` owns the measuring.
+The columns and the reason each one earns its place are in `docs/reference/observability.md`. This
+file owns the row's *shape* and the file it goes into; `observe.py` owns the measuring.
 
 Constraints this file has to keep:
 
@@ -23,8 +23,8 @@ treat it as a fallback rather than a measure of conversation size.
 **The file is in completion order, not arrival order.** A row is appended when its call finishes,
 while `timestamp` records when the call *arrived*, so a slow call lands after quicker ones that
 started later — 14 adjacent pairs are out of order in
-`docs/phase-2-step-6-session/calls.csv`, one of them by nearly two minutes. Sort by `timestamp`
-before analysing.
+`docs/milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv`,
+one of them by nearly two minutes. Sort by `timestamp` before analysing.
 
 Deliberately not fixed. Ordering the file would mean holding finished rows in memory until the calls
 that started before them came back, which trades a sort in the spreadsheet for losing every buffered

@@ -6,7 +6,8 @@ LM Studio test anyone would think to write, and then records an empty input coun
 Anthropic call. `test_input_tokens_are_never_taken_from_message_delta` is the reason this file
 exists; the rest guards the edges around it.
 
-The SSE fixtures are the event shapes recorded in `docs/lmstudio-usage-check.md`, shortened.
+The SSE fixtures are the event shapes recorded in `docs/procedures/lmstudio-usage-check.md`,
+shortened.
 """
 
 from __future__ import annotations

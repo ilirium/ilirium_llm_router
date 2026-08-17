@@ -59,9 +59,9 @@ class Backend(Strict):
     read_timeout: float = Field(default=600.0, gt=0)
     """How long this backend may stay silent before the call is abandoned, in seconds.
 
-    Measured on 2026-08-07 (`docs/phase-5-measurements/`): this is the longest gap permitted
-    *between* two reads, not a budget for the whole reply — every chunk restarts it. So it bounds
-    silence, never duration.
+    Measured on 2026-08-07 (`docs/milestone-1-core/phase-5-config-and-timeouts/evidence/`): this is
+    the longest gap permitted *between* two reads, not a budget for the whole reply — every chunk
+    restarts it. So it bounds silence, never duration.
 
     It is per backend because the two differ by 26× in time to first byte — measured over successful
     streamed `/v1/messages` calls, which is the slice that gap describes — and because the only thing

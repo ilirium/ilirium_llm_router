@@ -1,9 +1,9 @@
 # Phase 3 verification — the backend that fails on purpose
 
-The instrument behind every measurement in `../phase-3-notes.md`. A backend cannot be asked politely
+The instrument behind every measurement in `../../milestone-1-core/phase-3-failure-handling/notes.md`. A backend cannot be asked politely
 to die halfway through a reply, so this is one that always does.
 
-**Meant to be re-run**, which is the opposite of `../phase-2-step-6-session/`. That directory is
+**Meant to be re-run**, which is the opposite of `../../milestone-1-core/phase-2-observability/evidence/step-6-session/`. That directory is
 frozen evidence and regenerating it would break the row numbers cited elsewhere; this one is a tool,
 and running it is the point. Phase 4 is about finding where a local backend falls short, so expect
 to want it again.
@@ -21,8 +21,8 @@ to want it again.
 From the repository root, in two terminals:
 
 ```
-python3 docs/phase-3-verification/dying_backend.py
-make run CONFIG=docs/phase-3-verification/router.yaml
+python3 docs/procedures/dying-backend/dying_backend.py
+make run CONFIG=docs/procedures/dying-backend/router.yaml
 ```
 
 Then the four cases. Any model name that is not `claude-…` routes to the failing backend.
@@ -64,7 +64,7 @@ ANTHROPIC_BASE_URL=http://127.0.0.1:8799 ANTHROPIC_AUTH_TOKEN=x \
 Measured 2026-07-31: for the unreachable backend Claude Code prints the router's own message and
 **retries ten times with backoff**; for the mid-stream break it prints `API returned an empty or
 malformed response (HTTP 200)` — its own wording, not ours, because **it does not act on a
-mid-stream `error` event**. Both results are discussed in `../phase-3-notes.md`.
+mid-stream `error` event**. Both results are discussed in `../../milestone-1-core/phase-3-failure-handling/notes.md`.
 
 ## The warning worth reading before trusting a result
 
