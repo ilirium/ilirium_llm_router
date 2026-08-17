@@ -10,31 +10,42 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-17 — Milestone 2 is open and Phase 8 is planned but not started.**
-`docs/phase-8-method-and-guardrails` holds seventeen tasks across three groups and **not one line of
-execution**. (`git log main..` for the count — a number written here would be wrong by the next
-commit, and was: this line first said fifteen when there were thirteen.) It was planned, then checked twice: a mechanical pass found the prune arithmetic wrong
-(53 → 35, later 21, not 37), and a fresh-context review verified 31 factual claims, of which three
-failed. The best of those: `procedures/link-check.py`'s docstring is a **third home** for the
-`EPD-004` decision-18 park, alongside `backlog.md` and the EPD itself — invisible to any search of
-`docs/`, because it lives in an instrument.
+**2026-08-17 — Phase 8 is executed on its branch and not yet merged.** All seventeen tasks are done,
+plus two inserted by the phase's own re-derivation (**12a** and **17a**, lettered rather than
+renumbered). `docs/method/` now holds `IDM-000` through `IDM-003`; the tracked `.claude/settings.json`
+exists; the local allowlist went **53 → 21** with zero overlap between the two files.
+`procedures/link-check.py` reports **68 broken and 2 roundabout**, its docstring re-derived to match, and
+`make test` reports **158**. The permanent record is
+`milestone-2-corpus/phase-8-method-and-guardrails/notes.md`.
+
+**The phase's own re-derivation found its plan wrong in four places**, which is the fifth of Milestone
+1's-and-2's phases to find that. The one worth carrying forward: **nobody can predict
+`link-check.py`'s hit count by reading its docstring.** The plan said 77, the re-derivation written to
+catch the plan's error said 76, the tool says 68 — because the docstring partitions hits by where they
+live and what resolves them is which path they name. Five of its seven "permanent" hits stopped being
+permanent in one phase, and ten more copies of the same two paths resolved inside the frozen archive,
+under a sentence saying they never would.
 
 **Earlier that day — Phase 7 was merged and Milestone 1 closed.** `docs/milestone-boundary-restructure`
 merged into `main` with `--no-ff` as **`9c30924`**, and the hash is recorded in
 `milestone-1-core/phase-7-docs-restructure/notes.md` — the one closeout four earlier phase notes
 never got. All fifteen tasks done; `docs/` has its finished shape and `CLAUDE.md` is 188 lines, down
-from 337. `main` is ahead of `origin/main` and nothing has been pushed.
+from 337 — **203 after Phase 8**, which cut two sections to pointers and added one.
+`main` is ahead of `origin/main` and nothing has been pushed.
 
-**The documentation review was parked whole**, findings and open questions alike, and lives in
-`backlog.md` under "Documentation defects found and not fixed". Nothing in it has been acted on and
-nothing is scheduled — including two cheap findings that would make a session act wrongly, which are
-named there.
+**The documentation review is still parked whole**, findings and open questions alike, in `backlog.md`
+under "Documentation defects found and not fixed". **One** cheap finding that would make a session act
+wrongly remains — `reference/measurements.md:34`, a slice whose sign reverses on recomputation. The
+second was `README.md`'s closing worked example, which Phase 8 took because it was already rewriting the
+sentence.
 
-**The next work is the router, not the documentation:** open Milestone 2, starting at Phase 8.
+**The next work is the router, not the documentation.** Phase 8 was the last of the housekeeping;
+Phase 9 decides `EPD-003` and runs its gate.
 
 **Before touching anything:** `procedures/link-check.py` before and after anything that moves, and
-`make test` must report **158**. The checker **does not report zero** — its docstring says which hits
-are correct and permanent, and the count it states is current.
+`make test` must report **158**. The checker **does not report zero** — its docstring says which hits are
+correct and permanent, and the count it states was re-derived on 2026-08-17. **Do not predict that count
+by reading the docstring; run the tool.** Phase 8 proved twice that reading it gives the wrong answer.
 
 ## Where the project is
 
@@ -72,10 +83,10 @@ says so in place.
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 8** — `milestone-2-corpus/phase-8-method-and-guardrails/plan.md`, seventeen tasks
-   in three groups, planned and reviewed but **not started**. It unifies the Git branching rules into
-   a new `docs/method/` tier, builds the tracked `.claude/settings.json`, and records two tooling
-   decisions that have no home. Its own first instruction is to re-derive it before Task 1.
+1. **Merge Phase 8**, `--no-ff`, and write the hash into its `notes.md` and `implementation-plan.md` —
+   both say "not yet merged" today, which is correct while it is true and is this repository's signature
+   failure the moment it is not. **One thing needs a person first:** `/permissions` should be opened once
+   to confirm the merged rule set, which a session cannot do for itself. See `notes.md`, Task 14 check 6.
 2. **Decide `EPD-001`, `002` or `003`.** All three are blocked on a person rather than on work, and
    two of them are argued on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions
    waiting on a person". Deciding one is cheaper than any measurement in the list.
@@ -90,7 +101,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree state | Next action |
 |---|---|---|---|
-| `docs/phase-8-method-and-guardrails` | Phase 8 — the method tier and the guardrails | **Plan only.** Every commit is the plan or a correction to it. **No task executed**; `src/` untouched | Re-derive the plan, then Task 1 |
+| `docs/phase-8-method-and-guardrails` | Phase 8 — the method tier and the guardrails | **Executed.** All 17 tasks plus 12a and 17a; `src/` untouched, 158 tests, link-check 68/2 | Open `/permissions` once, then merge `--no-ff` and record the hash |
 
 Forked from `main` at `6253cbc` on 2026-08-17. **The branch carries a phase number on a `docs/`
 prefix**, which is the form settled on it — the prefix says what kind of work it is, `phase-N-` says

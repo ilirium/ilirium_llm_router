@@ -36,19 +36,29 @@ phase that shapes the router must not start before the claim exists.**
 
 ### Phase 8 — the method tier and the guardrails *(in full)*
 
-`phase-8-method-and-guardrails/plan.md`, beside this file. Two small pieces of housekeeping that
-both block cheap work later and neither of which depends on EPD-003:
+`phase-8-method-and-guardrails/plan.md`, beside this file. **Seventeen tasks in three groups** of
+housekeeping, each of which blocks cheap work later and none of which depends on EPD-003:
 
-1. **The Git branching rules are in two documents and they disagree.** Unified into one numbered
-   method document, `docs/method/IDM-001-git-branching.md`, cited from both. This also establishes
-   the `docs/method/` tier and the **IDM-NNN** numbering scheme in `IDM-000`.
+1. **The Git branching rules are in two documents and they disagree** — seven differences. Unified into
+   one numbered method document, `docs/method/IDM-001-git-branching.md`, cited from both. This also
+   establishes the `docs/method/` tier and the **IDM-NNN** numbering scheme in `IDM-000`.
 2. **A tracked `.claude/settings.json`.** `EPD-004` decision 17 split the permission allowlist into
-   a tracked policy half and an untracked local half, and only the local half exists. **Not yet
-   specified — the owner has not been interviewed on it**, and the plan's task list says so in place.
+   a tracked policy half and an untracked local half, and only the local half existed. Interviewed and
+   settled 2026-08-17; `IDM-002` holds the reasoning.
+3. **Two tooling decisions with no home** — the ruff pin, and `ty`, which was tried and refused with the
+   refusal recorded nowhere. `IDM-003`. This group emerged from group B's review rather than being
+   planned.
 
-**Done when:** both documents exist and are cited; the branching rules have exactly one home; the
-tracked settings file exists; `procedures/link-check.py` reports only its known-permanent hits and
+**Done when:** the tier holds `IDM-000` through `IDM-003` and no `README.md`; the branching rules have
+exactly one home, with `CLAUDE.md`'s restatement labelled as one; the tracked settings file exists with
+an exact-match `.env` deny and its sibling ignored by *this* repository's `.gitignore`;
+`procedures/link-check.py` reports only its known-permanent hits, re-derived by running it; and
 `make test` still reports 158.
+
+*This section said "two small pieces of housekeeping", that the settings half was "not yet specified —
+the owner has not been interviewed on it", and that Phase 8 was done when "both documents exist". All
+three were true when written on 2026-08-17 and false by the end of the same day. Corrected in place at
+Task 17a, which the plan did not contain — the phase's own re-derivation found it.*
 
 ### Phase 9 — decide EPD-003, and run its gate *(outline)*
 
