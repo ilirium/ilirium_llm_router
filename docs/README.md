@@ -12,11 +12,12 @@ this file rather than remember the answer.
 
 ## Where does it go?
 
-Start here. Almost every filing question is answered by one of these six rows.
+Start here. Almost every filing question is answered by one of these seven rows.
 
 | What you have | Where it goes | The test |
 |---|---|---|
 | A fact that stays true regardless of which phase found it | `reference/` | Would it still be true if the phase that found it had never happened? |
+| A rule about **how the work is done** rather than about the router | `method/` | Would it still be true if the subject of the project changed? |
 | A check somebody should be able to run again | `procedures/` | Would you re-run this against a new model, a new release, a new backend? |
 | The output of a run, frozen so a claim has something to rest on | `milestone-N-*/phase-N-*/evidence/` | Is it a transcript, a CSV, a captured reply? |
 | A raw artefact several documents are derived from | `captures/` | Is it input rather than result? |
@@ -43,9 +44,12 @@ places, one of which later gets updated. Resolve it in this order:
    configuration or timeouts.
 2. **Is it a number?** The number's canonical row is `reference/measurements.md`, whatever prose also
    quotes it. See "Numbers" below.
-3. **Is it a rule about how the work is done, rather than about the router?** Then it is this file, or
-   `CLAUDE.md` if a session would act on it wrongly without being told. See "What earns a place in
-   `CLAUDE.md`".
+3. **Is it a rule about how the work is done, rather than about the router?** Then it is `method/` if
+   it is a rule with reasoning worth keeping, or **this file** if it is a filing rule — *where does a
+   document go* is this file's whole subject. Either way `CLAUDE.md` may restate it, and only if a
+   session would act confidently and wrongly without being told; see "What earns a place in
+   `CLAUDE.md`". *(This rule named only this file and `CLAUDE.md` until 2026-08-17, when the `method/`
+   tier was built.)*
 4. **Still ambiguous?** Put it in the *bigger* file and leave a heading. Merging two thin files later
    is one commit; a duplicated fact discovered later costs somebody a day of deciding which copy is
    right.
@@ -71,6 +75,29 @@ expected versus found means the fact has not finished being extracted.
 roughly 40 lines. Until then it lives as a section in the nearest file that already has a trigger. The
 40 is a judgement, not a measurement — it is roughly where a section stops being findable by grepping
 a file you already have open.
+
+### `method/` — how the work is done
+
+Rules about the process rather than about the router: branch naming, harness configuration, which tools
+are pinned and why. **The conventions, the status vocabulary and the index are in
+`method/IDM-000-about-these-documents.md`** — read it before writing one. Numbered `IDM-NNN-<slug>.md`,
+and there is deliberately no `README.md` in the tier: `IDM-000` *is* the index, matching `epd/`.
+
+That is a pointer rather than a summary, for the same reason as `epd/` below.
+
+**The one thing about this tier that belongs here rather than there:** an IDM is **in force**, which is
+the exact opposite of an EPD. The two schemes look alike on purpose — `EPD-000` had already solved
+indexing and numbering — so the difference in *status* has to be stated rather than inferred.
+
+**The admission test: would the rule still be true if the subject of the project changed?** No IDM
+contains a fact about the router; a rule that needs one is not a method rule.
+
+**This tier and this file split cleanly, and the split is what keeps this file's acceptance test
+intact.** This file answers *where does a document go*; `method/` answers *how do I name this branch*.
+Somebody filing a document never has to open an IDM to file it correctly — which is why the `method/`
+row in the table above is load-bearing rather than decoration. `EPD-004` decision 18 declined this tier
+on the ground that it would split the manual; the objection is answered in `IDM-000`, with an addendum
+in place at the decision.
 
 ### `procedures/` — re-runnable
 
@@ -150,11 +177,11 @@ single phase.
 until 2026-08-16, when the documentation restructure took that number as
 `milestone-1-core/phase-7-docs-restructure/`.)*
 
-**A phase's folder normally takes its branch's slug, and Phase 7 is the standing exception.** Its
-branch is `docs/milestone-boundary-restructure`; its folder is `phase-7-docs-restructure`. The folder
-name has to carry the phase number and the branch name predates the decision to number it, so the two
-cannot agree. **Check folders against branches in that direction only** — every `feat/phase-N-*`
-branch has a folder with its slug; not every phase folder has a matching branch.
+**A phase's folder takes its branch's slug** — which is a rule about branches, so it lives with the
+rest of them. → `method/IDM-001-git-branching.md`, "A phase's folder takes its branch's slug": it
+carries Phase 7's standing exception and the fact that the check runs **one way only**. *(It was in
+this section until 2026-08-17. Filing a branch rule under "Naming and numbering" is half of how this
+file and `CLAUDE.md` drifted into disagreeing about seven things.)*
 
 ---
 
@@ -248,32 +275,18 @@ split.
 
 ## Branches
 
-| Prefix | For |
-|---|---|
-| `feat/phase-N-<slug>` | a numbered phase; the slug matches its archive folder exactly |
-| `docs/<slug>` | documentation work belonging to no phase — EPDs, a milestone's opening |
-| `fix/<slug>` | a defect outside a phase |
-| `chore/<slug>` | tooling, dependencies, formatter bumps |
+→ **`method/IDM-001-git-branching.md`** holds all of it, and is canonical. **Open it before naming a
+branch, before creating a phase folder, before rejecting a plan, or before recording where a branch
+went.** In one line each, so you know whether you need it: four prefixes by kind of work, with
+`<prefix>/phase-N-<slug>` as an orthogonal form any of them may take; `--no-ff` **always**; the plan
+opens the phase branch; a phase folder takes its branch's slug and the check runs one way only; a
+rejected plan is **merged and marked, not deleted**; and `status.md` carries in-flight branches while
+the phase note carries the permanent record.
 
-**No suffix for planning work: the plan opens the phase branch.** Plan and execution share one branch
-and one merge commit, which is what keeps one archive folder mapping to one branch. Planning that
-produces no code goes on a `docs/` branch.
-
-The same rule settles what a milestone's opening is: it produces documents and instruments and touches
-no source, so it is a `docs/` branch. The closing review *does* touch source, so it is a numbered
-`feat/` phase.
-
-**Work belonging to a later phase never goes on an earlier phase's branch, even documentation.** A
-`feat/phase-N+1-…` branch may sit holding only an unapproved plan; if the plan is rejected the branch
-is deleted, not renamed.
-
-**Merge every phase and feature branch with `--no-ff`**, so the boundary stays visible in the log.
-
-**Where branches are recorded:** `status.md` lists only **in-flight** branches — name, purpose, tree
-state, next action. Merged branches are not listed; git already holds that and a hand-maintained list
-would drift. **The phase note carries the permanent record**: branch, fork point, and merge commit.
-Write the merge commit in when the merge happens — four of Milestone 1's six phase notes still say
-"merge back with `--no-ff`" and never recorded what happened.
+*This section held the rules until 2026-08-17, and `CLAUDE.md` held them too — the two disagreed in
+**seven** places, which is the failure this whole structure exists to prevent surviving inside the
+structure built to prevent it. `CLAUDE.md` keeps a labelled restatement of the five facts a session
+acts on without looking anything up; everything else has exactly one home now.*
 
 ## The phase template
 
@@ -378,11 +391,18 @@ whatever was wrong.
 
 Three documents that do not exist yet, filed using only this file.
 
-**A Milestone 2 phase note.** `milestone-2-<slug>/phase-7-<slug>/notes.md`, the slug identical to
-`feat/phase-7-<slug>`. It opens with the branch and fork point, says whether it was written while
-measuring, and closes with a "Verified by" line. Its plan is `plan.md` beside it; the milestone's
-`implementation-plan.md` sits one level up. Durable facts it discovers do **not** stay in it — they
-are harvested into `reference/` at the close, and the note is frozen.
+**A Milestone 2 phase note.** `milestone-2-corpus/phase-9-<slug>/notes.md`, the slug identical to
+its branch's — whatever prefix that branch carries. It opens with the branch and fork point, says
+whether it was written while measuring, and closes with a "Verified by" line. Its plan is `plan.md`
+beside it; the milestone's `implementation-plan.md` sits one level up. Durable facts it discovers do
+**not** stay in it — they are harvested into `reference/` at the close, and the note is frozen.
+
+*(This example was wrong in three ways until 2026-08-17. It said `milestone-2-<slug>/`, which is
+concretely `milestone-2-corpus/`; it named the branch `feat/phase-7-<slug>`, which the orthogonality
+rule makes an over-specification; and it told a filer to create a **second Phase 7**, contradicting
+"Naming and numbering" above, which says Milestone 2 starts at Phase 8 because 7 is taken. Phase 9 is
+used here because it does not exist yet, which keeps this a worked example rather than a description
+of something real.)*
 
 **A new re-runnable check** — say, a probe for a second local backend. The script and its README go to
 `procedures/<name>/`, its `runs/` stays beside it and gitignored, and `procedures/README.md` gains a
