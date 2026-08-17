@@ -41,7 +41,9 @@ Decided by the owner on 2026-08-17 in the interview that opened this branch:
 | `--no-ff` scope | **every branch, always.** `CLAUDE.md`'s wording wins over `README.md`'s narrower one |
 | The parked `docs/method/` prohibition | narrowed, with a dated addendum in `EPD-004` |
 | Scope | `IDM-000` + `IDM-001` + the citations. **No list of further split candidates** — the shape of the rest of the `docs/README.md` split stays undecided |
-| This branch | `docs/phase-8-method-and-guardrails`; branch slug and folder slug match |
+| The phase number | **orthogonal to the prefix.** Any prefix may carry `phase-N-`; the prefix says what kind of work it is, the number says it is a phase |
+| One branch, one merge | the claim **stays in `CLAUDE.md`**; only its `feat/`-only implication is wrong and goes out |
+| This branch | `docs/phase-8-method-and-guardrails`; branch slug and folder slug match. **No rename** — the orthogonal rule sanctions the form it already uses |
 
 ---
 
@@ -52,18 +54,42 @@ wording preference.
 
 | # | `CLAUDE.md` says | `docs/README.md` says | Resolution |
 |---|---|---|---|
-| 1 | `docs/<slug>` — "documentation work belonging to no phase" | same **+ "EPDs, a milestone's opening"** | Take README's fuller wording |
+| 1 | `docs/<slug>` — "documentation work belonging to no phase" | same **+ "EPDs, a milestone's opening"** | **Neither, once row 7 is settled.** "Belonging to no phase" becomes false — this branch is a `docs/` branch belonging to Phase 8. The row becomes plain *"documentation work"*, keeping README's examples as examples rather than as the definition |
 | 2 | Merge with `--no-ff`, **always** | every **phase and feature** branch; silent on `fix/`, `chore/` | **Always**, per the owner. No judgement call at merge time |
 | 3 | *(silent)* | Planning that produces no code goes on a `docs/` branch | Keep; it is the rule that put this branch where it is |
 | 4 | *(silent)* | A rejected plan's branch is **deleted, not renamed** | Keep |
 | 5 | *(silent)* | `status.md` in-flight only; **the phase note carries branch, fork point, merge commit** | Keep, and carry the warning: four of six Milestone 1 phase notes recorded intent and never outcome |
 | 6 | `git merge` cannot read its message from stdin — `-F -` works for commit, fails for merge | *(silent)* | Keep. **Stays in `CLAUDE.md` too** — see "The one accepted duplication" |
-| 7 | "one phase means one branch and one merge commit", with a table whose only numbered row is `feat/` | A phase is numbered work with a plan and a record, **whatever prefix its branch used** — but this sits in "The phase template", not in "Branches" | README is right and `CLAUDE.md` is misleading. `EPD-004` decision 14's own 2026-08-16 revision settles it: **the prefix rule answers *which prefix*, never *is this a phase*.** State it inside the branching rules, where somebody choosing a prefix will read it |
+| 7 | "one phase means one branch and one merge commit", with a table whose only numbered row is `feat/` | A phase is numbered work with a plan and a record, **whatever prefix its branch used** — but this sits in "The phase template", not in "Branches" | README is right and `CLAUDE.md` is misleading. `EPD-004` decision 14's own 2026-08-16 revision settles it: **the prefix rule answers *which prefix*, never *is this a phase*.** Resolved by the owner on 2026-08-17 as **orthogonality** — see below. State it inside the branching rules, where somebody choosing a prefix will read it |
 
-**Row 7 is not academic — this phase is its second instance.** Phase 7 was a numbered phase on a
-`docs/` branch and had to be handled as a standing exception. Phase 8 is a numbered phase on a
-`docs/` branch and is handled by the rule. `IDM-001` should say so, because a rule with one worked
-example in the document that writes it is checkable.
+**Row 7 is not academic — this phase is its second instance, and the first the table cannot
+describe.** Phase 7 was a numbered phase on a `docs/` branch whose name carries no number, which is
+precisely why its folder and branch slugs had to disagree. This branch is
+`docs/phase-8-method-and-guardrails`: a `docs/` prefix *carrying* a phase number, a third form
+neither document sanctions.
+
+**Settled 2026-08-17: the phase number is orthogonal to the prefix.**
+
+```
+feat/<slug>    product work
+docs/<slug>    documentation
+fix/<slug>     a defect
+chore/<slug>   tooling, dependencies, formatter bumps
+
+any of them may carry a phase number:   <prefix>/phase-N-<slug>
+```
+
+The prefix says **what kind of work**; `phase-N-` says **it is numbered work with a plan and a
+record**. `feat/phase-N-<slug>` stops being an atomic form and becomes the common instance of a
+general one. Two consequences to carry into `IDM-001`:
+
+- **Row 1 changes** — `docs/` can no longer be defined as work belonging to no phase.
+- **Decision 15's one-way check generalises**: every `*/phase-N-*` branch has a folder with its
+  slug, not merely every `feat/phase-N-*` one. The converse stays false in both directions —
+  `feat/phase-0-skeleton` has no folder, and Phase 7's folder has no matching branch.
+
+Phase 7 is the **old form**, not a violation of the new one; it stays the standing exception under
+`EPD-004` decision 15 for the reason already recorded there.
 
 ### The one accepted duplication
 
@@ -140,25 +166,31 @@ Must state:
 **Task 2 — write `docs/method/IDM-001-git-branching.md`.**
 The unified rules. Every row of the seven-disagreement table resolved as decided there, plus:
 
-- The prefix table, with `--no-ff` stated as **always**.
-- The prefix rule answers *which prefix*, never *is this a phase* — with Phase 7 and Phase 8 as the
-  two worked examples.
+- The prefix table in its **new four-row shape** — `feat/`, `docs/`, `fix/`, `chore/` by kind of
+  work, with `<prefix>/phase-N-<slug>` as an orthogonal form any of them may take. `--no-ff` stated
+  as **always**.
+- The prefix rule answers *which prefix*, never *is this a phase* — with Phase 7 (the old form,
+  standing exception) and Phase 8 (the new form, this branch) as the two worked examples.
 - Where a branch is recorded: `status.md` in-flight, the phase note permanently, with the
   intent-versus-outcome warning.
 - **The folder/branch slug rule, moved here** from `docs/README.md:153–157`: a phase folder takes
   its branch's slug; Phase 7 is the standing exception; **check folders against branches in that
-  direction only.** It is a branch rule and it was sitting in "Naming and numbering", which is half
-  of how the two sections drifted apart.
+  direction only** — generalised to `*/phase-N-*`. It is a branch rule and it was sitting in "Naming
+  and numbering", which is half of how the two sections drifted apart.
 - Its provenance: `EPD-004` decisions 14 and 15, and the sections it replaces.
 
 **Task 3 — `CLAUDE.md`: "Git and branches" becomes table + gotchas + pointer.**
-Keeps the four-row table, `--no-ff` (now "always", unchanged in wording), and the `git merge -F -`
-fact. Everything else becomes a `→` pointer that **names when to open `IDM-001`** — not merely that
-it exists. Add the line naming `IDM-001` as canonical for the restated block.
+Keeps the four-row table **reshaped by kind of work, plus the `<prefix>/phase-N-<slug>` line**;
+`--no-ff` (now "always", unchanged in wording); and the `git merge -F -` fact. Everything else
+becomes a `→` pointer that **names when to open `IDM-001`** — not merely that it exists. Add the
+line naming `IDM-001` as canonical for the restated block.
 
-*Watch the neighbouring text:* `CLAUDE.md`'s "The plan opens the phase branch — no separate planning
-branch, so one phase means one branch and one merge commit" is the misleading half of row 7 and goes
-out with the rest.
+**Keep the claim, drop the inference.** *"The plan opens the phase branch — no separate planning
+branch, so one phase means one branch and one merge commit"* **stays**: it is true, it was measured
+(each Milestone 1 phase plan's creating commit sits on that phase's own branch and nothing earlier),
+and it is acted on at the moment a session is least likely to look anything up. What goes is only
+the implication that the branch is therefore a `feat/` one — which the reshaped table now removes by
+itself.
 
 **Task 4 — `docs/README.md`: the Branches section becomes a pointer, and the tier is admitted.**
 Three edits, one commit:
