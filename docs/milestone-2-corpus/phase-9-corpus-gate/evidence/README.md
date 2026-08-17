@@ -18,9 +18,16 @@ is a concatenation of verbatim substrings of its samples, so **the dictionaries 
 uncommittable as the bodies.** Both stayed under `logs/corpus-gate/`, which `.gitignore:228` covers.
 
 **So this evidence is not reproducible from the repository.** That is a real limitation and is stated
-rather than glossed: `gate.py` re-run today would find no corpus. What is citable is the instrument and
-the numbers it produced, not a path from one to the other. A future re-run needs a fresh capture, and
-its figures would differ — this corpus is one afternoon on one machine.
+rather than glossed: a clone has the instrument and the numbers, but no path from one to the other, and
+a fresh capture would give different figures — this corpus is one afternoon on one machine.
+
+**On the machine that produced it, the corpus does still exist**, at `logs/corpus-gate/` — 8.8 MB
+across three run directories plus the trained dictionaries, gitignored. So `gate.py` re-runs there
+until somebody deletes it. **Do not read that as durable**: it is untracked, unbacked-up, and holds
+real source text, so it may be gone at any time and nothing should be built on its being present.
+*(This paragraph replaces a sentence saying a re-run "would find no corpus", which was true of a clone
+and false of this machine — the kind of claim that would send a future session off to re-capture
+something it already has.)*
 
 ## What it proves
 
