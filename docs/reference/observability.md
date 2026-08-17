@@ -88,6 +88,15 @@ These are the ones a plausible-looking implementation quietly violates.
   precisely for that reason it stays out of the file: a stored derivation can drift out of agreement
   with the columns it came from. Same for anything body-shaped — no prompts, no message counts, no
   tool names. Those are steps toward parsing what the router promised only to relay.
+
+  **Narrowed 2026-08-17, and the narrowing is smaller than it looks.** `EPD-003` was decided: bodies
+  *are* archived now, to a **separate content-addressed store**, opaque, never parsed. This rule is
+  unchanged for the CSV, which is what it was always about — a `tool_names` column is still parsing,
+  and storing an opaque blob is not. See `design-decisions.md`, "Bodies are archived as
+  content-addressed per-call files". **`calls.csv` itself does not change**: not its columns, not its
+  rotation. The sketch that proposed adding two ref columns to it was found wrong, because
+  `backup_count: 10` means this file discards its oldest segment and a corpus keyed to it would
+  outlive its own index.
 - **The CSV is in completion order; sort before analysing.** A row is appended when its call finishes,
   while `timestamp` records when it *arrived*, so a slow call lands after quicker ones that started
   later — 14 adjacent pairs are out of order in the 2026-07-31 session. Deliberately not fixed:
