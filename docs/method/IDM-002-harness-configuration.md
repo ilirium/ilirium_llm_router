@@ -38,7 +38,24 @@ took it from 53 entries to 21; fifteen were fossils and duplicates that no longe
 If yes it is project policy and belongs in the tracked file. If no it is machine accretion and belongs
 in the local one. That is the whole test, and it decides the cases that look hardest:
 
-- `Bash(make test *)` — the `Makefile` has a `test` target. **Policy.**
+- `Bash(make test *)` — the `Makefile` has a `test` target. **Policy.** And so is every other target it
+  declares: all eight are in the tracked file, plus bare `make`, which lists them.
+
+  > **Two of them arrived late, and the reason is worth keeping.** Phase 8 wrote the tracked file with
+  > **six** `make` entries — the six that had accreted into the local file — under a specification
+  > reading *"every `make` target"* and a decided count of fourteen entries that could only be reached
+  > with six. The count won, because Phase 8's deduplication arithmetic was built on it. `make sync` and
+  > `make clean` were added on **2026-08-17**, immediately after, bringing the tracked file to **16**.
+  > `make sync` is a fresh clone's *first* command, so prompting for it contradicted the very reason four
+  > `config.yaml` probes had been promoted — *is the thing even running?* is a contributor's day-one
+  > question and *how do I install it?* comes before that. **The admission test decides this on its own:
+  > if a target is in the `Makefile`, it is policy.** The phase note records fourteen, correctly, as what
+  > was true when it was written.
+  >
+  > `make help` went in at the same time and brought the file to **17**, even though nobody types it —
+  > `.DEFAULT_GOAL := help`, so bare `make` already does that job. It is there so the rule above holds
+  > **without an exception to explain.** Seven of eight targets present is a state that makes the next
+  > reader hunt for which one is missing and why; eight of eight costs one line and asks nothing.
 - `Bash(uvx ruff@0.16.1 format --check src tests)` — the `Makefile` pins `ruff@0.16.1` and
   `pyproject.toml` sets `line-length = 100`. **Policy**, and the entry is one of the places the pin is
   written down. See `IDM-003-development-tooling.md`.

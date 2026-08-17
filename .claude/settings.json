@@ -3,9 +3,12 @@
     "allow": [
       "Bash(make)",
       "Bash(make check *)",
+      "Bash(make clean *)",
       "Bash(make format *)",
+      "Bash(make help *)",
       "Bash(make lint *)",
       "Bash(make run *)",
+      "Bash(make sync *)",
       "Bash(make test *)",
       "Bash(.venv/bin/python -m pytest -q)",
       "Bash(uvx ruff@0.16.1 format --check src tests)",
