@@ -400,3 +400,75 @@ whole-repository run globs `*.md`, so `config.yaml`, `Makefile`, `pyproject.toml
 `src/` go unchecked — that is how `.env.example:5` survived the restructure — and a line containing `→`
 is skipped whole, which leaves all five of `CLAUDE.md`'s `→` pointer lines unchecked. All five were
 verified by hand and all five resolve.
+
+---
+
+## Was the task list completed?
+
+The question `../../README.md`'s review phase asks. **Nineteen units: the seventeen published, plus 12a
+and 17a inserted with letters rather than by renumbering.** Every one is named on its own line in a
+commit body except Task 10, which produced no commit because the file it edits is gitignored — its
+record is above, and the rule that a task producing no commit is still a task is why that is expected.
+
+| Task | Commit |
+|---|---|
+| 0 (the re-derivation) | `re-derived: the plan is wrong in four places` |
+| 1–7 | one commit each |
+| 8, 9 | one commit each |
+| 10 | **none** — gitignored file; recorded in this note |
+| 11, 12, 12a, 13, 14 | one commit each |
+| 15, 16, 17, 17a | one commit each |
+
+## The plan's "Done when", audited
+
+| | |
+|---|---|
+| `docs/method/` exists with `IDM-000` and `IDM-001`, no `README.md` | ✅ four documents, no `README.md` |
+| The branching rules have exactly one canonical home, `CLAUDE.md`'s restatement labelled as one | ✅ `IDM-001`; `CLAUDE.md`'s block opens by naming it canonical |
+| A rejected plan has a defined fate that cannot be mistaken for an unexecuted accepted plan | ✅ status line plus milestone-plan row, in `IDM-001` and `EPD-004` decision 14 |
+| `docs/README.md` files a method document **from itself alone** | ✅ table row, tier subsection, and rule 3 of "When two answers are defensible" |
+| `EPD-004` and `backlog.md` agree the tier exists and extraction is still parked | ✅ |
+| Tracked `.claude/settings.json` with an exact-match `.env` deny; sibling ignored by **this** repository's `.gitignore` | ✅ 14 allow, 3 deny; `.gitignore:253` |
+| `IDM-002` and `IDM-003` exist; the tier works for **three** subjects | ✅ |
+| `ty`'s refusal recorded **before** its allowlist entry is deleted | ✅ in this note at Task 10, permanently in `IDM-003` |
+| `link-check.py` reports **77** broken and 2 roundabout, docstring rewritten, permanent list seven → two | ⚠️ **68** and 2. The docstring matches the tool. The list is two. **The plan's number was wrong and the plan said to find out why before editing it** — Task 17 above |
+| `make test` reports 158 | ✅ |
+| **The deny was driven, not read** — `.env` refused, `.env.example` readable | ✅ both |
+
+**One item is left for a person:** `/permissions` cannot be invoked from a session, so the merged rule set
+has been verified by computing it from the two files rather than by reading the harness's own view. Task 14
+check 6.
+
+## What this phase would tell the next one
+
+- **A plan that is still being edited cannot quote a count of anything.** Two numbers in `plan.md` — the
+  98 and the 77 — were wrong for that reason, and the second had a warning attached telling the executor
+  to re-derive it, which worked.
+- **"Outside the archive" is not a partition you can compute with.** The docstring's permanent-hits list
+  was scoped that way and therefore hid ten copies of the two paths it was about. Scope a list by the
+  property that will change, not by where the entries happen to sit.
+- **The one-home-per-fact failure hides in instruments.** `link-check.py`'s docstring was a third home
+  for the decision-18 park, and `.env.example` held a path the restructure broke. Neither is prose in
+  `docs/`, so neither could be found by reading `docs/`.
+- **A three-group plan needs its groups executed in dependency order, not numeric order.** Task 10
+  deletes what Task 15 documents. Resolved by committing the refusal in this note; noticed only because
+  the re-derivation asked what each task depended on rather than what it did.
+
+---
+
+**Verified by**, all on 2026-08-17 at the close of the phase:
+
+| | |
+|---|---|
+| `make test` | **158 passed** |
+| `make lint` | all checks passed |
+| `uvx ruff@0.16.1 format --check src tests` | 19 files already formatted |
+| `make check` | configuration is valid |
+| `python3 docs/procedures/link-check.py` | **68 broken, 2 roundabout** — matching the docstring, which was re-derived from this run rather than the other way round |
+| `git check-ignore -v .claude/settings.local.json` | `.gitignore:253` |
+| `git ls-files .claude/` | `.claude/settings.json` only |
+| Reading `.env` | **refused** |
+| Reading `.env.example` | readable, 11 lines |
+| The merged allow set | 14 tracked + 21 local, overlap 0, 35 effective, 3 deny |
+
+`src/` was not touched. No `evidence/` directory, for the reason at the top of this file.
