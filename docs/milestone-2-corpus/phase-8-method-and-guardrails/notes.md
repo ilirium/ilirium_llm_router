@@ -212,3 +212,54 @@ prose**, which `../../README.md`'s editable-paths-yes-claims-no table says are n
 what was believed then, and a review document's findings are the last thing that should be quietly
 updated to match the thing it was reviewing. Recorded here so the next reader knows they were seen
 rather than missed.
+
+---
+
+## Task group B — the guardrails
+
+### Task 8 — the `.gitignore` line
+
+`git check-ignore -v .claude/settings.local.json` resolved to `~/.config/git/ignore:1` before and to
+`.gitignore:253` after. That one command is the whole of the task's effect, and it is the only way to
+see it — the file's *status* is identical either way, which is exactly why the gap survived.
+
+### Task 9 — the tracked `.claude/settings.json`
+
+Written as specified: **14 allow, 3 deny.** The deny is three entries rather than two because "the
+`cat` form" has two spellings a session would actually type, `cat .env` and `cat ./.env`, and an
+exact-match rule has to name both. See Finding 4 in Task 0 for the `make sync` gap.
+
+**What the exact-match deny is and is not.** It stops the reflex, not a determined path — `sed`, `head`,
+`python3` and `env` all still read the file. That is not a weakness in the rule, it is the point of
+decision 19's argument: enforcement that tries to cover every route needs a shell parser and produces
+false positives, and the written rule is what does the real work. Named in `IDM-002`.
+
+### Task 10 — the prune. **53 → 21, and it produced no commit**
+
+The file is gitignored, so this record is the only evidence the task happened. `git status` was clean
+after the edit, which is the expected outcome rather than a missing one.
+
+| | Count |
+|---|---|
+| `settings.local.json` before | **53** |
+| Removed | **32** |
+| `settings.local.json` after | **21** |
+| Tracked `settings.json` | 14 |
+| **Effective merged allow set** | **35** |
+| Overlap between the two files | **0** — verified by set intersection, not by eye |
+
+The 32, in the plan's four groups: **15** fossils and duplicates, **2** that repealed a written rule
+(`lms load *`, `lms unload *`), **1** that was a refusal (`uvx ty@0.0.14 check src tests`), and **14**
+that moved to the tracked file. Every one was present at the shape the plan quoted; the arithmetic held.
+
+**Zero overlap is the invariant worth naming**, because it is what "each permission has exactly one
+home" means operationally, and it is checkable in one line. It also means a mistake in Task 9 cannot
+hide: the fourteen promoted entries are now covered *only* by `settings.json`, so Task 14's check 1
+either passes or produces a prompt for `make test`.
+
+**The `ty` refusal, recorded here at the moment its allowlist entry was deleted.** `ty` was tried and
+rejected: it produced warnings without useful information. The entry was pinned like policy
+(`uvx ty@0.0.14`) and absent from both the `Makefile` and `pyproject.toml` like a fossil, which is why a
+first pass read it as an unresolved question — it is neither. This paragraph exists because the deleted
+file is gitignored and Task 15 is five tasks away; `IDM-003` is its permanent home, and this is the
+committed record that closes the window in between.
