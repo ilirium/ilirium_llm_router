@@ -145,6 +145,11 @@ was accepted. Do not build from one.**
 | `EPD-002` | a decision, on a weakened case | LM Studio has no `count_tokens`; the harm it was organised around was measured and not found |
 | `EPD-003` | a decision on the fine-tuning goal | Storing every body as a corpus |
 
+**Do not read `docs/method/`'s `IDM-NNN` documents with that reflex.** The two schemes sit adjacent and
+look alike; an **IDM is in force now and you are expected to act on it**, which is the exact opposite of
+an EPD. `docs/method/IDM-000-about-these-documents.md` is the index. `IDM-001` and `IDM-003` are pointed
+at below; `IDM-002` holds the permission allowlist policy.
+
 ## Git and branches
 
 **Restated from `docs/method/IDM-001-git-branching.md`, which is canonical. A change goes there

@@ -439,6 +439,14 @@ record is above, and the rule that a task producing no commit is still a task is
 has been verified by computing it from the two files rather than by reading the harness's own view. Task 14
 check 6.
 
+**One edit the plan did not contain, added at the close.** `CLAUDE.md` now carries a line, under the EPD
+section, saying that `IDM` documents must **not** be read with the EPD reflex. The plan gives `CLAUDE.md`
+two `IDM` pointers and no statement of what an IDM *is* — and the file it does not auto-load,
+`IDM-000`, calls that distinction *"the single most important line in the file."* So a session reading
+only `CLAUDE.md` would have met two `IDM-NNN` citations 25 lines below **"Nothing in an EPD is
+implemented … Do not build from one"** and had every reason to generalise. The gap is the plan's own
+argument for `IDM-000`'s loudest sentence, landing on the one file that sentence could not reach.
+
 ## What this phase would tell the next one
 
 - **A plan that is still being edited cannot quote a count of anything.** Two numbers in `plan.md` — the
