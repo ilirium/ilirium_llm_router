@@ -105,6 +105,7 @@ these.** This is an index, not a summary — a one-line restatement would drift,
 - No special case for background or auxiliary traffic
 - Relay the body, log only metadata
 - One exception to byte-relay: a broken stream is ended with an SSE `error` event
+- Bodies are archived as content-addressed per-call files, compressed against a shared dictionary
 - Backend authentication is a first-class feature, not a leftover
 - *(discharged)* First milestone is a minimal end-to-end proxy
 
@@ -116,7 +117,9 @@ and rebuilding them.
 
 → `docs/reference/observability.md` — read it before touching the recorder, adding a column, or
 interpreting a row. In particular: telemetry never breaks a call, the CSV is in **completion order**
-so sort before analysing, and nothing body-shaped is stored.
+so sort before analysing, and nothing body-shaped goes in **the CSV**. *(That last rule was narrowed on
+2026-08-17: `EPD-003` was decided, so bodies are archived — but to a separate store, opaque, never as a
+CSV column. The recorder's rule is unchanged.)*
 
 ## Anthropic models
 
@@ -143,7 +146,10 @@ was accepted. Do not build from one.**
 |---|---|---|
 | `EPD-001` | a decision — its Phase 4 gate is met | Picking a local model mid-session, and subagents on local models |
 | `EPD-002` | a decision, on a weakened case | LM Studio has no `count_tokens`; the harm it was organised around was measured and not found |
-| `EPD-003` | **its gate** — Phase 9. Partly accepted 2026-08-17 | Storing every body as a corpus. **Fine-tuning is dropped; analysis only.** What is open is per-call files against per-session streams |
+
+**`EPD-003` is no longer in that table — it was decided on 2026-08-17** and graduated into
+`docs/reference/design-decisions.md`. Bodies are archived as content-addressed per-call files;
+fine-tuning is dropped. Its open questions 3–6 are Phase 10 design detail, not parked decisions.
 
 **Do not read `docs/method/`'s `IDM-NNN` documents with that reflex.** The two schemes sit adjacent and
 look alike; an **IDM is in force now and you are expected to act on it**, which is the exact opposite of

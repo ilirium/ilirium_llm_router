@@ -9,10 +9,36 @@ Milestone 1's six phases found their own plan wrong on contact.
 
 ---
 
-## The central claim is NOT YET NAMED, deliberately
+## The central claim, named 2026-08-17 at the end of Phase 9
 
-The opening playbook's first step is to name a falsifiable central claim. **It is not written here,
-and the blank is the honest state rather than an omission.**
+> **The router can archive every body it carries — as opaque, content-addressed, per-call files
+> compressed against a shared dictionary — without parsing a payload, without slowing a call, and
+> without special storage infrastructure.**
+
+**Three ways it could come out false**, which is what makes it a claim rather than a plan:
+
+| It fails if | Status |
+|---|---|
+| **The size forces infrastructure** — per-call files cost so much more than a stream that a database or blob service becomes the answer | **Tested in Phase 9 and survived.** 12.10× held-out against 3.12× unaided; per-file lands at 2.47× a stream, and a year of use stays in the low hundreds of MB |
+| **Archiving cannot stay opaque** — something in the write path turns out to need the body parsed | Untested. Phase 10 |
+| **Archiving slows or breaks a call** — a 200 KB blob cannot leave the request path the way a 300-byte CSV row can | Untested. Phase 10, and `EPD-003`'s constraints already name the shape of the answer: a bounded off-thread queue that drops the body rather than stalling |
+
+**Non-goals**, named now rather than discovered later:
+
+- **Fine-tuning.** Decided out on 2026-08-17 — the corpus is for analysis. Anthropic's terms prohibit
+  using outputs as training targets, and this removes the need for a structural provenance split.
+- **A database, a query engine, or a schema for message content.** The corpus is files; an export step
+  is an offline concern.
+- **Reconstructing transcripts inside the router.** Bodies go in opaque and come out opaque.
+- **Changing `calls.csv`.** Not its rotation, not its columns. It is a comparison instrument over a
+  recent window, and the corpus brings its own durable index.
+
+---
+
+### Why this section was blank until Phase 9, kept as written
+
+The opening playbook's first step is to name a falsifiable central claim. **It was not written here,
+and the blank was the honest state rather than an omission.**
 
 Milestone 2's subject is `../epd/EPD-003-capturing-bodies-for-a-corpus.md`, which was still a
 **proposal** when this was written. A central claim written then would have been written against a
@@ -25,14 +51,16 @@ exactly the document-may-not-survive risk this section was written about.* Miles
 measurements and unreliable where it recorded predictions, with both in the same prose"*, and
 several of those predictions stood unchallenged for five phases.
 
-**When it is named:** after EPD-003 is decided and its gate has been run. That is Phase 9.
+**When it is named:** after EPD-003 is decided and its gate has been run. That is Phase 9. *(It was,
+and it is — above. The discipline held: the claim is written from what the gate returned, and one of
+its three failure modes is already discharged by measurement rather than by assertion.)*
 
 **What this costs, named rather than waved away:** Phase 8 runs without a milestone-level claim to
 serve. That is acceptable only because Phase 8 is housekeeping which would be worth doing under any
 claim — it changes no `src/` and settles conventions the milestone will use whatever it decides. **A
 phase that shapes the router must not start before the claim exists.**
 
-**Non-goals:** not yet named, for the same reason.
+**Non-goals:** not yet named, for the same reason. *(Named above, 2026-08-17.)*
 
 ---
 
@@ -89,10 +117,35 @@ Two halves, in this order:
 
 *Everything below Phase 9 is a title and a question. Nothing about it is planned.*
 
-### Phase 10 — *unnamed*
+### Phase 10 — the body store *(outline)*
 
-**The question it exists to close:** what does the router store, and where. Only answerable once
-Phase 9 has said whether per-call files are the unit.
+**The question it exists to close:** what does the router store, and where. **Phase 9 answered the
+prerequisite** — per-call files are the unit — so this is now answerable and is a `feat/` phase, the
+first of this milestone to touch `src/`.
+
+**Its shape is already sketched.** `phase-9-corpus-gate/plan.md` carries a fenced section, "Design
+produced by the interview", holding the tree, the dictionary lifecycle and the reasoning behind each
+choice. **It was written conditional on the gate, and the gate passed, so it stands as input** — but it
+is a sketch produced before any of it was built, and this phase's first act is to re-derive it.
+
+What it must settle, beyond the sketch:
+
+- **The write path.** A bounded off-thread queue, and an explicit answer to what happens when it fills.
+  `EPD-003`: *drop the body and record that it was dropped* — a corpus with a known hole is fine, a
+  stalled request is not. This is the second of the central claim's three failure modes.
+- **`EPD-003`'s open questions 3–6**, which it left as design detail: what is captured by default,
+  opt-in versus always-on, retention, and whether headers are stored. Question 6 is the sensitive one —
+  headers carry the credential.
+- **Capture at the point of failure, not only in the streaming path.** Phase 9 measured its own
+  throwaway hook missing **9 of 158** calls, all of them error paths that return before the response
+  generator runs — which is precisely the class `EPD-003` calls *"the interesting rows, not the broken
+  ones"*.
+- **A dictionary bootstrap and retraining policy**, given that `zstd --train` was measured
+  non-monotonic at 68 samples. A new dictionary must be compared against the one it replaces.
+- **Move `calls.csv` and `router.log` into `logs/telemetry/`**, alongside the new `logs/corpus/`. Small,
+  and deliberately bundled here rather than done as a `chore/`: it touches `config.yaml` and paths cited
+  from `src/` docstrings, which `link-check.py` cannot see, so it wants one move and one sweep rather
+  than two.
 
 ### The closing review phase — *unnamed, number unallocated*
 

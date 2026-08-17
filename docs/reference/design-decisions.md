@@ -55,7 +55,66 @@ prefill per turn on a one-word conversation.
 
 Two EPDs argue this rule is narrower than it looks — that it protects bodies the router *relays*, and
 so does not reach a body the router answers itself (`EPD-002`) or an opaque copy it never parses
-(`EPD-003`). **Neither has been accepted.**
+(`EPD-003`).
+
+**`EPD-003`'s version was accepted on 2026-08-17** and is the next section. It does not weaken this
+rule: an archived copy is taken *off the bytes already in memory*, and what gets forwarded is
+unchanged, so the prompt-cache prefix this rule exists to protect is untouched. **`EPD-002`'s has
+not been accepted.** *(This paragraph read "Neither has been accepted" until then.)*
+
+## Bodies are archived as content-addressed per-call files, compressed against a shared dictionary
+
+**Decided 2026-08-17**, graduating `../epd/EPD-003-capturing-bodies-for-a-corpus.md`. Two halves, one
+settled by a person and one by measurement.
+
+**The corpus is for analysis, not fine-tuning.** Anthropic's terms prohibit using outputs as training
+targets, and a corpus captured here is mixed. Dropping fine-tuning makes the Anthropic/LM Studio
+partition **optional rather than structural** — `backend` is already a CSV column, so any export can
+still filter on it. The analysis half was never restricted and is the stronger half of the
+requirement.
+
+**The storage unit is the per-call file, and the gate that could have refuted it ran.** Measured
+2026-08-17 over 73 real bodies, evaluated on a **held-out session** — split by session rather than
+shuffled, because within a session an earlier body is nearly a prefix of a later one:
+
+| | Ratio |
+|---|---:|
+| per-file, no dictionary | **3.12x** |
+| per-file, dictionary trained on *other* sessions | **12.10x** |
+| one long-window stream | **29.91x** |
+
+`EPD-003` set the test itself — near the stream figure and the sketch survives, near 3x and per-call
+files are the wrong unit. **12.10x is four times the failure threshold**, closing 82.8% of the byte
+gap and leaving per-file storage at **2.47x** a stream rather than 9.6x. On its own projection, ~3 GB
+a year naive becomes ~250 MB rather than ~100 MB — both inside the "low hundreds of megabytes" its
+conclusion rested on, so the residual does not change what the number was for. What per-call buys in
+exchange is what `EPD-003` says per-session is far worse at: random access, partial writes, and a
+process that stops mid-session.
+
+**Store bytes, parse never.** The corpus holds opaque blobs; any parsing is an offline export step
+against a file, never on the request path and never in the router process. This is what keeps the
+reversal to one sentence of `observability.md` rather than to the whole rule.
+
+**Three consequences that are not obvious, all measured or found while measuring:**
+
+- **A trained dictionary is as sensitive as the bodies.** `zstd --train` output is a concatenation of
+  verbatim substrings of its samples. It is not a derived artefact and **it is not committable**.
+- **A dictionary must never be deleted.** A frame compressed with `-D` cannot be decompressed without
+  it. Blobs may be pruned freely; dictionaries are append-only forever, at ~110–200 KB each.
+- **Retraining must be measured, not assumed.** `zstd --train` was **non-monotonic** at 68 samples —
+  a larger budget produced a *worse* dictionary. A retraining policy that adopts a new dictionary
+  without comparing it against the one it replaces will silently make the corpus bigger.
+
+**Not decided here, and left to Phase 10 as design detail:** what is captured by default, opt-in
+versus always-on, retention, and whether headers are stored — `EPD-003`'s open questions 3–6. None of
+them changes the storage unit.
+
+**One correction this carries into Phase 10.** `EPD-003` proposed adding two ref columns to
+`calls.csv` so it becomes the corpus's join table. **It cannot be**: `config.yaml` sets
+`backup_count: 10`, so the CSV is a capped rolling window that discards its oldest segment and the
+bodies would outlive their own index. Size rotation is correct for what that file is *for* — model and
+backend comparison, a recent-window question — so the corpus carries its own durable index instead,
+and `calls.csv` is not changed.
 
 ## One exception to byte-relay: a broken stream is ended with an SSE `error` event
 

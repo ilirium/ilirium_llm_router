@@ -524,6 +524,56 @@ directional: a dictionary recovers *most* of the cross-body ratio, not that it r
 every setting. The verdict survives the biases because the margin is large — 12.10x against a 3.12x
 failure threshold — not because the biases are small.
 
+## Tasks 11–16 — the harvest
+
+**`EPD-003` is decided**, not merely partly accepted: both load-bearing questions are answered and it
+graduates into `../../reference/design-decisions.md` as *"Bodies are archived as content-addressed
+per-call files, compressed against a shared dictionary"*. Open questions **3–6 survive as Phase 10
+design detail rather than as forks** — what is captured by default, opt-in versus always-on, retention,
+and headers. None changes the storage unit, which is what that document existed to settle.
+
+**The sweep was wider than Task 12 named**, and the widest edit is the one worth recording. Two
+documents carried sentences the decision falsifies:
+
+| Document | Was | Now |
+|---|---|---|
+| `../../reference/design-decisions.md`, "Relay the body" | *"Two EPDs argue this rule is narrower than it looks… **Neither has been accepted.**"* | `EPD-003`'s version **is** accepted; `EPD-002`'s is not. The rule is not weakened — an archived copy is taken off bytes already in memory and what gets forwarded is unchanged |
+| `../../reference/observability.md` | *"Same for anything body-shaped — no prompts, no message counts, no tool names"* | **Narrowed, not reversed.** The rule was always about the CSV. A `tool_names` column is still parsing; an opaque blob in a separate store is not |
+
+`CLAUDE.md` took the same narrowing on its Observability pointer, gained the new decision title in its
+index, and **lost its `EPD-003` row** — a decided EPD does not belong in a table headed *"Open
+proposals"*.
+
+**The milestone's central claim is written**, from what the gate returned rather than from what the
+proposal hoped:
+
+> *The router can archive every body it carries — as opaque, content-addressed, per-call files
+> compressed against a shared dictionary — without parsing a payload, without slowing a call, and
+> without special storage infrastructure.*
+
+**It is stated with three named failure modes, one of them already discharged by measurement.** That
+is the shape `../implementation-plan.md` demanded when it left the blank: a claim that could come out
+false, written after the thing that could falsify it had been run. The two survivors — that archiving
+cannot stay opaque, and that it slows a call — are Phase 10's.
+
+**Six numbers entered `../../reference/measurements.md`**, and the 12.10× row carries an unusually
+long slice note on purpose. That register exists because *"a number quoted without its slice reads as
+wrong to anyone who recomputes it"*, and this is a number whose slice **inverts how it should be
+read**: three biases flatter it, so it is an optimistic estimate rather than a typical one.
+
+### Verified by — Task 16, 2026-08-17
+
+| Check | Result |
+|---|---|
+| `make test` | **158 passed** |
+| `procedures/link-check.py` | **69 files, 68 broken, 2 roundabout** — broken count **unchanged from the fork**, and **zero** hits from this phase's folder |
+| `git diff main -- src/` | **empty.** The `docs/` prefix held; the capture patch was applied, used, and restored |
+| Working tree | no captured body, no dictionary, no `logs/` path staged |
+
+**Every figure in this note was produced by running something, not by reading a document about it** —
+including the link-checker count, which `../../status.md` warns cannot be predicted from its own
+docstring and which Phase 8 got wrong twice by trying.
+
 ---
 
 ## Superseded: the pause after run 1

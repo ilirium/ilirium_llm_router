@@ -10,25 +10,24 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-17 — Phase 9 is open and paused after Task 4.** `docs/phase-9-corpus-gate`, forked from
-`main` at `97f6563`. **Sixteen tasks in four groups**; Group A (1–4) is done, and the phase is
-deliberately stopped **before anything touches the machine**. Nothing is captured, no `src/` is
-patched, and no measurement has been run.
+**2026-08-17 — Phase 9's gate has passed and `EPD-003` is decided.** `docs/phase-9-corpus-gate`,
+forked from `main` at `97f6563`. **Fifteen of sixteen tasks done**; only the close-out and merge
+remain. `src/` is unchanged — the capture patch was applied, used and restored.
 
-**`EPD-003` is now partly accepted.** The owner decided its open question 1 on 2026-08-17:
-**fine-tuning is dropped and the corpus is for analysis only.** Everything else in that document was
-downstream of it. What stays open is per-call files against per-session streams, which its gate
-decides — that is Group C.
+**The corpus proposal survives its own cheapest test.** On a held-out session of 20 real bodies:
+per-file with no dictionary **3.12×**, per-file with a dictionary trained on *other* sessions
+**12.10×**, one long-window stream **29.91×**. `EPD-003` set the test as "near the stream" against
+"near the 3×"; 12.10× is four times the failure threshold. **Per-call files are the unit**, and the
+decision is in `reference/design-decisions.md`.
 
-**The opening interview found five things wrong, three of them about `EPD-003` itself**, and they are
-in `milestone-2-corpus/phase-9-corpus-gate/plan.md`. Two matter beyond this phase:
+**Read the 12.10× as optimistic.** The corpus is headless — its static preamble is ~28 KB smaller than
+an interactive one — 70 of 73 bodies are Anthropic, and the sessions are short. All three flatter a
+dictionary. `reference/measurements.md` carries the slice with the number.
 
-- **The capture is *not* discharged.** `implementation-plan.md` hedged that it might be; it is not.
-  `captures/` holds **one** body, and one body cannot exercise a cross-body dictionary. **The gate is a
-  live capture session plus twenty minutes of `zstd`, not twenty minutes of `zstd`.**
-- **`calls.csv` expires**, so `EPD-003`'s plan to make it the corpus's join table fails — `backup_count:
-  10` discards the oldest segment, leaving bodies that outlive their own index. **Independent of the
-  gate**, and marked in place in `EPD-003`.
+**Two findings against `EPD-003` are independent of the gate** and hold whatever the numbers said:
+**`calls.csv` expires** (`backup_count: 10`), so it cannot be the corpus's join table as the sketch
+proposed; and **the capture missed 9 of 158 calls in testing**, all error paths — the rows `EPD-003`
+calls the interesting ones. Both are marked in place and carried into Phase 10.
 
 **Phase 8 merged as `22a6d20` and Phase 7 as `9c30924`, both 2026-08-17**; their permanent records are
 their phase notes, and nothing about either is outstanding. `main` is ahead of `origin/main` and
@@ -68,11 +67,17 @@ since 7 is taken.
 session through the router. Both halves were measured rather than argued — one session reached both
 backends, and a local model handled tool use, file editing and multi-turn conversation.
 
-**Milestone 2 is open, and its subject is `EPD-003`** — capturing bodies for a corpus, **partly
-accepted 2026-08-17**. `milestone-2-corpus/` holds its `implementation-plan.md`. **Its central claim
-is still deliberately not named**: the fine-tuning half is decided, but the storage question is not,
-and a claim written before the gate would be a prediction wearing a measurement's clothes. It gets
-written at the end of Phase 9, from what the gate returns. The plan says so in place.
+**Milestone 2 is open, and its subject is `EPD-003`** — capturing bodies for a corpus, **decided
+2026-08-17**. `milestone-2-corpus/` holds its `implementation-plan.md`.
+
+**Its central claim is now named**, at the end of Phase 9 and from what the gate returned:
+
+> *The router can archive every body it carries — as opaque, content-addressed, per-call files
+> compressed against a shared dictionary — without parsing a payload, without slowing a call, and
+> without special storage infrastructure.*
+
+**One of its three failure modes is already discharged** by Phase 9's measurement; the other two —
+that archiving cannot stay opaque, and that it slows a call — are Phase 10's to test.
 
 **One phase of it is done: Phase 8** — the method tier and the guardrails, merged as **`22a6d20`**. It
 changed no `src/` and was housekeeping that would have been worth doing under any claim, which is the
@@ -85,12 +90,12 @@ milestone, and building a second such table would pre-empt that decision.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Continue Phase 9 at Task 5** — the branch is open and paused after Group A. What remains: capture
-   real bodies (Group B), run the gate (Group C), then decide and harvest (Group D). **The decision
-   half is done** — fine-tuning is dropped. **The gate is no longer a twenty-minute measurement**: it
-   needs a live capture first, because `captures/` holds one body and the gate is about what happens
-   *between* bodies. `milestone-2-corpus/phase-9-corpus-gate/plan.md` has all sixteen tasks. **The
-   milestone's central claim is written at the end of this phase.**
+1. **Plan and execute Phase 10 — the body store.** The first `feat/` phase of this milestone and the
+   first to touch `src/`. `implementation-plan.md` has it in outline, and
+   `phase-9-corpus-gate/plan.md` carries a fenced design sketch written before the gate ran — **input
+   to be re-derived, not a specification.** It must settle the write path (a bounded off-thread queue
+   and a drop policy), `EPD-003`'s open questions 3–6, capture at the point of failure, a dictionary
+   bootstrap and retraining policy, and the `logs/telemetry/` move.
 2. **Decide `EPD-001` or `002`.** Both are blocked on a person rather than on work, and both are argued
    on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions waiting on a person". Deciding
    one is cheaper than any measurement in the list. (`EPD-003` is item 1 now, since Phase 9 takes it.)

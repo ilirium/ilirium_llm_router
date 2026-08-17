@@ -119,6 +119,18 @@ and **nothing has been accepted** — see `../epd/`.
 | **`request_bytes` cannot predict tokens: 6× ratio spread, 410% worst-case error** | 2026-07-31 | the frozen CSV | Rows carrying both a byte count and a token count | `EPD-002`. Kills the cheap version of local token counting |
 | **A body corpus is ~93% repeated prefix; the step 6 session would have been 10.35 MB in 77 minutes** | 2026-07-31 | the frozen CSV plus the capture | One session | `EPD-003`. Storage is O(N²) in turns where the transcript is O(N) |
 | **Compression: zstd 28.6× against gzip 2.4× across bodies; 3.1× and 2.9× on a single body** | 2026-07-31 | the capture grown across twenty turns | Synthetic growth from one real body | `EPD-003`. The storage question is a compression-window question, not a database one |
+| **On real bodies: per-file 3.12×, one long-window stream 29.91×** | 2026-08-17 | `milestone-2-corpus/phase-9-corpus-gate/evidence/gate.py`, zstd 1.5.7 at level 19 | 20 held-out request bodies, 2,102,371 B, of 73 captured | **Confirms the row above transfers off synthetic data** — it predicted 3.1× and 28.6–31.3× |
+| **A dictionary trained on other sessions reaches 12.10×, closing 82.8% of the gap** | 2026-08-17 | same | same held-out slice; dictionary trained on 48 bodies from three *different* sessions | `EPD-003`'s gate, and the reason per-call files survive. Per-file storage ends at **2.47×** a stream, not 9.6×. **Read as optimistic** — see the slice note below |
+| **A second preamble family costs ~20%: main conversation 13.39× against subagent 10.75×** | 2026-08-17 | same | 10 main and 10 subagent bodies, one dictionary trained on traffic containing **no** subagent bodies | Whether concurrency and subagents dilute a shared dictionary. They do, boundedly — it generalises to an unseen preamble family rather than collapsing |
+| **`zstd --train` is non-monotonic at 68 samples: 12.08× → 21.76× → 16.44× as `--maxdict` rises** | 2026-08-17 | same | self-trained dictionaries at 112,640 / 262,144 / 524,288 B caps | Why a retraining policy must **measure** a new dictionary before adopting it. More budget produced a worse dictionary |
+| **The static preamble is 111,028 B interactive and 82,611 B headless; `--maxdict` defaults to 112,640** | 2026-08-17 | `jq` over the frozen capture and a captured body | One interactive request (2026-07-28) against one headless request | Why the gate swept `--maxdict`, and why headless figures flatter a dictionary. Corroborates `stats.py`'s "~110 KB" |
+
+> **The slice on the 12.10× row is doing real work.** That corpus is headless, so its static preamble
+> is ~28 KB smaller than an interactive one; 70 of its 73 bodies are Anthropic; and its sessions are
+> short, so more of each body is static material — which is the part a dictionary *can* capture. **All
+> three flatter the dictionary.** The verdict it supports survives because the margin is large (12.10×
+> against a 3.12× failure threshold), not because the biases are small. A number quoted from this row
+> without that slice would overstate what a real corpus achieves.
 
 ---
 

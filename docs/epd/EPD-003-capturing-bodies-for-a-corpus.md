@@ -1,17 +1,26 @@
 # EPD-003 — Capturing bodies for a corpus
 
-**Status: partly accepted. Written 2026-07-31.** One named piece was decided on **2026-08-17**:
-**fine-tuning is dropped, and the corpus is for analysis only** — open question 1, which everything
-else was downstream of. See "The fine-tuning half runs into the terms" below, where the decision is
-recorded in place.
+**Status: decided 2026-08-17. Written 2026-07-31.** Both load-bearing questions are answered, and the
+decision lives in `../reference/design-decisions.md`, "Bodies are archived as content-addressed
+per-call files". This document is kept for the reasoning, per `EPD-000-about-these-documents.md`.
 
-**The rest is still a proposal and nothing in it is implemented.** What remains open is the storage
-question — per-call files or per-session streams, open question 2 — which waits on the gate in "The
-cheapest next step". That gate is Phase 9;
-`../milestone-2-corpus/phase-9-corpus-gate/plan.md` runs it, and records **five findings against this
-document** that were made while planning it. Two matter before reading further and are marked in place
-below: this document's own gate trains on its test set, and `calls.csv` cannot serve as the corpus's
-join table.
+| Question | Answer |
+|---|---|
+| **1 — is fine-tuning still a goal?** | **No. Analysis only.** Decided by the owner; the Anthropic/LM Studio partition becomes optional rather than structural |
+| **2 — per-call files or per-session streams?** | **Per-call files.** Its gate ran and passed — a dictionary trained on *other* sessions reaches **12.10x** against **3.12x** unaided and **29.91x** for a stream |
+
+**The gate is `../milestone-2-corpus/phase-9-corpus-gate/`**, and its evidence directory holds the
+instrument and the numbers. **This document's synthetic compression figures reproduced on real
+traffic** — it predicted 3.1x and 28.6–31.3x, and real bodies gave 3.12x and 29.91x.
+
+**Four questions below stay open — 3, 4, 5 and 6 — and they are Phase 10 design detail rather than
+open forks.** What is captured by default, opt-in or always-on, retention, and whether headers are
+stored. None of them changes the storage unit, which is what this document existed to settle.
+
+**Five findings were made against this document while planning that phase**, and the two that
+contradict it are marked in place below: **its own gate trains on its test set**, and **`calls.csv`
+cannot serve as the corpus's join table.** Both were found before the gate ran and neither is repaired
+by the gate passing.
 
 ## The requirement this document is about
 
@@ -331,10 +340,10 @@ to session-final bodies — would become attractive.
 | gzip achieves 2.4× and zstd 28.6× across twenty growing bodies | **Measured** — reproducible script, see Evidence |
 | Within one body the two are within 7% of each other (2.9× / 3.1×) | **Measured** — same script's control |
 | The gap is caused by gzip's 32 KB window | **Inferred strongly** — the control isolates it to cross-body matching, and the window size is a documented property of DEFLATE |
-| The 28.6× figure transfers to a real corpus | **Unmeasured.** The tail content is synthetic; only the direction is established |
+| The 28.6× figure transfers to a real corpus | **Measured 2026-08-17 — it does.** 73 real bodies gave **29.91×** streamed and **3.12×** per-file, against this document's synthetic 28.6–31.3× and 3.1×. The synthetic construction was sound |
 | ~8 MB/hour, ~3 GB/year naive at an hour a day | **Extrapolated** from one 77-minute session. One session is not a usage pattern |
 | Identical bodies recur often enough for content addressing to pay | **Inferred weakly** — 32 identical 85-byte `count_tokens` errors is a real but tiny case. The dominant case is shared *prefixes*, which content addressing does not catch |
-| A shared zstd dictionary would recover the cross-body ratio for per-file storage | **Unmeasured hypothesis.** This is the load-bearing one for the sketch above |
+| A shared zstd dictionary would recover the cross-body ratio for per-file storage | **Measured 2026-08-17 — mostly.** **12.10×** held out, closing 82.8% of the byte gap; per-file storage ends at 2.47× a stream, not 9.6×. Read as **optimistic**: the corpus is headless (preamble ~28 KB smaller than interactive), 70 of 73 bodies are Anthropic, and the sessions are short — all three flatter a dictionary |
 | Anthropic prohibits using outputs as training targets | **Documented** — quoted from the support article, read 2026-07-31 |
 | Langfuse and Helicone store raw payloads in blob storage before the database | **Documented only** — vendor documentation, not verified by running either |
 | Context compaction breaks the last-request-is-the-transcript shortcut | **Documented only**, and never observed on this router |
@@ -385,9 +394,14 @@ session EPD-002's step 1 asks for — worth running once and using for both.
    The design gets simpler and the Anthropic/LM Studio partition becomes optional rather than
    structural, exactly as this question anticipated. Recorded in place above, under "The fine-tuning
    half runs into the terms".
-2. **Per-call files or per-session streams?** Measurement 1 decides it. Per-session is far better on
-   size and far worse on everything else — random access, partial writes, a process that stops
-   mid-session.
+2. ~~**Per-call files or per-session streams?**~~ **Decided 2026-08-17: per-call files.** Measurement 1
+   ran on 73 real bodies. A dictionary trained on other sessions and applied to a held-out one reaches
+   **12.10x**, against **3.12x** with no dictionary and **29.91x** for a long-window stream — closing
+   **82.8%** of the byte gap and leaving per-file storage at **2.47x** a stream rather than 9.6x. The
+   test this document set was *"near the stream figure"* against *"near the 3x per-file figure"*, and
+   12.10x is four times the failure threshold. **The trade named in this question stands and was
+   taken**: per-session remains better on size, and per-call keeps random access, partial writes, and
+   a process that stops mid-session.
 3. **What is captured by default?** Everything, or `/v1/messages` only? The 32 `count_tokens`
    non-answers are pure noise, but excluding by path means the catch-all's genuinely unexpected
    traffic — the thing the `path` column exists to surface — gets excluded too.
