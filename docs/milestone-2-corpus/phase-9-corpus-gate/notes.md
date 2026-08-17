@@ -351,10 +351,102 @@ to Group C**, because the threshold exists to stop a weak number being computed 
 
 ---
 
-## Paused after Task 7, blocked on the backend
+## Task 6, runs 2 and 3 — the capture completed on a third attempt
 
-**Tasks 1–7 are done. The phase is stopped before Group C**, because the gate's input does not meet
-the threshold the plan set for it.
+**Run 1's shortfall was repaired by two further runs**, and the two structural fixes made between them
+are worth as much as the bodies.
+
+**The counter hazard was removed structurally, not by remembering it.** Run 1's capture directory was
+renamed to `run-01-anthropic/` and the patch gained
+`os.environ.get("CAPTURE_RUN", "run-unlabelled")` in its path. **The default proved itself
+immediately**: the verification `make test` wrote into `run-unlabelled/`, exactly where a mislabelled
+run belongs, leaving run 1 untouched. A capture that cannot say which run it came from is now
+impossible rather than merely unlikely. The manifest also gained a `model` column, so the corpus splits
+by backend without a join.
+
+### Run 2 — LM Studio. **Underdelivered, for a reason worth keeping**
+
+`lfm2.5-8b-a1b-mlx`, loaded by the owner at a **40,000-token** context window, `parallel: 4`.
+**Three bodies, no subagent.**
+
+**The local model would not drive the tools.** Asked to read two files one at a time and then spawn a
+subagent, it produced fluent, generic descriptions of `routing.py` and `cli.py` — *"implements the core
+message routing and dispatching logic"* — and never reached the `Task` tool. Two `/v1/messages` calls
+in total. This is not a router finding and not an LM Studio finding; it is a **capability** finding
+about an 8B model, and it is the reason the local path could not supply the dimension run 1 lacked.
+
+**Two observations from those three calls are worth more than the bodies.**
+
+**`EPD-002`'s case is weaker again, and now measured rather than documented.** Claude Code printed, on
+being handed an unrecognised model:
+
+> *"`lfm2.5-8b-a1b-mlx` is not a model this version of Claude Code recognizes, so auto-compact will keep
+> this session within 200k tokens (the context window it assumes)… set `CLAUDE_CODE_MAX_CONTEXT_TOKENS`
+> to its real window"*
+
+That is precisely the mechanism `EPD-002` is organised around — the assumed 200k window — but **stated
+out loud rather than silently**, and carrying a **supported fix** (`CLAUDE_CODE_MAX_CONTEXT_TOKENS`, a
+`modelOverrides` setting, and a `[1m]` suffix). `../../backlog.md` already grades that EPD as *"a
+decision, on a weakened case"*. This is **observed on this machine**, unlike most of what that document
+rests on.
+
+**A local response can be larger than its request**, which `EPD-003`'s volume table does not allow for:
+
+| | Request | Response | TTFB |
+|---|---:|---:|---:|
+| Run 2's third call | 99,970 | **135,894** | 52,230 ms |
+
+`EPD-003` measures *"requests are 93% of the volume; median response 0.3 KB"* — true of the session it
+measured, where the local replies were short. **A verbose local model inverts the ratio.** The O(N²)
+argument is untouched, since that concerns re-sent history — but **93% is a property of the models in
+that session, not of the corpus**, and a response-heavy local model changes the storage mix. Run 2
+produced *more* response bytes (137,917) than request bytes (102,507); both Anthropic runs produced the
+opposite by a factor of twenty.
+
+### Run 3 — Anthropic, after it recovered. **The missing dimension**
+
+Anthropic's health was re-tested **outside the router** — `claude -p` with no `ANTHROPIC_BASE_URL`, so
+the probe could not pollute the corpus — and answered instantly.
+
+**21 bodies, every one `ok`, 10 of them carrying an `agent_id` across 2 distinct subagents.**
+
+**The prompt was reordered rather than repeated.** Run 1 died before reaching the `Task` tool because
+the subagent came after twelve file reads. Run 3 asked for five reads and then two subagents, so the
+scarce part came first. The failure was in the ordering, not in the instruction.
+
+### The corpus, as it now stands
+
+| Run | Requests | Request bytes | Response bytes | Agent rows | Sessions |
+|---|---:|---:|---:|---:|---:|
+| `run-01-anthropic` | 49 | 4,757,752 | 91,779 | 0 | 3 |
+| `run-02-lmstudio` | 3 | 102,507 | 137,917 | 0 | 1 |
+| `run-03-anthropic` | 21 | 2,102,371 | 243,854 | **10** | 1 |
+| **total** | **73** | **6,962,630** | | **10** | **5** |
+
+**68 bodies exceed 1 KB** — min 2,277, median 103,935, max 185,209. **The floor is met with margin,
+and the subagent dimension exists.** Group C may proceed.
+
+**Three biases ride on any number this corpus produces, and all three flatter the dictionary:**
+
+1. **The headless preamble is ~28 KB smaller than the interactive one** (82,611 against 111,028), so the
+   dictionary has room the real case would not give it.
+2. **LM Studio is represented by 3 bodies of 73.** The corpus is effectively Anthropic-only, so it does
+   not test a genuinely mixed-backend store.
+3. **Run 3's session is short.** Less session-local growth means a larger share of each body is static
+   material — which is exactly the part a dictionary *can* capture.
+
+Stated here so the gate's verdict is read against them rather than in spite of them.
+
+---
+
+## Superseded: the pause after run 1
+
+*Kept rather than rewritten. This is what was true after run 1, and the runs above are what resolved
+it — the record of a threshold **stopping** work is worth more than a tidy note that never mentions
+it. Only the "blocked" heading above it is corrected.*
+
+**Tasks 1–7 were stopped before Group C**, because the gate's input did not meet the threshold the plan
+set for it.
 
 **The machine is left clean.** Router stopped, `src/` restored — `git diff main -- src/` is empty —
 working tree clean, `make test` **158 passed**. Nothing captured is committed, and nothing captured is
