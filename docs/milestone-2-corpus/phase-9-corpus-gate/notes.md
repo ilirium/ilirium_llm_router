@@ -1,9 +1,9 @@
 # Phase 9 — decide EPD-003, and run its gate: notes
 
-Branch: `docs/phase-9-corpus-gate`, off `main` at `97f6563`, **not yet merged.** Per
-`../../method/IDM-001-git-branching.md`, filling that hash in is the one edit this note takes after
-being written — and leaving it reading "not yet merged" after the branch is gone is the defect four
-Milestone 1 phase notes committed.
+Branch: `docs/phase-9-corpus-gate`, off `main` at `97f6563`, **merged 2026-08-17 with `--no-ff` as
+`b29d502`.** Per `../../method/IDM-001-git-branching.md`, filling that hash in is the one edit this
+note takes after being written — and leaving it reading "not yet merged" after the branch is gone is
+the defect four Milestone 1 phase notes committed.
 
 Written **while the work is happening**, task by task, rather than assembled afterwards.
 

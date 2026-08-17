@@ -108,14 +108,14 @@ is the full inventory.*
 *Merged branches are not listed — git already holds that, and a hand-maintained list would drift.
 The permanent record of a phase's branch, fork point and merge commit belongs in its phase note.*
 
-| Branch | Purpose | Tree state | Next action |
-|---|---|---|---|
-| `docs/phase-9-corpus-gate` | Phase 9 — decide `EPD-003`, run its gate | clean; four commits, Group A only | **Task 5.** Verify the capture directory's ignore coverage, then Task 6's capture — which needs the owner's go-ahead, since it patches `proxy.py`, runs the router and makes real API calls |
+**None.** `docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and the table is empty until
+the next phase opens a branch.
 
-**It is a `docs/` branch although the phase is about the router**, because no `src/` change survives
-it: Task 6 patches `proxy.py` and restores it, and `git diff main -- src/` must be empty at the merge.
+**It was a `docs/` branch although the phase was about the router**, because no `src/` change survived
+it: Task 6 patched `proxy.py` and restored it, and `git diff main -- src/` was empty at the merge.
 `method/IDM-001-git-branching.md` is what makes that the right prefix — the prefix says what kind of
-work it is, and `phase-N-` says it is numbered work.
+work it is, and `phase-N-` says it is numbered work. **Phase 10 will be the opposite case**: it builds
+the store, so it is `feat/`.
 
 `docs/phase-8-method-and-guardrails` was the first branch to **carry a phase number on a `docs/`
 prefix** — the form it settled: the prefix says what kind of work it is, `phase-N-` says it is a phase.

@@ -301,7 +301,7 @@ it**; `git diff main -- src/` is empty; and **no captured body or dictionary is 
 |---|---|
 | Branch | `docs/phase-9-corpus-gate` |
 | Fork point | `97f6563` |
-| Merge commit | **not yet merged** |
+| Merge commit | **`b29d502`** — merged 2026-08-17 with `--no-ff` |
 
 *Writing "not yet merged" while it is true is correct; leaving it there after the branch is gone is
 this repository's signature failure, and `../../method/IDM-001-git-branching.md` names it. Closed out
