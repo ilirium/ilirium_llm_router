@@ -41,9 +41,10 @@ Decided by the owner on 2026-08-17 in the interview that opened this branch:
 | `--no-ff` scope | **every branch, always.** `CLAUDE.md`'s wording wins over `README.md`'s narrower one |
 | The parked `docs/method/` prohibition | narrowed, with a dated addendum in `EPD-004` |
 | Scope | `IDM-000` + `IDM-001` + the citations. **No list of further split candidates** — the shape of the rest of the `docs/README.md` split stays undecided |
-| The tracked allowlist | **project knowledge only** — `make` targets, the ruff pin, the pytest path, the two backend doc domains. Arbitrary execution and network stay local |
+| The tracked allowlist | **project knowledge only, 14 entries** — `make` targets, the ruff pin, the pytest path, the two backend doc domains, plus four read-only entries derived from `config.yaml`. Arbitrary execution and network stay local |
 | Deny rules | **yes, for `.env`**, exact-match. Not a reversal of decision 19 |
-| The local file | **pruned of its twelve dead entries** in this phase |
+| The local file | **53 → 38.** Thirteen fossils, plus `lms load`/`lms unload`, which had repealed a `CLAUDE.md` non-negotiable |
+| `~/.config/git/ignore` | **not touched.** Task 8 edits this repository's own `.gitignore` only |
 | Harness rules | **`IDM-002`**, with `README.md:236` becoming a pointer — and the tier's second subject is its cheapest validation |
 | A rejected plan | **merged and marked, not deleted** — reversing `EPD-004` decision 14. Status line in the plan, row in the milestone plan, no rename, no folder suffix. The phase number is spent |
 | `status.md`'s shape | **to the backlog**, not to this phase. The proposal: one row per *milestone* rather than per phase, since the per-phase merge-commit table duplicates what phase notes and milestone READMEs already own |
@@ -293,11 +294,18 @@ file and an untracked local one; only the local half exists.
 
 **Two findings from reading the file, both of which change the work:**
 
-**The file has drifted since decision 17 measured it — 53 entries, not 51.** Roughly twelve are
-provably dead: a literal PID (`ps -p 90607`), a literal port (`lsof -iTCP:8787`), four `/tmp/lms*.json`
-curl lines, two full curl lines against port 8799, one-off import checks for `PIL`, `starlette` and
-`zstandard`, and `Bash(git -C /Users/ilirium/Library/…)` — an absolute path to this machine which
-duplicates `Bash(git -C . status --short)` two lines above it.
+**The file has drifted since decision 17 measured it — 53 entries, not 51.** Thirteen are provably
+dead: a literal PID (`ps -p 90607`), three `/tmp/lms*.json` curl lines, two curl lines against port
+8799, one-off import checks for `PIL`, `starlette` and `zstandard`, `Bash(echo "exit=$?")`,
+`Bash(sort -t: -k2 -rn)`, `WebFetch(domain:www.letta.com)`, and `Bash(git -C /Users/ilirium/Library/…)` —
+an absolute path to this machine duplicating `Bash(git -C . status --short)` two lines above it.
+
+> **Two entries were misfiled as fossils on the first pass and are project knowledge.**
+> `Bash(lsof -nP -iTCP:8787 -sTCP:LISTEN)` uses the router's own configured port, `config.yaml:10`,
+> and `Bash(curl … http://localhost:1234/api/v1/models)` uses LM Studio's `base_url`,
+> `config.yaml:40`. Both were called machine junk because they *look* like literals. **A literal that
+> appears in `config.yaml` is a constant, not a fossil** — that is the test, and it is worth stating
+> in `IDM-002` because the mistake is easy to repeat.
 
 **The local file's protection is machine-local, which is the same defect as `EPD-004` decision 16.**
 It is ignored by `~/.config/git/ignore:1`, the owner's **global** file, and **not** by this
@@ -307,20 +315,33 @@ convention depending on something that exists only outside the repository, which
 apply if the repository is opened elsewhere. **Fixing this is the precondition for tracking its
 sibling**, so it is Task 8 rather than a footnote.
 
-**Task 8 — `.gitignore`: ignore `.claude/settings.local.json` at the repository level.**
-One line. Do it **before** Task 9 — the moment a tracked `.claude/settings.json` exists, the
-directory stops being uniformly untracked and the local file is one careless `git add` from being
-committed with 53 accreted entries.
+**Task 8 — this repository's `.gitignore` ignores `.claude/settings.local.json`.**
+One line, in the repo's own `.gitignore`. **`~/.config/git/ignore` is not touched** — it stays
+exactly as it is, and this task neither reads nor edits it.
+
+**The effect is to make the local file harder to commit, not easier.** Today the only thing keeping
+it out of the repository is the owner's global ignore file, which does not travel: on another
+machine, or for a contributor, the file is plain untracked and `Bash(git add *)` would take it —
+along with whatever has accreted into it. A repo-level rule makes that impossible everywhere, for
+everyone, permanently.
+
+Do it **before** Task 9. The moment a tracked `.claude/settings.json` exists, the directory stops
+being uniformly untracked, which is precisely when an accidental `git add .claude/` becomes
+plausible.
 
 **Task 9 — write the tracked `.claude/settings.json`.**
 
-*Allow — project knowledge only.* Roughly a dozen entries that encode how this project is built and
-tested, and nothing broad: every `make` target, `Bash(uvx ruff@0.16.1 format --check src tests)` —
-which encodes the pin `CLAUDE.md` calls non-negotiable — `Bash(.venv/bin/python -m pytest -q)`, and
-the two backend documentation domains. **Arbitrary execution and network stay in the local file.**
-`Bash(curl *)`, `Bash(python3 *)` and `Bash(uv run *)` are how the project is actually worked on,
-but a file whose job is to state policy should not bless them. Accepted cost: a fresh clone prompts
-for those until approved.
+*Allow — **fourteen** entries, project knowledge only.* Ten that encode how the project is built and
+tested: every `make` target, `Bash(uvx ruff@0.16.1 format --check src tests)` — which encodes the pin
+`CLAUDE.md` calls non-negotiable — `Bash(.venv/bin/python -m pytest -q)`, and the two backend
+documentation domains. Plus **four read-only entries derived from `config.yaml`**, promoted on
+2026-08-17: `Bash(lsof -nP -iTCP:8787 -sTCP:LISTEN)`, `Bash(curl -s --max-time 5
+http://localhost:1234/api/v1/models)`, `Bash(lms --version)` and `Bash(lms ps *)`. They answer *is
+the thing even running?*, which is a contributor's first question on day one.
+
+**Arbitrary execution and network stay in the local file.** `Bash(curl *)`, `Bash(python3 *)` and
+`Bash(uv run *)` are how the project is actually worked on, but a file whose job is to state policy
+should not bless them. Accepted cost: a fresh clone prompts for those until approved.
 
 *Deny — `.env`.* It exists here with 500 bytes of real keys. `CLAUDE.md`'s "ask before touching the
 machine" names it as a written rule; this makes it enforced.
@@ -336,18 +357,44 @@ without a shell parser, converting a recoverable prompt into a hard block, and s
 every Bash call. **An exact-path deny has none of those properties.** Say so in `IDM-002`, or the
 next reader will see enforcement and think the refusal was quietly overturned.
 
-**Task 10 — prune the local file: the twelve dead entries.**
-Fossils and the absolute-path duplicate only; anything still live stays. **This task produces no
-commit** — the file is gitignored — and that is expected rather than missing, per the rule that a
-task producing no commit is still a task. Record the before and after counts in `notes.md`, since
-that is the only evidence it happened.
+**Task 10 — prune the local file: fifteen entries out, in two groups.**
+
+*Thirteen fossils*, listed above. Six of them are specific `curl` lines that `Bash(curl *)` already
+subsumes — which is exactly why they are dead weight rather than protection. `Bash(curl *)` itself
+**stays**: it is how probes get written, and removing it buys a prompt on every one-off.
+
+*Two that repeal a written rule.* **`Bash(lms load *)` and `Bash(lms unload *)` are removed so they
+prompt again.** `CLAUDE.md`'s working agreement says *"Ask before touching the machine. GUI
+settings, `.env`, long-running local servers: ask rather than detect-and-proceed."* Loading a model
+evicts whatever is loaded and takes minutes. These were allowlisted by clicking *allow* during Phase
+4 probe work, and **an allowlist entry silently repealed a non-negotiable** — which is the finding,
+not the fix. `IDM-002` should name the class: *a permission granted to get through a task can
+outlive the task and overrule a rule nobody re-read.*
+
+`Bash(git checkout *)` **stays** — it is mostly branch switching, which this workflow does
+constantly. `IDM-002` names the sharp edge instead: the destructive form is `git checkout -- <path>`.
+
+**This task produces no commit** — the file is gitignored — and that is expected rather than
+missing, per the rule that a task producing no commit is still a task. Record before and after
+counts in `notes.md`; it is the only evidence it happened. **53 → 38.**
 
 **Task 11 — write `docs/method/IDM-002-harness-configuration.md`.**
 The second method document, which is also **the cheapest available validation that the tier works
 for a second subject** — before more documents land in it and a structural mistake gets expensive.
 It states: the split and its reasoning (durable project policy versus machine accretion), what earns
 a place in the tracked half, the `.env` deny and why it is not a reversal of decision 19, the
-exact-match trap, and that the local file is pruned periodically.
+exact-match trap, and that the local file is pruned periodically. Plus four things this review
+produced, each of which exists because it was got wrong once:
+
+- **The admission test for the tracked half:** *is this fact derivable from `config.yaml`, the
+  `Makefile`, or `pyproject.toml`?* If yes it is project policy; if no it is machine accretion.
+- **A literal that appears in `config.yaml` is a constant, not a fossil.** Ports `8787` and `1234`
+  read as machine junk and are not.
+- **A permission granted to get through a task can outlive the task and overrule a rule nobody
+  re-read** — `lms load` versus "ask before touching the machine", found here.
+- **The sharp edges that are staying:** `Bash(curl *)` is arbitrary outbound network and
+  `Bash(git checkout -- <path>)` discards uncommitted work. Both kept deliberately; naming them is
+  what makes that a decision rather than an oversight.
 
 **Task 12 — `docs/README.md`: the harness-configuration paragraph becomes a pointer.**
 `README.md:236`'s "Where the harness configuration lives" currently describes the split and says the
@@ -369,7 +416,9 @@ file for different decisions.
 3. **`.env.example` is still readable.** This is the check that catches a globbed deny pattern, and
    it is the one most likely to be skipped because the file feels unimportant.
 4. The pruned local file still covers the session's actual work — no new prompts for things that
-   worked before Task 10.
+   worked before Task 10, and **`lms load` does prompt**, which is the point of removing it.
+5. **`git check-ignore .claude/settings.local.json` resolves to this repository's `.gitignore`**, not
+   to `~/.config/git/ignore`. That is the whole of Task 8's effect and it is one command to confirm.
 
 ---
 
@@ -377,6 +426,15 @@ file for different decisions.
 
 Deliberately unnumbered — a number allocated to a task that is then struck is a number that cannot
 come back. If accepted, each takes the next free number.
+
+**Decide what `uvx ty@0.0.14` is.** The local file allows `Bash(uvx ty@0.0.14 check src tests)` — a
+pinned type checker that appears in **no `Makefile` target and no `pyproject.toml`**. Under Task
+11's own admission test it is machine accretion, but the pin makes it look like project policy, and
+`CLAUDE.md` says the stack is "type hints throughout". So it is one of two things and they need
+different fixes: a project tool that should have a `make typecheck` target and a tracked entry, or a
+one-off that should be deleted with the other fossils. **Left in place and unresolved by Task 10**,
+because deleting a tool someone relies on is worse than carrying it one more phase. Flag it in
+`notes.md`.
 
 **Fix `docs/README.md:381`.** Its worked example tells a filer to create
 `milestone-2-<slug>/phase-7-<slug>/` — a **second Phase 7**, contradicting the rule 233 lines above
