@@ -26,6 +26,11 @@ stated only as a test rather than enforced.
 into a tracked policy file and an untracked local one. Only the local file exists.
 `docs/README.md:236` describes the split and names it as not yet built.
 
+**Task group C — two tooling decisions have no home.** The ruff pin's reasoning lives only in
+`CLAUDE.md`, and `ty` was tried and refused with the refusal recorded nowhere at all. Group C
+emerged from group B's review rather than being planned: reading the allowlist turned up an entry
+that looked like a fossil and was a decision.
+
 ---
 
 ## What is settled, and by whom
@@ -43,7 +48,9 @@ Decided by the owner on 2026-08-17 in the interview that opened this branch:
 | Scope | `IDM-000` + `IDM-001` + the citations. **No list of further split candidates** — the shape of the rest of the `docs/README.md` split stays undecided |
 | The tracked allowlist | **project knowledge only, 14 entries** — `make` targets, the ruff pin, the pytest path, the two backend doc domains, plus four read-only entries derived from `config.yaml`. Arbitrary execution and network stay local |
 | Deny rules | **yes, for `.env`**, exact-match. Not a reversal of decision 19 |
-| The local file | **53 → 38.** Thirteen fossils, plus `lms load`/`lms unload`, which had repealed a `CLAUDE.md` non-negotiable |
+| The local file | **53 → 37.** Thirteen fossils; `lms load`/`lms unload`, which had repealed a `CLAUDE.md` non-negotiable; and `uvx ty@0.0.14`, which is a refusal rather than a fossil |
+| `ty` | **tried and refused** — warnings without useful information. Recorded in `IDM-003`, not deleted silently |
+| Harness tooling | `settings.json` **hand-written**; `/permissions` verifies the merged result at Task 14; `/fewer-permission-prompts` named in `IDM-002` as writing into the wrong file |
 | `~/.config/git/ignore` | **not touched.** Task 8 edits this repository's own `.gitignore` only |
 | Harness rules | **`IDM-002`**, with `README.md:236` becoming a pointer — and the tier's second subject is its cheapest validation |
 | A rejected plan | **merged and marked, not deleted** — reversing `EPD-004` decision 14. Status line in the plan, row in the milestone plan, no rename, no folder suffix. The phase number is spent |
@@ -206,7 +213,9 @@ Must state:
 - **Whose method it is** — this repository's practice, or the owner's across projects. Settle it
   here rather than by accident later; it decides what `EPD-004` decision 18's extraction copies.
 - **The answer to decision 18's objection**, per the section above.
-- The index table, with `IDM-001` as its only row.
+- The index table. **Each later document's task adds its own row** — `IDM-001` at Task 2, `IDM-002`
+  at Task 11, `IDM-003` at Task 15 — the way `EPD-000` grew. Writing all four rows now would leave
+  the index describing files that do not exist for most of the phase.
 
 **Task 2 — write `docs/method/IDM-001-git-branching.md`.**
 The unified rules. Every row of the seven-disagreement table resolved as decided there, plus:
@@ -357,7 +366,7 @@ without a shell parser, converting a recoverable prompt into a hard block, and s
 every Bash call. **An exact-path deny has none of those properties.** Say so in `IDM-002`, or the
 next reader will see enforcement and think the refusal was quietly overturned.
 
-**Task 10 — prune the local file: fifteen entries out, in two groups.**
+**Task 10 — prune the local file: sixteen entries out, in three groups.**
 
 *Thirteen fossils*, listed above. Six of them are specific `curl` lines that `Bash(curl *)` already
 subsumes — which is exactly why they are dead weight rather than protection. `Bash(curl *)` itself
@@ -374,9 +383,16 @@ outlive the task and overrule a rule nobody re-read.*
 `Bash(git checkout *)` **stays** — it is mostly branch switching, which this workflow does
 constantly. `IDM-002` names the sharp edge instead: the destructive form is `git checkout -- <path>`.
 
+*One that is a refusal, not a fossil.* **`Bash(uvx ty@0.0.14 check src tests)` is removed.** `ty` was
+tried and rejected: it produced warnings without useful information. The entry looked like an
+unresolved question on the first pass — pinned like policy, absent from the `Makefile` and
+`pyproject.toml` like a fossil — and it is neither. **The deletion is only safe because Task 15
+records the refusal first**; delete it without that and the next session sees a project with no type
+checker and adds one.
+
 **This task produces no commit** — the file is gitignored — and that is expected rather than
 missing, per the rule that a task producing no commit is still a task. Record before and after
-counts in `notes.md`; it is the only evidence it happened. **53 → 38.**
+counts in `notes.md`; it is the only evidence it happened. **53 → 37.**
 
 **Task 11 — write `docs/method/IDM-002-harness-configuration.md`.**
 The second method document, which is also **the cheapest available validation that the tier works
@@ -395,6 +411,13 @@ produced, each of which exists because it was got wrong once:
 - **The sharp edges that are staying:** `Bash(curl *)` is arbitrary outbound network and
   `Bash(git checkout -- <path>)` discards uncommitted work. Both kept deliberately; naming them is
   what makes that a decision rather than an oversight.
+- **`/fewer-permission-prompts` writes into the wrong file.** It scans transcripts for common tool
+  calls and writes an allowlist into the project's tracked `.claude/settings.json` — which is
+  machine accretion, automated, landing in the file this split reserves for curated policy. Its
+  output belongs in the local half. **Name it explicitly**, because the command's name makes it
+  sound like precisely what this document is for, and a future session will reach for it.
+- **`/permissions` is the tool for reading the *effective* rule set**, which is the thing neither
+  file shows on its own.
 
 **Task 12 — `docs/README.md`: the harness-configuration paragraph becomes a pointer.**
 `README.md:236`'s "Where the harness configuration lives" currently describes the split and says the
@@ -417,8 +440,47 @@ file for different decisions.
    it is the one most likely to be skipped because the file feels unimportant.
 4. The pruned local file still covers the session's actual work — no new prompts for things that
    worked before Task 10, and **`lms load` does prompt**, which is the point of removing it.
-5. **`git check-ignore .claude/settings.local.json` resolves to this repository's `.gitignore`**, not
-   to `~/.config/git/ignore`. That is the whole of Task 8's effect and it is one command to confirm.
+5. **`git check-ignore -v .claude/settings.local.json` resolves to this repository's `.gitignore`**,
+   not to `~/.config/git/ignore`. That is the whole of Task 8's effect and it is one command to
+   confirm.
+6. **`/permissions` shows the effective merged rule set**, and it matches what was intended. This is
+   the check that cannot be done by reading either file: tracked and local are merged by the
+   harness, and the merge is the thing being designed. Hand-writing `settings.json` keeps the diff
+   reviewable; `/permissions` is how the *result* is verified.
+
+### Task group C — development tooling
+
+**Task 15 — write `docs/method/IDM-003-development-tooling.md`, and its backlog item.**
+
+The tier's **third** subject, which matters beyond its content: two documents can share a shape by
+accident, three cannot. If the scheme is wrong, this is where it shows, and it is still cheap to
+change.
+
+Two entries, both of which already exist as decisions and neither of which has a home:
+
+- **The ruff pin.** `line-length = 100` in `pyproject.toml`, `RUFF ?= ruff@0.16.1` in the
+  `Makefile`, and why: an unpinned formatter at its default 88 columns once rewrote every file it
+  touched, burying the change in progress, and **`make lint` did not object** — line length is
+  `E501`, which is not in ruff's default rule set. How to try a version, and that an accepted bump
+  goes in its own commit (`d1def4f`), checked by comparing each file's AST before and after.
+- **`ty`: tried and refused.** It produced warnings without useful information. **Recorded as a
+  refusal rather than deleted silently** — `docs/README.md` says refusals are first-class outcomes
+  precisely so they are not re-proposed, and a project with no type checker and no explanation
+  invites the next session to add one.
+
+And a `backlog.md` item in the same commit, under "Instruments and housekeeping": **static analysis
+beyond ruff** — other type checkers, AST parsers, language servers, over CLI or MCP. *Parked
+because* nothing depends on it. *Weaker than it looks?* **Yes, and say so:** `ty`'s refusal weakens
+the case rather than strengthening it. The useful signal may be scarce generally rather than absent
+from that one tool, so the next attempt should say what it expects to catch **before** it is run.
+
+**Task 16 — `CLAUDE.md`'s ruff paragraph becomes rule-plus-pointer.**
+
+A direct consequence of Task 15, and the same pattern already accepted for branching at Task 3: once
+`IDM-003` holds the pin and its reasoning, `CLAUDE.md`'s paragraph is a second copy. **The rule
+stays** — *never bump the ruff pin as a side effect* is exactly a thing a session does confidently
+and wrongly, and it has already happened once here. **The reasoning, the `E501` explanation and the
+AST-comparison procedure go to `IDM-003`**, behind a pointer naming when to open it.
 
 ---
 
@@ -426,15 +488,6 @@ file for different decisions.
 
 Deliberately unnumbered — a number allocated to a task that is then struck is a number that cannot
 come back. If accepted, each takes the next free number.
-
-**Decide what `uvx ty@0.0.14` is.** The local file allows `Bash(uvx ty@0.0.14 check src tests)` — a
-pinned type checker that appears in **no `Makefile` target and no `pyproject.toml`**. Under Task
-11's own admission test it is machine accretion, but the pin makes it look like project policy, and
-`CLAUDE.md` says the stack is "type hints throughout". So it is one of two things and they need
-different fixes: a project tool that should have a `make typecheck` target and a tracked entry, or a
-one-off that should be deleted with the other fossils. **Left in place and unresolved by Task 10**,
-because deleting a tool someone relies on is worse than carrying it one more phase. Flag it in
-`notes.md`.
 
 **Fix `docs/README.md:381`.** Its worked example tells a filer to create
 `milestone-2-<slug>/phase-7-<slug>/` — a **second Phase 7**, contradicting the rule 233 lines above
@@ -457,7 +510,10 @@ one finding out of a parked work list is a decision about that list.
 - `EPD-004` and `backlog.md` agree that the tier exists and that extraction is still parked.
 - The tracked `.claude/settings.json` exists, holding project policy and an exact-match `.env` deny,
   with `.claude/settings.local.json` ignored by **this repository's** `.gitignore`.
-- `IDM-002` exists, and the tier has been shown to work for a second subject.
+- `IDM-002` and `IDM-003` exist, and **the tier has been shown to work for three subjects** — two
+  can share a shape by accident, three cannot.
+- **`ty`'s refusal is recorded before its allowlist entry is deleted**, so the next session does not
+  read a missing type checker as an omission.
 - `link-check.py` clean of new hits; `make test` reports 158.
 - **The deny was driven, not read** — `.env` refused, `.env.example` still readable.
 
