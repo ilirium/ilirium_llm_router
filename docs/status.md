@@ -10,9 +10,10 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-17 — Phase 9's gate has passed and `EPD-003` is decided.** `docs/phase-9-corpus-gate`,
-forked from `main` at `97f6563`. **Fifteen of sixteen tasks done**; only the close-out and merge
-remain. `src/` is unchanged — the capture patch was applied, used and restored.
+**2026-08-17 — Phase 9 is merged.** `docs/phase-9-corpus-gate` merged into `main` with `--no-ff` as
+**`b29d502`**, and the hash is in `milestone-2-corpus/phase-9-corpus-gate/notes.md`, which is the
+permanent record. **All sixteen tasks done**, no letters inserted. `git diff main -- src/` is empty —
+the capture patch was applied, used and restored — and `make test` reports **158**.
 
 **The corpus proposal survives its own cheapest test.** On a held-out session of 20 real bodies:
 per-file with no dictionary **3.12×**, per-file with a dictionary trained on *other* sessions
@@ -79,11 +80,17 @@ backends, and a local model handled tool use, file editing and multi-turn conver
 **One of its three failure modes is already discharged** by Phase 9's measurement; the other two —
 that archiving cannot stay opaque, and that it slows a call — are Phase 10's to test.
 
-**One phase of it is done: Phase 8** — the method tier and the guardrails, merged as **`22a6d20`**. It
-changed no `src/` and was housekeeping that would have been worth doing under any claim, which is the
-only reason it could run before the claim existed. *Recorded here in prose rather than as a per-phase
-table on purpose: `backlog.md` carries a proposal to replace Milestone 1's table above with one row per
-milestone, and building a second such table would pre-empt that decision.*
+**Two phases of it are done, and neither touched `src/`.** **Phase 8** — the method tier and the
+guardrails, merged as **`22a6d20`**; housekeeping worth doing under any claim, which is the only reason
+it could run before the claim existed. **Phase 9** — the corpus gate, merged as **`b29d502`**; it
+decided `EPD-003`, ran the measurement that named the claim above, and kept no router code. **Phase 10
+is the first of this milestone to touch `src/`.**
+
+*Recorded here in prose rather than as a per-phase table on purpose: `backlog.md` carries a proposal to
+replace Milestone 1's table above with one row per milestone, and building a second such table would
+pre-empt that decision. **The cost of that choice showed up immediately** — this paragraph said "one
+phase of it is done" for as long as it took someone to notice, because prose does not go stale as
+visibly as a row does. Weigh that when the backlog item is decided.*
 
 ## What is next
 
@@ -98,7 +105,8 @@ is the full inventory.*
    bootstrap and retraining policy, and the `logs/telemetry/` move.
 2. **Decide `EPD-001` or `002`.** Both are blocked on a person rather than on work, and both are argued
    on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions waiting on a person". Deciding
-   one is cheaper than any measurement in the list. (`EPD-003` is item 1 now, since Phase 9 takes it.)
+   one is cheaper than any measurement in the list. (`EPD-003` is no longer among them — decided
+   2026-08-17 by Phase 9.)
 3. **Measure whether Claude Code shows LM Studio's context error.** The strongest of the open
    measurements: it decides whether the most actionable message the local backend produces is ever
    seen. `backlog.md`, "Measurements left open".
