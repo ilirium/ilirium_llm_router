@@ -12,7 +12,8 @@ the session that wrote it, it has become a document and gets its own file.*
 
 **2026-08-17 — Milestone 2 is open and Phase 8 is planned but not started.**
 `docs/phase-8-method-and-guardrails` holds seventeen tasks across three groups and **not one line of
-execution**. It was planned, then checked twice: a mechanical pass found the prune arithmetic wrong
+execution**. (`git log main..` for the count — a number written here would be wrong by the next
+commit, and was: this line first said fifteen when there were thirteen.) It was planned, then checked twice: a mechanical pass found the prune arithmetic wrong
 (53 → 35, later 21, not 37), and a fresh-context review verified 31 factual claims, of which three
 failed. The best of those: `procedures/link-check.py`'s docstring is a **third home** for the
 `EPD-004` decision-18 park, alongside `backlog.md` and the EPD itself — invisible to any search of
@@ -89,7 +90,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree state | Next action |
 |---|---|---|---|
-| `docs/phase-8-method-and-guardrails` | Phase 8 — the method tier and the guardrails | **Plan only.** 15 commits, all of them the plan and its corrections. No task executed; `src/` untouched | Re-derive the plan, then Task 1 |
+| `docs/phase-8-method-and-guardrails` | Phase 8 — the method tier and the guardrails | **Plan only.** Every commit is the plan or a correction to it. **No task executed**; `src/` untouched | Re-derive the plan, then Task 1 |
 
 Forked from `main` at `6253cbc` on 2026-08-17. **The branch carries a phase number on a `docs/`
 prefix**, which is the form settled on it — the prefix says what kind of work it is, `phase-N-` says
