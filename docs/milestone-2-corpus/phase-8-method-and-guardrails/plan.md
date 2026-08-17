@@ -41,6 +41,8 @@ Decided by the owner on 2026-08-17 in the interview that opened this branch:
 | `--no-ff` scope | **every branch, always.** `CLAUDE.md`'s wording wins over `README.md`'s narrower one |
 | The parked `docs/method/` prohibition | narrowed, with a dated addendum in `EPD-004` |
 | Scope | `IDM-000` + `IDM-001` + the citations. **No list of further split candidates** — the shape of the rest of the `docs/README.md` split stays undecided |
+| A rejected plan | **merged and marked, not deleted** — reversing `EPD-004` decision 14. Status line in the plan, row in the milestone plan, no rename, no folder suffix. The phase number is spent |
+| `status.md`'s shape | **to the backlog**, not to this phase. The proposal: one row per *milestone* rather than per phase, since the per-phase merge-commit table duplicates what phase notes and milestone READMEs already own |
 | The phase number | **orthogonal to the prefix.** Any prefix may carry `phase-N-`; the prefix says what kind of work it is, the number says it is a phase |
 | One branch, one merge | the claim **stays in `CLAUDE.md`**; only its `feat/`-only implication is wrong and goes out |
 | This branch | `docs/phase-8-method-and-guardrails`; branch slug and folder slug match. **No rename** — the orthogonal rule sanctions the form it already uses |
@@ -57,7 +59,7 @@ wording preference.
 | 1 | `docs/<slug>` — "documentation work belonging to no phase" | same **+ "EPDs, a milestone's opening"** | **Neither, once row 7 is settled.** "Belonging to no phase" becomes false — this branch is a `docs/` branch belonging to Phase 8. The row becomes plain *"documentation work"*, keeping README's examples as examples rather than as the definition |
 | 2 | Merge with `--no-ff`, **always** | every **phase and feature** branch; silent on `fix/`, `chore/` | **Always**, per the owner. No judgement call at merge time |
 | 3 | *(silent)* | Planning that produces no code goes on a `docs/` branch | Keep; it is the rule that put this branch where it is |
-| 4 | *(silent)* | A rejected plan's branch is **deleted, not renamed** | Keep |
+| 4 | *(silent)* | A rejected plan's branch is **deleted, not renamed** | **Reversed** by the owner on 2026-08-17 — the branch is **merged and marked rejected**, not deleted. See "The rejected-plan rule is reversed" |
 | 5 | *(silent)* | `status.md` in-flight only; **the phase note carries branch, fork point, merge commit** | Keep, and carry the warning: four of six Milestone 1 phase notes recorded intent and never outcome |
 | 6 | `git merge` cannot read its message from stdin — `-F -` works for commit, fails for merge | *(silent)* | Keep. **Stays in `CLAUDE.md` too** — see "The one accepted duplication" |
 | 7 | "one phase means one branch and one merge commit", with a table whose only numbered row is `feat/` | A phase is numbered work with a plan and a record, **whatever prefix its branch used** — but this sits in "The phase template", not in "Branches" | README is right and `CLAUDE.md` is misleading. `EPD-004` decision 14's own 2026-08-16 revision settles it: **the prefix rule answers *which prefix*, never *is this a phase*.** Resolved by the owner on 2026-08-17 as **orthogonality** — see below. State it inside the branching rules, where somebody choosing a prefix will read it |
@@ -90,6 +92,44 @@ general one. Two consequences to carry into `IDM-001`:
 
 Phase 7 is the **old form**, not a violation of the new one; it stays the standing exception under
 `EPD-004` decision 15 for the reason already recorded there.
+
+### The rejected-plan rule is reversed
+
+`EPD-004` decision 14 ends: *"if the plan is rejected the branch is **deleted, not renamed**."*
+**Reversed 2026-08-17.** The branch is merged `--no-ff` like any other and the plan is marked
+rejected in place.
+
+**The reversal restores consistency rather than adding a rule.** Two documents already say the
+opposite of decision 14:
+
+- `EPD-000`'s status vocabulary: **withdrawn** — *"Superseded or shown wrong. Kept, with the reason,
+  rather than deleted."*
+- `docs/README.md`'s review phase: *"**Refusals are first-class outcomes.** Recording that a cut was
+  considered and refused, with the measurement, is what stops the same cut being re-proposed every
+  milestone by the next person reading the same surface signal."*
+
+A deleted branch was the one place this project discarded a refusal. A rejected plan carries what
+was proposed and why it was refused, which is precisely what stops it being re-proposed.
+
+**The risk is not the one it looks like, and it must be designed against.** A rejected plan sitting
+in the archive **reads exactly like an accepted-but-unexecuted plan**. That is this repository's
+signature failure — a document recording intent that nobody closed out, four times over in Milestone
+1's phase notes. So the rejection has to be legible *without opening the file*:
+
+| Where | What |
+|---|---|
+| The plan's first lines | A status line: **`REJECTED <date>. Not executed.`** — mirroring `EPD-000`'s vocabulary, which already solved this |
+| The milestone's `implementation-plan.md` | A row naming the phase, the date, and **why it was refused** |
+
+**The phase number is spent.** Phase 9 rejected means the next phase is 10. Numbers are identities
+that are never reused or renumbered, and the attempt did happen at that point in the sequence. The
+cost is accepted and named: the archive gains folders holding no executed work, and their status
+lines are what make that legible rather than confusing.
+
+**No branch rename, and no folder suffix.** Rejection is not knowable when the branch is created, so
+marking the slug means renaming at rejection time — and `EPD-004` decision 15 already established
+that renaming a pushed branch costs more than slug agreement is worth. The status line and the
+milestone-plan row do the same job with no new exception to the folder⇄branch rule.
 
 ### The one accepted duplication
 
@@ -173,6 +213,10 @@ The unified rules. Every row of the seven-disagreement table resolved as decided
   standing exception) and Phase 8 (the new form, this branch) as the two worked examples.
 - Where a branch is recorded: `status.md` in-flight, the phase note permanently, with the
   intent-versus-outcome warning.
+- **The rejected-plan rule in its reversed form**, with the status line, the milestone-plan row, and
+  the spent phase number. State the reasoning — refusals are first-class, and `EPD-000` already
+  keeps withdrawn documents rather than deleting them — because a rule that only says *what* invites
+  the next owner to reverse it back.
 - **The folder/branch slug rule, moved here** from `docs/README.md:153–157`: a phase folder takes
   its branch's slug; Phase 7 is the standing exception; **check folders against branches in that
   direction only** — generalised to `*/phase-N-*`. It is a branch rule and it was sitting in "Naming
@@ -204,16 +248,31 @@ Also check "When two answers are defensible", rule 3: *"Is it a rule about how t
 rather than about the router? Then it is this file, or `CLAUDE.md`…"* — that routing rule is now
 wrong and must name `method/`.
 
-**Task 5 — `docs/backlog.md`: narrow the park.**
-"Extract the portable methodology" is rewritten so the park covers **the extraction only** — copying
-to project #2, a global `~/.claude/CLAUDE.md` — and records that the tier itself was built in Phase
-8. The n=1 reasoning is preserved verbatim; it is still the reason extraction waits.
+**Task 5 — `docs/backlog.md`: narrow the park, and record the `status.md` proposal.**
+Two edits, one commit:
 
-**Task 6 — `docs/epd/EPD-004-documentation-structure.md`: addendum to decision 18.**
-Dated 2026-08-17, in place, in the visible-in-place-correction style the document already uses
-throughout. Records that the tier is built, that the acceptance-test objection was answered rather
-than overruled and how, and that the extraction decision is untouched. **Decision 18's declined-
-mechanisms list must not be edited away** — it records what was believed then.
+1. "Extract the portable methodology" is rewritten so the park covers **the extraction only** —
+   copying to project #2, a global `~/.claude/CLAUDE.md` — and records that the tier itself was
+   built in Phase 8. The n=1 reasoning is preserved verbatim; it is still the reason extraction
+   waits.
+2. **A new item: `status.md`'s shape.** Proposed 2026-08-17 and deliberately not done here. *Why it
+   is parked:* it is a filing question rather than a branching one, and Phase 8 was scoped small on
+   purpose. *Why it may be weaker than it looks:* only one of the file's four sections grows without
+   bound — "Where we stopped" self-limits at ~30 lines and "In-flight branches" empties at every
+   merge. *The proposal:* one row per **milestone** pointing at its archive README, replacing the
+   per-phase merge-commit table, which duplicates what `docs/README.md` already assigns to the phase
+   note. Carry the counter-argument too: a separate `history.md` was considered and declined as a
+   **third** copy of those facts, with nothing forcing it to stay correct.
+
+**Task 6 — `docs/epd/EPD-004-documentation-structure.md`: addenda to decisions 14 and 18.**
+Both dated 2026-08-17, in place, in the visible-in-place-correction style the document already uses
+throughout. **Decision 18:** the tier is built; the acceptance-test objection was answered rather
+than overruled, and how; the extraction decision is untouched. **Decision 14:** two changes — the
+phase number is orthogonal to the prefix, and a rejected plan's branch is merged and marked rather
+than deleted, with the `EPD-000`-withdrawn and refusals-are-first-class reasoning.
+
+**Neither decision's original text is edited away** — both record what was believed then, and
+decision 18's declined-mechanisms list is the part most likely to be tidied by mistake.
 
 **Task 7 — verify.**
 `procedures/link-check.py` before and after — its docstring names the hits that are correct and
@@ -263,6 +322,8 @@ one finding out of a parked work list is a decision about that list.
 - `docs/method/` exists with `IDM-000` and `IDM-001`, and no `README.md`.
 - **The branching rules have exactly one canonical home**, with `CLAUDE.md`'s restatement labelled
   as one.
+- **A rejected plan has a defined fate** that keeps its reasoning and cannot be mistaken for an
+  unexecuted accepted plan.
 - `docs/README.md` files a method document correctly **from itself alone**.
 - `EPD-004` and `backlog.md` agree that the tier exists and that extraction is still parked.
 - The tracked `.claude/settings.json` exists — *scope to be defined.*
