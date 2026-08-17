@@ -102,11 +102,6 @@ suits LM Studio and OpenAI; Anthropic's native key is `x-api-key` and Gemini's i
 *Parked deliberately:* it is needed before the second cloud provider, not before. Phase 5 was told
 explicitly not to settle it while editing the same function.
 
-**A tracked `.claude/settings.json`.** `EPD-004` decision 17 splits the permission allowlist — a
-tracked policy file, with the untracked local file left for machine accretions. *Parked because* only
-half of it exists: the local file works, and nobody has written the tracked half. It is its own
-branch. `README.md` currently describes the split and names it as not yet built.
-
 **Extract the portable methodology.** `EPD-004` decision 18 defers this **with a trigger rather than
 a date**: when project #2 starts, extraction is a copy of `docs/README.md` with the backend rows
 deleted, plus `CLAUDE.md`'s rule block, plus the whole of `method/` unfiltered — `IDM-000` settles that
