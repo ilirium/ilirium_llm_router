@@ -69,12 +69,14 @@ default. Relative log/stats paths resolve against the config file's directory, n
 directory.
 
 **Never bump the ruff pin as a side effect.** `pyproject.toml` sets `line-length = 100` and the
-Makefile pins `RUFF ?= ruff@0.16.1`. Both exist because an unpinned formatter at its default 88
-columns once rewrote every file it touched, burying the change in progress — and `make lint` did not
-object, because line length is `E501` and that is not in ruff's default rule set. To try a version:
-`make format RUFF=ruff@x.y.z`, and the diff it produces is the argument for or against. An accepted
-bump goes in its own commit (`d1def4f` is the precedent), checked by comparing each file's AST before
-and after rather than by trusting that formatting only moves whitespace.
+Makefile pins `RUFF ?= ruff@0.16.1`. **`make lint` will not catch it if you do** — line length is
+`E501`, which is not in ruff's default rule set, so a passing lint says nothing about column width.
+
+→ `docs/method/IDM-003-development-tooling.md` — **read it before bumping the pin, before adding a
+linter or type checker, or before reading `make lint`'s silence as approval.** It holds why both halves
+of the pin exist, how to try a version without committing to it, that an accepted bump goes in its own
+commit checked by AST comparison, and that `ty` was tried and **refused** — so a project with no type
+checker is a decision rather than an omission.
 
 ## Goal
 
