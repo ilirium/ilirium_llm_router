@@ -3,7 +3,7 @@
 **Written 2026-08-17 on `docs/phase-8-method-and-guardrails`, forked from `main` at `6253cbc`.
 Nothing in it has been executed.**
 
-**Sixteen tasks in three groups.** They share a branch because each is small, each is about how the
+**Seventeen tasks in three groups.** They share a branch because each is small, each is about how the
 work is done rather than about the router, and none depends on `EPD-003` or on Milestone 2's central
 claim — which is not yet named, and `../implementation-plan.md` says why.
 
@@ -273,11 +273,18 @@ Three edits, one commit:
 ```
 
 **Two of the three are Phase 8's own doing.** `feat/` is wrong as of Task 2's orthogonality
-decision, and `milestone-2-<slug>` is now concretely `milestone-2-corpus`. **The `feat/` assumption
-appears twice in this file** and edit 2 above already fixes the other instance at `README.md:156` —
-fixing one and leaving its twin 225 lines away is the restructure's own documented failure, where
-*"a grep for moving paths structurally cannot find a citation that names a section title"* and six
-stale ones were found by reading rather than grepping.
+decision, and `milestone-2-<slug>` is now concretely `milestone-2-corpus`.
+
+> **`feat/` appears at six lines in this file, not two.** An earlier draft of this plan said twice,
+> and a fresh-context review counted them: `:156`, `:253`, `:264`, `:267`, `:326`, `:382`. **Five are
+> already covered** — `:253`, `:264` and `:267` sit inside the "Branches" section that edit 1
+> replaces wholesale, `:156` moves out at edit 2, and `:382` is this edit. **`:326` is left
+> deliberately**: *"The usual case is a `feat/phase-N-<slug>` branch that changes `src/`"* is hedged
+> and stays true under orthogonality — the usual case really is `feat/`. Verify that during Task 4
+> rather than trusting this note.
+>
+> *This is the restructure's own lesson landing on the document that quotes it: a grep for a moving
+> path cannot find a citation that names a section title, and counting by eye undercounted by four.*
 
 **The third — `phase-7-<slug>`, a second Phase 7 contradicting `README.md:148`** — belongs to the
 parked documentation review. Taken here anyway, because leaving a known bug inside a sentence this
@@ -327,9 +334,15 @@ than deleted, with the `EPD-000`-withdrawn and refusals-are-first-class reasonin
 **Neither decision's original text is edited away** — both record what was believed then, and
 decision 18's declined-mechanisms list is the part most likely to be tidied by mistake.
 
-**Task 7 — verify.**
+**Task 7 — verify group A.**
 `procedures/link-check.py` before and after — its docstring names the hits that are correct and
-permanent. `make test` must still report **158**; nothing here touches `src/`, so a change in that
+permanent.
+
+> **Expect this plan's own citations to be broken until the files exist.** A whole-repository run on
+> this branch reports **98** broken against the docstring's **82**, and all **16** of the difference
+> come from `milestone-2-corpus/` citing `docs/method/…` and `.claude/settings.json` — files Tasks 1,
+> 2, 9, 11 and 15 create. They resolve as those tasks land. **This is not drift and must not be
+> "fixed" by removing the citations.** Task 17 closes the accounting. `make test` must still report **158**; nothing here touches `src/`, so a change in that
 number means something unintended moved. Then grep for citations of the two replaced sections by
 **title** rather than by path: the restructure's own lesson is that *"a grep for moving paths
 structurally cannot find a citation that names a section title"*, and six of those were stale last
@@ -404,9 +417,11 @@ machine" names it as a written rule; this makes it enforced.
 > re-allowed for the example. Deny `Read(./.env)` and the `cat` form; do not glob.
 
 **This does not reopen `EPD-004` decision 19.** That refused a **hook** that would parse shell
-quoting to block `$(...)`, on four grounds — real false positives in this repository, undecidability
-without a shell parser, converting a recoverable prompt into a hard block, and sitting in the path of
-every Bash call. **An exact-path deny has none of those properties.** Say so in `IDM-002`, or the
+quoting to block `$(...)`, on **six** grounds — real false positives in this repository,
+undecidability without a shell parser, converting a recoverable prompt into a hard block, sitting in
+the path of every Bash call, the written rule holding on its own, and enforcement being unable to
+teach the alternative. **An exact-path deny has none of the first four, and the last two argue
+against enforcing a *reflex*, not against denying a *path*.** Say so in `IDM-002`, or the
 next reader will see enforcement and think the refusal was quietly overturned.
 
 **Task 10 — prune the local file: thirty-two entries out, in four groups. 53 → 21.**
@@ -542,6 +557,29 @@ stays** — *never bump the ruff pin as a side effect* is exactly a thing a sess
 and wrongly, and it has already happened once here. **The reasoning, the `E501` explanation and the
 AST-comparison procedure go to `IDM-003`**, behind a pointer naming when to open it.
 
+**Task 17 — close out `procedures/link-check.py`'s docstring, and re-derive its counts.**
+
+**The finding this task exists for was missed by the plan and found by review.** `link-check.py`'s
+docstring lists seven hits as *"correct and permanent"* — and **Phase 8 builds five of them**:
+
+| Docstring line | Says | After Phase 8 |
+|---|---|---|
+| `:82` | `.claude/settings.json` ×3 — decision 17 *"defers"* the tracked file | **resolves** — Task 9 writes it |
+| `:84` | `docs/method/` ×2 — *"decision 18 says do not build a methodology tier before project #2"* | **resolves** — Tasks 1, 2, 11, 15 build it |
+| `:85`, `:86` | `.claude/agents/local-helper.md`, `docs/procedures/closing-a-milestone.md` | still permanent |
+
+**So `link-check.py` is a *third* home for the decision-18 prohibition**, alongside
+`backlog.md:106` and `EPD-004:984` — and the plan's Tasks 5 and 6 account for only two. It was
+missed because it lives in an instrument rather than in prose, where no amount of reading `docs/`
+would surface it. *That is the one-home-per-fact failure this phase exists to fix, found inside the
+phase that fixes it.*
+
+The work: rewrite the permanent-hits list from seven to two, drop the decision-18 justification at
+`:84`, and re-derive the counts at `:62` and `:71`. **Expected end state: 77 broken and 2 roundabout**
+— 82 minus the five that now resolve, with all 16 of this branch's own hits resolved too. **Derive it
+by running the checker, and if it disagrees with 77, find out why before editing the number.** A
+count written to match an expectation is exactly the defect `EPD-004` decision 20 was written about.
+
 ## Done when
 
 - `docs/method/` exists with `IDM-000` and `IDM-001`, and no `README.md`.
@@ -557,7 +595,10 @@ AST-comparison procedure go to `IDM-003`**, behind a pointer naming when to open
   can share a shape by accident, three cannot.
 - **`ty`'s refusal is recorded before its allowlist entry is deleted**, so the next session does not
   read a missing type checker as an omission.
-- `link-check.py` clean of new hits; `make test` reports 158.
+- **`link-check.py` reports 77 broken and 2 roundabout**, its docstring rewritten to match, with
+  the permanent-hits list down from seven to two. *Not* "clean of new hits" — this phase deliberately
+  resolves five long-standing ones.
+- `make test` reports 158.
 - **The deny was driven, not read** — `.env` refused, `.env.example` still readable.
 
 ## Record
