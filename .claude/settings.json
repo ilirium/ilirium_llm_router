@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(make)",
+      "Bash(make check *)",
+      "Bash(make format *)",
+      "Bash(make lint *)",
+      "Bash(make run *)",
+      "Bash(make test *)",
+      "Bash(.venv/bin/python -m pytest -q)",
+      "Bash(uvx ruff@0.16.1 format --check src tests)",
+      "Bash(lsof -nP -iTCP:8787 -sTCP:LISTEN)",
+      "Bash(curl -s --max-time 5 http://localhost:1234/api/v1/models)",
+      "Bash(lms --version)",
+      "Bash(lms ps *)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:lmstudio.ai)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Bash(cat .env)",
+      "Bash(cat ./.env)"
+    ]
+  }
+}

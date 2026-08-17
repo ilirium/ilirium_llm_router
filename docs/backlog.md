@@ -27,10 +27,17 @@ stands. **Nothing in it has been acted on.**
 building router features. It is not blocked on anything and it is not scheduled; picking it up is a
 decision to spend a session on documentation instead of on the router.
 
-*Weaker than it looks?* **Two items are not.** `reference/measurements.md:34` states a slice that
-recomputes to **0.245×** rather than 26.6× — the sign reversed — and `README.md:381`'s worked example
-tells a filer to create a **second Phase 7**, contradicting the rule 233 lines above it. Both make a
-future session act confidently and wrongly, and both are cheap. Everything else in the file can wait.
+*Weaker than it looks?* **One item is not.** `reference/measurements.md:34` states a slice that
+recomputes to **0.245×** rather than 26.6× — the sign reversed. It makes a future session act
+confidently and wrongly, and it is cheap. Everything else in the file can wait.
+
+> **The second of the two was fixed on 2026-08-17 by Phase 8, and is recorded here rather than
+> dropped.** `README.md`'s closing worked example told a filer to create a **second Phase 7**,
+> contradicting "Naming and numbering" in the same file. Phase 8's Task 4 was already rewriting that
+> sentence for two unrelated reasons of its own, so leaving a known bug inside it would not have been
+> scope discipline. See `milestone-2-corpus/phase-8-method-and-guardrails/notes.md`. *This paragraph
+> said "two items" and named both until then; silently deleting one would leave the next reader unable
+> to tell whether it was fixed or forgotten.*
 
 **This entry points and does not restate, deliberately.** The findings, their evidence and the six
 questions stay in that one file; copying any of it here would create the second copy this structure
@@ -95,31 +102,83 @@ suits LM Studio and OpenAI; Anthropic's native key is `x-api-key` and Gemini's i
 *Parked deliberately:* it is needed before the second cloud provider, not before. Phase 5 was told
 explicitly not to settle it while editing the same function.
 
-**A tracked `.claude/settings.json`.** `EPD-004` decision 17 splits the permission allowlist — a
-tracked policy file, with the untracked local file left for machine accretions. *Parked because* only
-half of it exists: the local file works, and nobody has written the tracked half. It is its own
-branch. `README.md` currently describes the split and names it as not yet built.
-
 **Extract the portable methodology.** `EPD-004` decision 18 defers this **with a trigger rather than
 a date**: when project #2 starts, extraction is a copy of `docs/README.md` with the backend rows
-deleted, plus `CLAUDE.md`'s rule block. *Parked because* a methodology extracted from n=1 is a guess
-about what generalises. Do not build a `docs/method/` tier or a global `~/.claude/CLAUDE.md` before
-then.
+deleted, plus `CLAUDE.md`'s rule block, plus the whole of `method/` unfiltered — `IDM-000` settles that
+the tier needs no such filter, because no IDM contains a fact about the router. *Parked because* a
+methodology extracted from n=1 is a guess about what generalises. Do not create a global
+`~/.claude/CLAUDE.md` before then.
+
+> **Narrowed 2026-08-17. This item is now the extraction only.** The `docs/method/` tier itself was
+> **built** in Phase 8 — `IDM-000` through `IDM-003`. Decision 18 declined the tier on a *structural*
+> ground, that it would split `docs/README.md`'s acceptance test across two files, and that objection
+> was answered rather than overruled: the manual answers *where does a document go* and the tier
+> answers *how is the work done*. The n=1 reasoning above is untouched and is still the whole reason
+> extraction waits — it was aimed at copying to project #2, which it always was, and never at the tier.
+> *This item said "do not build a `docs/method/` tier" until then, which is why the change is recorded
+> in place instead of edited away.*
 
 ## Instruments and housekeeping
 
-**Teach `procedures/link-check.py` the two citation forms it cannot see.** It resolves paths and
-ignores everything else, so two forms this repository depends on go unchecked: **heading anchors**,
-stripped in `candidates()` although `README.md`'s naming table says findings are "linked by anchor";
-and **`file.py:N` line citations**, skipped by `is_candidate` for containing no `/`. *Parked because*
-both classes were verified by hand and both passed — the 11 code citations in a fresh-context review,
-the six section titles at commit 6 of the restructure — so this buys repeatability rather than fixing
-a known defect, and the population is small enough to check by hand again. From `EPD-004`
-decision 21.
+**`procedures/link-check.py`'s exit code carries no information.** `link-check.py:222` is
+`return 1 if check(...) else 0` and **there is no expected-failures mechanism in the code** — the
+correct-and-permanent hits exist only as prose in the docstring. So the tool exits 1 permanently, can
+never gate a commit or a hook despite its own docstring saying *"exits 1 … so it can gate a commit"*, and
+reading its output requires a human holding a number from a comment.
 
-> **The third gap in this item is closed.** A roundabout-path check was added on 2026-08-16, ahead of
-> the rest, because commit 13 produced two live instances of the defect rather than a hypothetical
-> one. See decision 21's second half.
+**Four pieces of evidence, all from Phase 8, all new:**
+
+- The docstring's counts are **hand-maintained state**, re-derived by Phase 8's Task 17 rather than by
+  the tool. A number nobody re-derives is this repository's signature failure.
+- **Five of seven "permanent" hits stopped being permanent in a single phase**, and ten further copies of
+  the same two paths resolved inside the frozen archive at the same moment — which is why the docstring's
+  71 became 61, under a sentence that had said "always".
+- **Two independent attempts to predict the new count from the old prose were both wrong**, in the same
+  direction, before anyone ran the tool. The prose partitions hits by *where they live*; what resolves
+  them is *which path they name*.
+- **Every phase plan legitimately cites files it will create.** Phase 8's added 23, all correct, all
+  reported as breakage. That is a recurring false-positive class rather than drift.
+
+**Two narrower gaps ride along**, and they are what this item used to be *about* rather than what it is
+for. **Heading anchors** are stripped in `candidates()` although `README.md`'s naming table says findings
+are "linked by anchor", and **`file.py:N` line citations** are skipped by `is_candidate` for containing
+no `/`. Both were verified by hand and both passed — the 11 code citations in a fresh-context review, the
+six section titles at commit 6 of the restructure — so they buy repeatability rather than fixing a known
+defect. From `EPD-004` decision 21. **Two more were found in Phase 8:** the whole-repository run globs
+`*.md`, so citations in `config.yaml`, the `Makefile`, `pyproject.toml`, `.env.example` and `src/` are
+unchecked — one stale path was found that way — and a line containing `→` is skipped whole, which leaves
+`CLAUDE.md`'s five `→` pointer lines unchecked.
+
+*Parked because* the redesign should be argued from the measurement Task 17 produced, not from the
+irritation of having done it once — `EPD-004` decision 12's reasoning, that an instrument which has never
+been run should not be committed, applied to an instrument that has. **Decide at Milestone 2's close.**
+The cost measured in `milestone-2-corpus/phase-8-method-and-guardrails/notes.md` is the input.
+
+> **The roundabout gap this item once listed is closed.** A roundabout-path check was added on
+> 2026-08-16, ahead of the rest, because commit 13 produced two live instances of the defect rather than
+> a hypothetical one. See decision 21's second half.
+
+**Static analysis beyond ruff.** Other type checkers, AST-level linters, a language server — over a CLI
+or over MCP. `ruff` is all this project runs today; `method/IDM-003-development-tooling.md` records the
+pin and what it does and does not catch. *Parked because* nothing depends on it: the code is small, typed
+throughout, and covered by 158 tests. *Weaker than it looks?* **Yes, and it is worth saying why the
+obvious argument runs the wrong way.** `ty` was tried and **refused** — warnings without useful
+information — so the one data point this project has **weakens** the case rather than strengthening it.
+The honest reading is that the useful signal may be scarce generally rather than absent from that one
+tool, which was at version 0.0.14. **So the next attempt states what it expects to catch *before* it is
+run**, and is judged against that rather than against whether it produced output.
+
+**`status.md`'s shape — one row per milestone rather than per phase.** Proposed 2026-08-17 during
+Phase 8 and deliberately not done there. *The proposal:* "Where the project is" currently carries a
+per-phase table of merge commits, which duplicates what `README.md` assigns to the **phase note** —
+branch, fork point, merge commit — and what each milestone's archive `README.md` already indexes.
+Replace it with one row per milestone pointing at that archive. *Parked because* it is a filing
+question rather than a branching one, and Phase 8 was scoped small on purpose. *Weaker than it looks?*
+**Yes.** Only one of the file's four sections grows without bound: "Where we stopped" self-limits at
+~30 lines by its own rule, and "In-flight branches" empties at every merge. So the file is not
+actually accreting — the duplication is the whole of the complaint. **Carry the counter-argument:** a
+separate `history.md` was considered in the same conversation and declined as a **third** copy of those
+facts, with nothing forcing it to stay correct.
 
 **Close out the four `Branch:` lines that record intent instead of outcome.** Five exist across four
 of the six phases, in inconsistent places, and only `phase-4-notes.md:7` records the merge commit.

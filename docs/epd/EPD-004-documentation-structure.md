@@ -838,6 +838,46 @@ Phases 1 and 6 in neither), and **only one records the merge commit**: `phase-4-
 closed out. That is this repository's signature failure in miniature, a document recording intent and
 never updated to outcome, and closing them is a review-phase checklist item.
 
+**Addendum 2026-08-17 — two changes, and the whole of this decision now lives in
+`../method/IDM-001-git-branching.md`.** Nothing above is edited away: it records what was believed
+then, and the 2026-08-16 revision is part of the record rather than a wrinkle in it.
+
+**First: the phase number is orthogonal to the prefix.** The table above pairs `feat/` with
+`phase-N-<slug>` and describes `docs/` as *"documentation work belonging to no phase"*, and that is now
+wrong in both halves. The prefix says **what kind of work** it is; `phase-N-` says **it is numbered
+work with a plan and a record**. Any prefix may carry a number: `<prefix>/phase-N-<slug>`, of which
+`feat/phase-N-<slug>` is the common instance rather than an atomic form.
+
+This is the 2026-08-16 revision above being finished rather than a new idea. That revision separated
+*which prefix* from *is this a phase* and left the table stating the conflation. **What forced it:
+Phase 8 is the third form and the first the table cannot describe.** Phase 7 was a phase on a `docs/`
+branch whose *name* carried no number, which is why its folder and branch slugs had to disagree.
+`docs/phase-8-method-and-guardrails` is a `docs/` prefix *carrying* the number, and it needs no
+exception — the folder and the branch agree. One consequence: **decision 15's one-way check generalises
+to every `*/phase-N-*` branch**, not merely every `feat/phase-N-*` one.
+
+**Second: a rejected plan's branch is merged and marked, not deleted.** The sentence above ends *"if
+the plan is rejected the branch is deleted, not renamed"*. **Reversed.** The branch is merged `--no-ff`
+like any other; the plan gets a status line reading `REJECTED <date>. Not executed.`, and the
+milestone's `implementation-plan.md` gains a row naming the phase, the date, and **why** it was
+refused. The phase number is spent — a rejected Phase 9 means the next phase is 10 — and there is no
+branch rename and no folder suffix, since rejection is not knowable when the branch is created and
+decision 15 already priced renaming a pushed branch.
+
+**The reversal restores consistency rather than adding a rule**, which is why it is a reversal and not
+a new fork. Two documents already said the opposite:
+
+- `EPD-000-about-these-documents.md`'s status vocabulary: **withdrawn** — *"Superseded or shown wrong.
+  Kept, with the reason, rather than deleted."*
+- `../README.md`'s review phase, which is decision 11 above: *"Refusals are first-class outcomes.
+  Recording that a cut was considered and refused, with the measurement, is what stops the same cut
+  being re-proposed every milestone by the next person reading the same surface signal."*
+
+**A deleted branch was the one place this project discarded a refusal.** The risk the reversal creates
+is named and designed against in `IDM-001`: a rejected plan in the archive reads exactly like an
+accepted-but-unexecuted one, which is this repository's signature failure, so the status line and the
+milestone-plan row exist to make the rejection legible *without opening the file*.
+
 ### 15 — the archive's phase slugs follow the branch names, with one standing exception
 
 Three of six disagree, and the branches win, because the folders do not exist yet while the branch
@@ -954,6 +994,37 @@ project knowledge and belongs to the project rather than to one laptop. The untr
 keeps machine-specific accretions and is pruned periodically. `docs/README.md` names the split in one
 line so it is not re-litigated.
 
+**Addendum 2026-08-17 — the split is built, and it now lives in
+`../method/IDM-002-harness-configuration.md`.** Four things this decision could not know:
+
+**The entry count above had drifted.** It says 51; the file held **53** when Phase 8 opened it. The
+prune took it to **21**, with **14** moving to the tracked file rather than being deleted, so the
+effective merged allow set is 35 and the two files overlap in nothing. *"Roughly a dozen are single-use
+fossils"* was close: fifteen were fossils or strict duplicates.
+
+**A `.gitignore` gap was found and closed, and it is this document's decision 16 again.**
+`.claude/settings.local.json` was kept out of the repository only by the owner's **global**
+`~/.config/git/ignore` — which does not travel. On another machine, or for a contributor, the file was
+plain untracked, and `Bash(git add *)` is itself in the allowlist. A committed convention depending on
+something that exists only outside the repository is exactly decision 16's finding, and the fix is one
+line in this repository's own `.gitignore`. **That had to happen before the tracked file existed**: the
+moment `.claude/` stops being uniformly untracked, an accidental `git add .claude/` becomes plausible.
+
+**The tracked half deliberately excludes the broad entries this decision flagged.** `Bash(curl *)`,
+`Bash(python3 *)` and `Bash(uv run *)` — named above as *"much broader than the fossils suggest"* — stay
+in the local file. They are how the project is actually worked on, and a file whose job is to state
+policy should not bless them. Accepted cost: a fresh clone prompts for them.
+
+**Two findings the decision's own inventory would have got wrong.** `Bash(lsof … 8787)` and
+`Bash(curl … localhost:1234)` read as fossils and are `config.yaml:10` and `config.yaml:40` — a literal
+in a committed file is a constant. And `Bash(lms load *)` / `Bash(lms unload *)` had **silently repealed
+a `CLAUDE.md` non-negotiable**, since loading a model evicts what is loaded and takes minutes. Both are
+stated in `IDM-002` as classes rather than as instances.
+
+The tracked file also carries an exact-match `.env` **deny**, which does **not** reopen decision 19
+below; `IDM-002` argues that in place, because the next reader will otherwise see enforcement where a
+refusal is on file.
+
 ### 18 — the methodology is portable, and extraction is deliberately deferred
 
 The owner asked for a **splittable artifact** — playbooks, development methodology, guardrails — that
@@ -1001,6 +1072,43 @@ now, every day, for a benefit that arrives once.
 
 Concretely, extraction is: copy `docs/README.md`, delete the rows naming a backend, and copy the
 `CLAUDE.md` rule block. Not a build step, and nothing in this plan produces it.
+
+**Addendum 2026-08-17 — the `docs/method/` tier is built. The extraction decision is untouched.**
+
+Nothing above is edited away, and the declined-mechanisms list least of all: it records which
+alternatives were considered, and a list that quietly loses an entry after the entry is adopted is
+worth nothing.
+
+**The tier exists**, as `../method/`, holding `IDM-000` through `IDM-003` — the branching rules, the
+harness configuration, and the development tooling. Built in Phase 8,
+`../milestone-2-corpus/phase-8-method-and-guardrails/`.
+
+**The objection was answered, not overruled, and the distinction matters.** The bullet above declines
+the tier on a *structural* ground: it *"splits the manual, and `docs/README.md`'s acceptance test —
+file a new document correctly from this file alone — would then span two files."* That is a real
+objection and it is satisfiable:
+
+- `../README.md` stays the **filing** manual. Its acceptance test is about *where does a document go*,
+  and it survives intact **because its "Where does it go?" table gained a `method/` row** — a row that
+  looks like decoration and is load-bearing. Remove it and this objection becomes correct again.
+- `../method/` answers *how is the work done*. Somebody filing a document never opens one to file
+  correctly, so the test never spans the two.
+
+**The n=1 argument is untouched and still governs.** *A methodology extracted from n=1 is a guess about
+what generalises* was aimed at **copying to project #2** — at `~/.claude/CLAUDE.md` and a separate
+method repository, both still declined — and never at where the rules live inside this repository.
+`../backlog.md`'s item is narrowed to the extraction alone and keeps that reasoning verbatim.
+
+**One thing this addendum settles that the decision above did not ask:** whose method it is. `IDM-000`
+answers it — the owner's, evidenced from this repository — and the consequence is that extraction
+copies the whole of `method/` **unfiltered**, unlike `docs/README.md`, which needs its backend rows
+deleted. No IDM contains a fact about the router; that is the tier's admission test.
+
+**And a fourth home for this decision's prohibition was found while doing it.**
+`../procedures/link-check.py`'s docstring listed `docs/method/ ×2` among its correct-and-permanent
+broken links, justified as *"decision 18 says do not build a methodology tier before project #2"* — so
+the prohibition lived in this file, in `../backlog.md`, and inside an instrument, where no amount of
+reading `docs/` would surface it. Corrected in Phase 8's Task 17.
 
 ### 19 — the `$(...)` rule is documented, not enforced
 
