@@ -41,6 +41,10 @@ Decided by the owner on 2026-08-17 in the interview that opened this branch:
 | `--no-ff` scope | **every branch, always.** `CLAUDE.md`'s wording wins over `README.md`'s narrower one |
 | The parked `docs/method/` prohibition | narrowed, with a dated addendum in `EPD-004` |
 | Scope | `IDM-000` + `IDM-001` + the citations. **No list of further split candidates** — the shape of the rest of the `docs/README.md` split stays undecided |
+| The tracked allowlist | **project knowledge only** — `make` targets, the ruff pin, the pytest path, the two backend doc domains. Arbitrary execution and network stay local |
+| Deny rules | **yes, for `.env`**, exact-match. Not a reversal of decision 19 |
+| The local file | **pruned of its twelve dead entries** in this phase |
+| Harness rules | **`IDM-002`**, with `README.md:236` becoming a pointer — and the tier's second subject is its cheapest validation |
 | A rejected plan | **merged and marked, not deleted** — reversing `EPD-004` decision 14. Status line in the plan, row in the milestone plan, no rename, no folder suffix. The phase number is spent |
 | `status.md`'s shape | **to the backlog**, not to this phase. The proposal: one row per *milestone* rather than per phase, since the per-phase merge-commit table duplicates what phase notes and milestone READMEs already own |
 | The phase number | **orthogonal to the prefix.** Any prefix may carry `phase-N-`; the prefix says what kind of work it is, the number says it is a phase |
@@ -284,21 +288,88 @@ time and found only by reading.
 
 ### Task group B — the guardrails
 
-**Tasks 8 onward — the tracked `.claude/settings.json`. NOT YET SPECIFIED.**
+Interviewed and settled 2026-08-17. `EPD-004` decision 17 splits the allowlist into a tracked policy
+file and an untracked local one; only the local half exists.
 
-The owner has not been interviewed on this half. What is known: `EPD-004` decision 17 splits the
-allowlist into a tracked policy file and an untracked local one; `.claude/settings.local.json` holds
-51 entries accreted by clicking *allow*, roughly a dozen of them single-use fossils, and several
-much broader than they look — `Bash(curl *)` is arbitrary outbound network, `Bash(python3 *)` and
-`Bash(uv run *)` arbitrary execution.
+**Two findings from reading the file, both of which change the work:**
 
-Open questions the interview must settle, at least: what belongs in the tracked half; whether the
-local file is pruned in this phase or left alone; whether the `$(...)` rule stays documented-only
-per `EPD-004` decision 19 or gains enforcement; and whether any of this is a method document rather
-than only a settings file.
+**The file has drifted since decision 17 measured it — 53 entries, not 51.** Roughly twelve are
+provably dead: a literal PID (`ps -p 90607`), a literal port (`lsof -iTCP:8787`), four `/tmp/lms*.json`
+curl lines, two full curl lines against port 8799, one-off import checks for `PIL`, `starlette` and
+`zstandard`, and `Bash(git -C /Users/ilirium/Library/…)` — an absolute path to this machine which
+duplicates `Bash(git -C . status --short)` two lines above it.
 
-**This section is a placeholder and its tasks are unnumbered until then.** Numbering them now would
-burn numbers that cannot be reused.
+**The local file's protection is machine-local, which is the same defect as `EPD-004` decision 16.**
+It is ignored by `~/.config/git/ignore:1`, the owner's **global** file, and **not** by this
+repository's `.gitignore`. On another machine or for a contributor it is plain untracked — and
+`Bash(git add *)` is in the allowlist. Decision 16's argument applies verbatim: a committed
+convention depending on something that exists only outside the repository, which silently does not
+apply if the repository is opened elsewhere. **Fixing this is the precondition for tracking its
+sibling**, so it is Task 8 rather than a footnote.
+
+**Task 8 — `.gitignore`: ignore `.claude/settings.local.json` at the repository level.**
+One line. Do it **before** Task 9 — the moment a tracked `.claude/settings.json` exists, the
+directory stops being uniformly untracked and the local file is one careless `git add` from being
+committed with 53 accreted entries.
+
+**Task 9 — write the tracked `.claude/settings.json`.**
+
+*Allow — project knowledge only.* Roughly a dozen entries that encode how this project is built and
+tested, and nothing broad: every `make` target, `Bash(uvx ruff@0.16.1 format --check src tests)` —
+which encodes the pin `CLAUDE.md` calls non-negotiable — `Bash(.venv/bin/python -m pytest -q)`, and
+the two backend documentation domains. **Arbitrary execution and network stay in the local file.**
+`Bash(curl *)`, `Bash(python3 *)` and `Bash(uv run *)` are how the project is actually worked on,
+but a file whose job is to state policy should not bless them. Accepted cost: a fresh clone prompts
+for those until approved.
+
+*Deny — `.env`.* It exists here with 500 bytes of real keys. `CLAUDE.md`'s "ask before touching the
+machine" names it as a written rule; this makes it enforced.
+
+> **The pattern must be exact-match, and this is a trap worth naming.** A glob like `Read(./.env.*)`
+> also matches **`.env.example`** — which is committed, has no secrets, and is the file that
+> documents which key each backend needs. **Deny beats allow in precedence**, so a glob cannot be
+> re-allowed for the example. Deny `Read(./.env)` and the `cat` form; do not glob.
+
+**This does not reopen `EPD-004` decision 19.** That refused a **hook** that would parse shell
+quoting to block `$(...)`, on four grounds — real false positives in this repository, undecidability
+without a shell parser, converting a recoverable prompt into a hard block, and sitting in the path of
+every Bash call. **An exact-path deny has none of those properties.** Say so in `IDM-002`, or the
+next reader will see enforcement and think the refusal was quietly overturned.
+
+**Task 10 — prune the local file: the twelve dead entries.**
+Fossils and the absolute-path duplicate only; anything still live stays. **This task produces no
+commit** — the file is gitignored — and that is expected rather than missing, per the rule that a
+task producing no commit is still a task. Record the before and after counts in `notes.md`, since
+that is the only evidence it happened.
+
+**Task 11 — write `docs/method/IDM-002-harness-configuration.md`.**
+The second method document, which is also **the cheapest available validation that the tier works
+for a second subject** — before more documents land in it and a structural mistake gets expensive.
+It states: the split and its reasoning (durable project policy versus machine accretion), what earns
+a place in the tracked half, the `.env` deny and why it is not a reversal of decision 19, the
+exact-match trap, and that the local file is pruned periodically.
+
+**Task 12 — `docs/README.md`: the harness-configuration paragraph becomes a pointer.**
+`README.md:236`'s "Where the harness configuration lives" currently describes the split and says the
+tracked half is **not yet built**. That sentence is false the moment Task 9 lands. Replace the
+paragraph with a pointer to `IDM-002`.
+
+**Task 13 — `EPD-004` decision 17: addendum.**
+Dated 2026-08-17. Records that the split is built, that the entry count had drifted to 53, that the
+`.gitignore` gap was found and closed, and that the tracked half deliberately excludes the broad
+execution entries decision 17 itself flagged. Separate commit from Task 6, which touches the same
+file for different decisions.
+
+**Task 14 — verify group B by driving it, not by reading it.**
+`CLAUDE.md`: *green tests are not evidence.* Four checks:
+
+1. `make test` still reports **158** and runs without a permission prompt.
+2. **The deny actually fires** — attempt to read `.env` and confirm it is refused. *Attempting it is
+   the test, not a violation of the rule; the attempt is blocked and no contents are exposed.*
+3. **`.env.example` is still readable.** This is the check that catches a globbed deny pattern, and
+   it is the one most likely to be skipped because the file feels unimportant.
+4. The pruned local file still covers the session's actual work — no new prompts for things that
+   worked before Task 10.
 
 ---
 
@@ -326,8 +397,11 @@ one finding out of a parked work list is a decision about that list.
   unexecuted accepted plan.
 - `docs/README.md` files a method document correctly **from itself alone**.
 - `EPD-004` and `backlog.md` agree that the tier exists and that extraction is still parked.
-- The tracked `.claude/settings.json` exists — *scope to be defined.*
+- The tracked `.claude/settings.json` exists, holding project policy and an exact-match `.env` deny,
+  with `.claude/settings.local.json` ignored by **this repository's** `.gitignore`.
+- `IDM-002` exists, and the tier has been shown to work for a second subject.
 - `link-check.py` clean of new hits; `make test` reports 158.
+- **The deny was driven, not read** — `.env` refused, `.env.example` still readable.
 
 ## Record
 
