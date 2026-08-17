@@ -1,7 +1,13 @@
 # Phase 9 — decide EPD-003, and run its gate: plan
 
-**Written 2026-08-17 on `docs/phase-9-corpus-gate`, forked from `main` at `97f6563`. Only tasks 1–4
-have been executed.**
+**Written 2026-08-17 on `docs/phase-9-corpus-gate`, forked from `main` at `97f6563`. All sixteen tasks
+executed; merged with `--no-ff` as `b29d502` the same day. No task letters were inserted.**
+
+*This line said "Only tasks 1–4 have been executed" until the phase closed. **Closing it out is the
+only kind of edit this file takes** — the same rule `../../method/IDM-001-git-branching.md` states for
+a `Merge commit` row: the placeholder is correct while it is true and is the defect once it is not.
+The plan's content below is **not** revised. It records what was believed before the work ran,
+including where it turned out to be wrong; **what actually happened is in `notes.md`**, task by task.*
 
 **Sixteen tasks in four groups.** Group A opens the phase and records the decisions taken in the
 interview that produced this file. Group B captures real bodies, which the gate needs and the
@@ -161,6 +167,11 @@ harder to pass, which is the point: a flattering positive is worse than a true n
 
 ## The tasks
 
+**All four groups ran. The markers below are closed out; the task descriptions are not revised.**
+`notes.md` carries what each one found, including the three tasks whose scope grew on contact — Task 3
+took a five-document sweep the plan named as three, Task 4 took `../implementation-plan.md` as well as
+`../../status.md`, and Task 6 took three capture runs rather than one.
+
 ### Group A — open the phase and record what was decided *(executed)*
 
 | # | Task |
@@ -170,7 +181,7 @@ harder to pass, which is the point: a flattering positive is worse than a true n
 | **3** | `EPD-003` → **partly accepted**: the fine-tuning decision, dated; strike stale open question 7; update `EPD-000`'s index row |
 | **4** | `../../status.md` — record the in-flight branch |
 
-### Group B — the capture *(touches the machine; not started)*
+### Group B — the capture *(executed; three runs, not one)*
 
 | # | Task |
 |---|---|
@@ -178,7 +189,7 @@ harder to pass, which is the point: a flattering positive is worse than a true n
 | **6** | Patch `proxy.py` (uncommitted), run the router, capture two concurrent headless sessions in different directories with one subagent, restore `src/`. Diff reproduced verbatim in `notes.md` |
 | **7** | **Verify the instrument before believing it.** Cross-check every captured length against the same run's `calls.csv` rows; compare a captured body's shape against `../../captures/log-the-whole-request.txt`; require **≥50 request bodies** or capture again |
 
-### Group C — the gate *(not started)*
+### Group C — the gate *(executed; it passed)*
 
 | # | Task |
 |---|---|
@@ -186,7 +197,7 @@ harder to pass, which is the point: a flattering positive is worse than a true n
 | **9** | Run it: raw; per-file `zstd`; per-file + **self-trained** dictionary; per-file + **held-out** dictionary; one long-window stream over the concatenation. **Sweep `--maxdict`.** Report requests and responses separately, and single-session against the mixed corpus |
 | **10** | Read the verdict and write it: near the stream, the sketch survives; near 3×, per-call files are the wrong unit |
 
-### Group D — decide and harvest *(not started)*
+### Group D — decide and harvest *(executed)*
 
 | # | Task |
 |---|---|
