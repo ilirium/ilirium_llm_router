@@ -133,6 +133,16 @@ decision 21.
 > the rest, because commit 13 produced two live instances of the defect rather than a hypothetical
 > one. See decision 21's second half.
 
+**Static analysis beyond ruff.** Other type checkers, AST-level linters, a language server — over a CLI
+or over MCP. `ruff` is all this project runs today; `method/IDM-003-development-tooling.md` records the
+pin and what it does and does not catch. *Parked because* nothing depends on it: the code is small, typed
+throughout, and covered by 158 tests. *Weaker than it looks?* **Yes, and it is worth saying why the
+obvious argument runs the wrong way.** `ty` was tried and **refused** — warnings without useful
+information — so the one data point this project has **weakens** the case rather than strengthening it.
+The honest reading is that the useful signal may be scarce generally rather than absent from that one
+tool, which was at version 0.0.14. **So the next attempt states what it expects to catch *before* it is
+run**, and is judged against that rather than against whether it produced output.
+
 **`status.md`'s shape — one row per milestone rather than per phase.** Proposed 2026-08-17 during
 Phase 8 and deliberately not done there. *The proposal:* "Where the project is" currently carries a
 per-phase table of merge commits, which duplicates what `README.md` assigns to the **phase note** —
