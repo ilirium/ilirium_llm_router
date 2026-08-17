@@ -163,15 +163,217 @@ different, and the cost of being wrong once is a committed body.
 
 ---
 
-## Paused here, deliberately
+## Task 6 — the capture. **Partly failed: Anthropic was overloaded**
 
-**Group A and Task 5 are complete, and nothing has touched the machine.** No body captured, no `src/`
-patched, no measurement run, no API call made. `git diff main -- src/` is empty.
+Run 2026-08-17, ~13:35–13:50 UTC. **The capture is short of its own floor and is missing a dimension
+the plan called load-bearing.** What happened, in order, before what it produced.
 
-**Task 5 sits in Group B but is read-only**, which is why it ran without a second ask: it reads a
-Makefile target, asks `git check-ignore` about paths that do not exist yet, and counts lines in a file
-the router wrote three weeks ago. Nothing was created, and `logs/corpus-gate/` still does not exist —
-Task 6's patch creates it. **The group boundary is not the consent boundary; the first write is.**
+### The patch, verbatim
+
+Applied to the working tree only, **never committed**, and removed with `git restore src/`. 48 lines
+added to one file.
+
+```diff
+@@ -45,6 +45,33 @@ from .stats import StatsWriter
+ logger = logging.getLogger(__name__)
++# PHASE 9 CAPTURE — THROWAWAY. NOT TO BE COMMITTED. Removed by `git restore`.
++import itertools  # noqa: E402
++import pathlib  # noqa: E402
++import threading  # noqa: E402
++
++_CAP_DIR = pathlib.Path(__file__).resolve().parents[2] / "logs" / "corpus-gate"
++_CAP_SEQ = itertools.count(1)
++_CAP_LOCK = threading.Lock()
++(_CAP_DIR / "requests").mkdir(parents=True, exist_ok=True)
++(_CAP_DIR / "responses").mkdir(parents=True, exist_ok=True)
++
++def _cap_write(kind: str, seq: int, data: bytes) -> int:
++    """Write one body verbatim. Returns what actually landed on disk, not what we were handed."""
++    (_CAP_DIR / kind / f"{seq:05d}.bin").write_bytes(data)
++    return len(data)
++
++def _cap_manifest(row: str) -> None:
++    with _CAP_LOCK, (_CAP_DIR / "manifest.csv").open("a", encoding="utf-8") as handle:
++        handle.write(row + "\n")
+
+@@ -140,6 +167,13 @@ class Proxy:   # in begin(), after call.request_bytes = len(body)
++        try:
++            call._cap_seq = next(_CAP_SEQ)
++            call._cap_req = _cap_write("requests", call._cap_seq, body)
++        except Exception as exc:  # noqa: BLE001 — capture must never break a call
++            logger.warning("capture failed: %s", exc)
++            call._cap_seq, call._cap_req = 0, -1
+
+@@ -241,10 +275,12 @@ class Proxy:   # in watch()
++        cap_buf: list[bytes] = []
+             async for chunk in reply.aiter_raw():
+                 call.saw_bytes(len(chunk))
+                 scanner.feed(chunk)
++                cap_buf.append(chunk)
+                 yield chunk
+
+@@ -266,6 +302,18 @@ class Proxy:   # in watch()'s finally, before scanner.finish()
++            # The manifest records what the *capture* saw; calls.csv records what the *router*
++            # relayed. Task 7 compares them, so they must not share a source.
++            try:
++                seq = getattr(call, "_cap_seq", 0)
++                res_n = _cap_write("responses", seq, b"".join(cap_buf))
++                _cap_manifest(
++                    f"{seq},{call.session_id},{call.agent_id},{call.path},"
++                    f"{getattr(call, '_cap_req', -1)},{res_n}"
++                )
++            except Exception as exc:  # noqa: BLE001 — capture must never break a call
++                logger.warning("capture failed: %s", exc)
+```
+
+**Both call sites are wrapped**, because *"telemetry must never break a call"* is a project
+non-negotiable and a body write is telemetry-shaped. **The manifest deliberately does not read
+`call.request_bytes`** — it records the byte count `_cap_write` returned from disk, so Task 7's
+cross-check compares two independently produced numbers rather than one number against itself.
+
+**Verified before pointing real traffic at it:** `make test` → **158 passed** with the patch applied.
+That run also produced its own finding, below. Its capture output was deleted before the real run.
+
+### What was driven
+
+| | |
+|---|---|
+| Session A | this repository — 12 named files one at a time, then a `general-purpose` subagent. `--allowedTools "Read Glob Task"` |
+| Session B | `/Users/ilirium/Projects/code-2026/pytorch_mps_deform_conv2d` — 5 named files, then every `tests/*.py`. `--allowedTools "Read Glob"` |
+
+Both headless, concurrent, `ANTHROPIC_BASE_URL=http://127.0.0.1:8787`. **Neither session had a write
+tool**, so neither project could be modified.
+
+**Project 2 has no `CLAUDE.md`.** So the two sessions differ by working directory and by the
+*presence* of project instructions, not by two different instruction files. Arguably a sharper
+contrast than planned — session A carries this repository's ~200-line file and session B carries
+none — but it is **a different test from the one described to the owner**, recorded as such rather
+than relabelled.
+
+### The failure: Anthropic returned 529 for a third of the run
+
+| Outcome | Rows |
+|---|---|
+| `ok` | 20 |
+| `http_error,529` — `overloaded_error: Overloaded` | 11 |
+| `client_disconnect` | 2 |
+| `stream_error,overloaded_error` | 1 |
+
+**Session B completed** — all 14 files read. **Session A did not**: it aborted on a 529 before
+reaching the `Task` tool, so **no subagent traffic exists in this corpus and `agent_id` is empty on
+every row.** Finding 5's specific test — that concurrency dilutes a dictionary by adding preamble
+families — is the reason the subagent was in the plan at all, and it did not run.
+
+A one-call probe sent afterwards to test recovery produced six more consecutive 529s with Claude Code
+backing off 6 s → 12 s → 19 s → 35 s → 37 s. **Anthropic was still degraded when the phase stopped**,
+so re-capturing was not possible.
+
+**This is a backend outage, not an instrument failure**, and Task 7's cross-check below is what
+establishes the difference. The router behaved correctly throughout: it recorded every 529 with the
+backend's own symbolic type, which is exactly the behaviour `../../backlog.md` predicts under "Not on
+this list" for rate-limit errors — *"the next 429 through the router writes `rate_limit_error: Error`
+into the CSV by itself"*. Same mechanism, different code. **Observed rather than reconstructed.**
+
+### Two findings that came free
+
+**The capture misses the calls `EPD-003` says are most interesting.** The verification test run
+produced **158 request captures but only 149 responses.** The 9-way gap is the paths that return
+before `watch` ever runs — the no-model 400, transport errors, and disconnect-during-upload. So a body
+store built at this hook point **silently drops exactly the rows `EPD-003` calls *"the interesting
+ones, not the broken ones"***. Phase 10 must capture at the point of failure, not only in the
+streaming path.
+
+**The sequence counter restarts with the process.** `_CAP_SEQ` begins at 1 on every router start, so a
+second capture run into the same directory would **overwrite `00001.bin` onward**. The current corpus
+survived only because there was one run. **Any top-up must move the existing capture aside first**, or
+seed the counter past the highest existing file. Noted before it costs anything.
+
+## Task 7 — verifying the instrument. **Passes. The corpus is one body short of its floor**
+
+| | |
+|---|---|
+| Captured | **49 requests, 49 responses** |
+| Request bytes on disk | **4,757,752** |
+| Response bytes on disk | **91,779** |
+| Request size min / median / max | 0 / **103,935** / 185,209 |
+| Distinct session ids | 4 |
+| **Rows carrying `agent_id`** | **0** |
+| Paths | `/v1/messages` × 46, `/api/hello` × 3 |
+
+**The cross-check passes exactly.** The multiset of request lengths recorded by the capture manifest
+is **identical** to the multiset of `request_bytes` in the 49 new `calls.csv` rows. Two independently
+written records agree, so nothing was truncated, dropped or double-counted. **The instrument is
+sound; the corpus is merely short.**
+
+**The `/api/hello` rows are the catch-all route firing** — `path` doing precisely the job
+`../../reference/observability.md` claims for it, *"turns a standing 'other endpoints' worry into a
+list of facts"*. Three requests to an endpoint nobody enumerated, visible for free.
+
+### The preamble comparison — and a difference that matters to the gate
+
+Largest captured body against the frozen `../../captures/log-the-whole-request.txt` of 2026-07-28:
+
+| | Frozen, interactive | Captured, headless |
+|---|---|---|
+| Top-level keys | 10 | **identical 10** |
+| `system` blocks | 3 | 3 |
+| `system` bytes | 28,303 | **10,800** |
+| `tools` count / bytes | 27 / 82,725 | 30 / **71,811** |
+| **Static preamble total** | **111,028** | **82,611** |
+| `messages` | 2 | **35** |
+
+**The key set is identical**, so a headless session produces the same request *shape* — the plan
+recorded that as **assumed** and it is now measured.
+
+**But the static preamble is ~28 KB smaller headless than interactive**, almost all of it a shorter
+system prompt. Two consequences, and the second is a caveat that must ride on any number this corpus
+produces:
+
+- **Finding 3 is confirmed for interactive use.** The frozen interactive preamble is **111,028 bytes**
+  against `--maxdict`'s **112,640** default — within 1.5% of the cap, and independently confirming
+  `stats.py`'s measured "~110 KB".
+- **This corpus makes the dictionary's job easier than reality.** At 82.6 KB the headless preamble sits
+  comfortably under the default cap, so a dictionary trained here has room the interactive case would
+  not give it. **A favourable gate result from this corpus would not transfer to interactive use
+  without re-checking.**
+
+`messages` grew from 2 to 35, so the O(N²) re-send this whole gate is about is present in the corpus.
+
+**Median request 103,935 bytes against `EPD-003`'s measured 20.5 KB.** Five times larger, because these
+sessions read source files one at a time and each read stays in context. Not a contradiction of
+`EPD-003` — a different workload, and it is the *shape* of the sessions this capture was told to drive.
+
+### The floor is not met
+
+`plan.md` requires **≥50 request bodies or capture again**. There are **49**, and more importantly
+**0 with `agent_id`**. Capturing again is blocked on Anthropic. **Stopped here rather than proceeding
+to Group C**, because the threshold exists to stop a weak number being computed and then quoted.
+
+---
+
+## Paused after Task 7, blocked on the backend
+
+**Tasks 1–7 are done. The phase is stopped before Group C**, because the gate's input does not meet
+the threshold the plan set for it.
+
+**The machine is left clean.** Router stopped, `src/` restored — `git diff main -- src/` is empty —
+working tree clean, `make test` **158 passed**. Nothing captured is committed, and nothing captured is
+committable.
+
+| Blocker | State |
+|---|---|
+| **49 request bodies against a floor of 50** | one short |
+| **No subagent traffic at all** | Finding 5's dimension is untested |
+| **Anthropic returning 529** | re-capture impossible at the time of writing |
+
+**The corpus is preserved** in `logs/corpus-gate/`, gitignored, so a top-up is possible when the
+backend recovers — **provided the sequence-counter hazard above is handled first.**
+
+**A number was not computed from the short corpus.** The threshold exists to stop a weak figure being
+produced and then quoted as the gate's answer, and this repository has the specific failure it is
+guarding against: `../../reference/lessons.md` records a number that was *"correct and unusable
+because its slice was missing"*. A dictionary ratio from a corpus with no subagent traffic and a
+headless-shortened preamble would be exactly that.
 
 Task 6 needs the owner's go-ahead in its own right: it patches `proxy.py`, runs the router, and makes
 real API calls. `CLAUDE.md`'s working agreement — *"Ask before touching the machine … consent for one
