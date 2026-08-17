@@ -557,7 +557,8 @@ stays** — *never bump the ruff pin as a side effect* is exactly a thing a sess
 and wrongly, and it has already happened once here. **The reasoning, the `E501` explanation and the
 AST-comparison procedure go to `IDM-003`**, behind a pointer naming when to open it.
 
-**Task 17 — close out `procedures/link-check.py`'s docstring, and re-derive its counts.**
+**Task 17 — close out `procedures/link-check.py`'s docstring, re-derive its counts, and
+re-aim its backlog item.**
 
 **The finding this task exists for was missed by the plan and found by review.** `link-check.py`'s
 docstring lists seven hits as *"correct and permanent"* — and **Phase 8 builds five of them**:
@@ -579,6 +580,34 @@ The work: rewrite the permanent-hits list from seven to two, drop the decision-1
 — 82 minus the five that now resolve, with all 16 of this branch's own hits resolved too. **Derive it
 by running the checker, and if it disagrees with 77, find out why before editing the number.** A
 count written to match an expectation is exactly the defect `EPD-004` decision 20 was written about.
+
+**And while doing it, measure it.** This task is the first time anybody hand-maintains that
+docstring, and the cost is the evidence for whether the instrument should change. Record in
+`notes.md`: how long it took, how many numbers had to be re-derived, and whether the permanent-hits
+list could have been got right without running the checker.
+
+**Then rewrite `backlog.md`'s link-check item**, which currently leads with the wrong problem:
+
+> *It names two missing features — heading anchors, and `file.py:N` line citations — and says both
+> were hand-verified and passed, so they buy repeatability rather than fixing a defect. **True, and
+> they are not the main thing.***
+
+**The main thing is that the exit code carries no information.** `link-check.py:222` is
+`return 1 if check(...) else 0` and there is **no expected-failures mechanism in the code** — the 82
+correct-and-permanent hits exist only as prose in the docstring. So the tool exits 1 permanently, can
+never gate a commit or a hook, and reading its output requires a human holding a number from a
+comment. Three pieces of evidence from Phase 8, all new:
+
+- The docstring's `82` and `71` are hand-maintained state, re-derived by this task rather than by the
+  tool — a number nobody re-derives is this repository's signature failure.
+- **Five of seven "permanent" hits stopped being permanent in a single phase.**
+- **Every phase plan legitimately cites files it will create.** This one added 16, all correct, all
+  reported as breakage. That is a recurring false-positive class, not drift.
+
+*Parked because* the redesign should be argued from the measurement this task produces, not from the
+irritation of having done it once — `EPD-004` decision 12's reasoning, that an instrument which has
+never been run should not be committed, applied to an instrument that has. Decide at Milestone 2's
+close.
 
 ## Done when
 
