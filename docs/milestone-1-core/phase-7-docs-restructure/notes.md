@@ -1,9 +1,10 @@
 # Phase 7 — the documentation restructure: notes
 
-Branch: `docs/milestone-boundary-restructure`, off `main` at `9dd907e`. **Merge commit not yet
-recorded — the branch is unmerged as this is written.** That sentence is deliberate: four phase notes
-in this archive say "merge back with `--no-ff`" and were never closed out, which is the defect
-`../../backlog.md` carries. Whoever merges this fills the hash in, and that is the whole of the fix.
+Branch: `docs/milestone-boundary-restructure`, off `main` at `9dd907e`, **merged 2026-08-17 with
+`--no-ff` as `9c30924`.** The sentence this replaces was deliberate: it said the hash was not yet
+recorded, because four phase notes in this archive say "merge back with `--no-ff`" and were never
+closed out, which is the defect `../../backlog.md` carries. Filling the hash in was the whole of the
+fix, and it is the one edit this note takes after being written.
 
 Written 2026-08-15 to 2026-08-16, **while the work was happening** rather than afterwards, which is
 what makes the "What commit N found" sections worth anything: several of them record the plan being

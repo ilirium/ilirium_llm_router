@@ -10,19 +10,18 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-17 — Phase 7 is finished and its review is parked.** Branch
-`docs/milestone-boundary-restructure`, unmerged, `main` untouched. All fifteen tasks done; `docs/`
-has its finished shape and `CLAUDE.md` is 188 lines, down from 337.
+**2026-08-17 — Phase 7 is merged and Milestone 1 is closed.** `docs/milestone-boundary-restructure`
+merged into `main` with `--no-ff` as **`9c30924`**, and the hash is recorded in
+`milestone-1-core/phase-7-docs-restructure/notes.md` — the one closeout four earlier phase notes
+never got. All fifteen tasks done; `docs/` has its finished shape and `CLAUDE.md` is 188 lines, down
+from 337. `main` is ahead of `origin/main` and nothing has been pushed.
 
-**The documentation review is no longer a blocker — the owner parked it whole**, findings and open
-questions alike, and it is now `backlog.md`, "Documentation defects found and not fixed". Nothing in
-it has been acted on and nothing is scheduled. The next work is **Milestone 2 and the router itself**,
-not more documentation.
+**The documentation review was parked whole**, findings and open questions alike, and lives in
+`backlog.md` under "Documentation defects found and not fixed". Nothing in it has been acted on and
+nothing is scheduled — including two cheap findings that would make a session act wrongly, which are
+named there.
 
-**The branch is ready to merge and the merge is the owner's to call.** Do not merge unasked. When
-asked: `--no-ff`, then write the merge hash into
-`milestone-1-core/phase-7-docs-restructure/notes.md` — leaving that hash unrecorded is the exact
-defect `backlog.md` carries against four earlier phase notes.
+**The next work is the router, not the documentation:** open Milestone 2, starting at Phase 8.
 
 **Before touching anything:** `procedures/link-check.py` before and after anything that moves, and
 `make test` must report **158**. The checker **does not report zero** — its docstring says which hits
@@ -43,7 +42,7 @@ are correct and permanent, and the count it states is current.
 | 4 | LM Studio parity — what the local backend accepts, honours and ignores | `50444c5` |
 | 5 | Config and timeouts — credential modes, per-backend `read_timeout` | `c8401e9` |
 | 6 | Review and cleanup — the first review phase | `532dc86` |
-| 7 | The documentation restructure — this file, the reference tier, the manual | **unmerged** |
+| 7 | The documentation restructure — this file, the reference tier, the manual | `9c30924` |
 
 Phases 0 and 1 were fast-forwarded before the `--no-ff` convention existed;
 `milestone-1-core/README.md` says why they are left that way. **Milestone 2 starts at Phase 8**,
@@ -77,6 +76,6 @@ is the full inventory.*
 *Merged branches are not listed — git already holds that, and a hand-maintained list would drift.
 The permanent record of a phase's branch, fork point and merge commit belongs in its phase note.*
 
-| Branch | Purpose | State |
-|---|---|---|
-| `docs/milestone-boundary-restructure` | `EPD-004`'s migration — Phase 7 | **All fifteen tasks done, tree clean, ready to merge.** The merge is the owner's call and is not to be made unasked. Pushed but well behind: the remote sits at `f473277`, before execution started |
+**None.** Phase 7 merged as `9c30924` on 2026-08-17 and the table is empty until Milestone 2 opens a
+branch. `main` is ahead of `origin/main`; `docs/milestone-boundary-restructure` still exists locally
+and its remote is stale at `f473277`, from before execution started.

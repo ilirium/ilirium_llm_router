@@ -60,7 +60,7 @@ to be re-run went to `../procedures/`; the raw captured request is in `../captur
 | 4 | `feat/phase-4-lmstudio-parity` | `50444c5` | What LM Studio supports, measured instead of guessed. **Nothing was rejected**; the gaps are things accepted and not honoured. Found the router's read timeout reachable by ordinary traffic |
 | 5 | `feat/phase-5-config-and-timeouts` | `c8401e9` | The three credential modes built and carried live against an authenticated LM Studio, and `read_timeout` made per backend — which unblocked ruling out silent trimming below the context boundary |
 | 6 | `feat/phase-6-review-and-cleanup` | `532dc86` | The review. Fifteen of sixteen quoted measurements reproduced to the digit; seven items fixed in about forty lines; two proposed cuts refused with the measurement that refused them |
-| 7 | `docs/milestone-boundary-restructure` | *unmerged as this is written* | The documentation restructure — this archive, the reference tier, the manual, and `CLAUDE.md` cut from 337 lines to 188. The only phase on a `docs/` branch, and the only one whose folder name does not match its branch |
+| 7 | `docs/milestone-boundary-restructure` | `9c30924` | The documentation restructure — this archive, the reference tier, the manual, and `CLAUDE.md` cut from 337 lines to 188. The only phase on a `docs/` branch, and the only one whose folder name does not match its branch |
 
 **Phase 7 is the milestone's close, and it is a phase for the same reason Phase 6 was.** `EPD-004`
 decision 14 had been read as "a `docs/` branch is not a phase"; that rule chooses a branch prefix, not
