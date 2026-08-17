@@ -1,6 +1,13 @@
 # The next session's opening prompt
 
-**Written 2026-08-17, at the end of Phase 9. It opens Phase 10 and nothing else.**
+**Written 2026-08-17 at the end of Phase 9, refreshed the same day. It opens Phase 10 and nothing
+else.**
+
+*Refreshed after seven commits landed behind it. Only one of them changed what a session needs told:
+`IDM-001` gained a closeout rule, so the block now points at it. `status.md`'s shape also changed —
+one row per milestone — and the block needed **no** edit for it, because it points at that file rather
+than restating it. **That is the design working**, and it is the reason the pointing rule is worth
+keeping when this file is next rewritten.*
 
 Paste the block below into a fresh session. It is a *starting instruction*, not a handoff note: it
 names what to read and what to distrust, and deliberately does not summarise the repository — the
@@ -61,6 +68,17 @@ in `docs/reference/measurements.md` says which. Do not quote it without the slic
 Pick the branch prefix per `docs/method/IDM-001-git-branching.md` and say in the
 plan why. Note Phase 9 was `docs/` because no `src/` change survived it; this one
 is different.
+
+Read that document's section "Closing out a status placeholder is part of the
+merge" **before** you merge, not after. It was added on 2026-08-17 because Phase 9
+obeyed the narrower rule it replaced and still shipped two stale placeholders —
+`*(not started)*` group markers in its own plan, and a task count in `status.md`.
+Both were caught by the owner rather than by the phase.
+
+When Phase 10 merges, **replace or delete `docs/prompt.md`** — this file. It names
+Phase 10 and nothing else, and a stale opening prompt sends the next session to
+redo finished work. `docs/README.md` records that it is the one file there allowed
+to go stale, and why that means it must be closed out.
 
 Bundled into this phase deliberately: move `calls.csv` and `router.log` into
 `logs/telemetry/`, alongside the new `logs/corpus/`. It touches `config.yaml` and
