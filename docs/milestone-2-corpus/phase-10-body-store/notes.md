@@ -684,9 +684,10 @@ and the GIL assertion demoted from a design premise to a row in "Documented vers
 
 ## Task 3a — the forward review: this session's pass
 
-**Run 2026-08-18 against `plan.md` Tasks 4–24 per `review-charter.md`. Unreconciled** — the
-fresh-context run was launched first and had not returned when this was written, so nothing here is
-influenced by it and nothing here is confirmed by it either.
+**Run 2026-08-18 against `plan.md` Tasks 4–24 per `review-charter.md`.** **Written before the
+fresh-context run returned**, so nothing in this section is influenced by it or confirmed by it —
+**the reconciliation is the section below**, and one finding here was refuted there. *(This paragraph
+said "Unreconciled" as a status until the reconciliation landed the same day.)*
 
 **The question this run answers** is whether the plan is consistent with what was decided. It cannot
 answer whether the plan is legible to somebody who was not here; that is the other run's, and this

@@ -25,8 +25,8 @@ They are not relative to this file. They were verified by hand on 2026-08-18, be
 Continue Phase 10 of Milestone 2, executing from Task 4.
 
 The branch already exists: `feat/phase-10-body-store`, forked from `main` at
-`d885b2f`, eleven commits, all documentation. **Check it out; do not open a new
-one.** `git diff main -- src/` is empty and Task 4 is where that changes.
+`d885b2f`, documentation only. **Check it out; do not open a new one.**
+`git diff main -- src/` is empty, and Task 4 is where that changes.
 
 Read `docs/status.md` first, then
 `docs/milestone-2-corpus/phase-10-body-store/plan.md` — twenty-five tasks in six
@@ -60,8 +60,10 @@ Baselines to re-derive by running, never by prediction:
 - `docs/procedures/link-check.py` reports **68 broken and 2 roundabout on `main`,
   79 on this branch.** It never reports zero. The extra hits are files that this
   plan's own tasks create plus `review-charter.md` naming the known false
-  positives; its docstring says which hits are permanent. Two earlier sessions got
-  this wrong by reading the docstring instead of running the tool.
+  positives; its docstring says which hits are permanent. **The branch figure falls
+  as those tasks create their files**, so treat 79 as the starting point rather than
+  a target. Two earlier sessions got this wrong by reading the docstring instead of
+  running the tool.
 - `make test` must report **158**. Normally ~0.6 s — but the **first** run after
   the cloud-synced folder has evicted the virtualenv takes **two to three minutes**,
   because every package file is fetched on first touch. **A slow first run is not a

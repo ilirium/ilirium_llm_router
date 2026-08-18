@@ -141,7 +141,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | clean; **documentation only, eleven commits.** No `src/` change yet | **Task 4** — `uv add zstandard`, then the benchmark. Group A is done, including the forward review |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | clean; **documentation only.** `git diff main -- src/` is empty, and Task 4 is where that changes | **Task 4** — `uv add zstandard`, then the benchmark. Group A is done, including the forward review |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

@@ -2,6 +2,11 @@
 
 **Written 2026-08-18 on `feat/phase-10-body-store`, before the review ran. Task 3a.**
 
+> **The review has since run, and this file is now a worked example rather than an instruction.** Both
+> passes and their reconciliation are in `notes.md` under Task 3a; the twenty-two findings are applied;
+> and `../../method/IDM-004-reviewing-unexecuted-work.md` is the general protocol written from what it
+> cost. **Nothing below was edited afterwards** — it is what the reviewers were actually given.
+
 **A forward review examines work that has not happened yet.** `../../README.md` already specifies a
 **closing** review — executed work, at a milestone's end, with a checklist. This is the other one, and
 confusing the two is the first thing this document exists to prevent.
