@@ -599,7 +599,7 @@ the one that counts.
 | Layer | What it establishes |
 |---|---|
 | **1. `make check`** | Every key above appears, resolves and prints. Relative paths resolve against the **config file's** directory, not the working directory — so the printed `logs/telemetry/calls.csv` and `logs/corpus` must be absolute and under the repository. A key removed or renamed shows up here as an error rather than a default |
-| **2. `make test`** | Rejections are refusals rather than warnings: an unknown key under `corpus:`, `enabled` non-boolean, either limit at zero or negative, `compress_level_zstd` out of range. Plus the round-trip and drop-policy behaviour from Task 13 |
+| **2. `make test`** | Rejections are refusals rather than warnings: an unknown key under `corpus:`, `enabled` non-boolean, either limit at zero or negative, `compress_level_zstd` outside what `zstd` itself accepts — **read the library's own bounds rather than hardcoding a range**, so the check tracks libzstd instead of a number of ours. Owner's decision 2026-08-18: *accept the valid values for zstd and reject any other, as a sanity check*. Plus the round-trip and drop-policy behaviour from Task 13 |
 | **3. Driving it** | The router started with `corpus.enabled: false` writes **no** `logs/corpus/` at all; started with it true, a real call produces a day folder holding a blob, a 25-column index row, a `manifest`, and — once Task 15 has trained one — a **plain copy** of the dictionary. Stopping the router drains the queue and emits the summary line |
 
 **Layer 3 needs its own consent.** It starts the router and sends real traffic, and `CLAUDE.md` is

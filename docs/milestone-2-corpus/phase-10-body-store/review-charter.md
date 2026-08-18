@@ -125,7 +125,7 @@ is a **recurring** false-positive class; Phase 8's plan contributed twenty-three
 - **Four forward citations** in `plan.md`: `src/ilirium_llm_router/corpus.py`, `docs/reference/corpus.md`,
   `docs/procedures/corpus-benchmark/`, `docs/procedures/corpus-dictionary/`. All are created by
   Tasks 8, 19, 5 and 14. `link-check.py` reports them as broken and that is correct behaviour.
-- **`link-check.py` does not report zero**, ever. 68 broken and 2 roundabout on `main`; 72 on this
+- **`link-check.py` does not report zero**, ever. 68 broken and 2 roundabout on `main`; 78 on this
   branch. Its own docstring says which hits are correct and permanent. **Do not predict the count —
   run the tool.**
 - **Two deliberate absences** outside the archive: `.claude/agents/local-helper.md` and
