@@ -13,17 +13,21 @@ the session that wrote it, it has become a document and gets its own file.*
 **2026-08-18 — Phase 10 is open and planned, and nothing is executed.**
 `feat/phase-10-body-store`, forked at `d885b2f`. **A `feat/` branch because `src/` gains a module and
 keeps it** — the case `method/IDM-001-git-branching.md` separates from Phase 9's `docs/`. Its
-`plan.md` carries **twenty tasks plus Group B0's three**, and its `notes.md` carries the
+`plan.md` carries **twenty-four tasks in six groups**, and its `notes.md` carries the
 re-derivation: **nine findings, six against Phase 9's fenced sketch**, each also written as a question
 with options.
 
 **Three interviews, and the last two changed the design.** The first settled capture **opt-in and off
 by default**, **no headers ever**, `zstandard`, and a scope with no live session. The second refused
-an **unverified GIL claim** the write path rested on, adding **Group B0: benchmark before any store
+an **unverified GIL claim** the write path rested on, adding **Group B: benchmark before any store
 code**. The third settled diagnostics — **one tool not two, plain dictionary copies in
 self-contained day folders, a configurable level, and one arrived-against-recorded counter pair** —
-and reserved three further diagnostics to `backlog.md`. **Nothing has run**; Group B0 needs consent
-to install `zstandard` and to run the benchmark.
+and reserved three further diagnostics to `backlog.md`.
+
+**Group B is cleared to run and has not.** Permission was given 2026-08-18 to install `zstandard` and
+run the benchmark over the corpus already in `logs/corpus-gate/`. The task list was **renumbered** at
+the same time — an exception to `README.md`, recorded in the plan with the one cost that cannot be
+undone. **No `src/` change exists yet.**
 
 **2026-08-17 — Phase 9 is merged** as **`b29d502`**, all sixteen tasks done. **Per-call files are the
 unit**; the decision is in `reference/design-decisions.md` and the gate's numbers in
@@ -110,7 +114,7 @@ is the full inventory.*
 1. **Execute Phase 10 — the body store.** **Planned 2026-08-18 and not started**; the branch is in
    the table below and the task list is in `milestone-2-corpus/phase-10-body-store/plan.md`.
    `EPD-003`'s open questions 3–6 are answered in that plan and are **not yet written back into
-   `EPD-003` itself** — that is its Task 16. *(This item read "Plan and execute" and restated what the
+   `EPD-003` itself** — that is its Task 20. *(This item read "Plan and execute" and restated what the
    phase must settle; the plan now holds that, so restating it here would be the second copy this
    structure exists to prevent.)*
 2. **Decide `EPD-001` or `002`.** Both are blocked on a person rather than on work, and both are argued
@@ -128,7 +132,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | clean; **three commits, all documentation.** No `src/` change yet | Task 3a — but it needs consent to install `zstandard` and run the benchmark |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | clean; **documentation only.** No `src/` change yet | **Task 4** — `uv add zstandard`, cleared to run |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

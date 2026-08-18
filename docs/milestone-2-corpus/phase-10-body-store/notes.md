@@ -153,8 +153,9 @@ argument intact: `tar` detects hardlinks among *archived members*, so a day fold
 its link partner emits a real file. One durable `dicts/` at the corpus root, hard-linked into each day
 that uses it.
 
-**Marked as inferred rather than measured**, from how `tar` resolves hardlinks. Task 5 verifies it
-instead of trusting this paragraph.
+*Superseded 2026-08-18: the owner chose plain copies (Q7), so there are no hard links and no root
+folder. **The finding stands — the sketch's ~80 MB a year is real and was accepted** — but the repair
+this paragraph proposed is not the one taken.*
 
 ### 8 — `make test` takes 150 seconds on this machine, not 0.6
 
@@ -168,7 +169,7 @@ thing. It cost this session three abandoned invocations before the cause was fou
 
 ### 9 — The `logs/telemetry/` sweep is smaller than it looks, and one judgement in it is not mechanical
 
-**Live citations, which Task 13 and Task 14 must change:** `config.yaml` (two), `config.py` (two
+**Live citations, which Tasks 16 and 17 must change:** `config.yaml` (two), `config.py` (two
 defaults), `tests/test_config.py`, `tests/test_logging_setup.py`, `CLAUDE.md:115`, `README.md:17`,
 `../../reference/observability.md`'s config-shape block, `../../procedures/testing-against-claude-code.md`
 in three places, and `../../procedures/lmstudio-capability-probes/probe.py:290`.
@@ -185,7 +186,7 @@ rather than a claim. That licence does not reach these:
 
 **The rule that decides it:** a path is editable in the archive when repointing *preserves what the
 document means*. Here it would change what the document means. So the sweep is a live-documents sweep,
-and Task 14 states that rather than leaving the untouched hits looking like an oversight.
+and Task 17 states that rather than leaving the untouched hits looking like an oversight.
 
 ---
 
@@ -214,7 +215,7 @@ phase raised about itself.*
 | **Q7** | How does a day folder get the dictionary it needs? | **Decided: a plain copy**, and no root folder. *Reversed* |
 | **Q8** | Where does "the tests take 150 s here" get recorded? | **This note only** |
 | **Q9** | Which documents get repointed by the telemetry move? | **Live documents only** |
-| **Q10** | What compression level does the write path use? | **Decided: configurable**, default measured by Task 3c |
+| **Q10** | What compression level does the write path use? | **Decided: `compress_level_zstd`**, default measured by Task 6 |
 | **Q11** | Is the corpus's copy of a response a second buffer? | **Yes, separate from the scanner's** |
 | **Q12** | How is "did this ever come close?" answerable later? | **Decided: A, plus one counter pair** for loss outside the corpus |
 
@@ -268,7 +269,7 @@ one turns overload into log spam at the moment the log most needs to stay readab
 > |---|---|
 > | `asyncio.Queue` | **Not thread-safe**, and the producer is the event loop while the consumer is a worker thread. The tempting mistake |
 > | `queue.Queue(maxsize=N)` | Bounded — **in items**, which is Finding 1 itself |
-> | `multiprocessing.Queue` | Pickles every body. Only relevant if Task 3c sends us to processes |
+> | `multiprocessing.Queue` | Pickles every body. Only relevant if Task 6 sends us to processes |
 >
 > `SimpleQueue` because none of `Queue`'s extra machinery is used: no `maxsize`, no `task_done()`, no
 > `join()`. Shutdown is a sentinel and a **timed** thread join — a full queue is ~640 bodies, and a
@@ -391,7 +392,7 @@ ceiling is a different thing: it is complete-looking and incomplete.
 > procedure runs anywhere the venv does. **The risk is real but small and checkable** — both wrap
 > libzstd, so compression at the same level with the same dictionary should agree, but *training*
 > defaults may differ, and training defaults are exactly where Phase 9 found non-monotonicity.
-> **Task 3c compares the two trainers on the same samples**, so the risk is measured rather than
+> **Task 6 compares the two trainers on the same samples**, so the risk is measured rather than
 > accepted or assumed.
 
 **In plain terms.** You have decided the **router** gets the `zstandard` package. Separately, there is
@@ -447,7 +448,7 @@ about 80 MB a year. It left the choice between plain copies and filesystem clone
 
 | Option | Buys | Costs |
 |---|---|---|
-| **A — a hard link into the day folder** *(assumed)* | The folder appears to contain its dictionary and costs nothing. Archiving one day still produces a real file, so portability survives | Links fail across filesystems, so an absolute `dir` on another volume needs a fallback. **This is inferred, not measured** — Task 5 verifies it |
+| **A — a hard link into the day folder** *(assumed, and rejected)* | The folder appears to contain its dictionary and costs nothing. Archiving one day still produces a real file, so portability survives | Links fail across filesystems, so an absolute `dir` on another volume needs a fallback — and the root folder it needed as a target was this plan's own invention |
 | **B — plain copies** | Works everywhere, no cleverness, and a duplicate is also a backup of something that must never be lost | ~80 MB a year, roughly a quarter of the projected corpus, and more if a dictionary wants to be larger |
 | **C — one `dicts/` at the root, and the day's manifest names what it uses** | Zero bytes, no links, one obvious home for a thing that is never deleted | Archiving a single day no longer produces something that opens by itself, which was the sketch's reason for the copy |
 
@@ -479,7 +480,7 @@ repointed because a path is navigation, but a **claim** may not.
 
 | Option | Buys | Costs |
 |---|---|---|
-| **A — live documents only** *(assumed)* | The archive keeps saying what was true when it was written. `logs/` is gitignored and the link checker skips it, so nothing becomes unfollowable | Two documents will name a path that no longer exists, and it will look like an oversight unless Task 14 says otherwise — which it does |
+| **A — live documents only** *(assumed)* | The archive keeps saying what was true when it was written. `logs/` is gitignored and the link checker skips it, so nothing becomes unfollowable | Two documents will name a path that no longer exists, and it will look like an oversight unless Task 17 says otherwise — which it does |
 | **B — repoint everything, archive included** | Grep for the old path returns nothing, so nobody wonders | Rewrites measurements into statements that were never true. *"`logs/telemetry/calls.csv` before the capture — 177 lines"* is a sentence about a file that did not exist that day |
 | **C — live documents, plus a note in each affected `evidence/README.md`** | The archive stays honest and a reader is told why the path reads oddly | More edits, in directories this phase otherwise does not touch |
 
@@ -487,9 +488,14 @@ repointed because a path is navigation, but a **claim** may not.
 
 ### Q10 — What compression level does the write path use?
 
-> **Decided 2026-08-18: option D — configurable, with a default measured by Task 3c.** `level` joins
-> the `corpus:` block. The owner's reasoning is the one the option names: this is the knob where the
-> right answer genuinely depends on the machine.
+> **Decided 2026-08-18: option D — configurable, with a default measured by Task 6.** The owner's
+> reasoning is the one the option names: this is the knob where the right answer genuinely depends on
+> the machine.
+>
+> **The key is `compress_level_zstd`, not `level`** — renamed the same day, on the owner's
+> instruction that a key should be self-describing. `level` already means something else two keys
+> away in the same file: `logging.level` is a severity. A name read in isolation should say **what it
+> sets and whose scale it is on**.
 
 **In plain terms.** `zstd` has levels from 1 to 22, trading speed against ratio. **Every number this
 milestone owns was measured at level 19**, because Phase 9 was measuring a *ratio* offline where time
@@ -499,7 +505,7 @@ measured *with a dictionary already carrying the static preamble*.
 
 | Option | Buys | Costs |
 |---|---|---|
-| **A — measure first, then choose** *(assumed; Task 3c)* | The level is picked from this corpus on this machine, and the ratio it costs is known rather than guessed | One more thing before the store is written — though the corpus is on disk, so it is a sweep, not a capture |
+| **A — measure first, then choose** *(assumed; Task 6)* | The level is picked from this corpus on this machine, and the ratio it costs is known rather than guessed | One more thing before the store is written — though the corpus is on disk, so it is a sweep, not a capture |
 | **B — level 19, matching every existing number** | Every figure in `../../reference/measurements.md` stays directly comparable | ~29 bodies/second per thread. Ten to thirty times the owner's stated load, which is fine — until it is not, and nothing would say so |
 | **C — level 3, matching the sketch's instinct for speed** | Effectively free compression; the worker could never be the bottleneck | Gives up an unknown amount of ratio, on a milestone whose whole claim is about size |
 | **D — configurable, with a measured default** | The one knob where the right answer genuinely depends on the machine | A knob. `../../README.md`'s style rule prefers an obvious explicit choice to a general one |
@@ -556,6 +562,34 @@ question the data answers months later rather than one somebody has to be watchi
 
 ---
 
+## The renumbering, and the permission — 2026-08-18
+
+**Two owner instructions, taken together because the second is what makes the first safe.**
+
+**Permission was given to run the benchmark group** — installing `zstandard` and running the script
+over `logs/corpus-gate/`. Neither starts the router nor makes an API call, and the layer-3 check in
+Task 18 still asks separately, because *consent for one is not consent for the next*.
+
+**And the task list was renumbered**, dissolving `Group B0` and the lettered `3a`/`3b`/`3c` into a
+straight 1 to 24 across six groups. **This is an exception to `../../README.md`, which says task
+numbers are *"never renumbered once published"*, and it is recorded rather than quietly taken.**
+
+**Phase 9 drew the same line one step earlier and gave the reason** — it renumbered *before
+publication* because *"publishing it and then amending it would have spent letters on work nobody had
+started"*. That reasoning applies unchanged here: **nothing has executed**, so no number has yet been
+cited by a commit doing the work.
+
+**One cost cannot be undone.** Four commit messages already in this branch say *"Task 1 of…"* and
+*"Tasks 2 and 3 of…"* against the old numbering; git history is not editable. Tasks 1 to 3 kept their
+numbers, so those citations remain correct — **which is luck rather than design, and would not hold
+if a renumber were done again later.** From the first task that executes, the rule applies with no
+exception.
+
+**A question left for the owner rather than answered here:** `../../README.md` says *"once
+published"*, and this phase has now treated the line as *once executed*. Those are different, and the
+manual should say which it means. **Amending it is a method decision**, so it is raised rather than
+made.
+
 ## The diagnostics interview, 2026-08-18
 
 **A third pass, and the shortest.** The owner asked one general question — *what else needs logging
@@ -590,7 +624,7 @@ at level 19.
 
 **So the bottleneck ranking inverted.** Choosing the compression level buys 50–100×; adding four
 workers buys 4×. **The level is the cheap lever and it is measurable today**, on the corpus already in
-`logs/corpus-gate/`, with no capture and no live session. That became Q10 and Group B0.
+`logs/corpus-gate/`, with no capture and no live session. That became Q10 and the benchmark group.
 
 **And at that load the binding constraint is not CPU at all.** Fifteen calls in flight holding request
 and response bodies is a few megabytes; what protects the router above the ceiling is the **byte bound
@@ -621,10 +655,10 @@ special storage infrastructure"*.
 
 ### What it cost the plan
 
-Group B0 (`3a`, `3b`, `3c`), Tasks 6 and 7 widened, four decisions added, and the GIL assertion
-demoted from a design premise to a row in "Documented versus measured" reading **unverified**. **No
-task was renumbered.**
+A benchmark group before any store code, the queue and index tasks widened, four decisions added,
+and the GIL assertion demoted from a design premise to a row in "Documented versus measured" reading
+**unverified**.
 
 ## Verified by
 
-*Not yet — this section is written at Task 20, and states what was run, when, and what it produced.*
+*Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*

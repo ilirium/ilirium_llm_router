@@ -3,10 +3,11 @@
 **Written 2026-08-18 on `feat/phase-10-body-store`, forked from `main` at `d885b2f`. Not yet
 executed — no task below has been started.**
 
-**Twenty tasks in five groups.** Group A opens the phase and records what the opening interview
-decided. Group B builds the store. Group C trains the first dictionary and writes the instrument that
-keeps training honest. Group D moves the telemetry files. Group E harvests, closes out `EPD-003`'s
-remaining open questions, and merges.
+**Twenty-four tasks in six groups.** Group A opens the phase and records what the opening interview
+decided. Group B benchmarks, before any store code exists. Group C builds the store. Group D trains
+the first dictionary and writes the instrument that keeps training honest. Group E moves the
+telemetry files. Group F verifies the configuration, harvests, closes out `EPD-003`'s remaining open
+questions, and merges.
 
 **This phase's first act was its re-derivation, and it ran before this file was published** — the same
 shape Phase 9 used, for the same reason: findings that land during the interview should shape the task
@@ -16,8 +17,9 @@ four of them changed the design below.
 *Revised 2026-08-18, after a second interview on the write path — the owner raised performance under
 concurrent harnesses and refused the unverified GIL claim this file rested on. **Corrected in place
 with dated notes rather than rewritten**, per the precedent Phase 8's Task 17a set for a live plan.
-What changed: Group B0 is new, Tasks 6 and 7 are widened, and four decisions were added above. **No
-task was renumbered** — `../../README.md`: an insertion is a letter.*
+What changed: a benchmark group is new, the queue and index tasks are widened, and four decisions
+were added above. *(The task list was **renumbered** on 2026-08-18, on the owner's instruction and
+before anything executed; the exception is recorded under "The tasks".)*
 
 ---
 
@@ -46,20 +48,20 @@ two of `EPD-003`'s four remaining open questions**; the other two are this phase
 | **Headers** — `EPD-003` open question 6, *"the single most sensitive thing the router touches"* | **No headers, ever.** The store takes bodies only. What analysis wants from headers — `session_id` and `agent_id` — is **already two columns of the index**, copied by the recorder from a dictionary lookup. This keeps the corpus merely sensitive rather than a secret store, and keeps the write path a byte queue with no filtering logic in it. An allowlist, and a redact-the-credential variant, were both offered and declined |
 | **The zstd binding** | **Add `zstandard` to dependencies.** Finding 5 in `notes.md`: Python 3.13 has no `compression.zstd` and nothing in `EPD-003`, the sketch or the gate noticed. Shelling out to the `zstd` CLI per body, and bumping to Python 3.14 for its stdlib module, were both offered and declined |
 | **Scope** | **Build, test, and train from the surviving corpus.** No live driven session, no new API calls. `logs/corpus-gate/` still holds Phase 9's three runs and eight dictionaries — verified present on 2026-08-18 — so a real dictionary is available without capturing anything. **What this costs is named below**, under "What this phase does not settle" |
-| **The executor** | **One worker thread, chosen from a measurement rather than from this table.** The prototype stays simple; the benchmark below says whether it is right. A `corpus.workers` knob is added **only if** Task 3c's numbers show the GIL is released *and* that more than one worker helps — configuration this project does not need is configuration it does not get |
+| **The executor** | **One worker thread, chosen from a measurement rather than from this table.** The prototype stays simple; the benchmark below says whether it is right. A `corpus.workers` knob is added **only if** Task 6's numbers show the GIL is released *and* that more than one worker helps — configuration this project does not need is configuration it does not get |
 | **Diagnosability** | **The severity question is answered from data the store already writes.** The owner's requirement, 2026-08-18: keep the first prototype simple, but instrument it so that *how bad did this get under real load* is answerable months later without having been watching. Three index columns and two log lines; see "The write path, concretely" |
-| **Benchmark before code** | **Group B0 runs before any store code is written**, so Group B is written against numbers instead of against published throughput figures for somebody else's machine |
+| **Benchmark before code** | **Group B runs before any store code is written**, so Group C is written against numbers instead of against published throughput figures for somebody else's machine |
 | **The size ceiling** | **Kept, and configurable — it already was.** `EPD-003`'s question was answered *(Q4)*: it protects against **one enormous body** during the call, which the queue bound cannot reach because that protects against **many ordinary bodies afterwards**. Neither can be disabled |
-| **One tool, not two** | **`zstandard` for the router and the trainer alike** *(Q5)*. This plan first kept the `zstd` binary for the trainer, for comparability with Phase 9's figures; the owner asked why two tools and **simplicity wins**. Task 3c checks that library training and `zstd --train` agree rather than assuming it |
+| **One tool, not two** | **`zstandard` for the router and the trainer alike** *(Q5)*. This plan first kept the `zstd` binary for the trainer, for comparability with Phase 9's figures; the owner asked why two tools and **simplicity wins**. Task 6 checks that library training and `zstd --train` agree rather than assuming it |
 | **Dictionaries** | **Plain copies, and each day folder is self-contained** *(Q7)* — *any metadata, any dicts, any archives* belong to the day. **This restores the sketch**: the root `dicts/` and the hard links were this plan's addition, and declining the links left the root folder with no job |
-| **Compression level** | **Configurable, with a default measured by Task 3c** *(Q10)* |
+| **Compression level** | **Configurable as `compress_level_zstd`, with a default measured by Task 6** *(Q10)* |
 | **Diagnosing loss generally** | **One counter pair, and nothing else.** Calls arrived against rows written, in the same periodic summary as the corpus totals — which makes `record()`'s blind spot visible without changing a column of `calls.csv`. A metrics endpoint and a sequence column were both considered and **reserved to `../../backlog.md`** |
 | **Several router instances** | **Considered and deferred, recorded in `../../backlog.md`.** Its session-distinguishing half is already solved and measured; its throughput half has one concrete blocker that a reverse proxy does not touch — see "What this phase does not settle" |
 
 ### And two questions the owner did not have to answer
 
 Both are `EPD-003` open questions, and both are answered here by argument rather than by preference.
-**They are still open questions until Task 16 records the answers in `EPD-003` itself.**
+**They are still open questions until Task 20 records the answers in `EPD-003` itself.**
 
 **Question 3 — what is captured by default: everything.** No path-exclusion knob. `EPD-003`'s worry
 was that the 32 `count_tokens` non-answers are *"pure noise"*, but **content addressing collapses
@@ -87,7 +89,7 @@ two.**
 opaque, content-addressed, per-call files compressed against a shared dictionary — without parsing a
 payload, without slowing a call, and without special storage infrastructure.* Phase 9 discharged the
 third by measurement. **Failure mode 2 — archiving cannot stay opaque — is discharged here by
-construction**, and Task 10 is what makes that a test rather than an assertion. **Failure mode 3 —
+construction**, and Task 13 is what makes that a test rather than an assertion. **Failure mode 3 —
 archiving slows a call — is not discharged by this phase**, and that is stated rather than implied;
 see below.
 
@@ -97,7 +99,7 @@ see below.
 
 ```
 logs/
-  telemetry/                      calls.csv and router.log — moved in this phase, Task 13
+  telemetry/                      calls.csv and router.log — moved in this phase, Task 16
   corpus/
     2026-08-18/                   UTC-derived, never local. SELF-CONTAINED
       index.csv                   25 columns: calls.csv's 20, in order, then two refs and three timings
@@ -139,8 +141,8 @@ Each of these is a finding in `notes.md`, numbered there.
 | **Recording a drop** *(3)* | 22 columns with no way to say a body was dropped | **A ref cell holds a 64-char hex digest, or one of `dropped` / `too_large` / `absent` / `error`.** A reason word can never be mistaken for a digest, so this needs no new column. *`error` added 2026-08-18 — a compression or write failure in the worker must land in the cell too, or the one case where the store itself broke is the one case the index cannot describe* |
 | **Over the cap** *(4)* | *"the store must be able to hold a truncated body and say that it is truncated"* | **Drop, do not store a prefix.** A prefix labelled as a whole body is worse than a hole. This splits cap-truncation from the case `EPD-003` actually meant — a stream that broke, where the bytes that arrived are all there is and `error_status` already says so. The sketch's *"truncation needs no new column"* survives intact, for the reason it gave |
 | **Dictionary placement** *(5)* | copies into each date folder, ~80 MB/year, with *"plain copies against APFS clones"* left open pending the `--maxdict` result | **Plain copies, and the sketch was right.** *Superseded 2026-08-18, twice.* This row first proposed `os.link()` into a **root** `logs/corpus/dicts/`, to get portability at zero bytes. **The owner declined it and restored the sketch**: plain copies, no root folder, each day self-contained. The root folder existed only to be the link target, so declining the links removed its whole job — **it was this plan's addition, not the sketch's.** The cost is the ~40–80 MB/year the sketch already named and the owner accepted, and what it buys is one fewer concept and an invariant the layout enforces |
-| **Compression level** | not considered — every figure was measured at level 19 | **Configurable, with a default measured by Task 3c.** Level 19 is an offline setting; the write path is a different question and nobody had asked it |
-| **One compression tool** | not considered | **`zstandard` everywhere**, router and trainer alike. This plan first proposed keeping the `zstd` binary for the trainer, for comparability with Phase 9's numbers; **the owner asked why two tools, and simplicity wins.** Task 3c checks that library training and `zstd --train` agree rather than assuming it |
+| **Compression level** | not considered — every figure was measured at level 19 | **Configurable, with a default measured by Task 6.** Level 19 is an offline setting; the write path is a different question and nobody had asked it |
+| **One compression tool** | not considered | **`zstandard` everywhere**, router and trainer alike. This plan first proposed keeping the `zstd` binary for the trainer, for comparability with Phase 9's numbers; **the owner asked why two tools, and simplicity wins.** Task 6 checks that library training and `zstd --train` agree rather than assuming it |
 | **Dedup scope** *(6)* | implied by the tree, never stated | **Per day, and that is deliberate.** Cross-day dedup would make `rm -rf <a-day>` orphan another day's refs, which is the whole retention answer |
 | **Per-direction dictionaries** | *"Task 9 measures whether the split pays"* | **Supported structurally, but only a request dictionary is trained.** Frames name their own dictID, so more than one is free — but the gate measured *request* bodies, and its own `evidence/README.md` says it answers nothing about responses. Responses write undicted until somebody measures it |
 
@@ -165,7 +167,7 @@ lived, and sha256 over a 200 KB body on the event loop is small but not free.
 corpus:
   enabled: false              # opt-in. Nothing is written until this is true
   dir: logs/corpus            # relative paths resolve against the config file's directory
-  level: 9                    # zstd level. The default is whatever Task 3c measures
+  compress_level_zstd: 9      # the zstd level the write path uses; default measured by Task 6
   max_body_bytes: 1048576     # one body bigger than this is not stored: `too_large`
   queue_max_bytes: 67108864   # total bytes waiting to be written; over it: `dropped`
 ```
@@ -251,7 +253,7 @@ think about.
 **Neither limit may be disabled.** An "unlimited" setting reads as *capture everything* and means
 *let an unknown endpoint decide how much memory this process uses*.
 
-**There is deliberately no `workers` key.** One worker until Task 3c says otherwise.
+**There is deliberately no `workers` key.** One worker until Task 6 says otherwise.
 
 ---
 
@@ -321,7 +323,7 @@ synchronously and always has.
 |---|---|
 | **`asyncio.Queue`** | **Wrong, and it is the tempting mistake.** It is **not thread-safe.** The producer is the event loop and the consumer is a worker thread, so `put_nowait` here and `get` there is a data race, not a queue |
 | **`queue.Queue(maxsize=N)`** | Thread-safe and bounded — **but `maxsize` counts items**, which is Finding 1. Bounding what we do not care about while leaving bytes unbounded is the defect, not the fix |
-| **`multiprocessing.Queue`** | Pickles every body across a pipe. Only relevant if Task 3c sends us to processes |
+| **`multiprocessing.Queue`** | Pickles every body across a pipe. Only relevant if Task 6 sends us to processes |
 | **`queue.SimpleQueue`, unbounded, with the byte accounting outside it** | **The choice.** Thread-safe, C-implemented, `put` never blocks, and it carries none of the machinery this does not use — no `maxsize`, no `task_done()`, no `join()` |
 
 **The bound lives beside the queue rather than inside it**, because the bound is in bytes and no
@@ -359,7 +361,7 @@ The timeout is a module constant rather than a sixth config key, on the same KIS
 |---|---|
 | **`asyncio` task and `asyncio.Queue`** | **Wrong tool.** Compression is CPU-bound and blocking; a coroutine doing it stalls every other request for its duration. The escape is `run_in_executor`, which *is* a thread pool — async arrives back at threads with a layer added. There is no true async file I/O on this platform either |
 | **`multiprocessing`** | **Pays a large cost for a problem this load does not have.** Every body is pickled and copied down a pipe — the opposite of taking a reference to bytes already in memory — and a child that is OOM-killed stops archiving silently unless something watches it. `EPD-003`'s non-goals name *"an ingestion service"* |
-| **One daemon thread** | **The fit, if and only if the GIL is released during compression.** That is the claim Task 3a proves or refutes, and the design rests on it |
+| **One daemon thread** | **The fit, if and only if the GIL is released during compression.** That is the claim Task 4 proves or refutes, and the design rests on it |
 
 **And why not simply write it inline?** Because a 200 KB compress-and-`fsync` on the event loop
 stalls every concurrent request for tens of milliseconds. **That is failure mode 3 of the milestone's
@@ -380,7 +382,7 @@ bodies/second at level 19, that is **ten to thirty times inside the limit**, and
 ~15 calls in flight is a few megabytes.
 
 **So the benchmark's job is to confirm a simple design on this machine, not to choose between
-architectures.** Both figures in that paragraph are somebody else's measurements until Task 3c.
+architectures.** Both figures in that paragraph are somebody else's measurements until Task 6.
 
 ### What makes it diagnosable
 
@@ -445,14 +447,30 @@ component.
 
 **Dictionary training.** It runs over thousands of samples and takes seconds to minutes, and it
 belongs to an offline procedure the router never calls. Compression and writing are the worker's;
-training is Group C's, and keeping it out is what lets the write path stay small.
+training is Group D's, and keeping it out is what lets the write path stay small.
 
 ---
 
 ## The tasks
 
-**Nothing below has been executed.** Every group is marked, and the markers are placeholders to be
-closed out at Task 20 — see "Placeholders in this file".
+**Twenty-four tasks in six groups. Nothing below has been executed.** Every group is marked, and the
+markers are placeholders to be closed out at Task 24 — see "Placeholders in this file".
+
+> **Renumbered once, on 2026-08-18, on the owner's instruction — and this is an exception to
+> `../../README.md`, recorded rather than quietly taken.** That file says task numbers *"are never
+> renumbered once published"* and that an insertion takes a letter. The lettered form had already
+> been used: Group B0 held `3a`, `3b`, `3c`.
+>
+> **Phase 9 drew the same line one step earlier and gave the reason.** Its plan renumbered *before
+> publication* because *"publishing it and then amending it would have spent letters on work nobody
+> had started"* — and that is exactly the state here: **nothing has been executed**, so no task
+> number has yet been cited by a commit doing the work.
+>
+> **One cost cannot be undone and is named.** Four commit messages already in this branch's history
+> say *"Task 1 of…"*, *"Tasks 2 and 3 of…"* against the old numbering, and git history is not
+> editable. Tasks 1 to 3 keep their numbers, so three of those four remain correct; the fourth
+> refers to work whose number did not move either. **From the first task that executes, the rule
+> applies again with no exception.**
 
 ### Group A — open the phase *(not started)*
 
@@ -462,20 +480,19 @@ closed out at Task 20 — see "Placeholders in this file".
 | **2** | Record the re-derivation in `notes.md` — the nine findings, and the baselines re-derived **by running them** |
 | **3** | `../../status.md` — record the in-flight branch |
 
-### Group B0 — the benchmark, before any store code *(not started)*
+### Group B — the benchmark, before any store code *(not started)*
 
-*Added 2026-08-18. **Task numbers are never renumbered; an insertion is a letter**, so these follow
-Task 3 rather than shifting Group B. The group exists because the first version of this plan chose a
-threading design from published figures for somebody else's machine, and asserted a GIL property it
-had not read the source for.*
+*Added 2026-08-18. The group exists because the first version of this plan chose a threading design
+from published figures for somebody else's machine, and asserted a GIL property it had not read the
+source for. **Permission to run it was given on 2026-08-18.***
 
 | # | Task |
 |---|---|
-| **3a** | `uv add zstandard`; **read its source** on whether the GIL is released during compression, and record what the source says rather than what the documentation claims |
-| **3b** | `docs/procedures/corpus-benchmark/` — the script, over the bodies already in `logs/corpus-gate/`. Reads and writes under `logs/`, **never into `docs/`** |
-| **3c** | Run it and record the numbers. **It decides three things:** whether a thread buys anything, the write-path compression level, and the worker count. If the GIL is *not* released, measuring a process pool becomes the next task and the thread design is withdrawn |
+| **4** | `uv add zstandard`; **read its source** on whether the GIL is released during compression, and record what the source says rather than what the documentation claims |
+| **5** | `docs/procedures/corpus-benchmark/` — the script, over the bodies already in `logs/corpus-gate/`. Reads and writes under `logs/`, **never into `docs/`** |
+| **6** | Run it and record the numbers. **It decides three things:** whether a thread buys anything, the write-path compression level, and the worker count. If the GIL is *not* released, measuring a process pool becomes the next task and the thread design is withdrawn |
 
-**What 3c measures, and what each measurement decides:**
+**What Task 6 measures, and what each measurement decides:**
 
 | Measurement | Decides |
 |---|---|
@@ -483,48 +500,112 @@ had not read the source for.*
 | Throughput and ratio at levels **3 / 9 / 19**, with the held-out dictionary and without | The write-path level — and the half nobody has asked: **how much ratio level 19 was buying once a dictionary carries the preamble** |
 | Per-body cost split into sha256, compress, write, `fsync` | Whether `store_ms` is dominated by compression or by the disk, which decides whether the level matters at all |
 | Dictionary precompute, once against per body | Confirms the compressor is built once at startup rather than per call |
-| `zstandard`'s `train_dictionary()` against `zstd --train`, same samples | **The one thing "use one tool" risks.** Both wrap libzstd but their training *defaults* may differ, and defaults are where Phase 9 found non-monotonicity. If they disagree, Phase 9's figures stop being directly comparable and Task 3c says by how much |
+| `zstandard`'s `train_dictionary()` against `zstd --train`, same samples | **The one thing "use one tool" risks.** Both wrap libzstd but their training *defaults* may differ, and defaults are where Phase 9 found non-monotonicity. If they disagree, Phase 9's figures stop being directly comparable and Task 6 says by how much |
 
 **What it deliberately does not measure: processes.** If threads scale, a process pool is an option
 we would not take, and measuring it is work spent on a road not travelled. **If the GIL is not
 released, that measurement becomes the next step** — conditional rather than speculative.
 
-### Group B — the store *(not started)*
+### Group C — the store *(not started)*
 
 | # | Task |
 |---|---|
-| **4** | Add `zstandard`; `make sync`; a smoke test that a dicted frame round-trips byte-identically |
-| **5** | `src/ilirium_llm_router/corpus.py` — the blob store: content addressing on the plaintext, the per-day layout, `incoming/` → `fsync` → rename, dedup scoped to the day, dictionaries hard-linked into the day folder |
-| **6** | The byte-bounded queue and its worker thread, **plus the arrived/recorded counter pair** — the drop policy, drain on close, and **it never raises**: a body store is telemetry-shaped and telemetry does not get to break a call. **Widened 2026-08-18:** the counters, the once-per-run drop `WARNING`, and the periodic summary line |
-| **7** | The day index: header re-emitted in every file, a ref cell holding a digest or a reason word. **Widened 2026-08-18 from 22 columns to 25** — `queue_ms`, `store_ms` and `queue_bytes` appended after the refs, so the first twenty stay identical to `calls.csv`'s and in its order |
-| **8** | The `corpus:` config block — five keys, `extra="forbid"`, relative-path resolution against the config file's directory, and `--check` prints it. Neither limit may be disabled |
-| **9** | Wire into `Proxy.record()`'s four call sites and `app.py`'s lifespan; hold the request body on `Call`; tee the response into a capped buffer in `watch()` |
-| **10** | Tests, including **a non-UTF-8, non-JSON body round-tripping byte-identically** — that is what discharges failure mode 2 by construction rather than by assertion |
+| **7** | Add `zstandard` to `pyproject.toml`; `make sync`; a smoke test that a dicted frame round-trips byte-identically |
+| **8** | `src/ilirium_llm_router/corpus.py` — the blob store: content addressing on the plaintext, the per-day layout, `incoming/` → `fsync` → rename, dedup scoped to the day, and **a plain copy of each dictionary the day uses**, so the folder is self-contained |
+| **9** | The byte-bounded queue and its worker thread, **plus the arrived/recorded counter pair** — one `queue.SimpleQueue` with the byte accounting beside it, the drop policy, the timed drain on close, and **it never raises**: a body store is telemetry-shaped and telemetry does not get to break a call. Plus the once-per-run drop `WARNING` and the periodic summary line |
+| **10** | The day index: **25 columns**, header re-emitted in every file, a ref cell holding a digest or one of `dropped` / `too_large` / `absent` / `error`. `queue_ms`, `store_ms` and `queue_bytes` are appended after the refs, so the first twenty stay identical to `calls.csv`'s and in its order |
+| **11** | The `corpus:` config block — five keys, `extra="forbid"`, relative-path resolution against the config file's directory, and `--check` prints it. Neither limit may be disabled |
+| **12** | Wire into `Proxy.record()`'s four call sites and `app.py`'s lifespan; hold the request body on `Call`; tee the response into a capped buffer in `watch()` |
+| **13** | Tests, including **a non-UTF-8, non-JSON body round-tripping byte-identically** — that is what discharges failure mode 2 by construction rather than by assertion |
 
-### Group C — the dictionary *(not started)*
-
-| # | Task |
-|---|---|
-| **11** | `docs/procedures/corpus-dictionary/` — the trainer, **using `zstandard` rather than the binary**, which **measures a candidate against the incumbent on a held-out slice and refuses to install a worse one.** Directly from `zstd --train` being non-monotonic at 68 samples. With its README saying when re-running is worth it |
-| **12** | Train the first real dictionary from the surviving `logs/corpus-gate/` corpus; install it; verify a dicted round-trip end to end and record the ratio |
-
-### Group D — the telemetry move *(not started)*
+### Group D — the dictionary *(not started)*
 
 | # | Task |
 |---|---|
-| **13** | Move `calls.csv` and `router.log` into `logs/telemetry/` — `config.yaml`, `config.py`'s two defaults, `tests/test_config.py`, `tests/test_logging_setup.py`, and the live files on disk |
-| **14** | The sweep `../../procedures/link-check.py` **cannot see** — `CLAUDE.md`, `README.md`, `../../reference/observability.md`, `../../procedures/testing-against-claude-code.md`, `../../procedures/lmstudio-capability-probes/probe.py` — stating which archive and EPD hits were **left** and why |
+| **14** | `docs/procedures/corpus-dictionary/` — the trainer, **using `zstandard` rather than the binary**, which **measures a candidate against the incumbent on a held-out slice and refuses to install a worse one.** Directly from `zstd --train` being non-monotonic at 68 samples. With its README saying when re-running is worth it |
+| **15** | Train the first real dictionary from the surviving `logs/corpus-gate/` corpus; install it; verify a dicted round-trip end to end and record the ratio |
 
-### Group E — harvest and close *(not started)*
+### Group E — the telemetry move *(not started)*
 
 | # | Task |
 |---|---|
-| **15** | `docs/reference/corpus.md` — the durable spec, with a nameable trigger; its row in `../../reference/README.md`; a `CLAUDE.md` pointer that says **when** to open it |
-| **16** | Close `EPD-003`'s open questions **3–6** in place and dated; graduate what changes a decision into `../../reference/design-decisions.md` |
-| **17** | The numbers into `../../reference/measurements.md` — **all four columns or they do not go in** |
-| **18** | `../implementation-plan.md` — Phase 10 from outline to record, and the central claim's three failure modes marked honestly, including the one this phase does not discharge |
-| **19** | **Replace or delete `../../prompt.md`.** It names Phase 10 and nothing else, and `../../README.md` records that it is the one file there allowed to go stale — which is why it must be closed out rather than left |
-| **20** | Close out: `notes.md`'s "Verified by"; the **widened** placeholder sweep; `make test`; `link-check.py` **run, not predicted**; merge `--no-ff` with the message from a temp file; the hash into `notes.md` **and** this file's Record table |
+| **16** | Move `calls.csv` and `router.log` into `logs/telemetry/` — `config.yaml`, `config.py`'s two defaults, `tests/test_config.py`, `tests/test_logging_setup.py`, and the live files on disk |
+| **17** | The sweep `../../procedures/link-check.py` **cannot see** — `CLAUDE.md`, `README.md`, `../../reference/observability.md`, `../../procedures/testing-against-claude-code.md`, `../../procedures/lmstudio-capability-probes/probe.py` — stating which archive and EPD hits were **left** and why |
+
+### Group F — verify, harvest and close *(not started)*
+
+| # | Task |
+|---|---|
+| **18** | **The configuration check** — every key, old and new, against "The configuration, and how it is verified" below. It gates the harvest: nothing is written into the durable tier from a build nobody exercised |
+| **19** | `docs/reference/corpus.md` — the durable spec, with a nameable trigger; its row in `../../reference/README.md`; a `CLAUDE.md` pointer that says **when** to open it |
+| **20** | Close `EPD-003`'s open questions **3–6** in place and dated; graduate what changes a decision into `../../reference/design-decisions.md` |
+| **21** | The numbers into `../../reference/measurements.md` — **all four columns or they do not go in** |
+| **22** | `../implementation-plan.md` — Phase 10 from outline to record, and the central claim's three failure modes marked honestly, including the one this phase does not discharge |
+| **23** | **Replace or delete `../../prompt.md`.** It names Phase 10 and nothing else, and `../../README.md` records that it is the one file there allowed to go stale — which is why it must be closed out rather than left |
+| **24** | Close out: `notes.md`'s "Verified by"; the **widened** placeholder sweep; `make test`; `link-check.py` **run, not predicted**; merge `--no-ff` with the message from a temp file; the hash into `notes.md` **and** this file's Record table |
+
+---
+
+## The configuration, and how it is verified
+
+*Added 2026-08-18 on the owner's request: **one place that lists every setting the router has, says
+which of them this phase changes, and says how each is checked before the phase closes.** Task 18
+runs it.*
+
+**`config.yaml` is validated once at startup and `extra="forbid"` is set on every model**, so a
+mistyped key is an error rather than a silently ignored default. `make check` loads and prints the
+whole configuration without starting the server, which is the first half of every check below.
+
+### What exists today, and what this phase does to it
+
+| Key | What it does | This phase |
+|---|---|---|
+| `server.host`, `server.port` | Where the router listens. `127.0.0.1:8787` | unchanged |
+| `backends.<name>.base_url` | Where that backend lives | unchanged |
+| `backends.<name>.credential` | `forward` / `strip` / `inject` — the only knob that decides what happens to the caller's credential | unchanged |
+| `backends.<name>.api_key_env` | Required by `inject`, forbidden by the other two | unchanged |
+| `backends.<name>.read_timeout` | How long that backend may stay **silent**, not a budget for the whole reply | unchanged |
+| `logging.level` | `INFO` by default | unchanged |
+| `logging.file` | The rotating log uvicorn's own lines join | **`logs/router.log` → `logs/telemetry/router.log`** |
+| `logging.max_bytes`, `logging.backup_count` | 10 MiB × 5 | unchanged |
+| `stats.file` | The 20-column CSV, one row per call | **`logs/calls.csv` → `logs/telemetry/calls.csv`** |
+| `stats.max_bytes`, `stats.backup_count` | 5 MiB × 10 | **unchanged, and deliberately** — a milestone non-goal |
+| `corpus.enabled` | **new.** Opt-in; nothing is written until true | added |
+| `corpus.dir` | **new.** `logs/corpus` | added |
+| `corpus.compress_level_zstd` | **new.** The zstd level the write path uses; default measured by Task 6 | added |
+| `corpus.max_body_bytes` | **new.** One body larger than this is not stored | added |
+| `corpus.queue_max_bytes` | **new.** Total bytes waiting to be written | added |
+
+**`compress_level_zstd` rather than `level`**, on the owner's instruction of 2026-08-18: `level`
+already means something else two keys away in this file — `logging.level` is a severity — and a key
+read in isolation should say what it sets and whose scale it is on.
+
+### How each is verified at the close
+
+**Green tests are not a sign-off** — `CLAUDE.md`'s working agreement, and every phase in this
+repository was signed off by driving the real thing. So the check has three layers, and the third is
+the one that counts.
+
+| Layer | What it establishes |
+|---|---|
+| **1. `make check`** | Every key above appears, resolves and prints. Relative paths resolve against the **config file's** directory, not the working directory — so the printed `logs/telemetry/calls.csv` and `logs/corpus` must be absolute and under the repository. A key removed or renamed shows up here as an error rather than a default |
+| **2. `make test`** | Rejections are refusals rather than warnings: an unknown key under `corpus:`, `enabled` non-boolean, either limit at zero or negative, `compress_level_zstd` out of range. Plus the round-trip and drop-policy behaviour from Task 13 |
+| **3. Driving it** | The router started with `corpus.enabled: false` writes **no** `logs/corpus/` at all; started with it true, a real call produces a day folder holding a blob, a 25-column index row, a `manifest`, and — once Task 15 has trained one — a **plain copy** of the dictionary. Stopping the router drains the queue and emits the summary line |
+
+**Layer 3 needs its own consent.** It starts the router and sends real traffic, and `CLAUDE.md` is
+explicit that *consent for one is not consent for the next* — so Task 18 asks before it runs, even
+though Group B's permission was already given.
+
+### The five things Task 18 must actually see
+
+Written as observations rather than as intentions, because *"it should work"* is what a check exists
+to replace:
+
+1. **`corpus.enabled: false` leaves no trace** — no directory, no file, and `make test`'s 158 unchanged.
+2. **A stored body round-trips byte-identically**, decompressed outside the router with the day's own dictionary copy and nothing else.
+3. **A day folder is self-contained** — `tar` it, unpack it elsewhere, and every blob in it opens.
+4. **A dropped body is a row, not an absence** — force the queue bound low, and see `dropped` in the cell, the `WARNING` once, and the counter afterwards.
+5. **`arrived` equals `recorded`** in the summary after a clean shutdown, which is the counter pair doing its one job.
 
 ---
 
@@ -537,10 +618,10 @@ as an instance gets obeyed as an instance**, so this section names the instances
 
 | Where | Placeholder | Closed out at |
 |---|---|---|
-| The header, first line | *"Not yet executed — no task below has been started"* | Task 20 |
-| The **six** group headings | `*(not started)*` | Task 20, each group as it completes. *Five until Group B0 was added on 2026-08-18* |
+| The header, first line | *"Not yet executed — no task below has been started"* | Task 24 |
+| The **six** group headings | `*(not started)*` | Task 24, each group as it completes. *Five until the benchmark group was added on 2026-08-18* |
 | The Record table below | `Merge commit \| not yet merged` | The merge itself |
-| "What is settled" | *"still open questions until Task 16"* | Task 16 |
+| "What is settled" | *"still open questions until Task 20"* | Task 20 |
 
 **The grep, and it must be widened rather than trusted:**
 
@@ -564,11 +645,10 @@ grep**, since it returns clean and reads as proof.
 | `logs/corpus-gate/` still holds Phase 9's three runs and eight dictionaries | **Measured** — listed 2026-08-18 |
 | `Proxy.record()` is reached by every path that produces a row | **Measured** — four call sites read off `proxy.py`, each traced to its entry point |
 | A caller vanishing after headers produces **no** row today | **Inferred** — from Starlette skipping a body generator on disconnect, which `proxy.py`'s own comment on `BackgroundTask` reasons about. Not observed here |
-| `os.link()` into a date folder is portable and `tar` still emits a real file | **Inferred** — from how `tar` detects hardlinks among archived members. **Task 5 measures it** rather than trusting this row |
 | A byte-bounded queue is necessary because a 1,000-item queue is 200 MB | **Extrapolated** — from Phase 9's measured median request of 103,935 bytes |
-| `zstandard`'s dictionary training matches `zstd --train`'s | **Unverified.** Both wrap libzstd, but their *defaults* may differ — and training defaults are exactly where Phase 9 found non-monotonicity. **Task 3c compares them**; if they disagree, Phase 9's figures are not directly comparable and the note says by how much |
-| **`zstandard` releases the GIL during compression** | **Unverified — and it is load-bearing.** If it is false, one thread and eight threads are the same thread and the design above is wrong. Asserted as fact in this file's first version; **Task 3a reads the source and Task 3c measures the scaling** |
-| Single-thread zstd runs at ~2–6 MB/s at level 19, ~350–500 MB/s at level 3 | **Documented only** — published figures for other machines, quoted here to size the problem. **Task 3c re-measures both on this one** |
+| `zstandard`'s dictionary training matches `zstd --train`'s | **Unverified.** Both wrap libzstd, but their *defaults* may differ — and training defaults are exactly where Phase 9 found non-monotonicity. **Task 6 compares them**; if they disagree, Phase 9's figures are not directly comparable and the note says by how much |
+| **`zstandard` releases the GIL during compression** | **Unverified — and it is load-bearing.** If it is false, one thread and eight threads are the same thread and the design above is wrong. Asserted as fact in this file's first version; **Task 4 reads the source and Task 6 measures the scaling** |
+| Single-thread zstd runs at ~2–6 MB/s at level 19, ~350–500 MB/s at level 3 | **Documented only** — published figures for other machines, quoted here to size the problem. **Task 6 re-measures both on this one** |
 | Two to five concurrent harnesses is 1–3 calls/second | **Extrapolated** — from two measured sessions at 0.14 and 0.03 calls/s, scaled to the owner's stated target. One laptop, and no session has ever run five harnesses |
 | Compression in the worker thread does not slow a *call* | **Unmeasured**, and this phase does not measure it — a thread bounds throughput rather than latency, but that is an argument, not a number. See below |
 | ~250 MB a year at an hour a day | **Extrapolated** — from `EPD-003`'s own projection, itself extrapolated from one session |
@@ -577,7 +657,7 @@ grep**, since it returns clean and reads as proof.
 
 ## What this phase does not settle
 
-**Failure mode 3 — "archiving slows a call" — will not be discharged**, and Task 18 says so in
+**Failure mode 3 — "archiving slows a call" — will not be discharged**, and Task 22 says so in
 `../implementation-plan.md` rather than letting the table imply otherwise. The scope decided in the
 interview has no live session, and **in-process timing is not the same measurement**. What would
 settle it: one driven session with capture on against one with it off, comparing `ttfb_ms` and
@@ -597,9 +677,9 @@ process pool — hits the fact that **the recorder's writers are single-process 
 rides `RotatingFileHandler`, whose lock is a thread lock, and two processes rotating one file corrupt
 it. So the cheap part is the proxy and the expensive part is the writers.
 
-**Whether a response dictionary pays.** Unmeasured, and Task 12 trains only a request dictionary.
+**Whether a response dictionary pays.** Unmeasured, and Task 15 trains only a request dictionary.
 
-**Whether any of this transfers to interactive use.** The dictionary Task 12 trains comes from a
+**Whether any of this transfers to interactive use.** The dictionary Task 15 trains comes from a
 **headless** corpus whose static preamble is ~28 KB smaller than the frozen interactive one, of which
 70 of 73 bodies are Anthropic and whose sessions are short. **All three flatter a dictionary.**
 
@@ -608,20 +688,17 @@ it. So the cheap part is the proxy and the expensive part is the writers.
 ## What could go wrong
 
 - **`zstandard` does not release the GIL where it matters**, and the worker thread contends with the
-  event loop. Task 4's smoke test is where that surfaces, before anything is wired in.
-- **The hard-link trick fails across a filesystem boundary** — `logs/` and the corpus are the same
-  volume here, but a configured absolute `dir` on another mount would raise. Task 5 falls back to a
-  copy and says which happened.
+  event loop. Task 7's smoke test is where that surfaces, before anything is wired in.
 - **A dictionary trained from `logs/corpus-gate/` is uncommittable**, exactly as the bodies are. It
-  stays under `logs/`, which `.gitignore:228` covers, and Task 12 stages with explicit paths rather
+  stays under `logs/`, which `.gitignore:228` covers, and Task 15 stages with explicit paths rather
   than `git add -A` — the discipline Phase 9 adopted for the same reason.
 - **The telemetry move breaks a citation nothing checks.** `link-check.py` globs `*.md` only, so
-  `config.yaml`, the `Makefile`, `pyproject.toml` and `src/` are unchecked by it. Task 14 is a reading
+  `config.yaml`, the `Makefile`, `pyproject.toml` and `src/` are unchecked by it. Task 17 is a reading
   task, not a grep task.
 - **Forward citations inflate the link-checker count.** This file names files it will create —
   `reference/corpus.md`, `procedures/corpus-dictionary/`, `src/ilirium_llm_router/corpus.py`. That is
   `../../backlog.md`'s recurring false-positive class, not breakage; Phase 8's plan contributed 23.
-  **Task 20 re-derives the count by running the tool** and expects these to have resolved themselves.
+  **Task 24 re-derives the count by running the tool** and expects these to have resolved themselves.
 
 ---
 
@@ -649,4 +726,4 @@ dictionary is committed.**
 
 *Writing "not yet merged" while it is true is correct; leaving it there after the branch is gone is
 this repository's signature failure, and `../../method/IDM-001-git-branching.md` names it. Closed out
-at Task 20.*
+at Task 24.*
