@@ -97,6 +97,24 @@ back nearly half the local wall clock at the price of the first special case in 
 *Weaker than it looks?* The opposite — this is the largest measured cost in the project, and the
 reason it is parked is that nobody has been willing to take the trade.
 
+**Running the router as several processes — instances behind a proxy, `uvicorn --workers N`, or a
+process pool.** Raised by the owner on 2026-08-18 while planning Phase 10, for two reasons: spreading
+compression load across cores, and distinguishing concurrent harnesses. *Parked because* **the second
+reason is already discharged and the first is not needed at the measured load.** `session_id` and
+`agent_id` are header-copied CSV columns, and `milestone-2-corpus/phase-9-corpus-gate/` captured five
+distinct sessions and ten subagent rows through one instance — telling harnesses apart is not a
+problem this router has. Two to five concurrent harnesses extrapolates to 1–3 calls/second, which is
+ten to thirty times inside what a single thread absorbs.
+
+*Weaker than it looks?* **The blocker is not where it appears to be.** Every multi-process form hits
+the same wall, and a reverse proxy does not touch it: **the recorder's writers are single-process
+designs.** `stats.py` rides `RotatingFileHandler`, whose lock is a thread lock, so two processes
+rotating one file corrupt it. Multi-process therefore means either a separate log, CSV and corpus per
+instance — fragmenting the telemetry the corpus exists to unify — or making the writers
+multi-process safe, which is a phase in itself. **The proxy is the cheap part; the writers are the
+expensive part.** Reconsider only if Phase 10's benchmark shows a single worker is actually the
+bottleneck.
+
 **The per-backend authentication header name.** `inject` means `Authorization: Bearer` today, which
 suits LM Studio and OpenAI; Anthropic's native key is `x-api-key` and Gemini's is `x-goog-api-key`.
 *Parked deliberately:* it is needed before the second cloud provider, not before. Phase 5 was told

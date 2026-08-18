@@ -198,7 +198,9 @@ assumes** so the default is visible rather than buried in a design paragraph.
 
 **Nothing here is decided.** `plan.md` was written before this section existed and encodes one answer
 per row; changing an answer changes `plan.md`, which has not been executed. **Ten questions, because
-finding 2 splits into a fix and a limit.**
+finding 2 splits into a fix and a limit** — *and thirteen since 2026-08-18, when the write-path
+interview added Q10 to Q12. Those three are not findings against the sketch; they are questions this
+phase raised about itself.*
 
 | | The question in one line | What `plan.md` assumes |
 |---|---|---|
@@ -212,6 +214,12 @@ finding 2 splits into a fix and a limit.**
 | **Q7** | How does a day folder get the dictionary it needs? | **A hard link** |
 | **Q8** | Where does "the tests take 150 s here" get recorded? | **This note only** |
 | **Q9** | Which documents get repointed by the telemetry move? | **Live documents only** |
+| **Q10** | What compression level does the write path use? | **Undecided — Task 3c measures it** |
+| **Q11** | Is the corpus's copy of a response a second buffer? | **Yes, separate from the scanner's** |
+| **Q12** | How is "did this ever come close?" answerable later? | **Three index columns and two log lines** |
+
+*Q10 to Q12 were added 2026-08-18, out of the write-path interview rather than the re-derivation.
+They are questions this phase raised about itself, not findings against the sketch.*
 
 ---
 
@@ -376,6 +384,103 @@ repointed because a path is navigation, but a **claim** may not.
 | **C — live documents, plus a note in each affected `evidence/README.md`** | The archive stays honest and a reader is told why the path reads oddly | More edits, in directories this phase otherwise does not touch |
 
 ---
+
+### Q10 — What compression level does the write path use?
+
+**In plain terms.** `zstd` has levels from 1 to 22, trading speed against ratio. **Every number this
+milestone owns was measured at level 19**, because Phase 9 was measuring a *ratio* offline where time
+did not matter. On the write path time does matter: published figures put level 19 at ~2–6 MB/s and
+level 3 at ~350–500 MB/s — **a hundredfold difference**, against a ratio difference that nobody has
+measured *with a dictionary already carrying the static preamble*.
+
+| Option | Buys | Costs |
+|---|---|---|
+| **A — measure first, then choose** *(assumed; Task 3c)* | The level is picked from this corpus on this machine, and the ratio it costs is known rather than guessed | One more thing before the store is written — though the corpus is on disk, so it is a sweep, not a capture |
+| **B — level 19, matching every existing number** | Every figure in `../../reference/measurements.md` stays directly comparable | ~29 bodies/second per thread. Ten to thirty times the owner's stated load, which is fine — until it is not, and nothing would say so |
+| **C — level 3, matching the sketch's instinct for speed** | Effectively free compression; the worker could never be the bottleneck | Gives up an unknown amount of ratio, on a milestone whose whole claim is about size |
+| **D — configurable, with a measured default** | The one knob where the right answer genuinely depends on the machine | A knob. `../../README.md`'s style rule prefers an obvious explicit choice to a general one |
+
+---
+
+### Q11 — Is the corpus's copy of a response a second buffer?
+
+**In plain terms.** `observe.py`'s `BufferedScanner` **already** accumulates a non-streamed reply, up
+to 1 MiB, so it can find `usage` at the closing brace. If the corpus tees its own copy, the same
+bytes are held twice on that one path.
+
+| Option | Buys | Costs |
+|---|---|---|
+| **A — separate buffers** *(assumed)* | The scanner keeps working unchanged when the corpus is off, which is the default. Two independent things stay independent | Up to 1 MiB held twice, on the non-streamed path only. Streamed replies are unaffected — the SSE scanner keeps a line buffer, not the body |
+| **B — one shared buffer** | Half the memory on that path | Couples the recorder to the store. The scanner would have to buffer *because the corpus wants it to*, which is a dependency pointing the wrong way — and it changes `observe.py`, which this phase otherwise does not touch |
+
+---
+
+### Q12 — How is "did this ever come close?" answerable later?
+
+**In plain terms.** The owner's decision of 2026-08-18: keep the prototype simple, **and make its
+failure modes diagnosable**, so that the severity of queueing and dropping under real load is a
+question the data answers months later rather than one somebody has to be watching to catch.
+
+| Option | Buys | Costs |
+|---|---|---|
+| **A — three index columns and two log lines** *(assumed)* | `queue_ms`, `store_ms` and `queue_bytes` on every row, plus one drop warning per run and a periodic summary. Answers the question retrospectively, from data already being written, with no component added | The index goes from 22 columns to 25. They are appended, so the first twenty stay identical to `calls.csv`'s and in its order |
+| **B — a metrics endpoint** | Live visibility while a session runs | A new route on a router whose catch-all forwards every path it does not recognise, for a question that is almost always asked afterwards |
+| **C — counters at shutdown only** | Nearly free | Requires stopping the router to learn anything, and loses the per-call distribution — the tail is the whole story under load |
+| **D — nothing; measure if it ever hurts** | Simplest possible prototype | *How bad did it get* becomes unanswerable, which is the specific thing the owner asked to avoid |
+
+---
+
+## The write-path interview, 2026-08-18
+
+**A second interview, after `plan.md` was committed and before any task ran.** The owner raised
+performance under concurrent harnesses and **refused the GIL claim the design rested on**. Both were
+right, and the second is the more serious: this file's first version said `zstandard` *"releases the
+GIL"* as fact. That is documentation nobody had read and behaviour nobody had measured, and **if it is
+false, one worker thread and eight worker threads are the same thread.**
+
+### What the arithmetic changed
+
+The concern was hundreds of parallel requests. The measured arrival rates are two orders of magnitude
+below that, and the owner's real target — **one laptop, two to five concurrent harnesses** — comes out
+at roughly **1–3 calls per second at a burst**, against a single thread's published ~29 bodies/second
+at level 19.
+
+**So the bottleneck ranking inverted.** Choosing the compression level buys 50–100×; adding four
+workers buys 4×. **The level is the cheap lever and it is measurable today**, on the corpus already in
+`logs/corpus-gate/`, with no capture and no live session. That became Q10 and Group B0.
+
+**And at that load the binding constraint is not CPU at all.** Fifteen calls in flight holding request
+and response bodies is a few megabytes; what protects the router above the ceiling is the **byte bound
+and the drop policy**, not the worker count. More workers raise the ceiling at which dropping starts;
+they do not change what happens above it, and the design has to be correct at that moment either way.
+
+### Several router instances, and a proxy in front
+
+Proposed by the owner as an alternative to more workers, and **deferred to `../../backlog.md`** rather
+than adopted. Two reactions, and the first retires half of it.
+
+**The session-distinguishing half is already solved, and measured.** `session_id` and `agent_id` are
+copied from request headers by a dictionary lookup, and Phase 9's corpus carries **five distinct
+sessions and ten subagent rows** through a single instance. Telling harnesses apart is not a problem
+this router has.
+
+**The throughput half has one concrete blocker, and it is not the proxy.** Every multi-process form —
+several instances, `uvicorn --workers N`, or a process pool — hits the same wall: **the recorder's
+writers are single-process designs.** `calls.csv` rides `RotatingFileHandler`, whose lock is a thread
+lock; two processes rotating one file corrupt it. So multi-process means either giving each instance
+its own log, CSV and corpus — **fragmenting exactly the telemetry the corpus exists to unify** — or
+making the writers multi-process safe, which is a phase in itself.
+
+That is worth knowing because it tells you which half is expensive: **the reverse proxy is the cheap
+part.** A proxy would also have to key on `x-claude-code-session-id`, which it learns only after the
+first request lands — solvable, and infrastructure, against a milestone whose claim ends *"without
+special storage infrastructure"*.
+
+### What it cost the plan
+
+Group B0 (`3a`, `3b`, `3c`), Tasks 6 and 7 widened, four decisions added, and the GIL assertion
+demoted from a design premise to a row in "Documented versus measured" reading **unverified**. **No
+task was renumbered.**
 
 ## Verified by
 

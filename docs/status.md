@@ -10,28 +10,27 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-17 — Phase 9 is merged.** `docs/phase-9-corpus-gate` merged into `main` with `--no-ff` as
-**`b29d502`**, and the hash is in `milestone-2-corpus/phase-9-corpus-gate/notes.md`, which is the
-permanent record. **All sixteen tasks done**, no letters inserted. `git diff main -- src/` is empty —
-the capture patch was applied, used and restored — and `make test` reports **158**.
+**2026-08-18 — Phase 10 is open and planned, and nothing is executed.**
+`feat/phase-10-body-store`, forked at `d885b2f`. **A `feat/` branch because `src/` gains a module and
+keeps it** — the case `method/IDM-001-git-branching.md` separates from Phase 9's `docs/`. Its
+`plan.md` carries **twenty tasks plus Group B0's three**, and its `notes.md` carries the
+re-derivation: **nine findings, six against Phase 9's fenced sketch**, each also written as a question
+with options.
 
-**The corpus proposal survives its own cheapest test.** On a held-out session of 20 real bodies:
-**3.12×** per-file, **12.10×** per-file with a dictionary trained on *other* sessions, **29.91×**
-streamed. **Per-call files are the unit**; the decision and the test it had to beat are in
-`reference/design-decisions.md`.
+**Two interviews, and the second changed the design.** The first settled four things — capture
+**opt-in and off by default**, **no headers ever**, `zstandard` as a dependency, and a scope with no
+live session. The second raised load under concurrent harnesses and **refused an unverified GIL claim
+the write path rested on**, which added **Group B0: benchmark before any store code.** Nothing there
+has run; it needs consent to install `zstandard` and to run the benchmark.
 
-**Read the 12.10× as optimistic** — three biases flatter it, and `reference/measurements.md` carries
-them in the slice beside the number. Do not quote it without them.
+**2026-08-17 — Phase 9 is merged** as **`b29d502`**, all sixteen tasks done. **Per-call files are the
+unit**; the decision is in `reference/design-decisions.md` and the gate's numbers in
+`reference/measurements.md`. **Read the 12.10× as optimistic** — three biases flatter it, and the
+slice beside that number says which. Do not quote it without them.
 
-**`IDM-001` gained a rule afterwards, from two defects the owner found in this session's own output:**
-status placeholders — `*(not started)*`, "fifteen of sixteen", "not yet merged" — are closed out **as
-part of the merge**, in every form and not just the `Merge commit` row. Both misses happened *after*
-reading `IDM-001`, because it named a row and so got obeyed as a row.
-
-**Two findings against `EPD-003` are independent of the gate** and hold whatever the numbers said:
-**`calls.csv` expires** (`backup_count: 10`), so it cannot be the corpus's join table as the sketch
-proposed; and **the capture missed 9 of 158 calls in testing**, all error paths — the rows `EPD-003`
-calls the interesting ones. Both are marked in place and carried into Phase 10.
+*Cut from five paragraphs to one on 2026-08-18, for this section's own ~30-line rule. Nothing is
+lost: the narrative is in that phase's `notes.md`, the closeout rule it produced is in
+`method/IDM-001-git-branching.md`, and its two findings against `EPD-003` are marked in place there.*
 
 `main` is ahead of `origin/main` and nothing has been pushed. Phases 7 and 8 are closed with nothing
 outstanding; their hashes are below and in their phase notes.
@@ -41,9 +40,12 @@ session act wrongly remains — `reference/measurements.md:34`, a slice whose si
 recomputation.
 
 **Before touching anything:** `procedures/link-check.py` before and after anything that moves, and
-`make test` must report **158**. The checker **does not report zero** — its docstring says which hits are
-correct and permanent, and the count it states was re-derived on 2026-08-17. **Do not predict that count
-by reading the docstring; run the tool.** Phase 8 proved twice that reading it gives the wrong answer.
+`make test` must report **158**. The checker **does not report zero**: **68 broken and 2 roundabout on
+`main`**, re-derived by running it on 2026-08-18 — and **72 on the Phase 10 branch**, because that
+plan cites four files its own tasks create, which is `backlog.md`'s recurring false-positive class
+rather than breakage. **Do not predict the count from the docstring; run the tool.** Phase 8 proved
+twice that reading it gives the wrong answer. *(`make test` takes ~150 s on this checkout, not Phase
+9's 0.6 s — cloud-folder hydration, not a defect. It is not stuck.)*
 
 ## Where the project is
 
@@ -103,12 +105,12 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Plan and execute Phase 10 — the body store.** The first `feat/` phase of this milestone and the
-   first to touch `src/`. `implementation-plan.md` has it in outline, and
-   `phase-9-corpus-gate/plan.md` carries a fenced design sketch written before the gate ran — **input
-   to be re-derived, not a specification.** It must settle the write path (a bounded off-thread queue
-   and a drop policy), `EPD-003`'s open questions 3–6, capture at the point of failure, a dictionary
-   bootstrap and retraining policy, and the `logs/telemetry/` move.
+1. **Execute Phase 10 — the body store.** **Planned 2026-08-18 and not started**; the branch is in
+   the table below and the task list is in `milestone-2-corpus/phase-10-body-store/plan.md`.
+   `EPD-003`'s open questions 3–6 are answered in that plan and are **not yet written back into
+   `EPD-003` itself** — that is its Task 16. *(This item read "Plan and execute" and restated what the
+   phase must settle; the plan now holds that, so restating it here would be the second copy this
+   structure exists to prevent.)*
 2. **Decide `EPD-001` or `002`.** Both are blocked on a person rather than on work, and both are argued
    on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions waiting on a person". Deciding
    one is cheaper than any measurement in the list. (`EPD-003` is no longer among them — decided
@@ -122,14 +124,18 @@ is the full inventory.*
 *Merged branches are not listed — git already holds that, and a hand-maintained list would drift.
 The permanent record of a phase's branch, fork point and merge commit belongs in its phase note.*
 
-**None.** `docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and the table is empty until
-the next phase opens a branch.
+| Branch | Purpose | Tree | Next |
+|---|---|---|---|
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | clean; **three commits, all documentation.** No `src/` change yet | Task 3a — but it needs consent to install `zstandard` and run the benchmark |
+
+*`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
+10 opened.*
 
 **It was a `docs/` branch although the phase was about the router**, because no `src/` change survived
 it: Task 6 patched `proxy.py` and restored it, and `git diff main -- src/` was empty at the merge.
 `method/IDM-001-git-branching.md` is what makes that the right prefix — the prefix says what kind of
-work it is, and `phase-N-` says it is numbered work. **Phase 10 will be the opposite case**: it builds
-the store, so it is `feat/`.
+work it is, and `phase-N-` says it is numbered work. **Phase 10 is the opposite case**, and it is: `feat/phase-10-body-store`,
+opened 2026-08-18. *(This sentence read "will be" until then.)*
 
 `docs/phase-8-method-and-guardrails` was the first branch to **carry a phase number on a `docs/`
 prefix** — the form it settled: the prefix says what kind of work it is, `phase-N-` says it is a phase.
