@@ -53,10 +53,10 @@ why `heldout-*.dict` is used here and `self-*.dict` is not.
 **Run 2026-08-18** on the 8.8 MB corpus in `logs/corpus-gate/`. The full output is frozen at
 `../../milestone-2-corpus/phase-10-body-store/evidence/results.txt`; the four things it settled:
 
-1. **The GIL is released.** 3.26x at four threads, level 19 — 82% efficiency. A worker thread is a
+1. **The GIL is released.** 3.34x at four threads, level 19 — 83% efficiency, best of three. A thread is a
    real thread, which the phase had asserted without evidence and Task 4 confirmed from the binary.
 2. **Level 9 is the default.** It holds **94%** of level 19's dictionary-assisted ratio for **an
-   eighth** of the per-body cost, and one worker at level 9 runs ~2,930 bodies/s — about 500x the
+   eighth** of the per-body cost, and one worker at level 9 runs ~2,971 bodies/s — about 500x the
    target peak load.
 3. **`store_ms` is mostly the filesystem at that level** — compression 40%, write + fsync + rename
    58%. At level 19 compression is 91%. `fsync` is cheap here (~0.03 ms); `rename` is not (~0.12 ms).

@@ -34,7 +34,7 @@ untracked and unbacked-up, and nothing should be built on its being there.
 
 ## What it establishes, in four lines
 
-1. **The GIL is released** — 3.26x at four threads, level 19. Task 4 read that off the binary; this
+1. **The GIL is released** — 3.34x at four threads, level 19, best of three. Task 4 read that off the binary; this
    measures it. The worker thread is a real thread.
 2. **Level 9 is the default**, measured rather than assumed: it sits at the knee, holding 94% of level
    19's dictionary-assisted ratio for **an eighth** of the per-body cost.

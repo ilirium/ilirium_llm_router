@@ -1049,9 +1049,9 @@ froze the results and nothing said why it was absent.
 
 | threads | level 19 wall | speedup | efficiency |
 |---:|---:|---:|---:|
-| 1 | 1.762 s | 1.00x | 100% |
-| 2 | 0.965 s | 1.83x | 91% |
-| 4 | 0.540 s | 3.26x | 82% |
+| 1 | 1.730 s | 1.00x | 100% |
+| 2 | 0.950 s | 1.82x | 91% |
+| 4 | 0.519 s | **3.34x** | 83% |
 
 **Task 4 read it off the binary; this measures it, and they agree.** Level 3 scales the same way
 (3.43x at four threads). **Task 6's negative branch is not taken:** the thread design is not
@@ -1063,17 +1063,17 @@ Ratio on the held-out slice, throughput on the full load set, one thread:
 
 | level | dict | ratio | MB/s | bodies/s |
 |---:|---|---:|---:|---:|
-| 3 | no | 2.80x | 286.1 | 5232 |
-| 3 | **yes** | **9.25x** | 771.1 | 14102 |
-| 9 | no | 3.00x | 54.8 | 1002 |
-| 9 | **yes** | **10.28x** | 160.2 | 2930 |
+| 3 | no | 2.80x | 283.3 | 5181 |
+| 3 | **yes** | **9.25x** | 727.3 | 13302 |
+| 9 | no | 3.00x | 54.5 | 997 |
+| 9 | **yes** | **10.28x** | 162.5 | 2971 |
 | 19 | no | 3.12x | 4.2 | 77 |
-| 19 | **yes** | **10.95x** | 14.7 | 270 |
+| 19 | **yes** | **10.95x** | 15.0 | 274 |
 
 **Level 9 holds 94% of level 19's dictionary-assisted ratio for an eighth of the per-body cost**, and
-one worker at level 9 runs ~2,930 bodies/s against the owner's stated peak of 1–3 calls/s — roughly
-**500x headroom**. Level 19 buys 6.5% more ratio for 8.8x the CPU, and its p95 compress is 11.6 ms
-against 1.4 ms. **The plan's placeholder default of 9 is confirmed by measurement**, which is not the
+one worker at level 9 runs ~2,971 bodies/s against the owner's stated peak of 1–3 calls/s — roughly
+**500x headroom**. Level 19 buys 6.5% more ratio for 8.0x the CPU, and its p95 compress is 11.6 ms
+against 1.5 ms. **The plan's placeholder default of 9 is confirmed by measurement**, which is not the
 same as having been right by luck: nobody had measured it.
 
 **And the half nobody had asked is answered.** The dictionary is worth far more than the level —
@@ -1086,15 +1086,17 @@ Median per body, with the dictionary:
 
 | | level 3 | level 9 | level 19 |
 |---|---:|---:|---:|
-| sha256 | 3.6% | 2.1% | 0.3% |
-| **compress** | 16.8% | **39.9%** | **90.8%** |
-| write + fsync + rename | 79.6% | 58.0% | 9.0% |
-| **total** | **0.232 ms** | **0.405 ms** | **3.579 ms** |
+| sha256 | 4.6% | 2.1% | 0.3% |
+| **compress** | 17.9% | **40.4%** | **90.5%** |
+| write + fsync + rename | 77.4% | 57.5% | 9.2% |
+| **total** | **0.235 ms** | **0.433 ms** | **3.483 ms** |
 
 **At the chosen level the filesystem is the majority of `store_ms`, not compression.** That matters
 for reading the column later: a `store_ms` that climbs is more likely the disk than the compressor.
 **`fsync` is cheap here (~0.03 ms) and `rename` is not (~0.12 ms)** — worth knowing, because the
 write path does one of each per body and the sketch assumed `fsync` was the expensive one.
+
+**The ratio columns are deterministic and reproduce exactly; the timing columns do not** — they move a few percent between runs, and the figures here are the frozen run in `evidence/`. The scaling table is best-of-three for that reason, after a single pass put the four-thread speedup anywhere between 3.3x and 4.0x purely from noise in the baseline it divides by.
 
 *These were measured writing real files into `logs/`, which is where the store will write — not into
 a system temp directory on another filesystem. On this machine `logs/` is inside a cloud-synced

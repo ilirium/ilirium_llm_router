@@ -148,13 +148,25 @@ def _chunk_worker(chunk: list[bytes], level: int, dict_data) -> int:
     return sum(len(c.compress(b)) for b in chunk)
 
 
-def wall(bodies: list[bytes], level: int, dict_data, threads: int) -> tuple[float, int]:
-    """Wall seconds and total compressed bytes, compressing every body across N threads."""
+def wall(bodies: list[bytes], level: int, dict_data, threads: int,
+         repeats: int = 1) -> tuple[float, int]:
+    """Wall seconds and total compressed bytes, compressing every body across N threads.
+
+    `repeats` takes the MINIMUM rather than the mean. Wall time on a laptop is contaminated
+    upwards by scheduling and thermal noise and never downwards, so the minimum is the closest
+    estimate of the real cost. The scaling table needs this: a single pass put four-thread
+    speedup anywhere between 3.3x and 4.0x across runs, purely from noise in the 1-thread
+    baseline it is divided by, which is enough to make a recorded figure unreproducible.
+    """
     chunks = [bodies[i::threads] for i in range(threads)]
-    t0 = time.perf_counter()
-    with ThreadPoolExecutor(max_workers=threads) as ex:
-        total = sum(ex.map(lambda c: _chunk_worker(c, level, dict_data), chunks))
-    return time.perf_counter() - t0, total
+    best, total = None, 0
+    for _ in range(repeats):
+        t0 = time.perf_counter()
+        with ThreadPoolExecutor(max_workers=threads) as ex:
+            total = sum(ex.map(lambda c: _chunk_worker(c, level, dict_data), chunks))
+        secs = time.perf_counter() - t0
+        best = secs if best is None else min(best, secs)
+    return best or 0.0, total
 
 
 def load_dict(path: pathlib.Path) -> zstandard.ZstdCompressionDict | None:
@@ -177,8 +189,12 @@ def main() -> int:
         say(f"! no corpus at {CORPUS} — nothing to measure")
         return 1
 
-    ratio_train = [b for run, b in load("requests", 1001, True) if run != TEST_RUN]
-    ratio_test = [b for run, b in load("requests", 1001, True) if run == TEST_RUN]
+    ratio_rows = load("requests", 1001, True)
+    ratio_train = [b for run, b in ratio_rows if run != TEST_RUN]
+    ratio_test = [b for run, b in ratio_rows if run == TEST_RUN]
+    per_run: dict[str, int] = {}
+    for run, _b in ratio_rows:
+        per_run[run] = per_run.get(run, 0) + 1
     req_all = [b for _, b in load("requests")]
     res_all = [b for _, b in load("responses")]
     load_set = req_all + res_all
@@ -189,6 +205,13 @@ def main() -> int:
     say()
     say(f"ratio set : train {len(ratio_train)} bodies / test {len(ratio_test)} bodies "
         f"({sum(len(b) for b in ratio_test):,} raw test bytes) — gate.py's rule and split")
+    say("            per run: " + ",  ".join(f"{r} {n}" for r, n in sorted(per_run.items())))
+    # Printed rather than asserted: section 5's caveat rests on the smallest run being far too
+    # small to validate against, and a number stated only in prose is one nobody re-derives.
+    smallest = min(per_run.values()) if per_run else 0
+    if smallest < 10:
+        say(f"            !! smallest run has {smallest} qualifying bodies — there is NO usable")
+        say("            !! validation split in this corpus. See the caveat under section 5.")
     say(f"load  set : {len(req_all)} requests + {len(res_all)} responses = {len(load_set)} bodies, "
         f"{sum(len(b) for b in load_set):,} bytes")
     if req_all:
@@ -207,13 +230,15 @@ def main() -> int:
     say()
     say("Same bodies, same work, more threads. The GIL question is settled by the *shape* of this")
     say("table: near-linear speedup means released, a flat line means the threads are serialised.")
+    say("Best of three passes at each thread count — a single pass moved the 4-thread figure")
+    say("between 3.3x and 4.0x on this machine, all of it noise in the baseline it divides by.")
     for level in (19, 3):
         say()
         say(f"  level {level}, no dictionary, {len(load_set)} bodies")
         say(f"    {'threads':>8}  {'wall s':>9}  {'MB/s':>8}  {'speedup':>8}  {'efficiency':>10}")
         base = None
         for n in THREADS:
-            secs, _ = wall(load_set, level, None, n)
+            secs, _ = wall(load_set, level, None, n, repeats=3)
             base = base if base is not None else secs
             mbs = sum(len(b) for b in load_set) / secs / 1e6
             say(f"    {n:>8}  {secs:>9.3f}  {mbs:>8.1f}  {base / secs:>7.2f}x  "

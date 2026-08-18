@@ -601,7 +601,7 @@ released **and** more than one worker helping — while Task 11 fixes the block 
 outcome of Task 6 falsifies one of those two sentences**, and Task 11 is where it is reconciled.
 
 > **Reconciled 2026-08-18, and it is the first sentence that gives way. There is no `corpus.workers`
-> key.** The GIL *is* released — 3.26x at four threads — so the condition's first half is met. Its
+> key.** The GIL *is* released — 3.34x at four threads — so the condition's first half is met. Its
 > second half is not: one worker at level 9 runs ~2,930 bodies/s against a target peak of 1–3 calls a
 > second, so **a second worker helps with nothing that needs helping.** Task 11 stays at five keys,
 > unchanged. Adding the knob would be configuration this project does not need, against the
@@ -730,7 +730,7 @@ as an instance gets obeyed as an instance**, so this section names the instances
 | Where | Placeholder | Closed out at |
 |---|---|---|
 | The header, first line | *"Execution is under way; the group markers … say how far"* | Task 24. *Reworded 2026-08-18: it enumerated tasks, went stale the moment Task 4 ran, and was a second copy of the group markers. It now points at them instead, so there is one place to close out rather than two* |
-| **Five** group headings — B, C, D, E, F | `*(not started)*`, and `*(in progress)*` once a group's first task runs — **B carries the second form from 2026-08-18.** Both are matched by the grep below, which is why those two are the only permitted spellings | Task 24, each group as it completes |
+| ~~**Five**~~ **Four** group headings — ~~B,~~ C, D, E, F | `*(not started)*`, and `*(in progress)*` once a group's first task runs. Both are matched by the grep below, which is why those two are the only permitted spellings — **a third form would be invisible to it**, which is the defect finding 13 caught. **Group B closed out 2026-08-18** when Task 6 finished, and this count moved with it; a count that does not move is how this table went wrong before | Task 24, each group as it completes |
 | ~~Group **A**'s heading~~ | ~~`*(executed, except 3a)*`~~ | **Closed out 2026-08-18** when Task 3a finished, which is what this row said would close it. *Added earlier the same day: the table said "six" group headings and only five carried the marker, so the uncatalogued sixth was the one form the sweep could not see. Kept struck rather than deleted — a row that vanishes cannot show that the mechanism worked* |
 | The Record table below | `Merge commit \| not yet merged` | The merge itself |
 | "What is settled" | *"still open questions until Task 20"* | Task 20 |

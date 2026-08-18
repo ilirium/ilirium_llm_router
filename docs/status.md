@@ -10,73 +10,42 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-18 — Phase 10 is open and planned, and nothing is executed.**
-`feat/phase-10-body-store`, forked at `d885b2f`. **A `feat/` branch because `src/` gains a module and
-keeps it** — the case `method/IDM-001-git-branching.md` separates from Phase 9's `docs/`. Its
-`plan.md` carries **twenty-four tasks in six groups**, and its `notes.md` carries the
-re-derivation: **nine findings, six against Phase 9's fenced sketch**, each also written as a question
-with options.
+**2026-08-18 — Phase 10 is executing. Groups A and B are done; the next task is 7.**
+`feat/phase-10-body-store`, forked at `d885b2f`, **twenty-five tasks in six groups**. Its `plan.md`
+was re-derived and then forward-reviewed under `method/IDM-004`, 22 findings, all applied — **do not
+re-plan or re-review it**, and do not reopen the owner decisions in its settled table. **No `src/`
+change exists yet**; `git diff main -- src/` is empty and **Task 8** is where that changes.
 
-**Three interviews, and the last two changed the design.** The first settled capture **opt-in and off
-by default**, **no headers ever**, `zstandard`, and a scope with no live session. The second refused
-an **unverified GIL claim** the write path rested on, adding **Group B: benchmark before any store
-code**. The third settled diagnostics — **one tool not two, plain dictionary copies in
-self-contained day folders, a configurable level, and one arrived-against-recorded counter pair** —
-and reserved three further diagnostics to `backlog.md`.
+**Group B benchmarked before any store code and decided four things Group C is written against** —
+the GIL **is** released (3.34x on four threads), `compress_level_zstd` defaults to **9**, there is
+**no `corpus.workers` key**, and **Task 14 must set `k` explicitly** because the two dictionary
+trainers disagree by up to 15% on their defaults alone. **The reasoning and the numbers are in the
+phase's `notes.md` and frozen in its `evidence/`**; restating them here is the second copy this file
+exists to avoid.
 
-**The forward review ran, and `method/IDM-004` is written from it.** Two passes over Tasks 4–24 —
-this session and one fresh-context agent, read-only, in parallel — returned **22 findings at 18%
-overlap**, all now applied. The cold pass **refuted a claim this session had written into four
-documents including `backlog.md`**; it is corrected there and marked in place in the phase note.
-`phase-10-body-store/review-charter.md` is the worked example the IDM points at.
+**Two traps worth carrying.** The dictionary is worth far more than the level (3.1x → 11.0x), so
+tuning effort belongs there. And **the corpus has no usable validation split** — the smallest run has
+two qualifying bodies — so Task 6's best `k` was chosen knowing the test slice, and **Task 15 must
+call it provisional rather than optimal.**
 
-**Group B is done — all three tasks — and it decided four things.** `zstandard 0.25.0` is a declared
-runtime dependency; **the GIL *is* released**, read off the shipped binary at Task 4 and measured at
-**3.26x on four threads** at Task 6, so the negative branch was not taken and Group C proceeds.
-**`compress_level_zstd` defaults to 9** — 94% of level 19's dicted ratio for an eighth of the cost.
-**There is no `corpus.workers` key**: one worker carries ~500x the target peak, which resolves the
-contradiction the plan flagged between that promise and Task 11's five keys. And **the two dictionary
-trainers disagree** — `zstandard`'s own choice of `k` is up to 15% worse than `zstd --train`, at
-`k=8000` it is 13% better, so **the tool was never the variable and Task 14 must set `k` explicitly.**
+**2026-08-17 — Phase 9 is merged** as **`b29d502`**. **Per-call files are the unit**; the decision is
+in `reference/design-decisions.md` and the numbers in `reference/measurements.md`. **Read the 12.10×
+as optimistic** — three biases flatter it and the slice beside it says which. **Phase 10's 13.65×
+does not supersede it**: same three biases plus a fourth, its parameter chosen against the slice it
+is reported on.
 
-**Two cautions carried forward.** The dictionary is worth far more than the level (3.1x → 11.0x), so
-tuning effort belongs there. And **the corpus has no usable validation split** — run-02 contributes
-two qualifying bodies — so Task 6's best `k` was chosen with knowledge of the test slice and Task 15
-must call it provisional rather than optimal. The numbers are frozen in the phase's `evidence/`;
-Task 21 puts them in `reference/measurements.md` with all four columns.
-
-The task list was **renumbered** when permission was given — an exception to `README.md`, recorded in
-the plan with the one cost that cannot be undone. **No `src/` change exists yet**; `git diff main --
-src/` is still empty, and Task 8 is where that changes. *(This said "Task 4 is where that changes"
-until 2026-08-18. Task 4 touches `pyproject.toml` and `uv.lock`, which are neither `docs/` nor
-`src/`.)*
-
-**2026-08-17 — Phase 9 is merged** as **`b29d502`**, all sixteen tasks done. **Per-call files are the
-unit**; the decision is in `reference/design-decisions.md` and the gate's numbers in
-`reference/measurements.md`. **Read the 12.10× as optimistic** — three biases flatter it, and the
-slice beside that number says which. Do not quote it without them.
-
-*Cut from five paragraphs to one on 2026-08-18, for this section's own ~30-line rule. Nothing is
-lost: the narrative is in that phase's `notes.md`, the closeout rule it produced is in
-`method/IDM-001-git-branching.md`, and its two findings against `EPD-003` are marked in place there.*
-
-`main` is ahead of `origin/main` and nothing has been pushed. Phases 7 and 8 are closed with nothing
-outstanding; their hashes are below and in their phase notes.
-
-**The documentation review is still parked whole** in `backlog.md`. One cheap finding that would make a
-session act wrongly remains — `reference/measurements.md:34`, a slice whose sign reverses on
-recomputation.
+`main` is ahead of `origin/main` and nothing has been pushed. Phases 7 and 8 are closed. **The
+documentation review is still parked whole** in `backlog.md`, including one cheap finding that would
+make a session act wrongly — `reference/measurements.md:34`, a slice whose sign reverses.
 
 **Before touching anything:** `procedures/link-check.py` before and after anything that moves, and
 `make test` must report **158**. The checker **does not report zero**: **68 broken and 2 roundabout on
-`main`**, re-derived by running it on 2026-08-18 — and **80 on the Phase 10 branch** *(79 before Task
-4)*: five are files that plan's own tasks create, one more is this file citing the benchmark directory
-Task 5 creates, and six more are `review-charter.md` **listing the known false positives** so
-a reviewer does not spend findings on them. All are `backlog.md`'s recurring class rather than
-breakage. **Expect it to rise before it falls** — a task citing what it is about to build adds a hit,
-and creating the file removes it. **Do not predict the count from the docstring; run the tool.** Phase 8 proved
-twice that reading it gives the wrong answer. *(`make test` is ~0.6 s warm. A **first** run after the
-cloud folder evicts the virtualenv takes two to three minutes on hydration alone — slow, not stuck.)*
+`main`**, **76 on this branch**, both re-derived by running on 2026-08-18. The excess is
+`backlog.md`'s recurring false-positive class, and **it rises when a task cites what it is about to
+build and falls when the file appears** — today it went 79 → 80 → 76. **Run the tool; do not predict
+it from the docstring**, which Phase 8 proved twice gives the wrong answer. *(`make test` is ~0.6 s
+warm; a **first** run after the cloud folder evicts the virtualenv takes two to three minutes on
+hydration alone — slow, not stuck.)*
 
 ## Where the project is
 

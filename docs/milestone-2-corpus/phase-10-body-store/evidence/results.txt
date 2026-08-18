@@ -2,6 +2,9 @@ zstandard 0.25.0, backend cext, libzstd (1, 5, 7)
 python    3.13.3   cpus 10
 
 ratio set : train 48 bodies / test 20 bodies (2,102,371 raw test bytes) — gate.py's rule and split
+            per run: run-01-anthropic 46,  run-02-lmstudio 2,  run-03-anthropic 20
+            !! smallest run has 2 qualifying bodies — there is NO usable
+            !! validation split in this corpus. See the caveat under section 5.
 load  set : 68 requests + 68 responses = 136 bodies, 7,436,180 bytes
             requests  median   103,935  max   185,209
             responses median     3,353  max   135,894
@@ -13,18 +16,20 @@ dictionary: heldout-112640.dict (112,640 bytes)
 
 Same bodies, same work, more threads. The GIL question is settled by the *shape* of this
 table: near-linear speedup means released, a flat line means the threads are serialised.
+Best of three passes at each thread count — a single pass moved the 4-thread figure
+between 3.3x and 4.0x on this machine, all of it noise in the baseline it divides by.
 
   level 19, no dictionary, 136 bodies
      threads     wall s      MB/s   speedup  efficiency
-           1      1.772       4.2     1.00x        100%
-           2      0.938       7.9     1.89x         94%
-           4      0.535      13.9     3.31x         83%
+           1      1.730       4.3     1.00x        100%
+           2      0.950       7.8     1.82x         91%
+           4      0.519      14.3     3.34x         83%
 
   level 3, no dictionary, 136 bodies
      threads     wall s      MB/s   speedup  efficiency
-           1      0.026     282.2     1.00x        100%
-           2      0.015     511.6     1.81x         91%
-           4      0.008     912.2     3.23x         81%
+           1      0.026     286.2     1.00x        100%
+           2      0.014     526.7     1.84x         92%
+           4      0.008     982.9     3.43x         86%
 
 ==============================================================================
 2. LEVEL — ratio and throughput, with a dictionary and without
@@ -34,12 +39,12 @@ Ratio is measured on the HELD-OUT slice only, so it is comparable with Phase 9's
 Throughput is on the full load set, single-threaded, which is what one worker is.
 
     level    dict    ratio    test bytes      MB/s   bodies/s
-        3      no    2.80x       751,468     287.6       5260
-        3     yes    9.25x       227,246     767.4      14035
-        9      no    3.00x       701,407      55.1       1007
-        9     yes   10.28x       204,535     160.2       2929
-       19      no    3.12x       673,007       4.3         78
-       19     yes   10.95x       192,063      15.2        277
+        3      no    2.80x       751,468     283.3       5181
+        3     yes    9.25x       227,246     727.3      13302
+        9      no    3.00x       701,407      54.5        997
+        9     yes   10.28x       204,535     162.5       2971
+       19      no    3.12x       673,007       4.2         77
+       19     yes   10.95x       192,063      15.0        274
 
 ==============================================================================
 3. PHASE SPLIT — is store_ms compression, or is it the disk?
@@ -49,36 +54,36 @@ Real files into logs/.corpus-benchmark-scratch — the filesystem the store will
 not a system temp directory. write -> fsync -> rename, which is the store's sequence.
 
   level 3 — median per body, and the share of the total
-       sha256     0.010 ms    4.1%  (p95 0.067 ms)
-     compress     0.044 ms   17.9%  (p95 0.317 ms)
-        write     0.083 ms   33.5%  (p95 0.158 ms)
-        fsync     0.030 ms   12.3%  (p95 0.046 ms)
-       rename     0.080 ms   32.2%  (p95 0.143 ms)
-        TOTAL     0.248 ms   ->   4025 bodies/s
+       sha256     0.011 ms    4.6%  (p95 0.066 ms)
+     compress     0.042 ms   17.9%  (p95 0.320 ms)
+        write     0.073 ms   31.2%  (p95 0.372 ms)
+        fsync     0.028 ms   12.0%  (p95 0.052 ms)
+       rename     0.081 ms   34.2%  (p95 0.119 ms)
+        TOTAL     0.235 ms   ->   4249 bodies/s
 
   level 9 — median per body, and the share of the total
-       sha256     0.010 ms    2.1%  (p95 0.069 ms)
-     compress     0.186 ms   40.2%  (p95 1.522 ms)
-        write     0.096 ms   20.7%  (p95 0.200 ms)
-        fsync     0.032 ms    6.9%  (p95 0.044 ms)
-       rename     0.140 ms   30.1%  (p95 0.209 ms)
-        TOTAL     0.463 ms   ->   2160 bodies/s
+       sha256     0.009 ms    2.1%  (p95 0.068 ms)
+     compress     0.175 ms   40.4%  (p95 1.518 ms)
+        write     0.091 ms   21.1%  (p95 0.379 ms)
+        fsync     0.028 ms    6.5%  (p95 0.043 ms)
+       rename     0.129 ms   29.9%  (p95 0.195 ms)
+        TOTAL     0.433 ms   ->   2311 bodies/s
 
   level 19 — median per body, and the share of the total
-       sha256     0.011 ms    0.3%  (p95 0.071 ms)
-     compress     2.942 ms   90.4%  (p95 11.559 ms)
-        write     0.113 ms    3.5%  (p95 0.256 ms)
-        fsync     0.039 ms    1.2%  (p95 0.062 ms)
-       rename     0.148 ms    4.6%  (p95 0.276 ms)
-        TOTAL     3.254 ms   ->    307 bodies/s
+       sha256     0.012 ms    0.3%  (p95 0.070 ms)
+     compress     3.151 ms   90.5%  (p95 11.567 ms)
+        write     0.127 ms    3.6%  (p95 0.495 ms)
+        fsync     0.034 ms    1.0%  (p95 0.059 ms)
+       rename     0.159 ms    4.6%  (p95 0.266 ms)
+        TOTAL     3.483 ms   ->    287 bodies/s
 
 ==============================================================================
 4. PRECOMPUTE — build the compressor once, or once per body?
 ==============================================================================
 
   136 bodies at level 9, with the dictionary loaded
-    compressor built once        0.0455 s
-    compressor built per body    0.0679 s   (1.49x, 0.165 ms per call)
+    compressor built once        0.0457 s
+    compressor built per body    0.0696 s   (1.52x, 0.176 ms per call)
 
   The router builds it once at startup. This is the cost of getting that wrong.
 
