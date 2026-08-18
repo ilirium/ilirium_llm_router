@@ -204,7 +204,7 @@ phase raised about itself.*
 
 | | The question in one line | What `plan.md` assumes |
 |---|---|---|
-| **Q1** | What stops the queue eating memory, and at what size? | Bounded in **bytes**, 64 MiB. **Explained at length 2026-08-18** |
+| **Q1** | What stops the queue eating memory, and at what size? | **Decided:** bounded in **bytes**, **configurable**, default 64 MiB. One `queue.SimpleQueue` |
 | **Q2** | Where in the code does the store get handed the bytes? | **`Proxy.record()`**, all four call sites |
 | **Q2b** | Do we fix the case where no row is written at all? | **Name it, do not fix it** |
 | **Q3** | How does the index say a body was not stored? | A **reason word** in the ref cell |
@@ -255,6 +255,25 @@ before anything is dropped. That is what the column is for.
 carrying the reason, the body's size, the pending bytes, the queue length and the call's path and
 session, so the row can be found. Subsequent drops are counted rather than logged — warning on every
 one turns overload into log spam at the moment the log most needs to stay readable.
+
+> **Decided 2026-08-18: bounded in bytes, and the bound is configurable — `queue_max_bytes` in the
+> `corpus:` block, default 64 MiB.** It has been in that block since the first draft; the owner asked
+> for it explicitly, so it is recorded here rather than left to be discovered by reading the config.
+>
+> **And the queue was named.** This plan wrote "queue" a dozen times without saying which one. **There
+> is exactly one in the design** — one item per call, carrying both bodies — and it is a
+> **`queue.SimpleQueue`, unbounded, with the byte accounting held beside it** under a `threading.Lock`.
+>
+> | Rejected | Why |
+> |---|---|
+> | `asyncio.Queue` | **Not thread-safe**, and the producer is the event loop while the consumer is a worker thread. The tempting mistake |
+> | `queue.Queue(maxsize=N)` | Bounded — **in items**, which is Finding 1 itself |
+> | `multiprocessing.Queue` | Pickles every body. Only relevant if Task 3c sends us to processes |
+>
+> `SimpleQueue` because none of `Queue`'s extra machinery is used: no `maxsize`, no `task_done()`, no
+> `join()`. Shutdown is a sentinel and a **timed** thread join — a full queue is ~640 bodies, and a
+> router that will not stop is worse than a corpus missing its last few. Whatever is abandoned is
+> counted and named in the final summary line, so that hole is recorded like any other.
 
 | Option | Buys | Costs |
 |---|---|---|

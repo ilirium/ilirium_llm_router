@@ -167,7 +167,7 @@ corpus:
   dir: logs/corpus            # relative paths resolve against the config file's directory
   level: 9                    # zstd level. The default is whatever Task 3c measures
   max_body_bytes: 1048576     # one body bigger than this is not stored: `too_large`
-  queue_max_bytes: 67108864   # 64 MiB waiting to be written; over it: `dropped`
+  queue_max_bytes: 67108864   # total bytes waiting to be written; over it: `dropped`
 ```
 
 ### Two limits, because they are checked at two different moments
@@ -308,6 +308,50 @@ the finding, long before a single body is dropped.
 **Nothing crosses a process boundary.** The queue item holds *references* to `bytes` that already
 exist in memory — the request body read at `begin()`, and the response copy tee'd in `watch()`.
 Enqueueing is a pointer, not a copy.
+
+### Which queue, exactly
+
+*Added 2026-08-18. This plan said "queue" a dozen times without naming one.*
+
+**There is exactly one queue in the whole design.** One item per call, carrying both bodies. Not one
+per direction, not one per day, and nothing else in the router uses one — `stats.py` writes its row
+synchronously and always has.
+
+| Candidate | Verdict |
+|---|---|
+| **`asyncio.Queue`** | **Wrong, and it is the tempting mistake.** It is **not thread-safe.** The producer is the event loop and the consumer is a worker thread, so `put_nowait` here and `get` there is a data race, not a queue |
+| **`queue.Queue(maxsize=N)`** | Thread-safe and bounded — **but `maxsize` counts items**, which is Finding 1. Bounding what we do not care about while leaving bytes unbounded is the defect, not the fix |
+| **`multiprocessing.Queue`** | Pickles every body across a pipe. Only relevant if Task 3c sends us to processes |
+| **`queue.SimpleQueue`, unbounded, with the byte accounting outside it** | **The choice.** Thread-safe, C-implemented, `put` never blocks, and it carries none of the machinery this does not use — no `maxsize`, no `task_done()`, no `join()` |
+
+**The bound lives beside the queue rather than inside it**, because the bound is in bytes and no
+standard queue offers that:
+
+```
+_queue    queue.SimpleQueue    unbounded FIFO, thread-safe both ends
+_lock     threading.Lock       guards the counter below
+_pending  int                  bytes currently waiting
+```
+
+`submit()` takes the lock, adds `len(request) + len(response)`, compares against `queue_max_bytes`,
+decides store-or-drop, and puts. The worker `get()`s, does the work, and subtracts under the same
+lock. **The lock is held for nanoseconds and never across I/O** — which is what keeps the promise
+that the request path cannot block.
+
+**It counts payload bytes, not `sys.getsizeof`.** Each `bytes` object carries ~33 bytes of header,
+and ignoring that makes the real ceiling a fraction of a percent higher. **This is a tripwire, not an
+accountant.**
+
+### Shutdown
+
+`close()` puts a sentinel and joins the worker **with a timeout**, then logs the final summary. A
+timeout rather than an unbounded wait because a full queue is ~640 bodies, which at tens of
+milliseconds each is a twenty-second shutdown — and a router that will not stop is worse than a
+corpus missing its last few bodies. **Anything abandoned is counted and named in that last line**, so
+the hole is recorded here exactly as it is anywhere else.
+
+The timeout is a module constant rather than a sixth config key, on the same KISS grounds as the
+`workers` key that is also absent.
 
 ### Why a thread, and not the other two
 
