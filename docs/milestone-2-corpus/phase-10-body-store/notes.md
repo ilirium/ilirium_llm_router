@@ -320,13 +320,35 @@ existed because the caller vanished mid-upload — that cell needs to say which.
 ### Q4 — A body over the ceiling: keep the first megabyte, or nothing?
 
 > **Decided 2026-08-18: option A, and the ceiling is configurable — it always was, in the
-> `corpus:` block.** The owner asked *why do we need the ceiling at all*, which the options below did
-> not answer. **Because it and the queue bound protect against opposite failures.** `max_body_bytes`
-> stops **one enormous body** being buffered during a call — the catch-all route forwards paths
-> nobody enumerated, so a reply could be any size at all. `queue_max_bytes` stops **many ordinary
-> bodies** piling up after their calls, and cannot help with the first: a thousand legal 100 KB
-> bodies are each under the ceiling. Neither may be set to unlimited, because "unlimited" reads as
-> *capture everything* and means *let an unknown endpoint decide this process's memory*.
+> `corpus:` block.** The owner asked *why do we need the ceiling at all*, twice, and the first answer
+> was not good enough: it named what each limit protects without saying **when each is checked**,
+> which is the whole reason both exist. `plan.md`'s "Two limits, because they are checked at two
+> different moments" is the full version. In four sentences:
+>
+> 1. **The router has never held a whole response.** `proxy.py:245` streams each chunk and forgets
+>    it; the only accumulation anywhere is the buffered scanner's, capped at 1 MiB. **The corpus is
+>    what introduces whole-response buffering**, so the memory risk is new and arrives with it.
+> 2. **The queue bound is checked once, at `submit()`, after the call has finished** — by which time
+>    a 2 GB reply has already been accumulated in full. It governs bodies *waiting to be written*, and
+>    has no opinion about a body still arriving.
+> 3. **The ceiling is checked on every chunk**, so it bounds the peak. When it fires the copy is
+>    discarded and the memory freed; **the relay is untouched**, because the copy was never in the
+>    path.
+> 4. **It is not hypothetical and it is not new reasoning.** `app.py`'s catch-all forwards any path —
+>    Phase 9 caught it firing three times on `/api/hello` — and `observe.py` already answered this
+>    exact question with `MAX_SCAN_BYTES`, whose comment is the same argument almost word for word.
+>    `EPD-003` asks that the **reasoning** be reused rather than a new number invented.
+>
+> **One asymmetry was glossed over in the first answer and is now stated.** For **responses** the
+> ceiling bounds memory. For **requests** it does not — `proxy.py:133` reads the whole body to relay
+> it, long before the corpus is consulted, so refusing to store a 500 MB request saves the disk write
+> and stops that body's lifetime being extended, but the peak was already spent. **Two separate knobs
+> were considered and refused**: one number is simpler and the request case still gains something
+> real.
+>
+> **In normal operation it never fires.** The largest request this project has seen is 203.2 KB and
+> the largest response 135,894 bytes. **The ceiling is for the endpoint nobody thought of**, which is
+> the only kind that can be arbitrarily large.
 
 **In plain terms.** There is a size ceiling, because the router forwards paths nobody enumerated and a
 reply could be any size. When a body exceeds it, we either store the part we have or store nothing.

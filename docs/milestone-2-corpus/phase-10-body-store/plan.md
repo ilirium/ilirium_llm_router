@@ -170,17 +170,86 @@ corpus:
   queue_max_bytes: 67108864   # 64 MiB waiting to be written; over it: `dropped`
 ```
 
-### Two limits, because there are two different dangers
+### Two limits, because they are checked at two different moments
 
-They are easy to confuse and they protect against opposite shapes of failure.
+*Rewritten 2026-08-18. An earlier version named what each limit protects and not **when**, and the
+timing is the entire reason both exist.*
 
-| | Protects against | When it applies |
-|---|---|---|
-| **`max_body_bytes`** | **one enormous body** | *During* the call, as the response is tee'd. The catch-all route forwards paths nobody enumerated, so a reply could be any size at all — without a ceiling the corpus buffers all of it. `EPD-003` asks that `observe.py`'s `MAX_SCAN_BYTES` **reasoning** be reused rather than its number, and this is that reasoning: it turns *memory decided by a stranger* into a known ceiling |
-| **`queue_max_bytes`** | **many ordinary bodies arriving faster than they are written** | *After* the call, while bodies wait for the worker. The per-body ceiling cannot help here — a thousand perfectly legal 100 KB bodies are each under it |
+**Start from what the router holds today, without any corpus.**
 
-**Both are configurable and neither can be disabled.** An "unlimited" setting is a footgun: it reads
-as *capture everything* and means *let an unknown endpoint decide how much memory this process uses*.
+| | Held whole in memory today? |
+|---|---|
+| The **request** body | **Yes, always.** `proxy.py:133` is `body = await request.body()` — the router reads the whole body to relay it. This predates the corpus and is not changed by it |
+| The **response** body | **No, never.** `proxy.py:245` streams chunk by chunk and forgets each one after yielding it. The only accumulation anywhere is `observe.py`'s buffered scanner, which stops at **1 MiB** and gives up |
+
+**So the corpus introduces something the router has never done: holding a whole response.** To store
+a response, `watch()` has to keep a copy of every chunk. **That is new memory**, and nothing bounds
+it unless something is made to.
+
+#### Why the queue bound cannot cover it
+
+The two checks happen at opposite ends of a call:
+
+```
+  response starts arriving
+    │
+    ├─ chunk … chunk … chunk …      ← the copy grows HERE, while the call runs
+    │                                  max_body_bytes is checked on every chunk
+    │
+  call finishes, record() runs
+    │
+    └─ submit()                     ← queue_max_bytes is checked HERE, once
+```
+
+**By the time `submit()` runs, the memory has already been spent.** The queue bound governs bodies
+*waiting to be written*; it has no opinion at all about a body still arriving. A single 2 GB reply
+would be fully accumulated before the queue ever saw it.
+
+And the reverse is equally true: **the ceiling cannot bound a backlog.** A thousand perfectly ordinary
+100 KB bodies are each far under it, and together they are 100 MB in the queue.
+
+| | Bounds | Checked | Cannot help with |
+|---|---|---|---|
+| **`max_body_bytes`** | peak memory for **one** body | on every chunk, during the call | many bodies at once |
+| **`queue_max_bytes`** | total memory for **all waiting** bodies | once, at submit | one body that is huge |
+
+#### What the ceiling does when it fires
+
+The accumulated copy is **discarded and the memory freed**, accumulation stops for the rest of that
+response, and the ref cell reads `too_large`. **The relay is untouched** — every byte still streams to
+the caller exactly as before, because the copy was never in the path.
+
+#### Why this is not a hypothetical
+
+`app.py`'s catch-all forwards **any** path the router did not anticipate, which is a deliberate design
+decision — and Phase 9's capture caught it firing three times on `/api/hello`, an endpoint nobody
+here has ever enumerated. A harness calling something like a file-download or batch-results endpoint
+through `ANTHROPIC_BASE_URL` would have its reply forwarded by this router, at whatever size that
+endpoint returns.
+
+**`observe.py` already faced exactly this and answered it**, in a comment worth quoting because it is
+the same argument: *"how much is it worth remembering about a reply nobody enumerated? The catch-all
+route forwards any path, so the reply to an unanticipated endpoint could be any size at all, and this
+turns 'memory decided by a stranger' into a known ceiling."* **`EPD-003` asks that this reasoning be
+reused rather than a new number invented**, and that is what the ceiling is.
+
+**In normal operation it never fires.** The largest request this project has ever seen is 203.2 KB and
+the largest response 135,894 bytes; 1 MiB is roughly five times either. **It exists for the endpoint
+nobody thought of**, which is the only kind that can be arbitrarily large.
+
+#### The asymmetry, stated because it is real
+
+**For responses the ceiling bounds memory. For requests it does not** — the body is already held whole
+by `await request.body()` before the corpus sees it, so refusing to store a 500 MB request saves the
+**disk write** and stops that body's lifetime being extended until the response completes, but the
+peak was spent before the corpus was consulted.
+
+**Two separate knobs were considered and refused.** One number is simpler, the request case still
+gains something real, and a second key would buy a distinction nobody tuning this file would want to
+think about.
+
+**Neither limit may be disabled.** An "unlimited" setting reads as *capture everything* and means
+*let an unknown endpoint decide how much memory this process uses*.
 
 **There is deliberately no `workers` key.** One worker until Task 3c says otherwise.
 
