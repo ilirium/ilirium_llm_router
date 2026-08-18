@@ -57,8 +57,8 @@ recomputation.
 plan's own tasks create, and six more are `review-charter.md` **listing the known false positives** so
 a reviewer does not spend findings on them. Both are `backlog.md`'s recurring class rather than
 breakage. **Do not predict the count from the docstring; run the tool.** Phase 8 proved
-twice that reading it gives the wrong answer. *(`make test` takes ~150 s on this checkout, not Phase
-9's 0.6 s — cloud-folder hydration, not a defect. It is not stuck.)*
+twice that reading it gives the wrong answer. *(`make test` is ~0.6 s warm. A **first** run after the
+cloud folder evicts the virtualenv takes two to three minutes on hydration alone — slow, not stuck.)*
 
 ## Where the project is
 
@@ -118,8 +118,10 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 10 — the body store.** **Planned 2026-08-18 and not started**; the branch is in
-   the table below and the task list is in `milestone-2-corpus/phase-10-body-store/plan.md`.
+1. **Execute Phase 10 — the body store, from Task 4.** **Planned and reviewed 2026-08-18; Group A is
+   done and no `src/` change exists yet.** The branch is in the table below and the task list is in
+   `milestone-2-corpus/phase-10-body-store/plan.md`. **Do not re-plan or re-review it** — its
+   re-derivation and its forward review have both run, and the review's 22 findings are applied.
    `EPD-003`'s open questions 3–6 are answered in that plan and are **not yet written back into
    `EPD-003` itself** — that is its Task 20. *(This item read "Plan and execute" and restated what the
    phase must settle; the plan now holds that, so restating it here would be the second copy this
@@ -139,7 +141,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | clean; **documentation only.** No `src/` change yet | **Task 3a** — the forward review of Tasks 4–24, two runs, `review-charter.md`. Task 4 is cleared and waits behind it |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | clean; **documentation only, eleven commits.** No `src/` change yet | **Task 4** — `uv add zstandard`, then the benchmark. Group A is done, including the forward review |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

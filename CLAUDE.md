@@ -24,7 +24,9 @@ directory* (identical inode), not two checkouts. Editing either edits both.
 - **Propose before implementing.** A design answer is not a build order — present the recommendation
   and wait for an explicit go-ahead. Commits do *not* need a separate ask.
 - **Ask before touching the machine.** GUI settings, `.env`, long-running local servers: ask rather
-  than detect-and-proceed. Consent for one is not consent for the next.
+  than detect-and-proceed. Consent for one is not consent for the next. **Driving a session — headless
+  or interactive — is never done freely: ask, and say what it is for.** A request to run one that does
+  not state why is not a request the owner can answer.
 - **Exercise it before committing.** Green tests are not evidence. Drive the real thing — and when a
   check comes back negative, fix the instrument before believing the result.
 - **Check prior evidence before planning a rerun.** Earlier phases keep answering later ones; mine

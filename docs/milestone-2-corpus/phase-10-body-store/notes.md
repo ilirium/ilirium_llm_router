@@ -164,7 +164,15 @@ that uses it.
 folder. **The finding stands — the sketch's ~80 MB a year is real and was accepted** — but the repair
 this paragraph proposed is not the one taken.*
 
-### 8 — `make test` takes 150 seconds on this machine, not 0.6
+### 8 — `make test` can take 150 seconds on this machine, not 0.6
+
+> **Overstated, and corrected 2026-08-18 by running it again at the end of the session: 158 passed in
+> 0.62 s.** The 150 s is the **first** run after the cloud-synced folder has evicted the virtualenv,
+> not this checkout's speed — so Phase 9's 0.6 s was right and this finding read as though it were
+> wrong. **What survives is the actionable half**: a first run looks like a hang and is not. What does
+> not survive is the framing that the suite is slow here. Found by running the check rather than by
+> re-reading it, which is the `../../README.md` lesson *check the claim you are planning against,
+> including when it is your own.*
 
 Same 158 tests, all passing. Phase 9 recorded **0.60 s**; this session measured **150.85 s**, and the
 first `import fastapi` alone took over 17 seconds of wall clock across its submodules.
