@@ -1016,6 +1016,158 @@ count moves with documents, and neither predicts the other. **Run it; do not pre
 line, at the cost of a second network fetch for weaker evidence than the binary already gives. It is
 available on request if the record should carry the source line as well as the instruction.
 
+## Task 5 — the instrument — 2026-08-18
+
+`docs/procedures/corpus-benchmark/`, holding `benchmark.py` and a `README.md`, with
+`docs/procedures/corpus-benchmark/runs/` added to `.gitignore` as an **explicit per-instrument entry**
+rather than a `docs/procedures/*/runs/` glob — the shape the two existing entries already set, and a
+glob would silently start covering an instrument nobody had decided should be ignored. A row is in
+`../../procedures/README.md` saying when re-running is worth it.
+
+**Two corpora, and the script labels which produced each number.** Ratios come from `gate.py`'s rule
+and split exactly — `/v1/messages` requests over 1 KB, trained on run-01 + run-02, evaluated on
+run-03 — so they are comparable with Phase 9's. Throughput and scaling come from every body in every
+run, both directions, which is the realistic write-path mix and yields no comparable ratio at all.
+
+**One defect found by running it, which reading it would not have found.** The README first said
+`python3 benchmark.py`. On this machine **`python3` is 3.14 and the venv is 3.13**, and `zstandard`
+is in the venv — so the bare interpreter raises `ModuleNotFoundError`. Every sibling instrument here
+is stdlib-only and runs either way; this is the first that does not. Corrected to `uv run python` in
+both the README and the docstring, and written down because **the failure looks like a missing
+dependency rather than the wrong interpreter.**
+
+## Task 6 — the numbers, and the four things they decide — 2026-08-18
+
+**Run 2026-08-18. Frozen into `evidence/` with its own README** — the script, its verbatim output, and
+what it does and does not establish. That directory exists because the forward review found nothing
+froze the results and nothing said why it was absent.
+
+**Permission was on record** from 2026-08-18 to run the benchmark over the corpus already in
+`logs/corpus-gate/`. It started no router, drove no session and made no network call.
+
+### 1 — The GIL is released, and the thread design stands
+
+| threads | level 19 wall | speedup | efficiency |
+|---:|---:|---:|---:|
+| 1 | 1.762 s | 1.00x | 100% |
+| 2 | 0.965 s | 1.83x | 91% |
+| 4 | 0.540 s | 3.26x | 82% |
+
+**Task 4 read it off the binary; this measures it, and they agree.** Level 3 scales the same way
+(3.43x at four threads). **Task 6's negative branch is not taken:** the thread design is not
+withdrawn, no process-pool measurement is needed, and Group C proceeds as planned.
+
+### 2 — `compress_level_zstd` defaults to 9, measured rather than assumed
+
+Ratio on the held-out slice, throughput on the full load set, one thread:
+
+| level | dict | ratio | MB/s | bodies/s |
+|---:|---|---:|---:|---:|
+| 3 | no | 2.80x | 286.1 | 5232 |
+| 3 | **yes** | **9.25x** | 771.1 | 14102 |
+| 9 | no | 3.00x | 54.8 | 1002 |
+| 9 | **yes** | **10.28x** | 160.2 | 2930 |
+| 19 | no | 3.12x | 4.2 | 77 |
+| 19 | **yes** | **10.95x** | 14.7 | 270 |
+
+**Level 9 holds 94% of level 19's dictionary-assisted ratio for an eighth of the per-body cost**, and
+one worker at level 9 runs ~2,930 bodies/s against the owner's stated peak of 1–3 calls/s — roughly
+**500x headroom**. Level 19 buys 6.5% more ratio for 8.8x the CPU, and its p95 compress is 11.6 ms
+against 1.4 ms. **The plan's placeholder default of 9 is confirmed by measurement**, which is not the
+same as having been right by luck: nobody had measured it.
+
+**And the half nobody had asked is answered.** The dictionary is worth far more than the level —
+3.12x to 10.95x at level 19, 3.00x to 10.28x at level 9. **Choosing the dictionary well matters more
+than choosing the level well**, which inverts where the tuning effort belongs.
+
+### 3 — `store_ms` is not one thing, and the level decides which
+
+Median per body, with the dictionary:
+
+| | level 3 | level 9 | level 19 |
+|---|---:|---:|---:|
+| sha256 | 3.6% | 2.1% | 0.3% |
+| **compress** | 16.8% | **39.9%** | **90.8%** |
+| write + fsync + rename | 79.6% | 58.0% | 9.0% |
+| **total** | **0.232 ms** | **0.405 ms** | **3.579 ms** |
+
+**At the chosen level the filesystem is the majority of `store_ms`, not compression.** That matters
+for reading the column later: a `store_ms` that climbs is more likely the disk than the compressor.
+**`fsync` is cheap here (~0.03 ms) and `rename` is not (~0.12 ms)** — worth knowing, because the
+write path does one of each per body and the sketch assumed `fsync` was the expensive one.
+
+*These were measured writing real files into `logs/`, which is where the store will write — not into
+a system temp directory on another filesystem. On this machine `logs/` is inside a cloud-synced
+folder, so this is a measurement of this setup rather than of the disk. It is the number the router
+would actually pay here.*
+
+### 4 — No `corpus.workers` key, and the plan's live contradiction is resolved
+
+`plan.md` promised the knob **only if** Task 6 showed the GIL released **and** more than one worker
+helping, while Task 11 fixed the block at five keys — and said *"either outcome falsifies one of those
+two sentences."* **It is the first sentence that gives way.** The GIL is released, so the condition's
+first half is met; but one worker at level 9 already carries ~500x the peak load, so **a second worker
+helps with nothing**. Configuration this project does not need is configuration it does not get.
+**Task 11 stays at five keys, unchanged.**
+
+### 5 — The trainers disagree, and the parameter matters more than the tool
+
+**This is the finding that nearly went the other way, and the reason it is worth stating carefully.**
+The first run compared the two trainers at their defaults and said the library is **worse**:
+
+| maxdict | `zstd --train` | `zstandard`, default k |
+|---:|---:|---:|
+| 112,640 | 10.95x | 10.35x *(−5%)* |
+| 262,144 | 12.04x | 10.29x *(−15%)* |
+| 524,288 | 12.10x | 11.48x *(−5%)* |
+
+**Reported there, it would have read as a case for reversing Q5** — the owner's "one tool" decision —
+on the ground that the library gives up ratio. **It does not.** `zstandard.train_dictionary()` uses
+**COVER** and, asked to pick `k` itself, picks a poor one on a corpus this small; `zstd --train`
+defaults to **fastcover**. Setting `k` explicitly reverses the result:
+
+| maxdict | `zstd --train` | `k=2000` | `k=8000` | `k=16000` |
+|---:|---:|---:|---:|---:|
+| 112,640 | 10.95x | 10.32x | **11.08x** | 9.39x |
+| 262,144 | 12.04x | 13.31x | **13.65x** | 13.70x |
+| 524,288 | 12.10x | 13.30x | **13.62x** | 13.60x |
+| 1,048,576 | 12.10x | 13.30x | **13.62x** | 13.60x |
+
+**So Q5 survives and is strengthened — with one new requirement.** One tool is right; `zstandard` is
+not worse; but **Task 14's trainer must set `k` explicitly**, and the library's own optimiser is a
+trap that costs up to 15%. That is a constraint on Task 14 that no document carried before today.
+
+**Non-monotonicity is confirmed on a second instrument.** At `maxdict=112,640` the ratio peaks at
+`k=8000` and falls to 9.39x at `k=16000`; `maxdict` above 262,144 buys nothing. Phase 9 found this in
+`zstd --train`; it is a property of training at this sample count, not of either tool. **This is
+exactly why Task 14 measures a candidate against the incumbent and refuses a worse one.**
+
+**For Task 15: `--maxdict=262,144` at `k=8000` is the current best** — 13.65x, and the 524 KB and
+1 MB settings match it while producing a larger file. **It is not yet a recommendation**, for the
+reason below.
+
+### The caveat that limits all of section 5, stated rather than buried
+
+**There is no usable validation split in this corpus.** Splitting run-01 to train, run-02 to validate
+and run-03 to test gives a validation set of **two bodies** — run-02 has three calls, two of which
+qualify — and its ratios come out above 200x, which is memorisation, not evidence.
+
+**So any `k` read off the table above was chosen with knowledge of the test slice.** The *ranking* is
+stable across both slices and the plateau is real, but **the exact optimum is not established here**,
+and Task 15 must not present one as if it were. The honest options for Task 15 are leave-one-session-out
+across the five sessions the corpus carries, or naming the choice as provisional. **It is written down
+now because it is the kind of thing that becomes invisible once a number is in
+`../../reference/measurements.md`.**
+
+### One number this does not license
+
+**Phase 9's 12.10x remains the figure the milestone quotes, and it remains optimistic.** The 13.65x
+above is **not** a replacement: it carries all three of the biases the slice note in
+`../../reference/measurements.md` names — headless corpus, ~28 KB smaller preamble than interactive,
+70 of 73 bodies Anthropic — **plus a fourth**, that its parameter was chosen against the slice it is
+reported on. Task 21 puts these numbers in the register with all four columns, and that is where the
+slice travels with the number.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*

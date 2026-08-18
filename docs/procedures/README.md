@@ -18,6 +18,7 @@ what stays in this tier is the thing that produced it.
 | `dying-backend/` | How the router behaves when a backend dies mid-answer, refuses to start, or when the caller hangs up | After any change to the relay or the error path. A backend cannot be asked politely to die halfway through a reply, so this is one that always does |
 | `link-check.py` | Which cited paths no longer resolve, anywhere in the repository | **After any commit that moves a document**, and before and after a milestone close. It is the only check for a link that breaks by *depth* rather than by name, which no name-based grep can find |
 | `read-timeout-semantics.py` | What httpx's `read` timeout actually applies to — the silence between two reads, restarted by every chunk | **After an httpx bump.** It is a fact about a pinned library, and the wrong belief about it stood in four documents for two phases |
+| `corpus-benchmark/` | What the body store costs on this machine: whether more than one worker thread buys anything, what `corpus.compress_level_zstd` should default to, whether `store_ms` is compression or disk, and whether `zstandard`'s trainer agrees with `zstd --train` | **After a `zstandard` bump, and before trusting the level default on different hardware.** Also whenever the corpus grows enough to change the body mix — every number it prints is one machine on one day. It reads `logs/corpus-gate/` and starts nothing: no router, no backend, no network |
 
 ## Two rules that keep this tier working
 

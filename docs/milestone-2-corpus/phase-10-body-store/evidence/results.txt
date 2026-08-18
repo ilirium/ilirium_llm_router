@@ -1,0 +1,133 @@
+zstandard 0.25.0, backend cext, libzstd (1, 5, 7)
+python    3.13.3   cpus 10
+
+ratio set : train 48 bodies / test 20 bodies (2,102,371 raw test bytes) — gate.py's rule and split
+load  set : 68 requests + 68 responses = 136 bodies, 7,436,180 bytes
+            requests  median   103,935  max   185,209
+            responses median     3,353  max   135,894
+dictionary: heldout-112640.dict (112,640 bytes)
+
+==============================================================================
+1. SCALING — is the GIL actually released, and does a second thread help?
+==============================================================================
+
+Same bodies, same work, more threads. The GIL question is settled by the *shape* of this
+table: near-linear speedup means released, a flat line means the threads are serialised.
+
+  level 19, no dictionary, 136 bodies
+     threads     wall s      MB/s   speedup  efficiency
+           1      1.772       4.2     1.00x        100%
+           2      0.938       7.9     1.89x         94%
+           4      0.535      13.9     3.31x         83%
+
+  level 3, no dictionary, 136 bodies
+     threads     wall s      MB/s   speedup  efficiency
+           1      0.026     282.2     1.00x        100%
+           2      0.015     511.6     1.81x         91%
+           4      0.008     912.2     3.23x         81%
+
+==============================================================================
+2. LEVEL — ratio and throughput, with a dictionary and without
+==============================================================================
+
+Ratio is measured on the HELD-OUT slice only, so it is comparable with Phase 9's numbers.
+Throughput is on the full load set, single-threaded, which is what one worker is.
+
+    level    dict    ratio    test bytes      MB/s   bodies/s
+        3      no    2.80x       751,468     287.6       5260
+        3     yes    9.25x       227,246     767.4      14035
+        9      no    3.00x       701,407      55.1       1007
+        9     yes   10.28x       204,535     160.2       2929
+       19      no    3.12x       673,007       4.3         78
+       19     yes   10.95x       192,063      15.2        277
+
+==============================================================================
+3. PHASE SPLIT — is store_ms compression, or is it the disk?
+==============================================================================
+
+Real files into logs/.corpus-benchmark-scratch — the filesystem the store will use,
+not a system temp directory. write -> fsync -> rename, which is the store's sequence.
+
+  level 3 — median per body, and the share of the total
+       sha256     0.010 ms    4.1%  (p95 0.067 ms)
+     compress     0.044 ms   17.9%  (p95 0.317 ms)
+        write     0.083 ms   33.5%  (p95 0.158 ms)
+        fsync     0.030 ms   12.3%  (p95 0.046 ms)
+       rename     0.080 ms   32.2%  (p95 0.143 ms)
+        TOTAL     0.248 ms   ->   4025 bodies/s
+
+  level 9 — median per body, and the share of the total
+       sha256     0.010 ms    2.1%  (p95 0.069 ms)
+     compress     0.186 ms   40.2%  (p95 1.522 ms)
+        write     0.096 ms   20.7%  (p95 0.200 ms)
+        fsync     0.032 ms    6.9%  (p95 0.044 ms)
+       rename     0.140 ms   30.1%  (p95 0.209 ms)
+        TOTAL     0.463 ms   ->   2160 bodies/s
+
+  level 19 — median per body, and the share of the total
+       sha256     0.011 ms    0.3%  (p95 0.071 ms)
+     compress     2.942 ms   90.4%  (p95 11.559 ms)
+        write     0.113 ms    3.5%  (p95 0.256 ms)
+        fsync     0.039 ms    1.2%  (p95 0.062 ms)
+       rename     0.148 ms    4.6%  (p95 0.276 ms)
+        TOTAL     3.254 ms   ->    307 bodies/s
+
+==============================================================================
+4. PRECOMPUTE — build the compressor once, or once per body?
+==============================================================================
+
+  136 bodies at level 9, with the dictionary loaded
+    compressor built once        0.0455 s
+    compressor built per body    0.0679 s   (1.49x, 0.165 ms per call)
+
+  The router builds it once at startup. This is the cost of getting that wrong.
+
+==============================================================================
+5. TRAINERS — does zstandard.train_dictionary() agree with `zstd --train`?
+==============================================================================
+
+All evaluated on the same held-out slice at level 19. The binary column is Phase 9's
+frozen dictionary, trained by `zstd --train` on exactly these samples — so this compares
+two trainers, not two corpora.
+
+THE PARAMETER MATTERS MORE THAN THE TOOL, and that is the finding. zstandard uses COVER
+and, asked to optimise k itself, picks a poor one on a corpus this small. `zstd --train`
+defaults to fastcover. Comparing only the defaults would have said the library is worse;
+comparing at an explicit k says it is better. Both rows are printed for that reason.
+
+      maxdict                   trainer      bytes    ratio  vs binary
+      112,640    zstd --train (phase 9)    112,640   10.95x          -
+      112,640         zstandard, k auto    112,640   10.35x        -5%
+      112,640         zstandard, k=2000    112,640   10.32x        -6%
+      112,640         zstandard, k=8000    112,640   11.08x        +1%
+      112,640        zstandard, k=16000    112,640    9.39x       -14%
+
+      262,144    zstd --train (phase 9)    185,535   12.04x          -
+      262,144         zstandard, k auto    172,671   10.29x       -15%
+      262,144         zstandard, k=2000    232,094   13.31x       +11%
+      262,144         zstandard, k=8000    262,144   13.65x       +13%
+      262,144        zstandard, k=16000    262,144   13.70x       +14%
+
+      524,288    zstd --train (phase 9)    177,812   12.10x          -
+      524,288         zstandard, k auto    154,393   11.48x        -5%
+      524,288         zstandard, k=2000    253,837   13.30x       +10%
+      524,288         zstandard, k=8000    310,520   13.62x       +12%
+      524,288        zstandard, k=16000    445,469   13.60x       +12%
+
+    1,048,576    zstd --train (phase 9)    177,812   12.10x          -
+    1,048,576         zstandard, k auto    154,393   11.48x        -5%
+    1,048,576         zstandard, k=2000    253,837   13.30x       +10%
+    1,048,576         zstandard, k=8000    310,520   13.62x       +12%
+    1,048,576        zstandard, k=16000    445,469   13.60x       +12%
+
+Read the columns, not one number: the surface is NON-MONOTONIC in both k and maxdict,
+which is the same property Phase 9 found in `zstd --train` at this sample count. A
+candidate dictionary is therefore measured against the incumbent, never assumed better.
+
+!! There is no usable validation split in this corpus. run-02 contributes 2 qualifying
+!! bodies, so any k chosen by reading the table above has been chosen with knowledge of
+!! the test slice. The RANKING is stable across both slices and the plateau is real, but
+!! the exact optimum is not established here, and Task 15 must not pretend otherwise.
+
+==============================================================================
+Numbers above are this machine, this corpus, this day. Copy into evidence/ to keep them.

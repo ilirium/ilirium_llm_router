@@ -214,7 +214,9 @@ lived, and sha256 over a 200 KB body on the event loop is small but not free.
 corpus:
   enabled: false              # opt-in. Nothing is written until this is true
   dir: logs/corpus            # relative paths resolve against the config file's directory
-  compress_level_zstd: 9      # the zstd level the write path uses; default measured by Task 6
+  compress_level_zstd: 9      # the zstd level the write path uses. MEASURED by Task 6, 2026-08-18:
+                              # 94% of level 19's dicted ratio for an eighth of the per-body cost,
+                              # and ~500x the target peak load on one worker
   max_body_bytes: 1048576     # one body bigger than this is not stored: `too_large`
   queue_max_bytes: 67108864   # total bytes waiting to be written; over it: `dropped`
 ```
@@ -551,13 +553,17 @@ file".
 point: **Tasks 1 to 3 have executed**, so the exception is spent and `../../README.md`'s rule applies
 again with no exception. Inserting it as a number would shift twenty-one tasks that are now cited by
 this file, `notes.md`, `review-charter.md` and `../../status.md`.*
-### Group B — the benchmark, before any store code *(in progress)*
+### Group B — the benchmark, before any store code *(executed)*
 
-**Task 4 executed 2026-08-18; Tasks 5 and 6 have not.** The marker is written `*(in progress)*` and
-the detail sits outside it **on purpose** — `*(in progress — Task 4 done)*` would not match the
-prescribed grep's `\(in progress\)`, which is the same defect as Group A's uncatalogued marker and
-the `is not started` sweep that returned clean. **The parenthesis stays exactly greppable; the prose
-carries the state.**
+**All three tasks ran on 2026-08-18** and the group is closed. Its numbers are in `notes.md` and
+frozen in `evidence/`. **What it decided:** the GIL is released and the thread design stands, so the
+negative branch was not taken; `compress_level_zstd` defaults to **9**; there is **no `corpus.workers`
+key**; and `zstandard`'s trainer must set `k` explicitly, which is a new constraint on Task 14.
+
+*While the group was mid-flight this heading read `*(in progress)*`, with the detail outside the
+parenthesis on purpose — `*(in progress — Task 4 done)*` would not match the prescribed grep's
+`\(in progress\)`, which is the same defect as Group A's uncatalogued marker and the `is not started`
+sweep that returned clean. **The parenthesis stays exactly greppable; the prose carries the state.***
 
 *Added 2026-08-18. The group exists because the first version of this plan chose a threading design
 from published figures for somebody else's machine, and asserted a GIL property it had not read the
@@ -594,6 +600,13 @@ insertions**, not a second renumber.
 released **and** more than one worker helping — while Task 11 fixes the block at five keys. **Either
 outcome of Task 6 falsifies one of those two sentences**, and Task 11 is where it is reconciled.
 
+> **Reconciled 2026-08-18, and it is the first sentence that gives way. There is no `corpus.workers`
+> key.** The GIL *is* released — 3.26x at four threads — so the condition's first half is met. Its
+> second half is not: one worker at level 9 runs ~2,930 bodies/s against a target peak of 1–3 calls a
+> second, so **a second worker helps with nothing that needs helping.** Task 11 stays at five keys,
+> unchanged. Adding the knob would be configuration this project does not need, against the
+> non-negotiable that configuration stays simple.
+
 ### Group C — the store *(not started)*
 
 | # | Task |
@@ -610,8 +623,8 @@ outcome of Task 6 falsifies one of those two sentences**, and Task 11 is where i
 
 | # | Task |
 |---|---|
-| **14** | `docs/procedures/corpus-dictionary/` — the trainer, **using `zstandard` rather than the binary**, with **a row in `../../procedures/README.md`**, which **measures a candidate against the incumbent on a held-out slice and refuses to install a worse one.** Directly from `zstd --train` being non-monotonic at 68 samples. With its README saying when re-running is worth it |
-| **15** | Train the first real dictionary from the surviving `logs/corpus-gate/` corpus; **install it into `logs/corpus/dicts/`**; verify a dicted round-trip end to end and record the ratio. **Name which `--maxdict` was chosen and why** — `logs/corpus-gate/dicts/` holds eight, and `../../reference/measurements.md` records training as non-monotonic at this sample count |
+| **14** | `docs/procedures/corpus-dictionary/` — the trainer, **using `zstandard` rather than the binary**, with **a row in `../../procedures/README.md`**, which **measures a candidate against the incumbent on a held-out slice and refuses to install a worse one.** Directly from `zstd --train` being non-monotonic at 68 samples. With its README saying when re-running is worth it. **It must set `k` explicitly** — *added 2026-08-18 from Task 6*: `zstandard` uses COVER and its own choice of `k` is up to **15% worse** than `zstd --train`, while `k=8000` is **13% better**. The library's optimiser is a trap at this sample count, and nothing said so before the measurement |
+| **15** | Train the first real dictionary from the surviving `logs/corpus-gate/` corpus; **install it into `logs/corpus/dicts/`**; verify a dicted round-trip end to end and record the ratio. **Name which `--maxdict` was chosen and why** — `logs/corpus-gate/dicts/` holds eight, and `../../reference/measurements.md` records training as non-monotonic at this sample count. **Task 6's best is `--maxdict=262,144` at `k=8000` (13.65x), with 524 KB and 1 MB matching it on a larger file — but it is provisional, not a recommendation:** the corpus has **no usable validation split** (run-02 contributes two qualifying bodies), so that `k` was chosen with knowledge of the test slice. Either hold out by *session* rather than by run — the corpus carries five — or **name the choice as provisional.** Do not present it as measured-optimal |
 
 ### Group E — the telemetry move *(not started)*
 
@@ -745,9 +758,9 @@ grep**, since it returns clean and reads as proof.
 | `Proxy.record()` is reached by every path that produces a row | **Measured** — four call sites read off `proxy.py`, each traced to its entry point |
 | A caller vanishing after headers produces **no** row today | **Inferred** — from Starlette skipping a body generator on disconnect, which `proxy.py`'s own comment on `BackgroundTask` reasons about. Not observed here |
 | A byte-bounded queue is necessary because a 1,000-item queue is 200 MB | **Extrapolated** — from Phase 9's measured median request of 103,935 bytes |
-| `zstandard`'s dictionary training matches `zstd --train`'s | **Unverified.** Both wrap libzstd, but their *defaults* may differ — and training defaults are exactly where Phase 9 found non-monotonicity. **Task 6 compares them**; if they disagree, Phase 9's figures are not directly comparable and the note says by how much |
+| `zstandard`'s dictionary training matches `zstd --train`'s | **Measured — Task 6, 2026-08-18: they do not match, and the defaults were exactly where it went wrong.** *(Read **unverified** until then.)* `zstandard` uses COVER and `zstd --train` fastcover, so at default `k` the library is **up to 15% worse**; at `k=8000` it is **13% better**. **The tool is not the variable — `k` is.** Q5's "one tool" decision survives and gains a requirement: Task 14 sets `k` explicitly. Phase 9's figures remain comparable only against the library's *tuned* output, and `notes.md` says by how much |
 | **`zstandard` releases the GIL during compression** | **Measured — Task 4, 2026-08-18.** *(Read **unverified — and it is load-bearing** until then, this file having asserted it as fact in its first version.)* Verified against the **shipped binary** rather than the C source, which the wheel does not carry: `_ZstdCompressor_compress` calls `_PyEval_SaveThread`, then `_ZSTD_compressStream2`, then `_PyEval_RestoreThread` — the `Py_BEGIN_ALLOW_THREADS` pair around the work. 21 functions release it in total, balanced in every one, including `_train_dictionary`. `notes.md` carries the method. **This settles the mechanism, not the scaling** — Task 6 is unchanged and still measures 1 / 2 / 4 threads |
-| Single-thread zstd runs at ~2–6 MB/s at level 19, ~350–500 MB/s at level 3 | **Documented only** — published figures for other machines, quoted here to size the problem. **Task 6 re-measures both on this one** |
+| Single-thread zstd runs at ~2–6 MB/s at level 19, ~350–500 MB/s at level 3 | **Measured — Task 6, 2026-08-18**, and the published range was about right undicted: **4.2 MB/s at level 19, 286 MB/s at level 3**. *(Read **documented only** until then.)* **With a dictionary both roughly treble** — 14.7 and 771 MB/s — which no published figure covers, because it depends on the corpus |
 | Two to five concurrent harnesses is 1–3 calls/second | **Extrapolated** — from two measured sessions at 0.14 and 0.03 calls/s, scaled to the owner's stated target. One laptop, and no session has ever run five harnesses |
 | Compression in the worker thread does not slow a *call* | **Unmeasured**, and this phase does not measure it — a thread bounds throughput rather than latency, but that is an argument, not a number. See below |
 | ~250 MB a year at an hour a day | **Extrapolated** — from `EPD-003`'s own projection, itself extrapolated from one session |

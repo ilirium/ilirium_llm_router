@@ -30,12 +30,20 @@ overlap**, all now applied. The cold pass **refuted a claim this session had wri
 documents including `backlog.md`**; it is corrected there and marked in place in the phase note.
 `phase-10-body-store/review-charter.md` is the worked example the IDM points at.
 
-**Group B is running. Task 4 is done and settled the claim the design rested on.** `zstandard 0.25.0`
-is a declared runtime dependency, and **the GIL *is* released around libzstd** — read off the shipped
-binary, since the wheel carries no C source, in all 21 functions that enter the library including
-`_train_dictionary`. So the worker thread is a real thread and Task 6's negative branch is unlikely to
-be taken. **That settles the mechanism and not the scaling:** Task 6 is unchanged and still measures
-1 / 2 / 4 threads, the compression level, and `zstandard`'s trainer against `zstd --train`.
+**Group B is done — all three tasks — and it decided four things.** `zstandard 0.25.0` is a declared
+runtime dependency; **the GIL *is* released**, read off the shipped binary at Task 4 and measured at
+**3.26x on four threads** at Task 6, so the negative branch was not taken and Group C proceeds.
+**`compress_level_zstd` defaults to 9** — 94% of level 19's dicted ratio for an eighth of the cost.
+**There is no `corpus.workers` key**: one worker carries ~500x the target peak, which resolves the
+contradiction the plan flagged between that promise and Task 11's five keys. And **the two dictionary
+trainers disagree** — `zstandard`'s own choice of `k` is up to 15% worse than `zstd --train`, at
+`k=8000` it is 13% better, so **the tool was never the variable and Task 14 must set `k` explicitly.**
+
+**Two cautions carried forward.** The dictionary is worth far more than the level (3.1x → 11.0x), so
+tuning effort belongs there. And **the corpus has no usable validation split** — run-02 contributes
+two qualifying bodies — so Task 6's best `k` was chosen with knowledge of the test slice and Task 15
+must call it provisional rather than optimal. The numbers are frozen in the phase's `evidence/`;
+Task 21 puts them in `reference/measurements.md` with all four columns.
 
 The task list was **renumbered** when permission was given — an exception to `README.md`, recorded in
 the plan with the one cost that cannot be undone. **No `src/` change exists yet**; `git diff main --
@@ -128,8 +136,8 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 10 — the body store, from Task 5.** **Planned and reviewed 2026-08-18; Group A and
-   Task 4 are done and no `src/` change exists yet.** The branch is in the table below and the task list is in
+1. **Execute Phase 10 — the body store, from Task 7.** **Planned and reviewed 2026-08-18; Groups A and
+   B are done and no `src/` change exists yet.** The branch is in the table below and the task list is in
    `milestone-2-corpus/phase-10-body-store/plan.md`. **Do not re-plan or re-review it** — its
    re-derivation and its forward review have both run, and the review's 22 findings are applied.
    `EPD-003`'s open questions 3–6 are answered in that plan and are **not yet written back into
@@ -151,7 +159,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, plus `pyproject.toml` and `uv.lock` from Task 4. **`git diff main -- src/` is still empty; Task 8 is where that changes** | **Task 5** — the benchmark script under `docs/procedures/corpus-benchmark/`, then Task 6 runs it. Group A is done including the forward review; Task 4 is done and the GIL claim is settled |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the new benchmark instrument, and `pyproject.toml` / `uv.lock`. **`git diff main -- src/` is still empty; Task 8 is where that changes** | **Task 7** — the round-trip smoke test, opening Group C. **Groups A and B are done**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

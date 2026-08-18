@@ -241,6 +241,11 @@ docs/procedures/lmstudio-capability-probes/runs/
 # property of the probe — there is no one version of it worth keeping. image.json is committed
 # because it is small and fixed.
 docs/procedures/lmstudio-capability-probes/bodies/needle.json
+# The corpus benchmark, added in Phase 10. Its run file is timings from one machine on one day, and
+# the run worth keeping is copied into that phase's evidence/ instead. Listed explicitly rather than
+# by a docs/procedures/*/runs/ glob, which is the shape the two entries above already set: a glob
+# would silently start covering an instrument nobody had decided should be ignored.
+docs/procedures/corpus-benchmark/runs/
 
 # Step: Harness configuration
 # .claude/settings.json IS tracked — it is this project's permission policy, and docs/method/IDM-002
