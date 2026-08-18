@@ -533,7 +533,7 @@ file".
 > refers to work whose number did not move either. **From the first task that executes, the rule
 > applies again with no exception.**
 
-### Group A — open the phase *(executed, except 3a)*
+### Group A — open the phase *(executed)*
 
 | # | Task |
 |---|---|
@@ -707,7 +707,7 @@ as an instance gets obeyed as an instance**, so this section names the instances
 |---|---|---|
 | The header, first line | *"Group A has executed; Tasks 4 to 24 have not"* | Task 24 |
 | **Five** group headings — B, C, D, E, F | `*(not started)*` | Task 24, each group as it completes |
-| Group **A**'s heading | `*(executed, except 3a)*` | Task 3a, and **the grep below cannot match it** — which is why it has its own row. *Added 2026-08-18: the table said "six" and five headings carried the marker, so the uncatalogued sixth was the one form the sweep could not see* |
+| ~~Group **A**'s heading~~ | ~~`*(executed, except 3a)*`~~ | **Closed out 2026-08-18** when Task 3a finished, which is what this row said would close it. *Added earlier the same day: the table said "six" group headings and only five carried the marker, so the uncatalogued sixth was the one form the sweep could not see. Kept struck rather than deleted — a row that vanishes cannot show that the mechanism worked* |
 | The Record table below | `Merge commit \| not yet merged` | The merge itself |
 | "What is settled" | *"still open questions until Task 20"* | Task 20 |
 
