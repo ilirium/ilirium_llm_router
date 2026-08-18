@@ -47,9 +47,10 @@ recomputation.
 
 **Before touching anything:** `procedures/link-check.py` before and after anything that moves, and
 `make test` must report **158**. The checker **does not report zero**: **68 broken and 2 roundabout on
-`main`**, re-derived by running it on 2026-08-18 — and **72 on the Phase 10 branch**, because that
-plan cites four files its own tasks create, which is `backlog.md`'s recurring false-positive class
-rather than breakage. **Do not predict the count from the docstring; run the tool.** Phase 8 proved
+`main`**, re-derived by running it on 2026-08-18 — and **78 on the Phase 10 branch**: four are files that
+plan's own tasks create, and six more are `review-charter.md` **listing the known false positives** so
+a reviewer does not spend findings on them. Both are `backlog.md`'s recurring class rather than
+breakage. **Do not predict the count from the docstring; run the tool.** Phase 8 proved
 twice that reading it gives the wrong answer. *(`make test` takes ~150 s on this checkout, not Phase
 9's 0.6 s — cloud-folder hydration, not a defect. It is not stuck.)*
 
@@ -132,7 +133,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | clean; **documentation only.** No `src/` change yet | **Task 4** — `uv add zstandard`, cleared to run |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | clean; **documentation only.** No `src/` change yet | **Task 3a** — the forward review of Tasks 4–24, two runs, `review-charter.md`. Task 4 is cleared and waits behind it |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

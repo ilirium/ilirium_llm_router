@@ -1,7 +1,7 @@
 # Phase 10 — the body store: plan
 
-**Written 2026-08-18 on `feat/phase-10-body-store`, forked from `main` at `d885b2f`. Not yet
-executed — no task below has been started.**
+**Written 2026-08-18 on `feat/phase-10-body-store`, forked from `main` at `d885b2f`. Group A has
+executed; Tasks 4 to 24 have not.**
 
 **Twenty-four tasks in six groups.** Group A opens the phase and records what the opening interview
 decided. Group B benchmarks, before any store code exists. Group C builds the store. Group D trains
@@ -453,13 +453,18 @@ training is Group D's, and keeping it out is what lets the write path stay small
 
 ## The tasks
 
-**Twenty-four tasks in six groups. Nothing below has been executed.** Every group is marked, and the
-markers are placeholders to be closed out at Task 24 — see "Placeholders in this file".
+**Twenty-five tasks in six groups. Group A has executed; nothing after it has.** Every later group is
+marked, and the markers are placeholders to be closed out at Task 24 — see "Placeholders in this
+file".
 
 > **Renumbered once, on 2026-08-18, on the owner's instruction — and this is an exception to
 > `../../README.md`, recorded rather than quietly taken.** That file says task numbers *"are never
 > renumbered once published"* and that an insertion takes a letter. The lettered form had already
 > been used: Group B0 held `3a`, `3b`, `3c`.
+>
+> **`3a` is now a different task**, added after Group A executed — the forward review. **This
+> paragraph is the only place the old meaning appears**, and it is named here rather than left for
+> somebody to trip over: a reused label is the cost of renumbering once, paid later than the renumber.
 >
 > **Phase 9 drew the same line one step earlier and gave the reason.** Its plan renumbered *before
 > publication* because *"publishing it and then amending it would have spent letters on work nobody
@@ -472,14 +477,19 @@ markers are placeholders to be closed out at Task 24 — see "Placeholders in th
 > refers to work whose number did not move either. **From the first task that executes, the rule
 > applies again with no exception.**
 
-### Group A — open the phase *(not started)*
+### Group A — open the phase *(executed, except 3a)*
 
 | # | Task |
 |---|---|
 | **1** | Open the branch and the folder; commit this file and `notes.md` |
 | **2** | Record the re-derivation in `notes.md` — the nine findings, and the baselines re-derived **by running them** |
 | **3** | `../../status.md` — record the in-flight branch |
+| **3a** | **The forward review** — `review-charter.md`, beside this file. Two runs in parallel, this session and a fresh-context agent, over Tasks 4–24 and the design they rest on. Read-only; the work list lands in `notes.md`. **Then `method/IDM-004` is written from what it cost** |
 
+*Task **3a** carries a letter rather than a number, and the difference from the renumber above is the
+point: **Tasks 1 to 3 have executed**, so the exception is spent and `../../README.md`'s rule applies
+again with no exception. Inserting it as a number would shift twenty-one tasks that are now cited by
+this file, `notes.md`, `review-charter.md` and `../../status.md`.*
 ### Group B — the benchmark, before any store code *(not started)*
 
 *Added 2026-08-18. The group exists because the first version of this plan chose a threading design
@@ -618,7 +628,7 @@ as an instance gets obeyed as an instance**, so this section names the instances
 
 | Where | Placeholder | Closed out at |
 |---|---|---|
-| The header, first line | *"Not yet executed — no task below has been started"* | Task 24 |
+| The header, first line | *"Group A has executed; Tasks 4 to 24 have not"* | Task 24 |
 | The **six** group headings | `*(not started)*` | Task 24, each group as it completes. *Five until the benchmark group was added on 2026-08-18* |
 | The Record table below | `Merge commit \| not yet merged` | The merge itself |
 | "What is settled" | *"still open questions until Task 20"* | Task 20 |
