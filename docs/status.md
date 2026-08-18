@@ -24,6 +24,12 @@ code**. The third settled diagnostics — **one tool not two, plain dictionary c
 self-contained day folders, a configurable level, and one arrived-against-recorded counter pair** —
 and reserved three further diagnostics to `backlog.md`.
 
+**The forward review ran, and `method/IDM-004` is written from it.** Two passes over Tasks 4–24 —
+this session and one fresh-context agent, read-only, in parallel — returned **22 findings at 18%
+overlap**, all now applied. The cold pass **refuted a claim this session had written into four
+documents including `backlog.md`**; it is corrected there and marked in place in the phase note.
+`phase-10-body-store/review-charter.md` is the worked example the IDM points at.
+
 **Group B is cleared to run and has not.** Permission was given 2026-08-18 to install `zstandard` and
 run the benchmark over the corpus already in `logs/corpus-gate/`. The task list was **renumbered** at
 the same time — an exception to `README.md`, recorded in the plan with the one cost that cannot be

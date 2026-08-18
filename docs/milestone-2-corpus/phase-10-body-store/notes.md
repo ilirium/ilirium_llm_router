@@ -874,6 +874,26 @@ is the class that needs knowing what was decided.
 catches everything the author cannot un-know.** Neither is optional, and the cold pass is the one that
 found the false claim.
 
+### `IDM-004`, written from what this cost
+
+**`../../method/IDM-004-reviewing-unexecuted-work.md`, in force 2026-08-18.** Written after the run
+rather than before it, on the owner's ordering and on `../../README.md`'s own playbook rule — *write
+this playbook last, from what it cost*. `review-charter.md` is the worked example it points at, and
+this section is its evidence.
+
+**What generalised**, and it is less than was expected: the boundary against the closing review, the
+charter-first iteration, the two questions, parallel-not-serial, and six rules. **What did not
+generalise is the numbers.** 22 findings, 18% overlap and ~152k tokens are one measurement of one
+review of one document by one agent, and `IDM-004` says so in a section headed *"One thing that is not
+evidence yet"* — a second run returning 60% overlap would be evidence that one run is enough, and that
+section would need rewriting rather than defending.
+
+**The finding that justified the protocol on its own** is the refuted claim: inferred, labelled
+honestly as inferred, written into four documents, and false. `IDM-004` carries it as three rules —
+labelling an inference does not protect it; the author could not have found it, having repeated it
+twice since; and **a wrong claim spreads at the speed of citation**, which is why the review comes
+before execution rather than after.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*

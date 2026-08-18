@@ -154,7 +154,9 @@ fine-tuning is dropped. Its open questions 3–6 are Phase 10 design detail, not
 **Do not read `docs/method/`'s `IDM-NNN` documents with that reflex.** The two schemes sit adjacent and
 look alike; an **IDM is in force now and you are expected to act on it**, which is the exact opposite of
 an EPD. `docs/method/IDM-000-about-these-documents.md` is the index. `IDM-001` and `IDM-003` are pointed
-at below; `IDM-002` holds the permission allowlist policy.
+at below; `IDM-002` holds the permission allowlist policy; **`IDM-004` is the protocol for reviewing a
+plan before it runs — read it before reviewing one, because its first rule is that the charter decides
+what the review finds.**
 
 ## Git and branches
 
