@@ -403,7 +403,7 @@ figure this milestone rests on came from the **`zstd` command-line binary**, inc
 |---|---|---|
 | **A — the trainer keeps using the binary** *(assumed)* | A new dictionary is measured on the same instrument as every number already in `../../reference/measurements.md`, so the comparison is honest. `evidence/gate.py` already works this way | Two tools in one project. The procedure needs `zstd` installed, which a config file cannot check |
 | **B — the trainer uses `zstandard` too** | One tool. The procedure needs nothing but the dependency the router already has | New figures are not directly comparable with Phase 9's until somebody re-measures the old ones with the new tool. That is a cost this repository has paid before for smaller reasons |
-| **C — the trainer does both and compares them** | Settles whether they agree, once | A measurement nobody asked for, in a phase that already has twenty tasks |
+| **C — the trainer does both and compares them** | Settles whether they agree, once | A measurement nobody asked for, in a phase that already has twenty-four tasks |
 
 ---
 
