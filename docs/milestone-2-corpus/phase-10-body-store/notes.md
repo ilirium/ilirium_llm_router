@@ -659,6 +659,102 @@ A benchmark group before any store code, the queue and index tasks widened, four
 and the GIL assertion demoted from a design premise to a row in "Documented versus measured" reading
 **unverified**.
 
+## Task 3a — the forward review: this session's pass
+
+**Run 2026-08-18 against `plan.md` Tasks 4–24 per `review-charter.md`. Unreconciled** — the
+fresh-context run was launched first and had not returned when this was written, so nothing here is
+influenced by it and nothing here is confirmed by it either.
+
+**The question this run answers** is whether the plan is consistent with what was decided. It cannot
+answer whether the plan is legible to somebody who was not here; that is the other run's, and this
+session is the worst possible judge of it.
+
+### Findings
+
+**1 · VERIFIED · No task builds the `manifest`.**
+*Where:* `plan.md:106` draws it in every day folder — schema version, router version, dictIDs
+referenced — and `plan.md:603` requires the layer-3 check to *see* one. **Tasks 8 and 10 build the
+blob store and the index; neither mentions it, and no other task does.**
+*Cost:* found at Task 18, where the check looks for a file nothing was chartered to write. Its
+contents are a schema decision, so improvising it at that point is the worst moment to take it.
+
+**2 · VERIFIED · Nothing says how the router finds the current dictionary at startup.**
+*Where:* the tree at `plan.md:100–110` after Q7. **A grep for `newest`, `scan`, `at startup` returns
+nothing about dictionary discovery**, and Task 8 says a day folder holds *"a plain copy of each
+dictionary the day uses"* without saying **copied from where**. Task 14's trainer has the mirror
+problem: no task says where it writes.
+*Cost:* **this hole was created by a decision.** The root `logs/corpus/dicts/` was the answer to
+*where does the router look*; removing it as scaffolding took the mechanism with it. It is the same
+class as the leftovers already found, running in the opposite direction, and it is cheapest to close
+now — at Task 8 it gets improvised.
+
+**3 · VERIFIED · Task 7 duplicates Task 4.**
+*Where:* Task 4 is `uv add zstandard`, which writes `pyproject.toml` and syncs. Task 7 opens *"Add
+`zstandard` to `pyproject.toml`; `make sync`"*. **Both were true before the benchmark group existed**;
+inserting Task 4 took over the first clause of what is now Task 7.
+*Cost:* trivial to fix, and it is exactly the leftover class this review exists to catch.
+
+**4 · VERIFIED · Nothing freezes the benchmark's results into `evidence/`, and nothing says why the
+directory is absent.**
+*Where:* `evidence` appears once in `plan.md`, inside a quotation about *Phase 9's* evidence README.
+Task 5 puts the script in `procedures/`, Task 6 runs it, and its output lands under `logs/`, which is
+gitignored. `../../README.md` is explicit — an instrument's script goes to `procedures/` but *"its
+results are frozen in the phase's `evidence/`"* — and equally explicit that where a phase has no
+`evidence/`, **its `notes.md` says why.**
+*Cost:* high, and it lands at Task 24. Task 21 puts the benchmark's numbers in
+`../../reference/measurements.md`, whose whole rule is that a number carries its instrument and its
+slice. Phase 9 froze `gate.py` and `results.txt` for exactly this reason.
+
+**5 · VERIFIED · Task 18's layer 3 reopens a decision the scope closed, and this file does not
+reconcile them.**
+*Where:* the settled table records a scope with **no live driven session**. `plan.md:603` requires
+the router *started, driven, and stopped*. The plan says only that layer 3 *"needs its own consent"*.
+*Cost:* it is an owner decision being re-opened by a task added later, which is precisely what the
+settled table exists to prevent. Either layer 3 is out of scope and the configuration check is weaker
+than advertised, or the scope carries an exception nobody wrote down.
+
+**6 · VERIFIED · The corpus's treatment of bodies the router *authored* is unstated — and a precedent
+already answers it.**
+*Where:* three bodies are the router's own: the 400 for a missing `model`, the 502 for an unreachable
+backend, and the injected SSE `error` event. The milestone's claim is *"every body it **carries**"*.
+**`../../reference/design-decisions.md` already ruled on the identical question** for the injected
+event — *"not counted in `response_bytes` and not fed to the scanner … both measure what the backend
+sent, and these bytes are ours"*. The plan neither applies that rule nor cites it.
+*Cost:* moderate, and it decides what a corpus row **means**. Cheap now, and a silent inconsistency
+with a decided rule if it is settled at Task 12 by whoever is typing.
+
+**7 · VERIFIED · The timing columns are undefined for a body that was never stored.**
+*Where:* Task 10 defines `queue_ms`, `store_ms` and `queue_bytes`. For a `dropped`, `too_large`,
+`absent` or `error` row, `store_ms` describes work that did not happen. `../../reference/observability.md`
+already has the governing rule — **an absent value is an empty cell, never a zero** — and Task 10 does
+not invoke it.
+*Cost:* low, but it is the index's schema and Task 10 is where it is fixed for good.
+
+### Questions for the owner
+
+1. **What is the valid range for `compress_level_zstd`?** Task 11 tests *"out of range"* without
+   saying what the range is. `zstd` accepts 1–19 ordinarily, up to 22 with `--ultra`, and negative
+   fast levels. Rejecting what the library would accept is as much a defect as accepting what it
+   would not.
+2. **Does driving the router for the configuration check count as the live session the scope
+   excluded?** Finding 5. My reading is that it does not — the exclusion was about *driving real
+   coding sessions to measure whether archiving slows a call*, and this is a handful of calls to see
+   files appear — but that is my reading of your decision rather than your decision.
+
+### What I checked and found correct
+
+| Claim | Result |
+|---|---|
+| `stats.py`'s `COLUMNS` has 20 entries | ✅ 20, read by importing it |
+| Every config model forbids unknown keys | ✅ all six subclass `Strict`, `config.py:34–127` |
+| `RotatingFileHandler`'s lock is a thread lock | ✅ `logging.Handler` creates a `threading.RLock`, so the multi-process claim holds |
+| `Proxy.record()` has four call sites, one per row-producing path | ✅ `proxy.py:140, 156, 205, 270` |
+| Both telemetry handlers create their parent directory | ✅ `logging_setup.py:74` and `stats.py`, so `logs/telemetry/` needs no task of its own |
+| Every task reference resolves to 1–24 or 3a; every group letter to A–F | ✅ mechanical pass, one defect found and fixed at `f6277dd` |
+| Surviving mentions of rejected options sit inside decision records | ✅ checked individually — `os.link`, hard links, APFS, "22 columns", `Group B0` |
+
+**Nothing was found wrong in Groups D or E**, and that is stated rather than left as silence.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*
