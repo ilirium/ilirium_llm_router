@@ -189,6 +189,194 @@ and Task 14 states that rather than leaving the untouched hits looking like an o
 
 ---
 
+## Each finding as a question, with its options
+
+**Added 2026-08-18, on the owner's request, before any task ran.** The nine findings above are written
+as findings — *this is wrong and here is why* — which makes them hard to act on. This section restates
+each one as **a decision with named options**, in plain terms, and says **what `plan.md` currently
+assumes** so the default is visible rather than buried in a design paragraph.
+
+**Nothing here is decided.** `plan.md` was written before this section existed and encodes one answer
+per row; changing an answer changes `plan.md`, which has not been executed. **Ten questions, because
+finding 2 splits into a fix and a limit.**
+
+| | The question in one line | What `plan.md` assumes |
+|---|---|---|
+| **Q1** | What stops the queue eating memory, and at what size? | Bounded in **bytes**, 64 MiB |
+| **Q2** | Where in the code does the store get handed the bytes? | **`Proxy.record()`**, all four call sites |
+| **Q2b** | Do we fix the case where no row is written at all? | **Name it, do not fix it** |
+| **Q3** | How does the index say a body was not stored? | A **reason word** in the ref cell |
+| **Q4** | A body over the ceiling — keep the first megabyte, or nothing? | **Nothing**, marked `too_large` |
+| **Q5** | The offline trainer — `zstandard`, or the `zstd` binary? | **The binary**, as Phase 9 used |
+| **Q6** | The same body on two days — stored once or twice? | **Twice.** Dedup is per day |
+| **Q7** | How does a day folder get the dictionary it needs? | **A hard link** |
+| **Q8** | Where does "the tests take 150 s here" get recorded? | **This note only** |
+| **Q9** | Which documents get repointed by the telemetry move? | **Live documents only** |
+
+---
+
+### Q1 — What stops the queue eating memory, and at what size?
+
+**In plain terms.** When a call finishes, the router hands its bodies to a background thread so the
+caller is not kept waiting while they are compressed and written. If that thread falls behind, bodies
+pile up in memory. Something has to say *stop accepting more*, and the obvious knob — a maximum
+**number** of waiting bodies — does not bound memory here, because one body can be 200 KB. A thousand
+of them is 200 MB.
+
+| Option | Buys | Costs |
+|---|---|---|
+| **A — bounded in bytes, 64 MiB** *(assumed)* | Memory has an actual ceiling. ~640 median bodies may wait, which is far more backlog than compression at ~10 ms a body can produce | One number in the config that nobody will ever tune |
+| **B — bounded in bytes, 8 MiB** | A backlog can never be more than a rounding error of RSS | Drops bodies during ordinary bursts. Every drop is a hole in the corpus, recorded but real |
+| **C — bounded in items** | Matches how `EPD-003` and the sketch are worded, so nothing has to be explained | The bound does not bound the thing it exists to bound. This is the finding |
+| **D — bounded in both** | Belt and braces | Two knobs, one of which never fires, against a project non-negotiable that configuration stays simple |
+
+---
+
+### Q2 — Where in the code does the store get handed the bytes?
+
+**In plain terms.** Something in `proxy.py` has to say *here are this call's bytes, store them*. Phase
+9's throwaway capture said it in two places: when the request body was read, and at the end of the
+response streamer. **The response streamer never runs for a call that failed early** — that is why 158
+requests produced only 149 responses. The nine missing ones are a refused request, a backend that
+could not be reached, and a caller that hung up mid-upload: the rows `EPD-003` calls the interesting
+ones.
+
+`record()` is the function that writes the CSV row, and **every one of those paths already calls it.**
+
+| Option | Buys | Costs |
+|---|---|---|
+| **A — hook `Proxy.record()`** *(assumed)* | One place instead of two. The body, the row and the two refs are decided together, and the three error paths are covered because they already write a row | The store's lifetime is tied to the recorder's. If `record()` is ever restructured, both move together |
+| **B — keep the two-point hook** | It is the shape Phase 9 actually ran, so it is known to work | Reproduces the 9-of-158 gap exactly. The corpus would silently omit its most interesting rows |
+| **C — hook `record()` and add a net for Q2b** | Total coverage | Changes how `calls.csv` rows are produced, which is Milestone 1's recorder and outside this phase. Risks writing a row twice, which is worse than missing one |
+
+---
+
+### Q2b — Do we fix the case where no row is written at all?
+
+**In plain terms.** There is one path where **`calls.csv` gets no row today either.** If the caller
+disappears *after* the response headers have gone out, the web framework never runs the code that
+streams the body, so the code that writes the row is never reached. Hooking the store at `record()`
+inherits that gap: no CSV row, no corpus entry.
+
+This is a **pre-existing hole in the recorder**, not something the body store creates.
+
+| Option | Buys | Costs |
+|---|---|---|
+| **A — name it, do not fix it** *(assumed)* | The phase stays about the body store. The limit is written down where the next person looks | A known hole stays open, and "the corpus has every call" is not quite true |
+| **B — fix it in this phase** | The claim becomes exact | It is a recorder change wearing a corpus phase's clothes. The fix has to guarantee it cannot double-write a row, and it needs a live disconnect to test — which this scope has no session for |
+| **C — a `fix/` branch after Phase 10** | Fixed, reviewed on its own merits, with the phase boundary intact | Another branch, and it competes with `EPD-001`/`002` for attention. It has waited since Milestone 1 without hurting anyone |
+
+---
+
+### Q3 — How does the index say a body was not stored?
+
+**In plain terms.** The index has one cell per direction holding the body's fingerprint. When a body
+*was not* stored — dropped because the queue was full, refused because it was too big, or never
+existed because the caller vanished mid-upload — that cell needs to say which. Leaving it blank means
+*there was nothing to store*, which is a different fact from *there was something and we lost it*.
+`EPD-003` explicitly asks for the second: *a corpus with a known hole is fine.*
+
+| Option | Buys | Costs |
+|---|---|---|
+| **A — a reason word in the same cell** *(assumed)* | 22 columns as the sketch drew them. A fingerprint is 64 hex characters, so `dropped` can never be mistaken for one. Greppable | A column holds two kinds of thing. Anyone writing an analysis script has to know that |
+| **B — two extra status columns, 24 total** | Each column holds one kind of thing. Sorts and filters cleanly in a spreadsheet | The index drifts further from `calls.csv`'s 20 columns, and the sketch's argument that a rotated CSV segment and a day file are interchangeable inputs weakens |
+| **C — leave it blank** | Nothing to explain | Half of `EPD-003`'s write-path answer goes unimplemented, and the corpus cannot tell a hole from an absence. This is the finding |
+
+---
+
+### Q4 — A body over the ceiling: keep the first megabyte, or nothing?
+
+**In plain terms.** There is a size ceiling, because the router forwards paths nobody enumerated and a
+reply could be any size. When a body exceeds it, we either store the part we have or store nothing.
+`EPD-003` says the store must be able to hold a **truncated** body — but it was talking about a
+*stream that broke*, where the bytes that arrived are all that ever existed. A body chopped at the
+ceiling is a different thing: it is complete-looking and incomplete.
+
+| Option | Buys | Costs |
+|---|---|---|
+| **A — store nothing, mark `too_large`** *(assumed)* | Every stored blob is a whole body. The fingerprint always identifies what it names | The largest bodies — which may be the interesting ones — are the ones lost |
+| **B — store the prefix, mark it truncated** | Some data instead of none | A prefix stored under a content address looks like a whole body to every consumer, and the fingerprint no longer identifies the body. Needs the marker column Q3 option A avoids |
+| **C — raise the ceiling until it never fires** | No lost bodies in practice | The ceiling exists because an unknown endpoint could return anything. Raising it hands the memory decision back to a stranger, which is what `observe.py` reasoned about and refused |
+
+---
+
+### Q5 — The offline trainer: `zstandard`, or the `zstd` binary?
+
+**In plain terms.** You have decided the **router** gets the `zstandard` package. Separately, there is
+an offline tool that trains the dictionary — it never runs on the request path. Every compression
+figure this milestone rests on came from the **`zstd` command-line binary**, including Phase 9's gate.
+
+| Option | Buys | Costs |
+|---|---|---|
+| **A — the trainer keeps using the binary** *(assumed)* | A new dictionary is measured on the same instrument as every number already in `../../reference/measurements.md`, so the comparison is honest. `evidence/gate.py` already works this way | Two tools in one project. The procedure needs `zstd` installed, which a config file cannot check |
+| **B — the trainer uses `zstandard` too** | One tool. The procedure needs nothing but the dependency the router already has | New figures are not directly comparable with Phase 9's until somebody re-measures the old ones with the new tool. That is a cost this repository has paid before for smaller reasons |
+| **C — the trainer does both and compares them** | Settles whether they agree, once | A measurement nobody asked for, in a phase that already has twenty tasks |
+
+---
+
+### Q6 — The same body on two days: stored once or twice?
+
+**In plain terms.** Bodies are filed under their fingerprint, so an identical body arriving twice is
+stored once — that is what "content-addressed" buys. The question is whether that holds **across
+days**. The corpus is partitioned into date folders because deleting a day should be `rm -rf` and
+nothing else. If a day's blobs can be referenced by another day's index, deleting one breaks the
+other.
+
+| Option | Buys | Costs |
+|---|---|---|
+| **A — dedup within a day only** *(assumed)* | `rm -rf logs/corpus/2026-08-18` is always safe, which is the entire retention answer. A day folder is self-contained | A body that recurs across days is stored once per day. Compressed against the dictionary, that is a few kilobytes |
+| **B — one global store, dedup across days** | Strictly less disk | Deleting a day can orphan another day's references, silently. The retention answer stops being `rm -rf` and becomes a procedure |
+| **C — global, with reference counting** | Both | A garbage collector, in a project whose non-goals list *"a database, a query engine"* and whose whole claim is that this needs no special infrastructure |
+
+---
+
+### Q7 — How does a day folder get the dictionary it needs?
+
+**In plain terms.** A compressed blob cannot be read without the dictionary it was compressed against
+— lose the dictionary and every blob referencing it is unreadable forever. The sketch put a copy
+inside each date folder so that one folder can be moved elsewhere and still open, and priced that at
+about 80 MB a year. It left the choice between plain copies and filesystem clones open.
+
+| Option | Buys | Costs |
+|---|---|---|
+| **A — a hard link into the day folder** *(assumed)* | The folder appears to contain its dictionary and costs nothing. Archiving one day still produces a real file, so portability survives | Links fail across filesystems, so an absolute `dir` on another volume needs a fallback. **This is inferred, not measured** — Task 5 verifies it |
+| **B — plain copies** | Works everywhere, no cleverness, and a duplicate is also a backup of something that must never be lost | ~80 MB a year, roughly a quarter of the projected corpus, and more if a dictionary wants to be larger |
+| **C — one `dicts/` at the root, and the day's manifest names what it uses** | Zero bytes, no links, one obvious home for a thing that is never deleted | Archiving a single day no longer produces something that opens by itself, which was the sketch's reason for the copy |
+
+---
+
+### Q8 — Where does "the tests take 150 seconds here" get recorded?
+
+**In plain terms.** Phase 9 recorded `make test` at 0.6 seconds. On this machine today the same 158
+tests take 150 seconds, because the virtual environment lives in a synced cloud folder and every file
+is fetched on first touch. **Nothing is wrong**, but a session that expects 0.6 s will conclude the
+suite has hung — this one abandoned three invocations before finding the cause.
+
+| Option | Buys | Costs |
+|---|---|---|
+| **A — this note only** *(assumed)* | Costs nothing, and it is written down | A phase note is archive. Nobody reads it before running `make test` |
+| **B — one line in `CLAUDE.md`'s commands table** | `CLAUDE.md` is the only file loaded into every session, and its admission test is *would a session act confidently and wrongly without this* — which is exactly what happened here | `CLAUDE.md` is kept deliberately small, and this is a fact about one laptop rather than about the project |
+| **C — a row in `../../reference/measurements.md`** | The register exists so a number carries its slice, and this number's slice is the whole point | The register is for measurements the project's claims rest on. Nothing rests on this |
+| **D — nowhere** | It is environment noise and will change the day the checkout moves | The next session pays the same three invocations |
+
+---
+
+### Q9 — Which documents get repointed by the telemetry move?
+
+**In plain terms.** Moving `calls.csv` and `router.log` into `logs/telemetry/` makes every document
+that names the old paths wrong. Some of those documents are *live* — the README, `CLAUDE.md`, a
+procedure somebody follows. Others are **archive**: a phase note recording *"`logs/calls.csv` before
+the capture — 177 lines, 29,831 bytes"*. The manual says a **path** in archived prose may be
+repointed because a path is navigation, but a **claim** may not.
+
+| Option | Buys | Costs |
+|---|---|---|
+| **A — live documents only** *(assumed)* | The archive keeps saying what was true when it was written. `logs/` is gitignored and the link checker skips it, so nothing becomes unfollowable | Two documents will name a path that no longer exists, and it will look like an oversight unless Task 14 says otherwise — which it does |
+| **B — repoint everything, archive included** | Grep for the old path returns nothing, so nobody wonders | Rewrites measurements into statements that were never true. *"`logs/telemetry/calls.csv` before the capture — 177 lines"* is a sentence about a file that did not exist that day |
+| **C — live documents, plus a note in each affected `evidence/README.md`** | The archive stays honest and a reader is told why the path reads oddly | More edits, in directories this phase otherwise does not touch |
+
+---
+
 ## Verified by
 
 *Not yet — this section is written at Task 20, and states what was run, when, and what it produced.*
