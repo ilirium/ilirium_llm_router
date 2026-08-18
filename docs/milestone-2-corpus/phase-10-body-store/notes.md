@@ -755,6 +755,110 @@ not invoke it.
 
 **Nothing was found wrong in Groups D or E**, and that is stated rather than left as silence.
 
+## Task 3a — the fresh-context pass, and the reconciliation
+
+**The agent returned 2026-08-18: nineteen findings, five questions, and a task-by-task executability
+verdict.** It was given `review-charter.md`, both documents and the repository, read-only, with no
+answer key. It read `src/` rather than the plan's account of `src/`.
+
+### It refuted a claim this session had made twice and filed in `../../backlog.md`
+
+**The blind spot does not exist as described, and six measured rows say so.**
+
+This session wrote, in `plan.md`, in finding 2b above, in Q2b, and in a parked `../../backlog.md`
+item: *a caller that disconnects after the response headers reaches none of `record()`'s call sites,
+so that call gets no CSV row today.*
+
+**It reaches `proxy.py:270` and it gets a row.** Re-verified here rather than taken on trust:
+
+| Check | Result |
+|---|---|
+| `proxy.py:249` | catches `asyncio.CancelledError` and `GeneratorExit`, sets `client_disconnect`, **re-raises** |
+| `proxy.py:268–270` | the `finally` runs on that re-raise and calls `self.record(call, scanner)` |
+| `../../reference/measurements.md` | **6 `client_disconnect` rows, 5 LM Studio and 1 Anthropic** — *"starlette reaches the disconnect path **reliably** on both backends"* |
+| `../../milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv:79` | `response_bytes=10027`, `ttfb_ms=48050`, `error_status=client_disconnect`. **Headers had gone out and 10 KB had streamed. The row exists** |
+
+**What is true is far narrower**: only if the generator is closed *before its first `__anext__`* is
+there no frame to throw `GeneratorExit` into, so `aclose()` runs no code and the `finally` never
+fires. That is the race `proxy.py`'s `BackgroundTask` comment reasons about, and **it has never been
+observed here.**
+
+**How the error was made, because that is the reusable part.** The comment at `proxy.py:222–224`
+describes the narrow case; this session **generalised from it to the whole disconnect-after-headers
+class without checking the measured rows** — which sit in `measurements.md` under a slice that names
+exactly this. It was labelled *Inferred*, which was honest, and inference from a correct premise to a
+wrong conclusion is not repaired by labelling it.
+
+**Consequence beyond the correction:** the counter pair's stated justification was this hole. The
+hole is a microsecond race nobody has seen, not a class of calls. The counters still measure
+something real, but **the case that bought them is much weaker than it looked**, and that is a
+question for the owner rather than a finding.
+
+### The merged work list
+
+**Twenty-two distinct items from two runs, four of them found by both.** Overlap ran at 18%, which is
+the argument for two passes rather than one.
+
+| # | Finding | Found by |
+|---|---|---|
+| **1** | The disconnect blind spot is overstated; four documents say it wrongly | **agent** |
+| **2** | No dictionary source, path or bootstrap — and `../implementation-plan.md` names "dictionary bootstrap" as this phase's to settle. Group C runs before Group D, so the store must work with **no** dictionary, a mode never described; Task 13's round-trip has nothing to round-trip against; `logs/corpus-gate/dicts/` holds **eight**, so "the held-out dictionary" is under-specified | **both** |
+| **3** | The counter pair lives in `corpus.py`, which is **opt-in and off by default** — so on the default machine, the plan's only answer to *did I lose a CSV row* does not exist | **agent** |
+| **4** | No task builds the `manifest` the tree draws and Task 18 checks for; its format is unspecified and *"dictIDs referenced"* implies a second concurrent writer | **both** |
+| **5** | Task 18's layer 3 drives the router; the settled scope excluded a live driven session | **both** |
+| **6** | *"Task 7's smoke test is where the GIL surfaces"* — a leftover from before the benchmark group; three other places correctly say Tasks 4 and 6. **If believed, an agent skips the measurement and reads a green round-trip as verification** | **agent** |
+| **7** | Task 18 asserts `make test`'s **158** unchanged, while Tasks 11 and 13 add tests | **agent** |
+| **8** | Task 12 requires editing `observe.py`, which Q11 says this phase *"otherwise does not touch"*; `cli.py` must change for `--check` and appears in no list | **agent** |
+| **9** | Nothing freezes the benchmark's results into `evidence/`, and nothing says why the directory is absent | **this session** |
+| **10** | Task 5's *"writes under `logs/`"* contradicts `../../README.md:120` — *an instrument's output directory follows the instrument* — and the exception is taken silently | **agent** |
+| **11** | The queue item `(CallRecord, request, response)` **cannot produce `queue_ms` or `queue_bytes`** — both need values captured in `submit()`. Read in the worker instead, `queue_bytes` measures depth at *dequeue*, which is near zero at this load and **looks correct** | **agent** |
+| **12** | Bodies the router *authored* — the 400, the 502, the injected SSE `error` — are unaddressed, though `../../reference/design-decisions.md` already ruled on the identical question | **this session** |
+| **13** | The placeholder table says **six** group headings carry `*(not started)*`; **five** do. Group A's `*(executed, except 3a)*` is a placeholder, is uncatalogued, and **the prescribed grep cannot match it** | **agent** |
+| **14** | `plan.md:6` says twenty-four tasks, `plan.md:456` says twenty-five. **Twenty-five is right** | **agent** |
+| **15** | The *"periodic `INFO` summary"* has no period, no mechanism and no home — named four times, defined never | **agent** |
+| **16** | Task 6's **negative** branch has no task, no gate and no consequence, while Tasks 8–13 assume the positive one. Symmetrically, a `workers` key is promised on one outcome and refused by Task 11 | **agent** |
+| **17** | Task 17's sweep omits `../../procedures/link-check.py:45`, a live citation of `logs/calls.csv` **inside the instrument Task 24 runs** | **agent** |
+| **18** | No task adds the two new procedures to `../../procedures/README.md`'s index, though Task 19 does the analogous thing for `reference/` | **agent** |
+| **19** | Tasks 4 and 7 both add `zstandard`, with no note that the second finds it done | **both** |
+| **20** | The memory table says the request body *"is not changed by"* the corpus. Its **lifetime** is — from freed when `relay()` returns, to held until `record()`, which on LM Studio is minutes. The plan says this correctly 80 lines later | **agent** |
+| **21** | The three timing columns are undefined for a body that was never stored | **this session**, and the agent's guess list |
+| **22** | `review-charter.md:128` says **72** on this branch; it is **78**, and the bullet two clauses earlier says *do not predict the count* | **this session's error, agent-reported** |
+
+### Executability — the verdict only the cold run could give
+
+| Group | Verdict |
+|---|---|
+| **B** (4–6) | Executable today. Task 6's measurement table is *"the best-specified thing in the plan"*. Two holes: which of eight dictionaries, and the undefined negative branch |
+| **C** (7–13) | **The weakest group, and not finishable from these documents.** Task 8 cannot complete — no dictionary source, no manifest. Task 9 lacks the timestamp, the period and the corpus-off behaviour. Task 12 contradicts Q11 and does not say where the tee is held |
+| **D** (14–15) | Task 14 clear; **Task 15 not executable** — *"install it"* has no destination |
+| **E** (16–17) | **The most executable pair.** The file list re-derived by grep and found exact, one omission |
+| **F** (18–24) | Clear except where earlier gaps surface. Task 18 is *"the plan's strongest section"* and carries three of the defects above |
+
+**Thirteen things the agent had to guess** are listed in its report; the load-bearing ones are which
+dictionary, where it lives, what the store does before one exists, what writes the manifest, how
+often *periodic* is, and whether the response tee runs when the corpus is off.
+
+### What both runs checked and found correct
+
+**All eight `src/` claims were re-verified from source by the agent**, independently of this session's
+own pass. Seven held exactly, including every line number; the eighth is item 1 above. It also
+confirmed `EPD-003`'s open questions 3–6 map correctly onto the decision table, that
+`../../backlog.md` already holds all five reserved items, that `.gitignore:228` covers the corpus,
+and that `logs/corpus-gate/` holds three runs and eight dictionaries with **responses as well as
+requests**, so Task 6 can sweep both.
+
+### What this cost, for `IDM-004`
+
+**The fresh run found fifteen items this session did not, including the refutation of a claim this
+session had filed in three documents and the backlog.** This session found three the agent did not,
+all of them about *the record* — `evidence/`, router-authored bodies, and an index-schema rule — which
+is the class that needs knowing what was decided.
+
+**The two runs divide along exactly the line the charter predicted**, and that is the finding
+`IDM-004` is written from: **the author's pass catches inconsistency with decisions; the cold pass
+catches everything the author cannot un-know.** Neither is optional, and the cold pass is the one that
+found the false claim.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*
