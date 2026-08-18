@@ -3,7 +3,7 @@
 **Written 2026-08-18 on `feat/phase-10-body-store`, forked from `main` at `d885b2f`. Group A has
 executed; Tasks 4 to 24 have not.**
 
-**Twenty-four tasks in six groups.** Group A opens the phase and records what the opening interview
+**Twenty-five tasks in six groups.** Group A opens the phase and records what the opening interview
 decided. Group B benchmarks, before any store code exists. Group C builds the store. Group D trains
 the first dictionary and writes the instrument that keeps training honest. Group E moves the
 telemetry files. Group F verifies the configuration, harvests, closes out `EPD-003`'s remaining open
@@ -30,8 +30,10 @@ orthogonal to it. **`feat/` is product work: anything that changes `src/`.**
 
 **Phase 9 was `docs/` because no `src/` change survived it** — its capture patched `proxy.py` and
 restored it, and `git diff main -- src/` was empty at the merge. **This phase is the opposite case.**
-`src/ilirium_llm_router/` gains a module and keeps it; `config.py`, `proxy.py` and `app.py` all change
-and stay changed; `pyproject.toml` gains a dependency. Nothing here is restored at the end.
+`src/ilirium_llm_router/` gains a module and keeps it; **`config.py`, `proxy.py`, `app.py`,
+`observe.py` and `cli.py` all change and stay changed**; `pyproject.toml` gains a dependency.
+*(`observe.py` and `cli.py` were missing from this list until 2026-08-18 — `Call` is defined in the
+first and `--check`'s output is built entirely in the second.)* Nothing here is restored at the end.
 
 The folder takes the branch's slug, per the same document.
 
@@ -55,7 +57,7 @@ two of `EPD-003`'s four remaining open questions**; the other two are this phase
 | **One tool, not two** | **`zstandard` for the router and the trainer alike** *(Q5)*. This plan first kept the `zstd` binary for the trainer, for comparability with Phase 9's figures; the owner asked why two tools and **simplicity wins**. Task 6 checks that library training and `zstd --train` agree rather than assuming it |
 | **Dictionaries** | **Plain copies, and each day folder is self-contained** *(Q7)* — *any metadata, any dicts, any archives* belong to the day. **This restores the sketch**: the root `dicts/` and the hard links were this plan's addition, and declining the links left the root folder with no job |
 | **Compression level** | **Configurable as `compress_level_zstd`, with a default measured by Task 6** *(Q10)* |
-| **Diagnosing loss generally** | **One counter pair, and nothing else.** Calls arrived against rows written, in the same periodic summary as the corpus totals — which makes `record()`'s blind spot visible without changing a column of `calls.csv`. A metrics endpoint and a sequence column were both considered and **reserved to `../../backlog.md`** |
+| **Diagnosing loss generally** | **One counter pair, and nothing else.** Calls arrived against rows written. **It lives in `Proxy` and is always on**, independent of `corpus.enabled` — *decided 2026-08-18 from the forward review, which found it built inside the opt-in corpus and therefore absent on the default machine, for a question about `calls.csv`.* A metrics endpoint and a sequence column were both considered and **reserved to `../../backlog.md`** |
 | **Several router instances** | **Considered and deferred, recorded in `../../backlog.md`.** Its session-distinguishing half is already solved and measured; its throughput half has one concrete blocker that a reverse proxy does not touch — see "What this phase does not settle" |
 
 ### And two questions the owner did not have to answer
@@ -101,11 +103,13 @@ see below.
 logs/
   telemetry/                      calls.csv and router.log — moved in this phase, Task 16
   corpus/
+    dicts/                        THE SOURCE. Where the trainer writes and the router reads
+      req-2026-08-18T104500Z.dict
     2026-08-18/                   UTC-derived, never local. SELF-CONTAINED
       index.csv                   25 columns: calls.csv's 20, in order, then two refs and three timings
-      manifest                    schema version, router version, dictIDs referenced
+      manifest                    the index's schema version, and nothing else
       dicts/                      plain copies of every dictionary this day used
-        req-2026-08-18T104500Z.dict
+        req-2026-08-18T104500Z.dict     copied from ../../dicts/ at first use
       incoming/                   staging for atomic rename
       requests/3f/3f9c….zst
       responses/b2/b20e….zst
@@ -114,6 +118,32 @@ logs/
 **A day folder is self-contained and nothing lives above it.** Owner's rule, 2026-08-18: *any
 metadata, any dicts, any archives* belong to the day. `tar` one folder, or `rm -rf` one folder, and
 neither operation can reach anything outside it.
+
+### Where a dictionary lives, and how the router finds one
+
+*Added 2026-08-18 from the forward review, which found this the largest hole in the plan — **both
+runs found it**, and `../implementation-plan.md` names "a dictionary bootstrap and retraining policy"
+as something this phase must settle.*
+
+**`logs/corpus/dicts/` is the source. A day folder holds copies.** The trainer writes there, the
+router reads the newest from there at startup, and copies whichever it used into each day folder it
+opens.
+
+**This is not a reversal of Q7, though it looks like one.** Q7 removed a root folder that existed
+**only to be the target of hard links** — scaffolding for an optimisation that was declined. This one
+has a job the design actually needs: somewhere for the trainer to write that is not inside a day, and
+somewhere the router can look that does not depend on which days still exist. **A day folder is still
+self-contained for reading**, which is what the rule was about: `tar` one, unpack it elsewhere, and
+every blob in it opens.
+
+**Nothing above a day may be required to read a day. Nothing inside a day is where new dictionaries
+go.** Those are different directions and only the first was ever the rule.
+
+**The store must work with no dictionary at all**, and that is the ordinary case at first run:
+`logs/corpus/dicts/` is empty until Task 15, and **Group C ships before Group D**. Bodies are then
+written **undicted** — plain `zstd` frames at ~3.12× — and the blobs stay valid forever, because a
+frame names its own dictionary or names none. **Nothing is ever recompressed.** So the first day's
+bodies are simply larger, and no task has to wait for a dictionary to exist.
 
 **That makes the never-delete-a-dictionary rule automatic rather than remembered.**
 `../../reference/design-decisions.md` warns that losing a dictionary makes every blob referencing it
@@ -149,13 +179,25 @@ Each of these is a finding in `notes.md`, numbered there.
 ### One design consequence worth stating on its own
 
 **A full queue still records the hole.** The item handed to the worker is
-`(CallRecord, request_bytes, response_bytes)`. When the bodies would push the queue past its byte
+`(CallRecord, request_bytes, response_bytes, submitted_at, pending_at_submit)`. **The last two were
+missing until 2026-08-18**, when the forward review found that `queue_ms` and `queue_bytes` are both
+values only `submit()` can see: by the time the worker runs, `_pending` has moved. Read in the worker
+instead, `queue_bytes` would record depth at *dequeue* — near zero at this load, and therefore
+**indistinguishable from working**. When the bodies would push the queue past its byte
 bound, **the record is enqueued anyway with both ref cells set to `dropped`** — a record-only item is a
 few hundred bytes and is never refused.
 
 So `EPD-003`'s *"drop the body and record that it was dropped — a corpus with a known hole is fine, a
 stalled request is not"* becomes literally true rather than approximately: **the hole is a row, not an
 absence.**
+
+**Bodies the router authored are not stored.** *Decided 2026-08-18.* Three exist — the 400 for a
+missing `model`, the 502 for an unreachable backend, and the injected SSE `error` event — and their
+ref cell reads `absent`. This **applies a rule already on the books** rather than inventing one:
+`../../reference/design-decisions.md` says of the injected event that it is *"not counted in
+`response_bytes` and not fed to the scanner … both measure what the backend sent, and these bytes are
+ours"*. The milestone's claim is *every body it **carries***, and these are authored. `error_status`
+in the same row already says why the response side is empty.
 
 **Everything on the request path is one append and one counter increment.** Hashing, compression,
 `fsync`, rename and the index row all happen in the worker thread. The sketch never said where hashing
@@ -181,7 +223,7 @@ timing is the entire reason both exist.*
 
 | | Held whole in memory today? |
 |---|---|
-| The **request** body | **Yes, always.** `proxy.py:133` is `body = await request.body()` — the router reads the whole body to relay it. This predates the corpus and is not changed by it |
+| The **request** body | **Yes, always.** `proxy.py:133` is `body = await request.body()` — the router reads the whole body to relay it. **The corpus does not change *whether* it is held; it changes *how long*.** Today `body` becomes unreachable once `relay()` returns, so it is freed **before the model starts generating**. Task 12 keeps it alive until `record()` — the whole response, which against a local model is minutes. *(This row said "is not changed by it" until 2026-08-18, which read as "no memory thought needed here".)* |
 | The **response** body | **No, never.** `proxy.py:245` streams chunk by chunk and forgets each one after yielding it. The only accumulation anywhere is `observe.py`'s buffered scanner, which stops at **1 MiB** and gives up |
 
 **So the corpus introduces something the router has never done: holding a whole response.** To store
@@ -395,6 +437,11 @@ store is already writing, with no component added and nobody watching at the tim
 | `store_ms` | Hash, compress, write and `fsync` for this call. Says *why* it was slow, if it was |
 | `queue_bytes` | Pending bytes at the moment of submit. Shows depth building **before** anything is dropped |
 
+**On a row whose body was not stored, `store_ms` is empty** — not zero. `../../reference/observability.md`
+already governs this: *an absent value is an empty cell, never a zero; an absent count and a genuine
+zero are different facts.* `queue_ms` and `queue_bytes` are still real on a `dropped` row, because the
+record was queued even though the body was not.
+
 Appended after the two refs, so the first twenty columns stay identical to `calls.csv`'s and in its
 order — which is what lets a rotated segment and a day file feed one spreadsheet.
 
@@ -403,9 +450,14 @@ Two log lines, and the restraint is as deliberate as the lines:
 - **One `WARNING` the first time a body is dropped in a run**, with the reason and the pending bytes;
   then suppressed and counted. Warning on every drop turns overload into log spam, which is the
   moment the log most needs to stay readable.
-- **A periodic `INFO` summary** — bodies stored, bytes in and out, drops by reason, peak pending
-  bytes, longest `queue_ms`. **No new route:** `/health` stays as it is, and the catch-all forwards
-  everything else, so a new endpoint is a surface this does not need.
+- **A periodic `INFO` summary**, **emitted from the submit path every 500 calls and once at close.**
+  *Defined 2026-08-18; it was named four times and specified never.* From **submit** rather than from
+  the worker on purpose — a worker that has stalled emits nothing, and a stalled worker is exactly
+  when the line is wanted; submits keep happening and carry the growing `pending` with them. No timer,
+  so an idle router says nothing, which is correct. **No new route:** `/health` stays as it is, and
+  the catch-all forwards everything else.
+  **The arrived/recorded half is emitted whether or not the corpus is enabled**; the corpus totals
+  join it when it is.
 
 ### Two kinds of "it was not saved", and only one of them was covered
 
@@ -426,8 +478,12 @@ gap.
 
 **The counter pair is the whole addition, and it is deliberately small.** `begin()` counts calls that
 arrived; `record()` counts rows written. **The difference is calls in flight plus calls silently
-lost** — so a gap that persists across the periodic summary, and a non-zero gap after the queue has
-drained at shutdown, is the blind spot made visible without changing a single column of `calls.csv`.
+lost** — so a gap that persists, or a non-zero gap after shutdown, is the blind spot made visible
+without changing a single column of `calls.csv`.
+
+**It lives in `Proxy`, not in `corpus.py`, and it is always on.** *Corrected 2026-08-18.* It answers a
+`calls.csv` question, and `calls.csv` is always on while the corpus is opt-in — built inside the
+corpus it would be **absent on the default machine**, which is the only machine the question is about.
 
 The same summary carries the corpus totals, so one line answers both questions:
 
@@ -499,8 +555,8 @@ source for. **Permission to run it was given on 2026-08-18.***
 | # | Task |
 |---|---|
 | **4** | `uv add zstandard`; **read its source** on whether the GIL is released during compression, and record what the source says rather than what the documentation claims |
-| **5** | `docs/procedures/corpus-benchmark/` — the script, over the bodies already in `logs/corpus-gate/`. Reads and writes under `logs/`, **never into `docs/`** |
-| **6** | Run it and record the numbers. **It decides three things:** whether a thread buys anything, the write-path compression level, and the worker count. If the GIL is *not* released, measuring a process pool becomes the next task and the thread design is withdrawn |
+| **5** | `docs/procedures/corpus-benchmark/` — the script, over the bodies already in `logs/corpus-gate/`. **Its output goes to `docs/procedures/corpus-benchmark/runs/`, gitignored**, per `../../README.md`: *an instrument's output directory follows the instrument, never the archive.* Add the `.gitignore` line — the two existing instruments have explicit per-instrument entries, not a glob. **And a row in `../../procedures/README.md`** saying when re-running is worth it. *(This task said "writes under `logs/`, never into `docs/`" until 2026-08-18, which contradicted the tier rule it was trying to obey.)* |
+| **6** | Run it and record the numbers, and **freeze the script and its output into `evidence/`** — `../../README.md`: a procedure's *results* are frozen in the phase's `evidence/`, and Phase 9 froze `gate.py` and `results.txt` for exactly this reason. Task 21 puts these numbers in `../../reference/measurements.md`, whose rule is that a number carries its instrument. *(No task froze anything until 2026-08-18, and nothing said why `evidence/` was absent — which `../../README.md` also requires.)* **It decides three things:** whether a thread buys anything, the write-path compression level, and the worker count. If the GIL is *not* released, measuring a process pool becomes the next task and the thread design is withdrawn |
 
 **What Task 6 measures, and what each measurement decides:**
 
@@ -516,31 +572,42 @@ source for. **Permission to run it was given on 2026-08-18.***
 we would not take, and measuring it is work spent on a road not travelled. **If the GIL is not
 released, that measurement becomes the next step** — conditional rather than speculative.
 
+**On a negative result, Task 6 stops and proposes. It does not proceed to Group C.** *Added
+2026-08-18: the branch was named and left with no task, no gate and no consequence, while Tasks 8–13
+assume the positive one.* The thread design is withdrawn, the process measurement is run, and **the
+task list is re-planned with the owner** — `CLAUDE.md`'s working agreement, since a new design is a
+design answer and not a build order. Re-planning after execution has begun means **lettered
+insertions**, not a second renumber.
+
+**The symmetric case is also live.** A `corpus.workers` key is promised *only if* Task 6 shows the GIL
+released **and** more than one worker helping — while Task 11 fixes the block at five keys. **Either
+outcome of Task 6 falsifies one of those two sentences**, and Task 11 is where it is reconciled.
+
 ### Group C — the store *(not started)*
 
 | # | Task |
 |---|---|
-| **7** | Add `zstandard` to `pyproject.toml`; `make sync`; a smoke test that a dicted frame round-trips byte-identically |
-| **8** | `src/ilirium_llm_router/corpus.py` — the blob store: content addressing on the plaintext, the per-day layout, `incoming/` → `fsync` → rename, dedup scoped to the day, and **a plain copy of each dictionary the day uses**, so the folder is self-contained |
+| **7** | **The smoke test only** — that a dicted frame round-trips byte-identically. **`zstandard` was already added at Task 4**, which is what `uv add` does; this task adds no dependency. *(It read "Add `zstandard` to `pyproject.toml`; `make sync`" until 2026-08-18 — true before Group B existed, and afterwards a cold agent would find the work done and be unable to tell which task was stale.)* |
+| **8** | `src/ilirium_llm_router/corpus.py` — the blob store: content addressing on the plaintext, the per-day layout, `incoming/` → `fsync` → rename, dedup scoped to the day, **the `manifest` written once when a day folder opens**, and **a plain copy into `<day>/dicts/` of each dictionary the day uses, taken from `<dir>/dicts/`**. **It must work with `<dir>/dicts/` empty**, writing undicted frames |
 | **9** | The byte-bounded queue and its worker thread, **plus the arrived/recorded counter pair** — one `queue.SimpleQueue` with the byte accounting beside it, the drop policy, the timed drain on close, and **it never raises**: a body store is telemetry-shaped and telemetry does not get to break a call. Plus the once-per-run drop `WARNING` and the periodic summary line |
 | **10** | The day index: **25 columns**, header re-emitted in every file, a ref cell holding a digest or one of `dropped` / `too_large` / `absent` / `error`. `queue_ms`, `store_ms` and `queue_bytes` are appended after the refs, so the first twenty stay identical to `calls.csv`'s and in its order |
 | **11** | The `corpus:` config block — five keys, `extra="forbid"`, relative-path resolution against the config file's directory, and `--check` prints it. Neither limit may be disabled |
-| **12** | Wire into `Proxy.record()`'s four call sites and `app.py`'s lifespan; hold the request body on `Call`; tee the response into a capped buffer in `watch()` |
+| **12** | Wire into `Proxy.record()`'s four call sites and `app.py`'s lifespan; hold the request body **and the response buffer** on `Call`, which is `observe.py`'s and is therefore an in-scope edit; tee the response in `watch()` up to `max_body_bytes`. **Plus the arrived/recorded counters, which live in `Proxy` and run whether or not the corpus is enabled.** `create_app` takes the writer the way it already takes `stats`, so a test can point one at a temporary path |
 | **13** | Tests, including **a non-UTF-8, non-JSON body round-tripping byte-identically** — that is what discharges failure mode 2 by construction rather than by assertion |
 
 ### Group D — the dictionary *(not started)*
 
 | # | Task |
 |---|---|
-| **14** | `docs/procedures/corpus-dictionary/` — the trainer, **using `zstandard` rather than the binary**, which **measures a candidate against the incumbent on a held-out slice and refuses to install a worse one.** Directly from `zstd --train` being non-monotonic at 68 samples. With its README saying when re-running is worth it |
-| **15** | Train the first real dictionary from the surviving `logs/corpus-gate/` corpus; install it; verify a dicted round-trip end to end and record the ratio |
+| **14** | `docs/procedures/corpus-dictionary/` — the trainer, **using `zstandard` rather than the binary**, with **a row in `../../procedures/README.md`**, which **measures a candidate against the incumbent on a held-out slice and refuses to install a worse one.** Directly from `zstd --train` being non-monotonic at 68 samples. With its README saying when re-running is worth it |
+| **15** | Train the first real dictionary from the surviving `logs/corpus-gate/` corpus; **install it into `logs/corpus/dicts/`**; verify a dicted round-trip end to end and record the ratio. **Name which `--maxdict` was chosen and why** — `logs/corpus-gate/dicts/` holds eight, and `../../reference/measurements.md` records training as non-monotonic at this sample count |
 
 ### Group E — the telemetry move *(not started)*
 
 | # | Task |
 |---|---|
 | **16** | Move `calls.csv` and `router.log` into `logs/telemetry/` — `config.yaml`, `config.py`'s two defaults, `tests/test_config.py`, `tests/test_logging_setup.py`, and the live files on disk |
-| **17** | The sweep `../../procedures/link-check.py` **cannot see** — `CLAUDE.md`, `README.md`, `../../reference/observability.md`, `../../procedures/testing-against-claude-code.md`, `../../procedures/lmstudio-capability-probes/probe.py` — stating which archive and EPD hits were **left** and why |
+| **17** | The sweep `../../procedures/link-check.py` **cannot see** — `CLAUDE.md`, `README.md`, `../../reference/observability.md`, `../../procedures/testing-against-claude-code.md`, `../../procedures/lmstudio-capability-probes/probe.py`, **and `../../procedures/link-check.py:45`**, whose docstring uses `logs/calls.csv` as its worked example — a stale path *inside the instrument Task 24 runs*, and one it cannot catch itself because it globs `*.md`. Stating which archive and EPD hits were **left** and why |
 
 ### Group F — verify, harvest and close *(not started)*
 
@@ -618,7 +685,10 @@ the next.*
 Written as observations rather than as intentions, because *"it should work"* is what a check exists
 to replace:
 
-1. **`corpus.enabled: false` leaves no trace** — no directory, no file, and `make test`'s 158 unchanged.
+1. **`corpus.enabled: false` leaves no trace** — no directory, no file, and the suite passing with
+   the corpus off. *(This said "`make test`'s **158** unchanged" until 2026-08-18. Tasks 11 and 13 add
+   tests, so it cannot be 158 by then — and a number nobody re-derives is this repository's stated
+   signature failure.)*
 2. **A stored body round-trips byte-identically**, decompressed outside the router with the day's own dictionary copy and nothing else.
 3. **A day folder is self-contained** — `tar` it, unpack it elsewhere, and every blob in it opens.
 4. **A dropped body is a row, not an absence** — force the queue bound low, and see `dropped` in the cell, the `WARNING` once, and the counter afterwards.
@@ -636,7 +706,8 @@ as an instance gets obeyed as an instance**, so this section names the instances
 | Where | Placeholder | Closed out at |
 |---|---|---|
 | The header, first line | *"Group A has executed; Tasks 4 to 24 have not"* | Task 24 |
-| The **six** group headings | `*(not started)*` | Task 24, each group as it completes. *Five until the benchmark group was added on 2026-08-18* |
+| **Five** group headings — B, C, D, E, F | `*(not started)*` | Task 24, each group as it completes |
+| Group **A**'s heading | `*(executed, except 3a)*` | Task 3a, and **the grep below cannot match it** — which is why it has its own row. *Added 2026-08-18: the table said "six" and five headings carried the marker, so the uncatalogued sixth was the one form the sweep could not see* |
 | The Record table below | `Merge commit \| not yet merged` | The merge itself |
 | "What is settled" | *"still open questions until Task 20"* | Task 20 |
 
@@ -680,10 +751,15 @@ interview has no live session, and **in-process timing is not the same measureme
 settle it: one driven session with capture on against one with it off, comparing `ttfb_ms` and
 `duration_ms` over the same work. That is a later phase, or an addendum to this one.
 
-**`record()`'s blind spot stays open.** A caller that vanishes after response headers gets no CSV row
-today and will get no corpus entry either — `watch`'s `finally` never runs, so the funnel is never
-reached. **Named, not fixed**; fixing it is a change to the recorder, which is not this phase's
-subject.
+**`record()` has a blind spot, and it is far narrower than this plan first said.** *Corrected
+2026-08-18 by the forward review.* A caller that disconnects after the response headers **does** reach
+`record()` and **does** get a row: `proxy.py:249` catches `GeneratorExit`, re-raises, and the `finally`
+calls `record()`. `../../reference/measurements.md` carries **six `client_disconnect` rows across both
+backends**, and the frozen CSV has one with 10,027 response bytes already streamed.
+
+**What remains is a race, not a class of calls**: only if the generator is closed *before its first
+`__anext__`* is there no frame to throw into, so nothing runs. **It has never been observed here.**
+Named, not fixed, and the counter pair is what would first show it happening.
 
 **Whether the router could run as several processes.** Recorded in `../../backlog.md` rather than
 built. The idea's session-distinguishing half is **already solved and measured** — `session_id` and
@@ -705,7 +781,11 @@ it. So the cheap part is the proxy and the expensive part is the writers.
 ## What could go wrong
 
 - **`zstandard` does not release the GIL where it matters**, and the worker thread contends with the
-  event loop. Task 7's smoke test is where that surfaces, before anything is wired in.
+  event loop. **Task 4 reads the source and Task 6 measures the scaling** — that is the whole reason
+  Group B exists. *(This bullet said Task 7's smoke test would surface it, which is left over from
+  before Group B: Task 7 is a correctness round-trip and says nothing about the GIL. Believed, it
+  would let an agent skip the measurement and read a green round-trip as verification — the exact
+  failure the second interview was convened to prevent.)*
 - **A dictionary trained from `logs/corpus-gate/` is uncommittable**, exactly as the bodies are. It
   stays under `logs/`, which `.gitignore:228` covers, and Task 15 stages with explicit paths rather
   than `git add -A` — the discipline Phase 9 adopted for the same reason.

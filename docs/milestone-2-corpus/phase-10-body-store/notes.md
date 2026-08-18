@@ -79,6 +79,13 @@ the body, the row and the two refs in one place, and needs no second funnel to m
 
 ### 2b — But that funnel has a blind spot, and this phase does not close it
 
+> **WRONG AS WRITTEN. Refuted 2026-08-18 by the forward review; see "the reconciliation" below.** A
+> caller disconnecting after response headers **does** reach `record()` and **does** get a row — six
+> measured `client_disconnect` rows say so. What survives is a race nobody has observed. **The
+> paragraphs below are left as written**, because they record what was believed while the plan was
+> being built, and `../../README.md` says a claim in a phase note is corrected elsewhere rather than
+> rewritten.
+
 Stated because claiming full coverage would be wrong. **If the caller vanishes after the response
 headers have gone out**, Starlette never runs the body generator, so `watch`'s `finally` never fires
 and `record()` is never reached. Such a call gets **no CSV row today** and will get **no corpus
@@ -271,6 +278,10 @@ one turns overload into log spam at the moment the log most needs to stay readab
 > | `queue.Queue(maxsize=N)` | Bounded — **in items**, which is Finding 1 itself |
 > | `multiprocessing.Queue` | Pickles every body. Only relevant if Task 6 sends us to processes |
 >
+> *The item's shape given here — record plus two bodies — was **incomplete**, found 2026-08-18: it
+> also carries the submit timestamp and the pending-bytes reading, because `queue_ms` and
+> `queue_bytes` are values only `submit()` can see.*
+>
 > `SimpleQueue` because none of `Queue`'s extra machinery is used: no `maxsize`, no `task_done()`, no
 > `join()`. Shutdown is a sentinel and a **timed** thread join — a full queue is ~640 bodies, and a
 > router that will not stop is worse than a corpus missing its last few. Whatever is abandoned is
@@ -305,6 +316,10 @@ ones.
 ---
 
 ### Q2b — Do we fix the case where no row is written at all?
+
+> **The premise is wrong; the question is not.** See 2b above. The case is a race rather than a class
+> of calls, and the decision taken — name it, do not fix it — is unchanged and now easier. Left as
+> written.
 
 **In plain terms.** There is one path where **`calls.csv` gets no row today either.** If the caller
 disappears *after* the response headers have gone out, the web framework never runs the code that
@@ -521,7 +536,7 @@ bytes are held twice on that one path.
 | Option | Buys | Costs |
 |---|---|---|
 | **A — separate buffers** *(assumed)* | The scanner keeps working unchanged when the corpus is off, which is the default. Two independent things stay independent | Up to 1 MiB held twice, on the non-streamed path only. Streamed replies are unaffected — the SSE scanner keeps a line buffer, not the body |
-| **B — one shared buffer** | Half the memory on that path | Couples the recorder to the store. The scanner would have to buffer *because the corpus wants it to*, which is a dependency pointing the wrong way — and it changes `observe.py`, which this phase otherwise does not touch |
+| **B — one shared buffer** | Half the memory on that path | Couples the recorder to the store. The scanner would have to buffer *because the corpus wants it to*, which is a dependency pointing the wrong way — and it changes `observe.py`, which this phase otherwise does not touch *(no longer true from 2026-08-18: Task 12 puts the request body and the response buffer on `Call`, which lives there. **The argument for keeping the buffers separate is unaffected** — it is about coupling the recorder to the store, not about which file is edited)* |
 
 ---
 

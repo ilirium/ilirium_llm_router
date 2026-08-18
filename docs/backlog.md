@@ -111,14 +111,27 @@ arrived-against-recorded counter pair makes the one silent case visible. *Weaker
 makes *"changing `calls.csv`, not its rotation, not its columns"* an explicit non-goal, so that one
 needs the non-goal overturned first, not merely scheduling.
 
-**`record()` is never reached when a caller disconnects after the response headers**, so that call
-gets no `calls.csv` row and no corpus entry — silently, today. Found while planning Phase 10 by
-tracing `record()`'s four call sites; **inferred from Starlette skipping a body generator on
-disconnect, and never observed here.** *Parked because* it is a change to Milestone 1's recorder
-wearing a corpus phase's clothes, it needs a live disconnect to test, and the fix has to guarantee it
-cannot write a row twice — which is worse than missing one. *Weaker than it looks?* Unknown, and that
-is the point: **nothing measures how often it happens**, and Phase 10's counter pair is what will
-start to.
+**A caller that disconnects before the response generator's first step leaves no `calls.csv` row.**
+*Narrowed 2026-08-18, and the original wording was wrong.* This item first said `record()` is never
+reached whenever a caller disconnects after the response headers. **It is reached, and a row is
+written**: `proxy.py:249` catches `GeneratorExit`, re-raises, and the `finally` calls `record()`.
+`reference/measurements.md` carries **six `client_disconnect` rows across both backends**, and the
+frozen step-6 CSV has one with 10,027 response bytes already streamed.
+
+**What remains is a race**: if Starlette closes the generator before its first step, there is no frame
+to throw into and nothing runs. *Parked because* **it has never been observed** — not in a 142-call
+session, not in a 158-call test run — it is a change to Milestone 1's recorder, and the fix must
+guarantee it cannot write a row twice, which is worse than missing one. *Weaker than it looks?*
+**Yes, and that is the correction:** the original claim would have justified real work; the true one
+justifies watching. Phase 10's arrived-against-recorded counters are what would first show it
+happening.
+
+> **Recorded rather than quietly rewritten.** The wrong version was written into this file, into
+> `milestone-2-corpus/phase-10-body-store/plan.md` and twice into its `notes.md`, and it was found by
+> a fresh-context review that read `proxy.py` instead of the plan's account of it. It was labelled
+> *inferred* throughout, which was honest — **and inference from a correct premise to a wrong
+> conclusion is not repaired by labelling it.** The premise was a code comment about the narrow case;
+> the leap was to the general one, without checking the measured rows that name exactly this.
 
 **Running the router as several processes — instances behind a proxy, `uvicorn --workers N`, or a
 process pool.** Raised by the owner on 2026-08-18 while planning Phase 10, for two reasons: spreading

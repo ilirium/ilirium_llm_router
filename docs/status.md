@@ -47,7 +47,7 @@ recomputation.
 
 **Before touching anything:** `procedures/link-check.py` before and after anything that moves, and
 `make test` must report **158**. The checker **does not report zero**: **68 broken and 2 roundabout on
-`main`**, re-derived by running it on 2026-08-18 — and **78 on the Phase 10 branch**: four are files that
+`main`**, re-derived by running it on 2026-08-18 — and **79 on the Phase 10 branch**: five are files that
 plan's own tasks create, and six more are `review-charter.md` **listing the known false positives** so
 a reviewer does not spend findings on them. Both are `backlog.md`'s recurring class rather than
 breakage. **Do not predict the count from the docstring; run the tool.** Phase 8 proved
