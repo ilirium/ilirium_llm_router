@@ -30,10 +30,18 @@ overlap**, all now applied. The cold pass **refuted a claim this session had wri
 documents including `backlog.md`**; it is corrected there and marked in place in the phase note.
 `phase-10-body-store/review-charter.md` is the worked example the IDM points at.
 
-**Group B is cleared to run and has not.** Permission was given 2026-08-18 to install `zstandard` and
-run the benchmark over the corpus already in `logs/corpus-gate/`. The task list was **renumbered** at
-the same time — an exception to `README.md`, recorded in the plan with the one cost that cannot be
-undone. **No `src/` change exists yet.**
+**Group B is running. Task 4 is done and settled the claim the design rested on.** `zstandard 0.25.0`
+is a declared runtime dependency, and **the GIL *is* released around libzstd** — read off the shipped
+binary, since the wheel carries no C source, in all 21 functions that enter the library including
+`_train_dictionary`. So the worker thread is a real thread and Task 6's negative branch is unlikely to
+be taken. **That settles the mechanism and not the scaling:** Task 6 is unchanged and still measures
+1 / 2 / 4 threads, the compression level, and `zstandard`'s trainer against `zstd --train`.
+
+The task list was **renumbered** when permission was given — an exception to `README.md`, recorded in
+the plan with the one cost that cannot be undone. **No `src/` change exists yet**; `git diff main --
+src/` is still empty, and Task 8 is where that changes. *(This said "Task 4 is where that changes"
+until 2026-08-18. Task 4 touches `pyproject.toml` and `uv.lock`, which are neither `docs/` nor
+`src/`.)*
 
 **2026-08-17 — Phase 9 is merged** as **`b29d502`**, all sixteen tasks done. **Per-call files are the
 unit**; the decision is in `reference/design-decisions.md` and the gate's numbers in
@@ -53,10 +61,12 @@ recomputation.
 
 **Before touching anything:** `procedures/link-check.py` before and after anything that moves, and
 `make test` must report **158**. The checker **does not report zero**: **68 broken and 2 roundabout on
-`main`**, re-derived by running it on 2026-08-18 — and **79 on the Phase 10 branch**: five are files that
-plan's own tasks create, and six more are `review-charter.md` **listing the known false positives** so
-a reviewer does not spend findings on them. Both are `backlog.md`'s recurring class rather than
-breakage. **Do not predict the count from the docstring; run the tool.** Phase 8 proved
+`main`**, re-derived by running it on 2026-08-18 — and **80 on the Phase 10 branch** *(79 before Task
+4)*: five are files that plan's own tasks create, one more is this file citing the benchmark directory
+Task 5 creates, and six more are `review-charter.md` **listing the known false positives** so
+a reviewer does not spend findings on them. All are `backlog.md`'s recurring class rather than
+breakage. **Expect it to rise before it falls** — a task citing what it is about to build adds a hit,
+and creating the file removes it. **Do not predict the count from the docstring; run the tool.** Phase 8 proved
 twice that reading it gives the wrong answer. *(`make test` is ~0.6 s warm. A **first** run after the
 cloud folder evicts the virtualenv takes two to three minutes on hydration alone — slow, not stuck.)*
 
@@ -118,8 +128,8 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 10 — the body store, from Task 4.** **Planned and reviewed 2026-08-18; Group A is
-   done and no `src/` change exists yet.** The branch is in the table below and the task list is in
+1. **Execute Phase 10 — the body store, from Task 5.** **Planned and reviewed 2026-08-18; Group A and
+   Task 4 are done and no `src/` change exists yet.** The branch is in the table below and the task list is in
    `milestone-2-corpus/phase-10-body-store/plan.md`. **Do not re-plan or re-review it** — its
    re-derivation and its forward review have both run, and the review's 22 findings are applied.
    `EPD-003`'s open questions 3–6 are answered in that plan and are **not yet written back into
@@ -141,7 +151,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | clean; **documentation only.** `git diff main -- src/` is empty, and Task 4 is where that changes | **Task 4** — `uv add zstandard`, then the benchmark. Group A is done, including the forward review |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, plus `pyproject.toml` and `uv.lock` from Task 4. **`git diff main -- src/` is still empty; Task 8 is where that changes** | **Task 5** — the benchmark script under `docs/procedures/corpus-benchmark/`, then Task 6 runs it. Group A is done including the forward review; Task 4 is done and the GIL claim is settled |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

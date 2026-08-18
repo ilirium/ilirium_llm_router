@@ -1,7 +1,12 @@
 # Phase 10 — the body store: plan
 
-**Written 2026-08-18 on `feat/phase-10-body-store`, forked from `main` at `d885b2f`. Group A has
-executed; Tasks 4 to 24 have not.**
+**Written 2026-08-18 on `feat/phase-10-body-store`, forked from `main` at `d885b2f`. Execution is
+under way; the group markers under "The tasks" say how far, and are the only place that says so.**
+
+*This line read "Group A has executed; Tasks 4 to 24 have not" until 2026-08-18, when Task 4
+executed and made it false. **It was a second copy of what the group markers already carry**, and a
+second copy is what this repository's own placeholder rule exists to catch — so it was repointed at
+them rather than re-enumerated, which would only go stale again at Task 5.*
 
 **Twenty-five tasks in six groups.** Group A opens the phase and records what the opening interview
 decided. Group B benchmarks, before any store code exists. Group C builds the store. Group D trains
@@ -403,7 +408,7 @@ The timeout is a module constant rather than a sixth config key, on the same KIS
 |---|---|
 | **`asyncio` task and `asyncio.Queue`** | **Wrong tool.** Compression is CPU-bound and blocking; a coroutine doing it stalls every other request for its duration. The escape is `run_in_executor`, which *is* a thread pool — async arrives back at threads with a layer added. There is no true async file I/O on this platform either |
 | **`multiprocessing`** | **Pays a large cost for a problem this load does not have.** Every body is pickled and copied down a pipe — the opposite of taking a reference to bytes already in memory — and a child that is OOM-killed stops archiving silently unless something watches it. `EPD-003`'s non-goals name *"an ingestion service"* |
-| **One daemon thread** | **The fit, if and only if the GIL is released during compression.** That is the claim Task 4 proves or refutes, and the design rests on it |
+| **One daemon thread** | **The fit, if and only if the GIL is released during compression.** That is the claim Task 4 proves or refutes, and the design rests on it. *(Task 4 ran on 2026-08-18 and it is released — read off the shipped binary, not the documentation. **The condition is met; whether more than one thread helps is still Task 6's.**)* |
 
 **And why not simply write it inline?** Because a 200 KB compress-and-`fsync` on the event loop
 stalls every concurrent request for tens of milliseconds. **That is failure mode 3 of the milestone's
@@ -546,7 +551,13 @@ file".
 point: **Tasks 1 to 3 have executed**, so the exception is spent and `../../README.md`'s rule applies
 again with no exception. Inserting it as a number would shift twenty-one tasks that are now cited by
 this file, `notes.md`, `review-charter.md` and `../../status.md`.*
-### Group B — the benchmark, before any store code *(not started)*
+### Group B — the benchmark, before any store code *(in progress)*
+
+**Task 4 executed 2026-08-18; Tasks 5 and 6 have not.** The marker is written `*(in progress)*` and
+the detail sits outside it **on purpose** — `*(in progress — Task 4 done)*` would not match the
+prescribed grep's `\(in progress\)`, which is the same defect as Group A's uncatalogued marker and
+the `is not started` sweep that returned clean. **The parenthesis stays exactly greppable; the prose
+carries the state.**
 
 *Added 2026-08-18. The group exists because the first version of this plan chose a threading design
 from published figures for somebody else's machine, and asserted a GIL property it had not read the
@@ -705,8 +716,8 @@ as an instance gets obeyed as an instance**, so this section names the instances
 
 | Where | Placeholder | Closed out at |
 |---|---|---|
-| The header, first line | *"Group A has executed; Tasks 4 to 24 have not"* | Task 24 |
-| **Five** group headings — B, C, D, E, F | `*(not started)*` | Task 24, each group as it completes |
+| The header, first line | *"Execution is under way; the group markers … say how far"* | Task 24. *Reworded 2026-08-18: it enumerated tasks, went stale the moment Task 4 ran, and was a second copy of the group markers. It now points at them instead, so there is one place to close out rather than two* |
+| **Five** group headings — B, C, D, E, F | `*(not started)*`, and `*(in progress)*` once a group's first task runs — **B carries the second form from 2026-08-18.** Both are matched by the grep below, which is why those two are the only permitted spellings | Task 24, each group as it completes |
 | ~~Group **A**'s heading~~ | ~~`*(executed, except 3a)*`~~ | **Closed out 2026-08-18** when Task 3a finished, which is what this row said would close it. *Added earlier the same day: the table said "six" group headings and only five carried the marker, so the uncatalogued sixth was the one form the sweep could not see. Kept struck rather than deleted — a row that vanishes cannot show that the mechanism worked* |
 | The Record table below | `Merge commit \| not yet merged` | The merge itself |
 | "What is settled" | *"still open questions until Task 20"* | Task 20 |
@@ -735,7 +746,7 @@ grep**, since it returns clean and reads as proof.
 | A caller vanishing after headers produces **no** row today | **Inferred** — from Starlette skipping a body generator on disconnect, which `proxy.py`'s own comment on `BackgroundTask` reasons about. Not observed here |
 | A byte-bounded queue is necessary because a 1,000-item queue is 200 MB | **Extrapolated** — from Phase 9's measured median request of 103,935 bytes |
 | `zstandard`'s dictionary training matches `zstd --train`'s | **Unverified.** Both wrap libzstd, but their *defaults* may differ — and training defaults are exactly where Phase 9 found non-monotonicity. **Task 6 compares them**; if they disagree, Phase 9's figures are not directly comparable and the note says by how much |
-| **`zstandard` releases the GIL during compression** | **Unverified — and it is load-bearing.** If it is false, one thread and eight threads are the same thread and the design above is wrong. Asserted as fact in this file's first version; **Task 4 reads the source and Task 6 measures the scaling** |
+| **`zstandard` releases the GIL during compression** | **Measured — Task 4, 2026-08-18.** *(Read **unverified — and it is load-bearing** until then, this file having asserted it as fact in its first version.)* Verified against the **shipped binary** rather than the C source, which the wheel does not carry: `_ZstdCompressor_compress` calls `_PyEval_SaveThread`, then `_ZSTD_compressStream2`, then `_PyEval_RestoreThread` — the `Py_BEGIN_ALLOW_THREADS` pair around the work. 21 functions release it in total, balanced in every one, including `_train_dictionary`. `notes.md` carries the method. **This settles the mechanism, not the scaling** — Task 6 is unchanged and still measures 1 / 2 / 4 threads |
 | Single-thread zstd runs at ~2–6 MB/s at level 19, ~350–500 MB/s at level 3 | **Documented only** — published figures for other machines, quoted here to size the problem. **Task 6 re-measures both on this one** |
 | Two to five concurrent harnesses is 1–3 calls/second | **Extrapolated** — from two measured sessions at 0.14 and 0.03 calls/s, scaled to the owner's stated target. One laptop, and no session has ever run five harnesses |
 | Compression in the worker thread does not slow a *call* | **Unmeasured**, and this phase does not measure it — a thread bounds throughput rather than latency, but that is an argument, not a number. See below |
@@ -780,9 +791,13 @@ it. So the cheap part is the proxy and the expensive part is the writers.
 
 ## What could go wrong
 
-- **`zstandard` does not release the GIL where it matters**, and the worker thread contends with the
-  event loop. **Task 4 reads the source and Task 6 measures the scaling** — that is the whole reason
-  Group B exists. *(This bullet said Task 7's smoke test would surface it, which is left over from
+- ~~**`zstandard` does not release the GIL where it matters**~~, and the worker thread contends with
+  the event loop. **Half discharged 2026-08-18 by Task 4: it is released**, around the libzstd call
+  itself, in all 21 functions that enter the library. **What survives is not the GIL but the
+  scaling** — released is not the same as parallel, and per-call Python overhead, allocation and the
+  disk are all still unmeasured, so **Task 6 runs unchanged**. Struck rather than deleted because a
+  risk that vanishes cannot show that the check worked. **Task 4 read the source and Task 6 measures
+  the scaling** — that is the whole reason Group B exists. *(This bullet said Task 7's smoke test would surface it, which is left over from
   before Group B: Task 7 is a correctness round-trip and says nothing about the GIL. Believed, it
   would let an agent skip the measurement and read a green round-trip as verification — the exact
   failure the second interview was convened to prevent.)*

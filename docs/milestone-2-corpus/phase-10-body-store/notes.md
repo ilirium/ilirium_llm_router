@@ -903,6 +903,119 @@ labelling an inference does not protect it; the author could not have found it, 
 twice since; and **a wrong claim spreads at the speed of citation**, which is why the review comes
 before execution rather than after.
 
+## Task 4 — the dependency, and the GIL claim settled — 2026-08-18
+
+**The first task of this phase to execute since Group A, and the first to change a tracked file
+outside `docs/`.** Consent for the install was given the same day, on the standing rule that touching
+the machine is asked for separately each time.
+
+`uv add zstandard` resolved 30 packages and installed **`zstandard==0.25.0`**, one new runtime
+dependency. `pyproject.toml` carries a comment saying why, in the shape Phase 6 set for `pydantic`
+and `starlette` — a new runtime dependency is a decision, and the file is where the decision is
+legible to somebody who was not here.
+
+### The claim this task existed to settle
+
+`plan.md`'s "Documented versus measured" carried **`zstandard` releases the GIL during compression**
+as *unverified — and it is load-bearing*, because if it is false then one worker thread and eight are
+the same thread and Group C's design is wrong. **It is true, and it is now verified rather than
+asserted.**
+
+**Which backend runs, first, because the answer differs by backend.** `zstandard/__init__.py` selects
+`backend_c` for CPython and falls back to `backend_cffi` only on PyPy or an unknown implementation —
+*"for CPython we require the C extension by default"*. So the C extension is the code path here, and
+the CFFI backend's behaviour is not this project's question. **The one way that changes** is the
+`PYTHON_ZSTANDARD_IMPORT_POLICY` environment variable, which can force the fallback; nothing here
+sets it, and if anything ever does, this finding needs re-deriving.
+
+### What was read, and what it establishes
+
+**The wheel ships no C sources — only `backend_c.cpython-313-darwin.so`.** So the source was read
+**as the shipped binary** rather than as `c-ext/compressor.c`, and that difference is stated rather
+than glossed. What it costs: no C source line to quote. What it buys, and it is the larger half:
+**this is the exact code that will run in the worker thread**, not the code a source tree says would
+be compiled. A source read establishes intent; this establishes fact.
+
+`Py_BEGIN_ALLOW_THREADS` and `Py_END_ALLOW_THREADS` are macros expanding to `PyEval_SaveThread()` and
+`PyEval_RestoreThread()`, which survive compilation as linker-visible symbols. Both appear, and they
+are the **only** `PyEval` symbols the extension imports at all.
+
+The one-shot compress path — the call the write path will make — disassembles to exactly the macro
+pair wrapped around the work:
+
+```
+_ZstdCompressor_compress            0x8c574
+  8c690:  bl 0x90774  →  _PyEval_SaveThread          GIL released
+  8c6a8:  bl _ZSTD_compressStream2                    the compression itself
+  8c6b4:  bl 0x90768  →  _PyEval_RestoreThread        GIL reacquired
+```
+
+Both stub addresses were resolved through the Mach-O indirect symbol table rather than guessed:
+`__stubs` begins at `0x90678` with 12-byte entries, making `0x90768` index 20 and `0x90774` index 21,
+which `otool -Iv` names as `_PyEval_RestoreThread` and `_PyEval_SaveThread`.
+
+### Every function that releases it, because one function is not an answer
+
+A sweep of the whole disassembly, rather than the single path the plan needed, found **21 functions**
+releasing the GIL — and **`SaveThread` and `RestoreThread` counts match exactly in every one of
+them**, which is the property worth checking: an unbalanced pair would leak thread state rather than
+merely fail to parallelise.
+
+| Path | Function | Matters to |
+|---|---|---|
+| One-shot compress | `_ZstdCompressor_compress` | **The write path.** Task 9's worker |
+| One-shot decompress | `_Decompressor_decompress` | Task 13's round-trip, and any reader |
+| **Dictionary training** | `_train_dictionary` | **Group D.** Not required by the design, but it means Task 14's trainer cannot freeze an interpreter either |
+| Streaming and chunked, both directions | `_ZstdCompressionObj_compress`, `_ZstdCompressionWriter_write`, `_ZstdCompressionChunkerIterator_iternext`, `_ZstdDecompressionWriter_write`, and the rest | Nothing this plan builds — recorded so a later phase that streams does not re-derive it |
+| Batch | `_compress_from_datasources`, `_decompress_from_framesources` | `multi_compress_to_buffer`, which this phase does not use |
+
+**`_train_dictionary` was not on anyone's list and is the incidental find.** Training is deliberately
+never in a worker — `plan.md`'s "One thing that is never in a worker" — so this changes no decision.
+It is recorded because the reason training is kept out is that it takes seconds to minutes, and *"it
+would hold the GIL"* is now known **not** to be a second reason. If that argument is ever made, it is
+wrong.
+
+### What this settles, and what it does not
+
+**Settled:** the mechanism. The GIL is genuinely released around libzstd, so a worker thread is a
+real thread and Group C's design is not resting on a false premise. **The negative branch of Task 6 —
+where the thread design is withdrawn and a process pool is measured — is now very unlikely to be
+taken.**
+
+**Not settled, and Task 6 still runs unchanged:** *released* is not *scales*. Whether four threads
+finish the corpus in about a quarter of the time is a measurement, and the GIL is only one of the
+things that could stop it — the per-call Python overhead outside the released region, allocation, and
+the disk are all still unmeasured. **`plan.md` asks Task 6 for the scaling numbers and that is not
+weakened by this result.** It is also the task that picks `compress_level_zstd`'s default and
+compares `zstandard`'s trainer against `zstd --train`, neither of which this task touches.
+
+`plan.md`'s "Documented versus measured" row is updated in place from **unverified** to what was
+found, with the method named.
+
+### Baselines, re-derived by running them
+
+| | Before Task 4 | After |
+|---|---|---|
+| `make test` | **158 passed, 0.65 s** — run first, which also warmed the venv so the install was not confounded with OneDrive hydration | **158 passed, 0.70 s.** A new runtime dependency changed nothing |
+| `make check` | — | Valid; every key resolves and prints. **No `corpus:` block yet** — that is Task 11 |
+| `link-check.py` | **79 broken, 2 roundabout** | **80 broken, 2 roundabout, 74 files** |
+
+**The extra broken link is this session's own and it is the expected class.** `status.md:152` now
+cites `docs/procedures/corpus-benchmark/`, which **Task 5 creates** — a forward citation, which
+`../../backlog.md` records as the recurring false-positive class and which `plan.md` predicts will
+*"have resolved themselves"* by Task 24. **The count going up at this point is correct**, not a
+regression: it falls as Group B's and Group D's tasks create their directories.
+
+**The file count is 74**, against the 70 recorded at the re-derivation — `review-charter.md`,
+`IDM-004` and the rest of Group A's output. The broken count is what moves with citations; the file
+count moves with documents, and neither predicts the other. **Run it; do not predict it.**
+
+### One thing offered and not done
+
+**The C source was not fetched.** `c-ext/compressor.c` would give a quotable `Py_BEGIN_ALLOW_THREADS`
+line, at the cost of a second network fetch for weaker evidence than the binary already gives. It is
+available on request if the record should carry the source line as well as the instruction.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*
