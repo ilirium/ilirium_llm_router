@@ -204,19 +204,19 @@ phase raised about itself.*
 
 | | The question in one line | What `plan.md` assumes |
 |---|---|---|
-| **Q1** | What stops the queue eating memory, and at what size? | Bounded in **bytes**, 64 MiB |
+| **Q1** | What stops the queue eating memory, and at what size? | Bounded in **bytes**, 64 MiB. **Explained at length 2026-08-18** |
 | **Q2** | Where in the code does the store get handed the bytes? | **`Proxy.record()`**, all four call sites |
 | **Q2b** | Do we fix the case where no row is written at all? | **Name it, do not fix it** |
 | **Q3** | How does the index say a body was not stored? | A **reason word** in the ref cell |
-| **Q4** | A body over the ceiling — keep the first megabyte, or nothing? | **Nothing**, marked `too_large` |
-| **Q5** | The offline trainer — `zstandard`, or the `zstd` binary? | **The binary**, as Phase 9 used |
+| **Q4** | A body over the ceiling — keep the first megabyte, or nothing? | **Decided:** nothing, marked `too_large`, and **configurable** |
+| **Q5** | The offline trainer — `zstandard`, or the `zstd` binary? | **Decided: `zstandard`. One tool.** *Reversed* |
 | **Q6** | The same body on two days — stored once or twice? | **Twice.** Dedup is per day |
-| **Q7** | How does a day folder get the dictionary it needs? | **A hard link** |
+| **Q7** | How does a day folder get the dictionary it needs? | **Decided: a plain copy**, and no root folder. *Reversed* |
 | **Q8** | Where does "the tests take 150 s here" get recorded? | **This note only** |
 | **Q9** | Which documents get repointed by the telemetry move? | **Live documents only** |
-| **Q10** | What compression level does the write path use? | **Undecided — Task 3c measures it** |
+| **Q10** | What compression level does the write path use? | **Decided: configurable**, default measured by Task 3c |
 | **Q11** | Is the corpus's copy of a response a second buffer? | **Yes, separate from the scanner's** |
-| **Q12** | How is "did this ever come close?" answerable later? | **Three index columns and two log lines** |
+| **Q12** | How is "did this ever come close?" answerable later? | **Decided: A, plus one counter pair** for loss outside the corpus |
 
 *Q10 to Q12 were added 2026-08-18, out of the write-path interview rather than the re-derivation.
 They are questions this phase raised about itself, not findings against the sketch.*
@@ -226,10 +226,35 @@ They are questions this phase raised about itself, not findings against the sket
 ### Q1 — What stops the queue eating memory, and at what size?
 
 **In plain terms.** When a call finishes, the router hands its bodies to a background thread so the
-caller is not kept waiting while they are compressed and written. If that thread falls behind, bodies
-pile up in memory. Something has to say *stop accepting more*, and the obvious knob — a maximum
-**number** of waiting bodies — does not bound memory here, because one body can be 200 KB. A thousand
-of them is 200 MB.
+caller is not kept waiting while they are compressed and written. **The worker handles one body at a
+time.** If bodies arrive faster than it finishes them, the ones not yet processed sit in the queue
+**still holding their bytes in RAM**.
+
+*Expanded 2026-08-18, because the first version of this entry assumed the reader already saw why a
+limit was needed at all.*
+
+**With no limit, a burst grows that until the process is killed.** That would take the router down —
+and *"telemetry must never break a call"* is the rule that forbids precisely this. So there must be a
+limit. **The whole question is what it counts.**
+
+**A limit in *items* sounds like a bound and is not one.** *At most 1,000 waiting bodies* means
+anywhere between 2 MB and 200 MB here, because Phase 9 measured bodies from 2,277 bytes to 185,209.
+The number that hurts is bytes, so bytes is what to count — and then the item count is free to vary,
+640 median bodies or 30,000 tiny ones, both fine.
+
+**When it is full, the request path does not wait.** Waiting is the one outcome `EPD-003` rules out.
+The body is not stored and the record is enqueued anyway with `dropped` in its ref cells, so the hole
+is a row rather than an absence.
+
+**And at the measured load the queue should sit at nought or one item.** One to three calls a second
+against a worker taking tens of milliseconds means 64 MiB is never approached. **So the bound is a
+tripwire, not a tuning knob** — a sustained `queue_bytes` above a megabyte is the finding, long
+before anything is dropped. That is what the column is for.
+
+**It is logged explicitly**, on the owner's instruction: the first drop in a run raises a `WARNING`
+carrying the reason, the body's size, the pending bytes, the queue length and the call's path and
+session, so the row can be found. Subsequent drops are counted rather than logged — warning on every
+one turns overload into log spam at the moment the log most needs to stay readable.
 
 | Option | Buys | Costs |
 |---|---|---|
@@ -294,6 +319,15 @@ existed because the caller vanished mid-upload — that cell needs to say which.
 
 ### Q4 — A body over the ceiling: keep the first megabyte, or nothing?
 
+> **Decided 2026-08-18: option A, and the ceiling is configurable — it always was, in the
+> `corpus:` block.** The owner asked *why do we need the ceiling at all*, which the options below did
+> not answer. **Because it and the queue bound protect against opposite failures.** `max_body_bytes`
+> stops **one enormous body** being buffered during a call — the catch-all route forwards paths
+> nobody enumerated, so a reply could be any size at all. `queue_max_bytes` stops **many ordinary
+> bodies** piling up after their calls, and cannot help with the first: a thousand legal 100 KB
+> bodies are each under the ceiling. Neither may be set to unlimited, because "unlimited" reads as
+> *capture everything* and means *let an unknown endpoint decide this process's memory*.
+
 **In plain terms.** There is a size ceiling, because the router forwards paths nobody enumerated and a
 reply could be any size. When a body exceeds it, we either store the part we have or store nothing.
 `EPD-003` says the store must be able to hold a **truncated** body — but it was talking about a
@@ -309,6 +343,15 @@ ceiling is a different thing: it is complete-looking and incomplete.
 ---
 
 ### Q5 — The offline trainer: `zstandard`, or the `zstd` binary?
+
+> **Decided 2026-08-18: option B — `zstandard` everywhere, and this reverses the recommendation
+> below.** The owner asked why two tools, and the comparability argument for A is weaker than the
+> simplicity argument against it: one dependency, no requirement that a binary be installed, and the
+> procedure runs anywhere the venv does. **The risk is real but small and checkable** — both wrap
+> libzstd, so compression at the same level with the same dictionary should agree, but *training*
+> defaults may differ, and training defaults are exactly where Phase 9 found non-monotonicity.
+> **Task 3c compares the two trainers on the same samples**, so the risk is measured rather than
+> accepted or assumed.
 
 **In plain terms.** You have decided the **router** gets the `zstandard` package. Separately, there is
 an offline tool that trains the dictionary — it never runs on the request path. Every compression
@@ -339,6 +382,22 @@ other.
 ---
 
 ### Q7 — How does a day folder get the dictionary it needs?
+
+> **Decided 2026-08-18: option B, plain copies — and the root `logs/corpus/dicts/` is deleted from
+> the design.** The owner's rule: **a day folder is self-contained**, holding any metadata, any
+> dicts, any archives it needs.
+>
+> **The root folder was this plan's invention, not the sketch's.** Phase 9's fenced design put
+> dictionaries inside the date folder and called them *"copies of whichever dictionaries this day
+> used"*. This plan added a root folder to be the target of the hard links in option A; **declining
+> the links left it with no job at all.** So the decision restores the sketch rather than departing
+> from it, and option C — which kept a root folder — dies with option A.
+>
+> **What it buys beyond simplicity is an invariant enforced by the layout.**
+> `../../reference/design-decisions.md` makes dictionaries *"append-only forever"* because losing one
+> makes every blob referencing it unreadable. With a copy in every day that uses it, **deleting a day
+> whole cannot affect a surviving day** — the rule is satisfied by the shape instead of by somebody
+> remembering it. The cost is the ~40–80 MB a year the sketch already named.
 
 **In plain terms.** A compressed blob cannot be read without the dictionary it was compressed against
 — lose the dictionary and every blob referencing it is unreadable forever. The sketch put a copy
@@ -387,6 +446,10 @@ repointed because a path is navigation, but a **claim** may not.
 
 ### Q10 — What compression level does the write path use?
 
+> **Decided 2026-08-18: option D — configurable, with a default measured by Task 3c.** `level` joins
+> the `corpus:` block. The owner's reasoning is the one the option names: this is the knob where the
+> right answer genuinely depends on the machine.
+
 **In plain terms.** `zstd` has levels from 1 to 22, trading speed against ratio. **Every number this
 milestone owns was measured at level 19**, because Phase 9 was measuring a *ratio* offline where time
 did not matter. On the write path time does matter: published figures put level 19 at ~2–6 MB/s and
@@ -417,6 +480,28 @@ bytes are held twice on that one path.
 
 ### Q12 — How is "did this ever come close?" answerable later?
 
+> **Decided 2026-08-18: option A, plus one addition the options did not cover.** The owner widened
+> the question from the corpus to loss generally — *how do I learn that some requests and responses
+> were not saved, and why* — and asked the same of `calls.csv`. **Three of the four answers already
+> existed; one did not.**
+>
+> | What was lost | How you find out | Change |
+> |---|---|---|
+> | A **body** | The ref cell says `dropped`, `too_large`, `absent` or `error`, per call, permanently | none — this is the design |
+> | A **CSV row**, because the write failed | `stats.py` and `record()` each already log a `WARNING` and carry on | none |
+> | A **CSV row**, because `record()` was never reached | **nothing says so today** — the Q2b blind spot, in complete silence | **one counter pair** |
+>
+> **`begin()` counts calls arrived; `record()` counts rows written.** The difference is calls in
+> flight plus calls silently lost, so a gap that persists across summaries — or is non-zero after the
+> queue drains at shutdown — makes the blind spot visible **without changing a column of
+> `calls.csv`**, which the milestone's non-goals forbid.
+>
+> **Reserved to `../../backlog.md` rather than built**, on the owner's instruction that reserving is
+> acceptable and over-engineering is not: a metrics or status endpoint for live visibility, a
+> sequence column that would make a gap self-evident, and per-failure detail beyond the counters and
+> the warnings already there. **The router never *skips a call* under load** — dispatch and relay
+> always happen; only a record can be lost. That distinction is what makes this set sufficient.
+
 **In plain terms.** The owner's decision of 2026-08-18: keep the prototype simple, **and make its
 failure modes diagnosable**, so that the severity of queueing and dropping under real load is a
 question the data answers months later rather than one somebody has to be watching to catch.
@@ -429,6 +514,23 @@ question the data answers months later rather than one somebody has to be watchi
 | **D — nothing; measure if it ever hurts** | Simplest possible prototype | *How bad did it get* becomes unanswerable, which is the specific thing the owner asked to avoid |
 
 ---
+
+## The diagnostics interview, 2026-08-18
+
+**A third pass, and the shortest.** The owner asked one general question — *what else needs logging
+or recording so that loss is diagnosable* — with an explicit constraint: **KISS, this is a prototype
+meant to be finished and used, and reserving features in the backlog is acceptable.** Five questions
+were settled with it: **Q4, Q5, Q7, Q10 and Q12.**
+
+**Two of the five reversed this plan's own recommendation**, and both reversals are simplifications:
+one compression tool instead of two (Q5), and plain copies with no root dictionary folder (Q7). **The
+second is the more interesting**, because the thing the owner removed — a root `logs/corpus/dicts/` —
+was never in Phase 9's sketch. This plan added it to serve a hard-link optimisation, and when the
+links were declined the folder had no remaining job. **A rejected optimisation left its scaffolding
+behind, and the scaffolding read as part of the design.**
+
+The general question added exactly one thing, the arrived-against-recorded counter pair, and sent
+three more to `../../backlog.md`. The reasoning is under Q12.
 
 ## The write-path interview, 2026-08-18
 

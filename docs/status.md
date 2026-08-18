@@ -17,11 +17,13 @@ keeps it** — the case `method/IDM-001-git-branching.md` separates from Phase 9
 re-derivation: **nine findings, six against Phase 9's fenced sketch**, each also written as a question
 with options.
 
-**Two interviews, and the second changed the design.** The first settled four things — capture
-**opt-in and off by default**, **no headers ever**, `zstandard` as a dependency, and a scope with no
-live session. The second raised load under concurrent harnesses and **refused an unverified GIL claim
-the write path rested on**, which added **Group B0: benchmark before any store code.** Nothing there
-has run; it needs consent to install `zstandard` and to run the benchmark.
+**Three interviews, and the last two changed the design.** The first settled capture **opt-in and off
+by default**, **no headers ever**, `zstandard`, and a scope with no live session. The second refused
+an **unverified GIL claim** the write path rested on, adding **Group B0: benchmark before any store
+code**. The third settled diagnostics — **one tool not two, plain dictionary copies in
+self-contained day folders, a configurable level, and one arrived-against-recorded counter pair** —
+and reserved three further diagnostics to `backlog.md`. **Nothing has run**; Group B0 needs consent
+to install `zstandard` and to run the benchmark.
 
 **2026-08-17 — Phase 9 is merged** as **`b29d502`**, all sixteen tasks done. **Per-call files are the
 unit**; the decision is in `reference/design-decisions.md` and the gate's numbers in

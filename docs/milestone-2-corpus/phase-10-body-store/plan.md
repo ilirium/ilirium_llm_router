@@ -49,6 +49,11 @@ two of `EPD-003`'s four remaining open questions**; the other two are this phase
 | **The executor** | **One worker thread, chosen from a measurement rather than from this table.** The prototype stays simple; the benchmark below says whether it is right. A `corpus.workers` knob is added **only if** Task 3c's numbers show the GIL is released *and* that more than one worker helps — configuration this project does not need is configuration it does not get |
 | **Diagnosability** | **The severity question is answered from data the store already writes.** The owner's requirement, 2026-08-18: keep the first prototype simple, but instrument it so that *how bad did this get under real load* is answerable months later without having been watching. Three index columns and two log lines; see "The write path, concretely" |
 | **Benchmark before code** | **Group B0 runs before any store code is written**, so Group B is written against numbers instead of against published throughput figures for somebody else's machine |
+| **The size ceiling** | **Kept, and configurable — it already was.** `EPD-003`'s question was answered *(Q4)*: it protects against **one enormous body** during the call, which the queue bound cannot reach because that protects against **many ordinary bodies afterwards**. Neither can be disabled |
+| **One tool, not two** | **`zstandard` for the router and the trainer alike** *(Q5)*. This plan first kept the `zstd` binary for the trainer, for comparability with Phase 9's figures; the owner asked why two tools and **simplicity wins**. Task 3c checks that library training and `zstd --train` agree rather than assuming it |
+| **Dictionaries** | **Plain copies, and each day folder is self-contained** *(Q7)* — *any metadata, any dicts, any archives* belong to the day. **This restores the sketch**: the root `dicts/` and the hard links were this plan's addition, and declining the links left the root folder with no job |
+| **Compression level** | **Configurable, with a default measured by Task 3c** *(Q10)* |
+| **Diagnosing loss generally** | **One counter pair, and nothing else.** Calls arrived against rows written, in the same periodic summary as the corpus totals — which makes `record()`'s blind spot visible without changing a column of `calls.csv`. A metrics endpoint and a sequence column were both considered and **reserved to `../../backlog.md`** |
 | **Several router instances** | **Considered and deferred, recorded in `../../backlog.md`.** Its session-distinguishing half is already solved and measured; its throughput half has one concrete blocker that a reverse proxy does not touch — see "What this phase does not settle" |
 
 ### And two questions the owner did not have to answer
@@ -94,16 +99,25 @@ see below.
 logs/
   telemetry/                      calls.csv and router.log — moved in this phase, Task 13
   corpus/
-    dicts/                        the durable home. Append-only, never deleted
-      req-2026-08-18T104500Z.dict
-    2026-08-18/                   UTC-derived, never local
-      index.csv                   22 columns: calls.csv's 20, in order, plus two refs
+    2026-08-18/                   UTC-derived, never local. SELF-CONTAINED
+      index.csv                   25 columns: calls.csv's 20, in order, then two refs and three timings
       manifest                    schema version, router version, dictIDs referenced
-      dicts/                      hard links into ../dicts/ — portable, and zero bytes
+      dicts/                      plain copies of every dictionary this day used
+        req-2026-08-18T104500Z.dict
       incoming/                   staging for atomic rename
       requests/3f/3f9c….zst
       responses/b2/b20e….zst
 ```
+
+**A day folder is self-contained and nothing lives above it.** Owner's rule, 2026-08-18: *any
+metadata, any dicts, any archives* belong to the day. `tar` one folder, or `rm -rf` one folder, and
+neither operation can reach anything outside it.
+
+**That makes the never-delete-a-dictionary rule automatic rather than remembered.**
+`../../reference/design-decisions.md` warns that losing a dictionary makes every blob referencing it
+unreadable, and made dictionaries append-only forever to prevent it. **With a copy in every day that
+uses it, a day can be deleted whole and no surviving day is affected** — the invariant is enforced by
+the layout instead of by a rule somebody has to know.
 
 **Carried unchanged from `../phase-9-corpus-gate/plan.md`'s fenced sketch**, which was written before
 the gate ran and is input rather than specification: hash the **plaintext** and not the compressed
@@ -122,9 +136,11 @@ Each of these is a finding in `notes.md`, numbered there.
 |---|---|---|
 | **Queue bound** *(1)* | *"a bounded off-thread queue"*, which reads as a `maxsize` in items | **Bounded in bytes.** At a median request of 103,935 bytes, a 1,000-item queue is 200 MB of RSS. The item count falls out of the byte bound |
 | **Hook point** *(2)* | implied `watch()`, which Phase 9 measured missing 9 of 158 calls | **`Proxy.record()`** — four call sites, and every path reaches one. The same funnel that writes the CSV row |
-| **Recording a drop** *(3)* | 22 columns with no way to say a body was dropped | **A ref cell holds a 64-char hex digest, or one of `dropped` / `too_large` / `absent`.** A reason word can never be mistaken for a digest, so this needs no new column |
+| **Recording a drop** *(3)* | 22 columns with no way to say a body was dropped | **A ref cell holds a 64-char hex digest, or one of `dropped` / `too_large` / `absent` / `error`.** A reason word can never be mistaken for a digest, so this needs no new column. *`error` added 2026-08-18 — a compression or write failure in the worker must land in the cell too, or the one case where the store itself broke is the one case the index cannot describe* |
 | **Over the cap** *(4)* | *"the store must be able to hold a truncated body and say that it is truncated"* | **Drop, do not store a prefix.** A prefix labelled as a whole body is worse than a hole. This splits cap-truncation from the case `EPD-003` actually meant — a stream that broke, where the bytes that arrived are all there is and `error_status` already says so. The sketch's *"truncation needs no new column"* survives intact, for the reason it gave |
-| **Dictionary placement** *(5)* | copies into each date folder, ~80 MB/year, with *"plain copies against APFS clones"* left open pending the `--maxdict` result | **`os.link()`.** Portable Python, zero bytes, and `tar` of a single day still emits a real file because the link partner is not in the archive. The deferred fork dissolves rather than being decided |
+| **Dictionary placement** *(5)* | copies into each date folder, ~80 MB/year, with *"plain copies against APFS clones"* left open pending the `--maxdict` result | **Plain copies, and the sketch was right.** *Superseded 2026-08-18, twice.* This row first proposed `os.link()` into a **root** `logs/corpus/dicts/`, to get portability at zero bytes. **The owner declined it and restored the sketch**: plain copies, no root folder, each day self-contained. The root folder existed only to be the link target, so declining the links removed its whole job — **it was this plan's addition, not the sketch's.** The cost is the ~40–80 MB/year the sketch already named and the owner accepted, and what it buys is one fewer concept and an invariant the layout enforces |
+| **Compression level** | not considered — every figure was measured at level 19 | **Configurable, with a default measured by Task 3c.** Level 19 is an offline setting; the write path is a different question and nobody had asked it |
+| **One compression tool** | not considered | **`zstandard` everywhere**, router and trainer alike. This plan first proposed keeping the `zstd` binary for the trainer, for comparability with Phase 9's numbers; **the owner asked why two tools, and simplicity wins.** Task 3c checks that library training and `zstd --train` agree rather than assuming it |
 | **Dedup scope** *(6)* | implied by the tree, never stated | **Per day, and that is deliberate.** Cross-day dedup would make `rm -rf <a-day>` orphan another day's refs, which is the whole retention answer |
 | **Per-direction dictionaries** | *"Task 9 measures whether the split pays"* | **Supported structurally, but only a request dictionary is trained.** Frames name their own dictID, so more than one is free — but the gate measured *request* bodies, and its own `evidence/README.md` says it answers nothing about responses. Responses write undicted until somebody measures it |
 
@@ -149,13 +165,22 @@ lived, and sha256 over a 200 KB body on the event loop is small but not free.
 corpus:
   enabled: false              # opt-in. Nothing is written until this is true
   dir: logs/corpus            # relative paths resolve against the config file's directory
-  max_body_bytes: 1048576     # over this: not stored, and the cell reads `too_large`
-  queue_max_bytes: 67108864   # 64 MiB pending; over it, the cell reads `dropped`
+  level: 9                    # zstd level. The default is whatever Task 3c measures
+  max_body_bytes: 1048576     # one body bigger than this is not stored: `too_large`
+  queue_max_bytes: 67108864   # 64 MiB waiting to be written; over it: `dropped`
 ```
 
-`max_body_bytes` **reuses the reasoning** behind `observe.py`'s `MAX_SCAN_BYTES` rather than the
-number, which is what `EPD-003` asks for: the catch-all route forwards paths nobody enumerated, so a
-body could be any size at all, and the cap turns *memory decided by a stranger* into a known ceiling.
+### Two limits, because there are two different dangers
+
+They are easy to confuse and they protect against opposite shapes of failure.
+
+| | Protects against | When it applies |
+|---|---|---|
+| **`max_body_bytes`** | **one enormous body** | *During* the call, as the response is tee'd. The catch-all route forwards paths nobody enumerated, so a reply could be any size at all — without a ceiling the corpus buffers all of it. `EPD-003` asks that `observe.py`'s `MAX_SCAN_BYTES` **reasoning** be reused rather than its number, and this is that reasoning: it turns *memory decided by a stranger* into a known ceiling |
+| **`queue_max_bytes`** | **many ordinary bodies arriving faster than they are written** | *After* the call, while bodies wait for the worker. The per-body ceiling cannot help here — a thousand perfectly legal 100 KB bodies are each under it |
+
+**Both are configurable and neither can be disabled.** An "unlimited" setting is a footgun: it reads
+as *capture everything* and means *let an unknown endpoint decide how much memory this process uses*.
 
 **There is deliberately no `workers` key.** One worker until Task 3c says otherwise.
 
@@ -189,6 +214,27 @@ record(call, scanner)
                                                             ├─ append the index row
                                                             └─ pending_bytes -= …
 ```
+
+### What `queue_max_bytes` is actually for
+
+**The worker compresses one body at a time.** If bodies arrive faster than it finishes them, the ones
+not yet processed sit in the queue **still holding their bytes in RAM**. With no limit, a burst grows
+that until the process is killed — which would take the router down, and *"telemetry must never break
+a call"* is the rule that forbids exactly this.
+
+**So there has to be a limit, and what it counts is the whole question.** A limit of *1,000 waiting
+bodies* sounds like a bound and is not one: bodies here run from 2 KB to 185 KB, so that is anywhere
+between 2 MB and 200 MB of RAM. **Counting bytes bounds the thing that actually hurts**, and lets the
+item count vary — 640 median bodies, or 30,000 tiny ones, both fine.
+
+**When it is full the request path does not wait**, because waiting is the one outcome `EPD-003`
+rules out. The body is not stored, and the record is enqueued anyway with the ref cells reading
+`dropped`, so the hole is a row rather than an absence.
+
+**At the measured load the queue should sit at nought or one item.** One to three calls a second
+against a worker that takes tens of milliseconds a body means 64 MiB is never approached. **So the
+bound is a tripwire, not a tuning knob** — and any sustained `queue_bytes` above a megabyte is itself
+the finding, long before a single body is dropped.
 
 **Nothing crosses a process boundary.** The queue item holds *references* to `bytes` that already
 exist in memory — the request body read at `begin()`, and the response copy tee'd in `watch()`.
@@ -246,6 +292,42 @@ Two log lines, and the restraint is as deliberate as the lines:
   bytes, longest `queue_ms`. **No new route:** `/health` stays as it is, and the catch-all forwards
   everything else, so a new endpoint is a surface this does not need.
 
+### Two kinds of "it was not saved", and only one of them was covered
+
+*Added 2026-08-18, from the owner's question about diagnosing loss generally rather than only in the
+corpus.*
+
+**First, and worth stating because it is easy to fear the wrong thing: the router never skips a
+call.** Dispatch and relay always happen — *"telemetry must never break a call"* is a
+non-negotiable, and every failure in the recorder is caught and dropped. What can be lost under load
+is a **record**, never a request. Those are different words and the difference matters when reading a
+gap.
+
+| What was lost | How you find out | Change needed |
+|---|---|---|
+| **A body** | The index row's ref cell says `dropped`, `too_large`, `absent` or `error` — per call, permanently | None. This is the design |
+| **A CSV row, because the write failed** | `stats.py` and `record()` both already log a `WARNING` and carry on | None |
+| **A CSV row, because `record()` was never reached** | **Nothing says so today.** This is the blind spot: no row, no log line, complete silence | **One counter pair** |
+
+**The counter pair is the whole addition, and it is deliberately small.** `begin()` counts calls that
+arrived; `record()` counts rows written. **The difference is calls in flight plus calls silently
+lost** — so a gap that persists across the periodic summary, and a non-zero gap after the queue has
+drained at shutdown, is the blind spot made visible without changing a single column of `calls.csv`.
+
+The same summary carries the corpus totals, so one line answers both questions:
+
+```
+corpus: 412 arrived, 412 recorded, 0 lost | stored 806 (78.1 MB → 6.4 MB),
+        dropped 0, too_large 1, error 0 | pending peak 214 KB, queue_ms max 31
+```
+
+**What was considered and deliberately left out**, all recorded in `../../backlog.md` rather than
+built: a metrics or status endpoint for live visibility, a sequence column in `calls.csv` to make a
+gap self-evident — which the milestone's own non-goals forbid, since that file does not change — and
+any per-failure detail beyond the counters and the existing warnings. **This is a prototype meant to
+be finished and used**, and the set above answers *did anything get lost, and why* without adding a
+component.
+
 ### One thing that is never in a worker
 
 **Dictionary training.** It runs over thousands of samples and takes seconds to minutes, and it
@@ -288,6 +370,7 @@ had not read the source for.*
 | Throughput and ratio at levels **3 / 9 / 19**, with the held-out dictionary and without | The write-path level — and the half nobody has asked: **how much ratio level 19 was buying once a dictionary carries the preamble** |
 | Per-body cost split into sha256, compress, write, `fsync` | Whether `store_ms` is dominated by compression or by the disk, which decides whether the level matters at all |
 | Dictionary precompute, once against per body | Confirms the compressor is built once at startup rather than per call |
+| `zstandard`'s `train_dictionary()` against `zstd --train`, same samples | **The one thing "use one tool" risks.** Both wrap libzstd but their training *defaults* may differ, and defaults are where Phase 9 found non-monotonicity. If they disagree, Phase 9's figures stop being directly comparable and Task 3c says by how much |
 
 **What it deliberately does not measure: processes.** If threads scale, a process pool is an option
 we would not take, and measuring it is work spent on a road not travelled. **If the GIL is not
@@ -299,9 +382,9 @@ released, that measurement becomes the next step** — conditional rather than s
 |---|---|
 | **4** | Add `zstandard`; `make sync`; a smoke test that a dicted frame round-trips byte-identically |
 | **5** | `src/ilirium_llm_router/corpus.py` — the blob store: content addressing on the plaintext, the per-day layout, `incoming/` → `fsync` → rename, dedup scoped to the day, dictionaries hard-linked into the day folder |
-| **6** | The byte-bounded queue and its worker thread — the drop policy, drain on close, and **it never raises**: a body store is telemetry-shaped and telemetry does not get to break a call. **Widened 2026-08-18:** the counters, the once-per-run drop `WARNING`, and the periodic summary line |
+| **6** | The byte-bounded queue and its worker thread, **plus the arrived/recorded counter pair** — the drop policy, drain on close, and **it never raises**: a body store is telemetry-shaped and telemetry does not get to break a call. **Widened 2026-08-18:** the counters, the once-per-run drop `WARNING`, and the periodic summary line |
 | **7** | The day index: header re-emitted in every file, a ref cell holding a digest or a reason word. **Widened 2026-08-18 from 22 columns to 25** — `queue_ms`, `store_ms` and `queue_bytes` appended after the refs, so the first twenty stay identical to `calls.csv`'s and in its order |
-| **8** | The `corpus:` config block — `extra="forbid"`, relative-path resolution against the config file's directory, and `--check` prints it |
+| **8** | The `corpus:` config block — five keys, `extra="forbid"`, relative-path resolution against the config file's directory, and `--check` prints it. Neither limit may be disabled |
 | **9** | Wire into `Proxy.record()`'s four call sites and `app.py`'s lifespan; hold the request body on `Call`; tee the response into a capped buffer in `watch()` |
 | **10** | Tests, including **a non-UTF-8, non-JSON body round-tripping byte-identically** — that is what discharges failure mode 2 by construction rather than by assertion |
 
@@ -309,7 +392,7 @@ released, that measurement becomes the next step** — conditional rather than s
 
 | # | Task |
 |---|---|
-| **11** | `docs/procedures/corpus-dictionary/` — the trainer, which **measures a candidate against the incumbent on a held-out slice and refuses to install a worse one.** Directly from `zstd --train` being non-monotonic at 68 samples. With its README saying when re-running is worth it |
+| **11** | `docs/procedures/corpus-dictionary/` — the trainer, **using `zstandard` rather than the binary**, which **measures a candidate against the incumbent on a held-out slice and refuses to install a worse one.** Directly from `zstd --train` being non-monotonic at 68 samples. With its README saying when re-running is worth it |
 | **12** | Train the first real dictionary from the surviving `logs/corpus-gate/` corpus; install it; verify a dicted round-trip end to end and record the ratio |
 
 ### Group D — the telemetry move *(not started)*
@@ -370,6 +453,7 @@ grep**, since it returns clean and reads as proof.
 | A caller vanishing after headers produces **no** row today | **Inferred** — from Starlette skipping a body generator on disconnect, which `proxy.py`'s own comment on `BackgroundTask` reasons about. Not observed here |
 | `os.link()` into a date folder is portable and `tar` still emits a real file | **Inferred** — from how `tar` detects hardlinks among archived members. **Task 5 measures it** rather than trusting this row |
 | A byte-bounded queue is necessary because a 1,000-item queue is 200 MB | **Extrapolated** — from Phase 9's measured median request of 103,935 bytes |
+| `zstandard`'s dictionary training matches `zstd --train`'s | **Unverified.** Both wrap libzstd, but their *defaults* may differ — and training defaults are exactly where Phase 9 found non-monotonicity. **Task 3c compares them**; if they disagree, Phase 9's figures are not directly comparable and the note says by how much |
 | **`zstandard` releases the GIL during compression** | **Unverified — and it is load-bearing.** If it is false, one thread and eight threads are the same thread and the design above is wrong. Asserted as fact in this file's first version; **Task 3a reads the source and Task 3c measures the scaling** |
 | Single-thread zstd runs at ~2–6 MB/s at level 19, ~350–500 MB/s at level 3 | **Documented only** — published figures for other machines, quoted here to size the problem. **Task 3c re-measures both on this one** |
 | Two to five concurrent harnesses is 1–3 calls/second | **Extrapolated** — from two measured sessions at 0.14 and 0.03 calls/s, scaled to the owner's stated target. One laptop, and no session has ever run five harnesses |

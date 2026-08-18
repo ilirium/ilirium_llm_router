@@ -97,6 +97,29 @@ back nearly half the local wall clock at the price of the first special case in 
 *Weaker than it looks?* The opposite — this is the largest measured cost in the project, and the
 reason it is parked is that nobody has been willing to take the trade.
 
+**Three diagnostics reserved out of Phase 10, deliberately.** Named 2026-08-18 when the owner asked
+what else should be logged so that loss is diagnosable, and answered *KISS — this is a prototype meant
+to be finished and used*. **A live metrics or status endpoint**, for watching queue depth and drop
+counts while a session runs rather than reading them afterwards. **A sequence column in `calls.csv`**,
+which would make a missing row self-evident instead of inferable from a counter. **Per-failure detail
+beyond the counters**, such as an errors file listing every body that was not stored.
+
+*Parked because* the cheap versions of all three already ship in Phase 10: the corpus index says per
+call why a body was not stored, the recorder already logs a warning when a CSV write fails, and an
+arrived-against-recorded counter pair makes the one silent case visible. *Weaker than they look?*
+**The sequence column is refused rather than parked** — `milestone-2-corpus/implementation-plan.md`
+makes *"changing `calls.csv`, not its rotation, not its columns"* an explicit non-goal, so that one
+needs the non-goal overturned first, not merely scheduling.
+
+**`record()` is never reached when a caller disconnects after the response headers**, so that call
+gets no `calls.csv` row and no corpus entry — silently, today. Found while planning Phase 10 by
+tracing `record()`'s four call sites; **inferred from Starlette skipping a body generator on
+disconnect, and never observed here.** *Parked because* it is a change to Milestone 1's recorder
+wearing a corpus phase's clothes, it needs a live disconnect to test, and the fix has to guarantee it
+cannot write a row twice — which is worse than missing one. *Weaker than it looks?* Unknown, and that
+is the point: **nothing measures how often it happens**, and Phase 10's counter pair is what will
+start to.
+
 **Running the router as several processes — instances behind a proxy, `uvicorn --workers N`, or a
 process pool.** Raised by the owner on 2026-08-18 while planning Phase 10, for two reasons: spreading
 compression load across cores, and distinguishing concurrent harnesses. *Parked because* **the second
