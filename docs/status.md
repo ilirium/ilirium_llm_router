@@ -10,6 +10,32 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-19, later the same day — Phase 10 gained a register, and is *still* at Task 7.** **No `src/`
+change exists**; four commits, all documentation. `plan.md` gained **"The register"** — one reachable
+section holding **every constant, key, name and magic number the phase would build**, on the owner's
+instruction, so they can be checked against the code at the close. **Task 24 now checks it row by
+row.**
+
+**Compiling it found eight values the plan named and never gave**, and **all eight were closed the same
+day**. `DRAIN_TIMEOUT_S` 5, `LOCK_STALE_S` 3600, `SUMMARY_EVERY` 500 beside `RESCAN_EVERY`'s 500,
+`INDEX_SCHEMA_VERSION` 1, the four CLI flag names, `Call`'s three new fields, and the class names —
+**`CorpusWriter`, `CorpusReader`, `DictionaryTrainer`**. `corpus.max_body_bytes` was renamed to
+**`corpus.body_max_bytes`** so the three size keys share one shape.
+
+**Three of the eight were not holes, and that is why the register is now a `backlog.md` method item.**
+The drain timeout **contradicted this phase's own frozen evidence** — *"tens of milliseconds each …
+twenty-second shutdown"* against `evidence/results.txt`'s measured **0.433 ms per body**, out by ~70x.
+The cadence's justification **did not survive reading**. And `Call` **already uses** `request_bytes` /
+`response_bytes` for integer counts. **Two `IDM-004` passes missed all three**, because a review reads
+a plan as prose and an absent value reads perfectly well in a sentence.
+
+**`TRAIN_LEVEL` was split from `compress_level_zstd`, reversing a decision made the same morning.**
+**There are three levels, not one:** archiving and **scoring** read `corpus.compress_level_zstd` (9),
+**training** uses `TRAIN_LEVEL`, now **3**. Measured on the held-out slice, training levels 3 to 19 move
+the ratio by **0.03%** — it is not a parameter. Binding both to the key was **refused on a hazard**:
+every training level yields **one dictID**, so editing it would change dictionary bytes without
+changing the ID the reader finds them by.
+
 **2026-08-19 — Phase 10 was re-scoped, reviewed again, and is still at Task 7.** **The router now
 retrains its own dictionary automatically** — the plan had said training was offline and manual,
 **that was never an owner decision**, and no review had asked whose it was. **Thirty-two tasks**,
@@ -71,9 +97,11 @@ make a session act wrongly — `reference/measurements.md:34`, a slice whose sig
 
 **Before touching anything:** `procedures/link-check.py` before and after anything that moves, and
 `make test` must report **158**. The checker **does not report zero**: **68 broken and 2 roundabout on
-`main`** (2026-08-18), and **85 broken, 2 roundabout, 82 files on this branch**, re-derived by running
-on **2026-08-19**. *(It was 83 the same day, until `plan.md`'s new "The register" cited
-`corpus.py` and `dictionary.py` — two forward citations that Tasks 8 and 14 resolve.)* The excess is
+`main`** (2026-08-18), and **86 broken, 2 roundabout, 82 files on this branch**, re-derived by running
+on **2026-08-19**. *(It was 83 the same day, until `plan.md`'s new "The register" cited `corpus.py` and
+`dictionary.py`, then 86 when `prompt.md` cited `corpus.py` too — three forward citations that Tasks 8
+and 14 resolve. **The handoff file moving the baseline it quotes is the recursion to expect here**, not
+a defect.)* The excess is
 `backlog.md`'s recurring false-positive class, and **it rises when a task cites what it is about to
 build and falls when the file appears** — today it went 79 → 80 → 76. **Run the tool; do not predict
 it from the docstring**, which Phase 8 proved twice gives the wrong answer. *(`make test` is ~0.6 s
@@ -166,7 +194,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the new benchmark instrument, and `pyproject.toml` / `uv.lock`. **`git diff main -- src/` is still empty; Task 8 is where that changes** | **Task 7** — the round-trip smoke test, opening Group C. **Groups A and B are done**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the new benchmark instrument, and `pyproject.toml` / `uv.lock`. **`git diff main -- src/` is still empty; Task 8 is where that changes.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 7** — the round-trip smoke test, opening Group C. **Groups A and B are done**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

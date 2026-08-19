@@ -60,6 +60,40 @@ executing. Doing it mid-phase would put method work on a `feat/` branch, which
 
 ---
 
+**A forward review must check the plan's numbers against the phase's own `evidence/`, and a value
+register is the instrument that does it.** Proposed 2026-08-19, from what compiling Phase 10's
+register found.
+
+*What happened:* `phase-10-body-store/plan.md` justified its shutdown drain with *"a full queue is
+~640 bodies, which at **tens of milliseconds each** is a **twenty-second** shutdown"*. That phase's
+**own** `evidence/results.txt` measures the whole store path at 0.433 ms per body, making the real
+figure **0.28 s** — the plan was out by roughly **70x**, against a number frozen in the same folder.
+Compiling the register also found **eight constants named and never valued** — one of them cited as
+*"the precedent the shutdown timeout already set"*, so the precedent had no value — and a **name
+collision** with fields already on `observe.Call`.
+
+*Why it is a method item:* **two `IDM-004` passes missed all of it**, and not by carelessness. A review
+reads a plan **as prose, task by task**, checking it against the code and against itself. That cannot
+see a stale arithmetic estimate sitting beside a measurement in a sibling file, and it cannot see an
+absent value at all — **a constant with no number reads perfectly well in a sentence.** Both defects
+are only visible when the values are pulled into a column.
+
+*The proposed rule:* a plan that introduces constants, keys or names carries **one register section
+listing every one with its value**, and the forward review checks that (a) no row is empty and (b)
+every number the plan asserts is reconciled against the phase's `evidence/` where one exists. **This is
+the same shape as the item above** — an instrument the plan already has, that nothing asked the
+reviewer to use.
+
+*Where it should land:* also an **amendment to `IDM-004`**, and probably the same amendment as the item
+above — both are rules about what a review must *find*. `../README.md` would gain the register as a
+named plan section.
+
+*Why it is parked:* same reason as above — method work does not belong on a `feat/` branch. **Phase 10
+is the worked example either way**, since its register and the defects it caught are already recorded
+in `milestone-2-corpus/phase-10-body-store/notes.md`.
+
+---
+
 ## Documentation defects found and not fixed
 
 **The whole of `milestone-1-core/documentation-review-2026-08-16.md`.** A fresh-context agent

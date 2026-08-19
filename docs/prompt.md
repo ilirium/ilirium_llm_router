@@ -1,13 +1,13 @@
 # The next session's opening prompt
 
-**Rewritten 2026-08-19, at the end of the session that re-scoped Phase 10 and reviewed the re-scope.**
-It opens execution **from Task 7**, and nothing else.
+**Rewritten 2026-08-19, at the end of the session that compiled Phase 10's register and split
+`TRAIN_LEVEL` from `compress_level_zstd`.** It opens execution **from Task 7**, and nothing else.
 
-*Its previous version also opened from Task 7 and became misleading the same day: the plan grew from
-twenty-five tasks to thirty-two, the config block from five keys to nine, and the link-checker
-baseline it quoted moved from 76 to 83. **This is the third rewrite in two days**, which is what a
-file that tracks a task pointer costs — and why `README.md` licenses this one file to go stale and
-requires it to be closed out.*
+*Its previous version also opened from Task 7 and carried **two statements this session made false**:
+that the trainer *"trains **and** scores at `TRAIN_LEVEL = 9`"* — it now trains at **3** and scores at
+`compress_level_zstd` — and a link-checker baseline of 83, now **85**. **This is the fourth rewrite in
+two days**, which is what a file that tracks a task pointer costs, and why `README.md` licenses this
+one file to go stale and requires it to be closed out.*
 
 Paste the block below into a fresh session. It is a *starting instruction*, not a handoff note: it
 names what to read and what to distrust, and deliberately does not summarise the repository — the
@@ -50,6 +50,12 @@ misread this.** The GIL is released (3.34x on four threads),
 `compress_level_zstd` defaults to 9, and there is **no `corpus.workers` key** —
 that was settled by measurement, not argument.
 
+**Every constant, key, name and magic number is in one place: `plan.md`'s "The
+register".** Read it before writing code that needs a value, and **do not invent
+one** — there were eight unset and all eight are now decided. **Task 24 checks
+the register row by row against the code**, so a value that ships different from
+its row is a defect, not a variation.
+
 **Task numbers are never renumbered; an insertion takes a letter.** `13a` and
 `14a`–`14f` exist for that reason. **`14d` is struck and absorbed into Task 11**
 — the letter is spent and not reused.
@@ -59,13 +65,16 @@ Baselines to re-derive **by running, never by prediction**:
 - `make test` must report **158**. Normally ~0.6 s, but the **first** run after
   the cloud-synced folder evicts the virtualenv takes **two to three minutes**
   on hydration alone. **A slow first run is not a hang.**
-- `docs/procedures/link-check.py` reports **83 broken, 2 roundabout, 82 files**
+- `docs/procedures/link-check.py` reports **86 broken, 2 roundabout, 82 files**
   on this branch and **68 broken on `main`**, both run on 2026-08-19. **It never
   reports zero.** The excess is forward citations to files this plan's own tasks
-  create. **It rises when a task cites what it is about to build and falls when
-  the file appears.** Treat it as a direction, not a target. Two earlier sessions
-  got this wrong by reading the docstring instead of running the tool, and a
-  third quoted a stale number from this very file.
+  create — `plan.md`'s register cites `src/ilirium_llm_router/corpus.py` and
+  `dictionary.py`, and **Tasks 8 and 14 resolve them.** **One of the 86 is this
+  file**, four lines above, for the same reason — so do not go hunting for it.
+  **It rises when a task cites what it is about to build and falls when the file
+  appears.** Treat it as a direction, not a target. Two earlier sessions got
+  this wrong by reading the docstring instead of running the tool, and a third
+  quoted a stale number from this very file.
 
 What to distrust:
 
@@ -73,11 +82,18 @@ What to distrust:
   `zstandard` must run under `uv run python`, or it fails looking like a missing
   dependency rather than the wrong interpreter. *(`docs/procedures/event-loop-lag/cpu_offload.py`
   is the one exception and says so — it is stdlib-only and wants 3.14.)*
-- **`13.65x` is no longer reproducible, and this is the trap of the day.**
-  `train_dictionary` takes a `level` that changes which dictionary you get, and
-  `zstandard` defaults it to **3**; Task 6 produced 13.65x by passing **19**. The
-  trainer now trains **and** scores at **`TRAIN_LEVEL = 9`**, the write-path
-  level. **Task 15 records the level-9 ratio it actually gets.**
+- **There are three compression levels, not one, and conflating them is the trap
+  of the day.** **Archiving** and **scoring a candidate dictionary against the
+  incumbent** both read `corpus.compress_level_zstd` (9). **Training** uses
+  `TRAIN_LEVEL`, which is **3**. Measured 2026-08-19: training levels 3 to 19
+  move the held-out ratio by **0.03%**, so it is not a parameter — but it *does*
+  change the dictionary bytes, and **every level yields the same dictID**, so
+  never let the training level become configurable without reading that finding
+  in `notes.md` first.
+- **`13.65x` is not reproducible** — Task 6 produced it at **write** level 19.
+  The level-9 figure is **12.920x**, measured 2026-08-19 on the provisional
+  `maxdict`/`k`. **Task 15 still records its own**, and if it lands far from
+  12.9x something is wrong.
 - **Phase 9's `12.10x` remains the milestone's figure and remains optimistic** —
   three biases flatter it and the slice note in `docs/reference/measurements.md`
   says which. It was also trained on **48 bodies of which 26 are distinct**;
@@ -91,6 +107,9 @@ What to distrust:
   training window widens until two sessions are present.
 - **A trained dictionary is as uncommittable as the bodies.** Stage with
   explicit paths, never `git add -A`.
+- **Check a number against the phase's `evidence/` before believing the prose.**
+  The plan's drain-timeout estimate was out by ~70x against a measurement frozen
+  in its own folder, and two forward reviews inherited it.
 
 Read before writing the relevant code, not after:
 
