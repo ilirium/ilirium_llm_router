@@ -32,11 +32,16 @@ asserted here rather than assumed — see `_build_compressor`.
 
 from __future__ import annotations
 
+import csv
 import hashlib
+import io
 import logging
 import os
+import queue
+import threading
+import time
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
@@ -44,6 +49,7 @@ import zstandard
 
 from .logging_setup import get_logger
 from .stats import COLUMNS as STATS_COLUMNS
+from .stats import CallRecord
 
 INDEX_SCHEMA_VERSION = 1
 """Written into each day's `manifest`. Bumped when the index's columns change meaning."""
@@ -75,6 +81,43 @@ FRAME_HEADER_BYTES = 18
 
 Direction = Literal["requests", "responses"]
 
+DRAIN_TIMEOUT_S = 5.0
+"""How long `close()` waits for the worker to finish the queue.
+
+**From measurement, not from an estimate.** Task 6 timed the whole store path -- sha256, compress,
+write, fsync, rename -- at **0.433 ms** per body, so a full 64 MiB queue of median bodies drains in
+**0.28 s**, or **1.4 s** if every stage hits its p95 at once. Five seconds is ~3.5x that worst case,
+which leaves the timeout bounding a hang rather than routinely cutting a drain short.
+
+A timeout at all, rather than an unbounded wait, because **a router that will not stop is worse than
+a corpus missing its last few bodies** -- and whatever is abandoned is counted and named in the
+final summary, so the hole is recorded here exactly as it is anywhere else.
+"""
+
+SUMMARY_EVERY = 500
+"""How often `submit()` emits the INFO summary, in **calls**.
+
+Emitted from **submit** rather than from the worker on purpose: a worker that has stalled emits
+nothing, and a stalled worker is exactly when the line is wanted. Submits keep happening and carry
+the growing `pending` with them. No timer, so an idle router says nothing, which is correct.
+"""
+
+DROPPED = "dropped"
+"""The queue was over its byte bound when this call was recorded."""
+
+TOO_LARGE = "too_large"
+"""One body over `body_max_bytes`. The bytes were discarded, not truncated -- a prefix labelled as a
+whole body is worse than a hole."""
+
+ABSENT = "absent"
+"""**The router authored this body** -- the 400 for a missing model, the 502 for an unreachable
+backend, the injected SSE error event. The milestone's claim is every body it *carries*, and these
+are ours. `error_status` in the same row already says why."""
+
+STORE_ERROR = "error"
+"""Compression or the write itself failed in the worker. Without this the one case where the store
+broke is the one case the index cannot describe."""
+
 NO_DICTIONARY = "none"
 """What the index records when a body was stored with no dictionary at all.
 
@@ -104,6 +147,10 @@ class Stored:
     dict_id: str
     """The dictionary the frame names: 8 lowercase hex, or `none` if it was stored undicted."""
 
+    compressed: int
+    """The blob's size on disk. Counted on a dedup hit too, so the summary's plaintext → compressed
+    pair describes the bodies recorded rather than only the bytes newly written."""
+
 
 @dataclass
 class _Dictionary:
@@ -123,11 +170,47 @@ class _Dictionary:
 
 
 @dataclass
+class _Item:
+    """One call on its way to the worker.
+
+    **`submitted_at` and `pending_at_submit` are carried rather than read in the worker**, and that
+    is the whole reason this is a record instead of a tuple of bodies. Both are values only
+    `submit()` can see: by the time the worker runs, `_pending` has moved on, so a depth read there
+    would be near zero at this load and therefore **indistinguishable from working**.
+    """
+
+    record: CallRecord
+    request: bytes | None
+    response: bytes | None
+    submitted_at: float
+    pending_at_submit: int
+    request_note: str | None = None
+    """A sentinel word if the body is not going to be stored, else `None`."""
+    response_note: str | None = None
+
+
+@dataclass
+class _Totals:
+    """What the summary line reports. Guarded by the same lock as `_pending`."""
+
+    calls: int = 0
+    stored: int = 0
+    plaintext: int = 0
+    compressed: int = 0
+    dropped: int = 0
+    too_large: int = 0
+    errors: int = 0
+    pending_peak: int = 0
+    queue_ms_max: int = 0
+
+
+@dataclass
 class _Day:
     """One open day folder, and what this process has already done to it."""
 
     root: Path
     dictionaries: set[str]
+    index: _DayIndex | None = field(default=None)
     """Names already copied into `<day>/dicts/`. A set because the copy is a **per-write
     precondition**, not a per-swap step: one worker can be writing into two day folders across a
     rollover while holding one compressor, so "the dictionary is in the folder" is checked for every
@@ -144,13 +227,36 @@ class CorpusWriter:
     and Task 12 is where the app passes `config.corpus` in.
     """
 
-    def __init__(self, directory: Path, compress_level: int) -> None:
+    def __init__(
+        self,
+        directory: Path,
+        compress_level: int,
+        body_max_bytes: int,
+        queue_max_bytes: int,
+    ) -> None:
         self._dir = Path(directory)
         self._level = compress_level
+        self._body_max_bytes = body_max_bytes
+        self._queue_max_bytes = queue_max_bytes
         self._logger = get_logger()
         self._days: dict[str, _Day] = {}
         self._undicted = zstandard.ZstdCompressor(level=compress_level)
         self._dictionary = self._load_newest_dictionary()
+
+        # The queue is unbounded and the bound lives beside it, because the bound is in **bytes**
+        # and no standard queue offers that. `queue.Queue(maxsize=N)` counts items, and bodies here
+        # run from 2 KB to 200 KB -- so 1,000 waiting items is anywhere between 2 MB and 200 MB.
+        # SimpleQueue carries none of the machinery this does not use: no maxsize, no task_done,
+        # no join. `asyncio.Queue` is the tempting mistake and is **not thread-safe**: the producer
+        # is the event loop and the consumer is this thread, which makes it a data race.
+        self._queue: queue.SimpleQueue[_Item | None] = queue.SimpleQueue()
+        self._lock = threading.Lock()
+        self._pending = 0
+        self._totals = _Totals()
+        self._warned = False
+        self._abandoned = 0
+        self._worker = threading.Thread(target=self._run, name="corpus-worker", daemon=True)
+        self._worker.start()
 
     @property
     def directory(self) -> Path:
@@ -192,19 +298,218 @@ class CorpusWriter:
             # get a row claiming B for a file that names A -- and telling which bodies used which
             # dictionary is the entire reason this column exists. Measured wrong before it was
             # fixed; the first test missed it because two dictionaries shared a dictID.
-            return Stored(digest, _dict_id_of(destination))
+            return Stored(digest, _dict_id_of(destination), destination.stat().st_size)
 
         blob = self._compressor().compress(plaintext)
         destination.parent.mkdir(parents=True, exist_ok=True)
         _write_atomically(blob, destination, day.root / "incoming")
-        return Stored(digest, self._recorded_dict_id())
+        return Stored(digest, self._recorded_dict_id(), len(blob))
 
     # -- reading back --------------------------------------------------------------------------
 
 
+    def submit(
+        self,
+        record: CallRecord,
+        request_body: bytes | None,
+        response_body: bytes | None,
+        response_over_cap: bool = False,
+    ) -> None:
+        """Hand one call to the worker. **Runs on the event loop and must not block or raise.**
+
+        Everything expensive -- hashing, compression, `fsync`, rename, the index row -- happens in
+        the worker. What happens here is a lock, an integer compare and a `put`, which is
+        microseconds, and the lock is never held across I/O.
+
+        **A full queue still records the hole.** When the bodies would push `_pending` past the byte
+        bound, the record is enqueued anyway with both ref cells reading `dropped` -- a record-only
+        item is a few hundred bytes and is never refused. So `EPD-003`'s *"drop the body and record
+        that it was dropped"* is literally true rather than approximately: **the hole is a row, not
+        an absence.**
+
+        `None` for a body means the router authored it, which the index records as `absent`.
+        """
+        try:
+            self._submit(record, request_body, response_body, response_over_cap)
+        except Exception as exc:  # noqa: BLE001 — telemetry must never break a call
+            self._logger.warning(
+                "Corpus: could not queue a call: %s: %s", type(exc).__name__, exc
+            )
+
+    def _submit(
+        self,
+        record: CallRecord,
+        request_body: bytes | None,
+        response_body: bytes | None,
+        response_over_cap: bool,
+    ) -> None:
+        request, request_note = self._admit(request_body, over_cap=False)
+        response, response_note = self._admit(response_body, over_cap=response_over_cap)
+        size = len(request or b"") + len(response or b"")
+
+        with self._lock:
+            self._totals.calls += 1
+            if self._pending + size > self._queue_max_bytes and size:
+                # Over the bound. The body is not stored and the request path does not wait --
+                # waiting is the one outcome EPD-003 rules out.
+                request = response = None
+                request_note = response_note = DROPPED
+                self._totals.dropped += 1
+                dropped_now, pending = True, self._pending
+            else:
+                self._pending += size
+                dropped_now, pending = False, self._pending
+            self._totals.pending_peak = max(self._totals.pending_peak, pending)
+            for note in (request_note, response_note):
+                if note == TOO_LARGE:
+                    self._totals.too_large += 1
+            calls, warned = self._totals.calls, self._warned
+            if dropped_now and not warned:
+                self._warned = True
+
+        if dropped_now and not warned:
+            # Once per run, then suppressed and counted. Warning on every drop turns overload into
+            # log spam, which is the moment the log most needs to stay readable.
+            self._logger.warning(
+                "Corpus: dropping bodies, the queue is at its %d-byte bound (%d pending). "
+                "This is counted from here on and reported in the summary.",
+                self._queue_max_bytes,
+                pending,
+            )
+
+        self._queue.put(
+            _Item(
+                record=record,
+                request=request,
+                response=response,
+                submitted_at=time.monotonic(),
+                pending_at_submit=pending,
+                request_note=request_note,
+                response_note=response_note,
+            )
+        )
+        if calls % SUMMARY_EVERY == 0:
+            self._logger.info("%s", self.summary())
+
+    def _admit(self, body: bytes | None, over_cap: bool) -> tuple[bytes | None, str | None]:
+        """Decide whether one body is stored at all, and why not if it is not."""
+        if over_cap:
+            return None, TOO_LARGE
+        if body is None:
+            return None, ABSENT
+        if len(body) > self._body_max_bytes:
+            # Drop, do not store a prefix: a prefix labelled as a whole body is worse than a hole.
+            return None, TOO_LARGE
+        return body, None
+
+    def summary(self) -> str:
+        """The one line that answers *did this ever come close?*"""
+        with self._lock:
+            totals, pending = self._totals, self._pending
+            return (
+                f"corpus: {totals.calls} calls | stored {totals.stored} "
+                f"({totals.plaintext} → {totals.compressed} bytes), "
+                f"dropped {totals.dropped}, too_large {totals.too_large}, "
+                f"error {totals.errors} | pending {pending}, peak {totals.pending_peak}, "
+                f"queue_ms max {totals.queue_ms_max}"
+                + (f", abandoned {self._abandoned}" if self._abandoned else "")
+            )
+
     def close(self) -> None:
-        """Nothing to flush: every blob is already `fsync`ed and renamed by the time `store`
-        returns. Present so the app can own this the way it owns `StatsWriter`."""
+        """Stop the worker, giving it `DRAIN_TIMEOUT_S` to finish what it is holding.
+
+        A sentinel rather than a kill, and a timeout rather than an unbounded wait. **Anything
+        abandoned is counted and named in the final line**, so the hole is recorded here exactly as
+        it is anywhere else.
+        """
+        self._queue.put(None)
+        self._worker.join(timeout=DRAIN_TIMEOUT_S)
+        if self._worker.is_alive():
+            with self._lock:
+                self._abandoned = self._queue.qsize()
+            self._logger.warning(
+                "Corpus: worker did not finish within %.1fs; %d item(s) abandoned.",
+                DRAIN_TIMEOUT_S,
+                self._abandoned,
+            )
+        for day in self._days.values():
+            if day.index is not None:
+                day.index.close()
+        self._logger.info("%s", self.summary())
+
+    # -- the worker ----------------------------------------------------------------------------
+
+    def _run(self) -> None:
+        """The worker loop. One body at a time, off the event loop, and it never lets an exception
+        end it -- a thread that dies silently is a corpus that stops filling with nothing to say so.
+        """
+        while True:
+            item = self._queue.get()
+            if item is None:
+                return
+            try:
+                self._process(item)
+            except Exception as exc:  # noqa: BLE001 — one bad call must not stop the next
+                self._logger.warning(
+                    "Corpus: could not record a call: %s: %s", type(exc).__name__, exc
+                )
+            finally:
+                with self._lock:
+                    self._pending -= len(item.request or b"") + len(item.response or b"")
+
+    def _process(self, item: _Item) -> None:
+        queue_ms = int((time.monotonic() - item.submitted_at) * 1000)
+        started = time.monotonic()
+        stored_any = False
+        refs: list[str] = []
+        dict_id = ""
+
+        for body, note, direction in (
+            (item.request, item.request_note, "requests"),
+            (item.response, item.response_note, "responses"),
+        ):
+            if note is not None:
+                refs.append(note)
+                continue
+            try:
+                stored = self.store(item.record.timestamp, direction, body or b"")
+            except Exception as exc:  # noqa: BLE001 — the row must still say what happened
+                self._logger.warning(
+                    "Corpus: could not store a %s body: %s: %s", direction, type(exc).__name__, exc
+                )
+                refs.append(STORE_ERROR)
+                with self._lock:
+                    self._totals.errors += 1
+                continue
+            refs.append(stored.digest)
+            stored_any = True
+            if direction == "requests":
+                dict_id = stored.dict_id
+            with self._lock:
+                self._totals.stored += 1
+                self._totals.plaintext += len(body or b"")
+                self._totals.compressed += stored.compressed
+
+        store_ms = int((time.monotonic() - started) * 1000) if stored_any else None
+        with self._lock:
+            self._totals.queue_ms_max = max(self._totals.queue_ms_max, queue_ms)
+
+        day = self._open_day(item.record.timestamp[:10])
+        if day.index is None:
+            day.index = _DayIndex(day.root / "index.csv")
+        day.index.append(
+            item.record.cells()
+            + [
+                refs[0],
+                refs[1],
+                str(queue_ms),
+                # An absent value is an empty cell, never a zero -- an absent count and a genuine
+                # zero are different facts, and a body that was not stored took no time to store.
+                "" if store_ms is None else str(store_ms),
+                str(item.pending_at_submit),
+                dict_id,
+            ]
+        )
 
     # -- days ---------------------------------------------------------------------------------
 
@@ -267,6 +572,51 @@ class CorpusWriter:
 
     def _recorded_dict_id(self) -> str:
         return self._dictionary.hex_id if self._dictionary else NO_DICTIONARY
+
+
+class _DayIndex:
+    """`<day>/index.csv` — one row per call, header re-emitted in every day file.
+
+    **The header is in every file on purpose.** A day folder has to be readable on its own, and a
+    headerless block of values is the kind of file that gets thrown away. It is the same rule
+    `stats.py` applies to a rotated segment, for the same reason.
+
+    Opened lazily and kept open: the worker appends to one file for a whole day, and reopening per
+    row would be a syscall per body for nothing.
+    """
+
+    def __init__(self, path: Path) -> None:
+        self._path = path
+        existed = path.exists() and path.stat().st_size > 0
+        # The handle deliberately outlives this call: one file is appended to for a whole day and
+        # `close()` owns it. A context manager here would reopen per row, which is a syscall per
+        # body for nothing. `stats.py` keeps its handle open for the same reason.
+        self._handle = open(path, "a", encoding="utf-8", newline="")  # noqa: SIM115
+        if not existed:
+            self._handle.write(_render_row(list(INDEX_COLUMNS)))
+            self._handle.flush()
+
+    def append(self, cells: list[str]) -> None:
+        self._handle.write(_render_row(cells))
+        self._handle.flush()
+
+    def close(self) -> None:
+        self._handle.close()
+
+
+def _render_row(cells: list[str]) -> str:
+    """One CSV line, quoted and escaped by `csv` rather than by hand.
+
+    `error_message` is free text copied from a backend, so a stray comma or quote in it would
+    otherwise shift every column after it.
+
+    **Deliberately not `stats.py`'s `_render`.** That function is private to a module this phase
+    does not otherwise touch, and `calls.csv` not changing is a milestone non-goal — four lines here
+    is a cheaper price than reaching across for them.
+    """
+    buffer = io.StringIO()
+    csv.writer(buffer, lineterminator="\r\n").writerow(cells)
+    return buffer.getvalue()
 
 
 def _dict_id_of(blob: Path) -> str:

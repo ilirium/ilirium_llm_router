@@ -2190,6 +2190,60 @@ bodies) were both offered and declined.
 names rather than carrying a hand-typed 26, and `CorpusWriter` keeps plain arguments until Task 11
 builds the block it would otherwise have had to build early.
 
+## Tasks 9 and 10 — the queue, the worker and the day index — 2026-08-19
+
+**They landed in one commit, and that is a judgement call worth stating.** Task 9 builds the queue
+and the worker; Task 10 builds the index the worker writes rows into. **Split, Task 9 would commit a
+worker that computes a row and discards it** — a state with no test that could pass and nothing to
+show. The plan's ordering is unchanged and both tasks' contents are exactly as written.
+
+### What is in it
+
+`queue.SimpleQueue` with the byte accounting beside it, a `threading.Lock` guarding `_pending` only,
+a daemon worker thread, the drop policy, the once-per-run `WARNING`, the summary line, the timed
+drain, and `<day>/index.csv` with its header re-emitted per day file.
+
+**Why `SimpleQueue` and not the two obvious alternatives** is in `../../wiki/background-work-in-fastapi.md`,
+read before any of this was written as the plan requires: `asyncio.Queue` is **not thread-safe** and
+is the matching trap, and `queue.Queue(maxsize=N)` bounds **items**, which is not bounding memory when
+bodies run from 2 KB to 200 KB.
+
+### Driven, and what it showed
+
+| Driven | Result |
+|---|---|
+| 20 real calls, both bodies each | 20 rows, 40 blobs, **header identical to `INDEX_COLUMNS`**, first twenty columns in `calls.csv`'s order |
+| Router-authored bodies | `absent` / `absent`, `store_ms` **empty**, `request_dict_id` **empty** |
+| A request over `body_max_bytes` | `too_large` on the request, the response still stored |
+| A response stopped at the cap | `too_large` on the response, the request still stored |
+| **`queue_max_bytes` forced to 1** | **5 calls, 5 rows, 0 blobs, every ref `dropped`** — the hole is a row, not an absence |
+| A malformed timestamp | `submit` returned normally, the worker logged, the good day was still written |
+
+**`store_ms` is empty and never `0` on a row where nothing was stored**, which is
+`../../reference/observability.md`'s rule and the reason the field is `int | None` rather than `int`.
+
+### One defect the drive found and reading would not have
+
+**The summary line reported `→ 0 bytes`.** `_totals.compressed` was declared and never incremented,
+so every run would have printed a compression ratio of infinity. It is the kind of thing a green test
+suite says nothing about, because there was no test — and it was visible the moment a real summary was
+printed.
+
+**Fixed by giving `Stored` a `compressed` field**, taken from the blob's length when it is written and
+from `stat()` on a dedup hit — so the plaintext→compressed pair describes **the bodies recorded**
+rather than only the bytes newly written, which is the reading that makes the ratio meaningful.
+
+*After the fix: `20 calls | stored 40 (2,346,225 → 168,929 bytes)`. **That is not a quotable ratio** —
+it mixes both directions against a request-trained dictionary. Task 15's is still the number.*
+
+### One thing checked and found already right
+
+**`queue_bytes` reads `0` on the forced-drop rows, and that is correct rather than a bug.** The bound
+was set to 1 byte, so a 103 KB body is refused while `_pending` genuinely is zero — the column records
+depth **at submit**, which is what makes it show pressure building before anything is dropped. Read in
+the worker instead it would be near zero at any real load and therefore indistinguishable from
+working, which is why it is carried on the item.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*
