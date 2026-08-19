@@ -2133,6 +2133,63 @@ them; no register value moved.**
 block**, and it runs after this one. Taking primitives now keeps the task boundary honest;
 **completing the mirror is a one-line change at Task 11 or 12** and is noted in the class docstring.
 
+## The dedup defect, and three decisions the owner made on it — 2026-08-19
+
+**Task 8 shipped with a real defect and an owner pass caught three open questions with it.** The
+defect is worth the space because of *how* it was found and *how it nearly was not*.
+
+### What was wrong
+
+**On a repeat body, the index would have named the wrong dictionary.** The store writes one blob per
+distinct body, so a repeat writes no file — but it still writes an index row. That row took its
+`request_dict_id` from **the compressor currently loaded**, not from the blob on disk. With automatic
+retraining installing a dictionary mid-day, a body first stored at 10:00 against **A** and seen again
+at 15:00 under **B** gets a row claiming **B** for a file that names **A**.
+
+**Column 26 exists for precisely this question** — `plan.md`: *"it exists because a mid-day swap made
+the question routine."* So the defect was in the one column added to answer it.
+
+### The first test said it was fine, and the reason is this morning's finding
+
+**Measured with two of Phase 9's dictionaries, the check passed** — both recorded `00000001`, agreeing
+with the disk. **They agreed because `zstd --train` stamps dictID 1 on everything**, which is the
+collision Task 7 found hours earlier. **The instrument was wrong, not the code.** Re-run with two
+dictionaries re-stamped to `aaaaaaaa` and `bbbbbbbb`, the disagreement was immediate.
+
+*This is `CLAUDE.md`'s working agreement almost verbatim — **when a check comes back negative, fix the
+instrument before believing the result** — arriving from the other direction: a check came back
+**positive** and the instrument was what made it so.*
+
+### The fix, and what it was chosen over
+
+**Read the dictID out of the stored blob's own header.** A zstd frame header is at most 18 bytes, so
+it is one short read, on repeat bodies only, and it never decompresses anything.
+
+**Verified on four cases, two of which the rejected options get wrong:**
+
+| Case | Result |
+|---|---|
+| Repeat after a mid-day swap | Row says `aaaaaaaa`, file says `aaaaaaaa` |
+| Repeat after a **restart** | Still correct — an in-memory map would have been empty |
+| Repeat with **no dictionary** | `none`, not `00000000` — 0 is a real dictID |
+| The same body on the **next day** | A fresh store in the new day folder, not a dedup hit |
+
+**Rejected:** a digest→dictID map in memory (lost on restart, grows per distinct body), redefining the
+column to mean *the dictionary loaded at record time* (that is the case it was added for), and an
+empty cell on repeats (the corpus is mostly repeats — 46% of Phase 9's were retries).
+
+### The other two decisions
+
+**The `write_dict_id` check refuses to start.** Confirmed by the owner rather than left as this
+session's choice. *"Telemetry must never break a call"* governs the request path and construction is
+not a call; a store quietly writing unreadable blobs is worse than one that stops. Starting undicted
+(readable but ~3.2x, reported only in the log) and starting with the corpus off (louder, but loses
+bodies) were both offered and declined.
+
+**Task 8's two scope stretches stand**, both on the drift argument: the `manifest` counts real column
+names rather than carrying a hand-typed 26, and `CorpusWriter` keeps plain arguments until Task 11
+builds the block it would otherwise have had to build early.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*

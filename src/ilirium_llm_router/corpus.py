@@ -68,6 +68,11 @@ and a day index can feed one spreadsheet."""
 # direction off the pathological single-huge-directory case without inventing a deeper tree.
 FANOUT = 2
 
+# A zstd frame header is at most 18 bytes -- magic, the descriptor, the window byte, the dictionary
+# ID and the content size. Reading that much is enough to ask a stored blob which dictionary it
+# names, without decompressing it or even reading the rest of the file.
+FRAME_HEADER_BYTES = 18
+
 Direction = Literal["requests", "responses"]
 
 NO_DICTIONARY = "none"
@@ -180,12 +185,22 @@ class CorpusWriter:
         if destination.exists():
             # Dedup, scoped to this day. The same body sent eleven times in four minutes is one
             # blob and eleven index rows: the bytes collapse, the multiplicity does not.
-            return Stored(digest, self._recorded_dict_id())
+            #
+            # The dictID is read back off the blob rather than taken from the compressor, and that
+            # is not fussiness. A dictionary can be installed mid-day, so a body first stored at
+            # 10:00 against dictionary A and seen again at 15:00 under dictionary B would otherwise
+            # get a row claiming B for a file that names A -- and telling which bodies used which
+            # dictionary is the entire reason this column exists. Measured wrong before it was
+            # fixed; the first test missed it because two dictionaries shared a dictID.
+            return Stored(digest, _dict_id_of(destination))
 
         blob = self._compressor().compress(plaintext)
         destination.parent.mkdir(parents=True, exist_ok=True)
         _write_atomically(blob, destination, day.root / "incoming")
         return Stored(digest, self._recorded_dict_id())
+
+    # -- reading back --------------------------------------------------------------------------
+
 
     def close(self) -> None:
         """Nothing to flush: every blob is already `fsync`ed and renamed by the time `store`
@@ -252,6 +267,24 @@ class CorpusWriter:
 
     def _recorded_dict_id(self) -> str:
         return self._dictionary.hex_id if self._dictionary else NO_DICTIONARY
+
+
+def _dict_id_of(blob: Path) -> str:
+    """Which dictionary a stored blob actually names, read from its own header.
+
+    The header is self-describing and tiny, so this costs one short read rather than a
+    decompression. A frame stored with no dictionary reports 0, which becomes the word `none` --
+    `docs/reference/observability.md` forbids writing that 0 into a cell, since 0 is also a real
+    dictID.
+
+    A blob whose header will not parse raises, and that is deliberate: the store `fsync`ed this
+    file itself, so an unparseable header means the filesystem damaged it. Task 9's worker turns
+    that into a recorded failure rather than a silent one.
+    """
+    with open(blob, "rb") as handle:
+        header = handle.read(FRAME_HEADER_BYTES)
+    dict_id = zstandard.get_frame_parameters(header).dict_id
+    return f"{dict_id:08x}" if dict_id else NO_DICTIONARY
 
 
 def _build_compressor(
