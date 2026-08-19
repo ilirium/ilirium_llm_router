@@ -296,8 +296,10 @@ is the whole test. A rule you would look up before acting belongs here instead.
 ## Where the harness configuration lives
 
 **`method/IDM-002-harness-configuration.md`** holds all of it, and is canonical. **Open it before adding
-a permission, before reaching for `/fewer-permission-prompts`, or before deciding that an entry looks
-like a fossil.** The allowlist is split the way the documents are — a tracked `.claude/settings.json`
+a permission, before reaching for `/fewer-permission-prompts`, before deciding that an entry looks
+like a fossil, or before putting anything in the tracked file that is *not* a permission** — the last
+of those is new on 2026-08-19, when an `attribution` block joined it and the admission test turned out
+not to govern it. The allowlist is split the way the documents are — a tracked `.claude/settings.json`
 for durable project policy, an untracked `.claude/settings.local.json` for machine accretion, pruned
 periodically — and `IDM-002` carries the admission test that decides which is which, the exact-match
 `.env` deny and its `.env.example` trap, and why none of it reopens `epd/EPD-004`'s decision 19.

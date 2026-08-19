@@ -1,7 +1,11 @@
-# IDM-002 — Harness configuration: the permission allowlist
+# IDM-002 — Harness configuration: the permission allowlist, and what else is tracked
 
 **In force 2026-08-17.** The one home for what goes in `.claude/settings.json`, what stays in
 `.claude/settings.local.json`, and why. Built in Phase 8 from `EPD-004` decision 17.
+
+*Extended 2026-08-19: the tracked file gained an `attribution` block, the first entry in it that is
+**not a permission**. The admission test is unchanged and still sorts permissions; the new section near
+the end says what sorts everything else.*
 
 ---
 
@@ -136,6 +140,54 @@ Named so that keeping them is a decision rather than an oversight:
 |---|---|
 | `Bash(curl *)` | arbitrary outbound network. **Kept:** it is how probes get written, and removing it buys a prompt on every one-off |
 | `Bash(git checkout *)` | mostly branch switching, which this workflow does constantly. **Kept.** The destructive form is `git checkout -- <path>`, which discards uncommitted work |
+
+## The tracked half is no longer only permissions — 2026-08-19
+
+**Added on the owner's decision.** `.claude/settings.json` now carries an `attribution` block beside
+`permissions`:
+
+```json
+"attribution": { "sessionUrl": false }
+```
+
+**What it does.** Claude Code appends a `Claude-Session: https://claude.ai/code/session_…` git trailer
+to commits it creates. `sessionUrl` is a boolean, default `true`, **added in Claude Code v2.1.183**;
+setting it `false` omits the link. **`attribution.commit` is a different key and is deliberately not
+set** — that one governs the `Co-Authored-By:` trailer, which **169 of this repository's 201 commits
+carry** and which is kept.
+
+**It is not in the published settings documentation.** There is an open documentation issue about the
+omission. The setting is real and shipped; the docs page simply does not list it, which is worth
+knowing before somebody concludes it was invented.
+
+### Why it is tracked, when the admission test says otherwise
+
+**The test above answers no.** *Is this derivable from `config.yaml`, the `Makefile`, or
+`pyproject.toml`?* It is not — so by the letter of that test this is machine accretion and belongs in
+the local file.
+
+**The test was written for permission entries and this is not one.** Every entry it was built to sort
+grants or refuses a command on one laptop; this one decides **what is written into this repository's
+permanent history**, which is not a property of a laptop at all. Git history cannot be edited
+afterwards — this project has already paid for that twice, once in four commit messages carrying
+superseded task numbers, and once on 2026-08-19 when four commits had to be rewritten to remove this
+very trailer.
+
+**So the split's own principle decides it, and it decides it the other way from the test:** *a tracked
+file says this is how the project works, which is knowledge belonging to the project rather than to one
+laptop.* A rule about what may enter the project's history is exactly that.
+
+**The admission test is unchanged and still governs the allowlist.** What is added is a boundary it
+never had: **it sorts permissions, and a setting that is not a permission is sorted by the split's
+principle instead.** Anything landing in the tracked file that is neither is expected to say why, here,
+in the same shape as this section.
+
+### What this costs
+
+**Two files can now disagree in a way the entry-intersection check cannot see.** That check reads
+permission strings; a scalar under `attribution` in `settings.local.json` would silently win or lose by
+precedence and intersect nothing. **Nothing sets one today**, and if anything ever does, this is the
+paragraph that says the check does not cover it.
 
 ## Two harness tools, and which file each belongs to
 
