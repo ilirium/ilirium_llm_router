@@ -1884,6 +1884,118 @@ at the ceiling"*, which the ref cell has to report as `too_large`. That is **`re
 first. **The rename was free**: Task 11 has not run, no `config.yaml` carries the key, nothing reads
 it. `compress_level_zstd` stays outside the shape because it is not a size.
 
+## Task 7 — the smoke test, and what a dictID is not — 2026-08-19
+
+**The task as written is one sentence — *"the smoke test only, that a dicted frame round-trips
+byte-identically"* — and it passed on the first run.** 40 bodies from `run-03`, both directions,
+compressed at `compress_level_zstd`'s default of **9** against `heldout-262144.dict` and decompressed
+back: **zero mismatches**, and the sha256 of every round-tripped body equal to the sha256 of the
+original, which is the property content addressing rests on. The undicted path round-trips too, which
+is the one Group C actually ships on, since `<dir>/dicts/` is empty until Task 15.
+
+**Frozen into `evidence/smoke.py` and `evidence/smoke.txt`**, per `../../README.md`'s rule that the
+results a claim rests on live in the phase's `evidence/`. **It is deliberately not in
+`docs/procedures/`**: it is a one-shot gate rather than a re-runnable check, and Tasks 13 and 14f take
+over every assertion in it as a real test against real code. `evidence/README.md` says so.
+
+**Nothing was captured and nothing ran but the check.** No router, no session, no network call — the
+scope the opening interview settled, and the same footing Task 6 had.
+
+**One number in that output is not a ratio anybody should quote.** The `10.732x` is over both
+directions mixed, and responses are not what the dictionary was trained on. **The comparable figure is
+still Task 15's to record**, and `plan.md` expects it near **12.920x**.
+
+### Two things it confirmed that Task 8 was going to have to assume
+
+**1 · The `write_dict_id` trap is real, on the backend that is actually running.** `plan.md`'s Task 8
+requires it *"asserted rather than assumed"*, and the citation behind that requirement is
+`backend_cffi.py:414` — which `../../wiki/zstandard-and-libzstd.md` warns is **the backend we are
+not on**. Measured here on `cext`: a compressor built through
+`ZstdCompressionParameters.from_level(9)` writes frames with **dictID 0** while holding a dictionary,
+`from_level(9, write_dict_id=1)` restores it, and the plain `ZstdCompressor(level=, dict_data=)` path
+is safe. **So the trap survives the backend difference** and Task 8's assertion is worth its line.
+
+**2 · A dicted frame decompressed without its dictionary raises** — `Dictionary mismatch` — rather
+than returning wrong bytes. Task 13a's reader gets a loud failure, not a silent one.
+
+### What a dictID identifies, which is less than the design has been assuming
+
+**This is the finding, and it was not on anybody's list.** `plan.md`'s register puts the dictID in
+every dictionary filename and Task 13a's reader *"find[s] the dictionary by the frame's own dictID"*.
+**Three measurements say a dictID is not a unique key.**
+
+| Measured | Result |
+|---|---|
+| Phase 9's **eight** frozen dictionaries, all from `zstd --train` | **Six distinct files. One dictID — `1` — on all eight** |
+| `zstandard.train_dictionary(dict_id=0)`, three runs, identical input | **Identical dictID every time.** It is *not* random per call |
+| The same samples trained at levels **3, 9, 19** | **One dictID, three different files** |
+
+**The last row is `plan.md`'s own stated hazard, reproduced independently** — the plan asserts that
+every training level yields one dictID, and that is why `TRAIN_LEVEL` is a fixed constant rather than
+bound to `compress_level_zstd`. **It reproduces exactly**, on the library's trainer, on this machine.
+
+**What the plan does not say is what happens next, and that is worth having.** A blob compressed
+against the level-19 dictionary and decompressed against the level-3 one — matching dictID, different
+bytes — **raises `Data corruption detected`**. It does **not** return plausible wrong bytes. So the
+hazard's consequence is *a day folder that will not read back*, loudly, rather than a corpus that
+quietly lies. **That makes the fixed `TRAIN_LEVEL` decision better-founded than the argument given for
+it**, and it is the second independent reason the reader is safe.
+
+**And the `zstd --train` row is the sharper one, because it is not hypothetical.** Anything trained by
+the CLI carries dictID 1. Phase 9's eight all do. **If two of them ever sat in one day's `dicts/`, a
+reader keying on dictID alone could not tell them apart** — it would pick one and get
+`Dictionary mismatch` or `Data corruption detected`. Nothing in Phase 10 installs a CLI-trained
+dictionary, so this is latent rather than live; **it is written down because the layout invites it**,
+a day folder being a plain directory somebody can drop a file into.
+
+### What this changes, and it is small
+
+**No decision moves and no register value moves.** What it adds is a constraint on how Task 13a is
+built, and it should be built that way rather than discovered later:
+
+- **The dictID is a lookup hint, not a key.** Where a day's `dicts/` holds more than one file whose
+  name carries the frame's dictID, the reader **tries each and keeps the one that verifies**, rather
+  than picking the first. It has a free oracle: the blob's filename **is** the sha256 of the
+  plaintext, so a wrong dictionary either raises or produces bytes whose digest does not match.
+- **Both failure modes are loud**, measured above, so this is a correctness nicety rather than a
+  silent-corruption risk. It costs a `for` loop over a list that is almost always length one.
+
+*Task 8 is unaffected — it writes one dictionary per day copy and asserts `write_dict_id`.*
+
+### A correction to the wiki, which is what `../../README.md` asks for
+
+`../../wiki/zstandard-and-libzstd.md` said `dict_id` *"defaults to `0`, which means a **random** ID"*,
+sourced from the CFFI docstring — **the backend that is not running**, which is a trap that same page
+names. **Measured on `cext`: identical training input gives an identical dictID, three runs running.**
+The correction goes to the page that owns the fact, and this section is the measurement behind it,
+per `../../README.md`: *the measurement goes in the phase note that made it; the correction goes to
+the reference file that owns the fact.*
+
+**Stated as what was measured, not as a mechanism.** Whether libzstd hashes the dictionary content or
+seeds a PRNG from it was not established here and does not need to be — what the design needs is that
+the ID is **determined by the training input and does not cover the entropy tables the level layers on
+top**, which is exactly the three-files-one-ID result.
+
+### One thing noticed in passing
+
+**Two of Phase 9's eight dictionaries are byte-identical to two others** — `heldout-524288.dict` to
+`heldout-1048576.dict`, and `self-524288.dict` to `self-1048576.dict`. Eight files, **six distinct**.
+The `--maxdict` cap simply stops binding above ~178 KB and ~198 KB respectively, which is an
+independent sighting of the plateau `evidence/README.md` already reports and one more reason a bigger
+cap is not a better dictionary.
+
+### Baselines, re-derived by running them
+
+| | Result |
+|---|---|
+| `make test` | **158 passed, 0.66 s.** Warm; no hydration stall this session |
+| `link-check.py` | **82 files, 86 broken, 2 roundabout** — unchanged, and unchanged is what Task 7 should produce, since it cites nothing new |
+
+**86 is the branch's expected figure and not a defect**, for the reason `plan.md` and `../../status.md`
+both give: the excess is forward citations to `corpus.py` and `dictionary.py`, which Tasks 8 and 14
+resolve. It stays at 86 here because **this task created no document that cites anything unbuilt** —
+`evidence/smoke.py` and `evidence/smoke.txt` are not `*.md` and the checker globs `*.md` only.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*

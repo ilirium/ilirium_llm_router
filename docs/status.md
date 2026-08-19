@@ -10,6 +10,33 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-19, later still — Task 7 has run and Group C is open.** The smoke test passed on the first
+run: 40 bodies, both directions, dicted at level 9 and undicted, **all byte-identical**, sha256 of the
+round trip equal to sha256 of the original. Frozen as `evidence/smoke.py` / `smoke.txt`. **Still no
+`src/` change** — `git diff main -- src/` is empty and **Task 8 is where that changes.**
+
+**It found something nobody had listed as an assumption: a dictID is not a unique key.** `zstd --train`
+stamps **1** on everything, so Phase 9's eight frozen dictionaries are **six distinct files all
+carrying `1`**. `zstandard`'s own trainer at `dict_id=0` is **not random per call** — identical input,
+identical ID. And the same samples at levels **3 / 9 / 19** give **one ID and three different files**,
+which is `plan.md`'s stated `TRAIN_LEVEL` hazard **reproduced independently**.
+
+**Both failure modes are loud, which is the half the plan did not state.** The wrong file of a matching
+ID raises `Data corruption detected`; no dictionary at all raises `Dictionary mismatch`. Neither
+returns plausible wrong bytes. **So Task 13a treats the dictID as a lookup hint** — try each candidate
+in the day's `dicts/`, keep the one that verifies against the digest in the blob's filename — and that
+constraint is now in its row.
+
+**`write_dict_id` was confirmed on the backend that actually runs.** Task 8's requirement cited
+`backend_cffi.py`, which `wiki/zstandard-and-libzstd.md` warns is **the backend we are not on**;
+measured on `cext`, the trap is real. **That wiki page was corrected**, per the rule that a
+contradicting finding's measurement stays in the phase note and the correction goes to the file that
+owns the fact — it had called `dict_id=0` a *random* ID, from a CFFI docstring.
+
+**Baselines, run not predicted: `make test` 158 (0.66 s), `link-check.py` 82 files, 86 broken, 2
+roundabout — both unchanged.** 86 is correct here: this task cited nothing unbuilt, and the two files
+it added are not `*.md`.
+
 **2026-08-19, later the same day — Phase 10 gained a register, and is *still* at Task 7.** **No `src/`
 change exists**; four commits, all documentation. `plan.md` gained **"The register"** — one reachable
 section holding **every constant, key, name and magic number the phase would build**, on the owner's
@@ -194,7 +221,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the new benchmark instrument, and `pyproject.toml` / `uv.lock`. **`git diff main -- src/` is still empty; Task 8 is where that changes.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 7** — the round-trip smoke test, opening Group C. **Groups A and B are done**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the new benchmark instrument, and `pyproject.toml` / `uv.lock`. **`git diff main -- src/` is still empty; Task 8 is where that changes.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 8** — `corpus.py`, the blob store, and **the first `src/` change of the milestone**. **Groups A and B are done and Task 7 has run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

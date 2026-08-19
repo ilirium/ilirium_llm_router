@@ -78,7 +78,7 @@ are easy to leave out.
 | **`d`** — dmer size | Constraint `0 < d <= k`, reasonable range 6–16. Fixing it is fine; varying it is a sweep nobody here has needed |
 | **`dict_size`** — the cap | **Non-monotonic.** A bigger cap is not a better dictionary, and this is confirmed on **both** trainers, so it is a property of training at small sample counts rather than of either tool |
 | **`threads`** | **Only parallelises parameter variations.** With `k` fixed there are no variations, so it does nothing. `0` means one thread, negative means all logical CPUs |
-| **`dict_id`** | **Defaults to `0`, which means a *random* ID** — not "no ID". See below, because this is load-bearing |
+| **`dict_id`** | **Defaults to `0`, which does *not* mean "no ID"** — libzstd assigns one. **It is not random per call either**, which the docstring's word "random" invites you to assume: identical training input gives an identical ID. See below, because this is load-bearing |
 
 **Both trainers are libzstd underneath, and their *defaults* differ.** That is the whole finding, and
 it is why "we use one tool everywhere" survives as a decision while "so the numbers are comparable"
@@ -115,9 +115,40 @@ record the pairing.
    genuinely *is* ID 0, so a column recording it must distinguish that from "nothing was stored" some
    other way — a word rather than a number.
 
-**Since the default `dict_id` is random**, an ID identifies a dictionary but does not describe it —
-it does not say when it was trained or from what. Putting the ID in the **filename** costs nothing and
-makes the pairing discoverable without opening every candidate file.
+**An ID identifies a dictionary but does not describe it** — it does not say when it was trained or
+from what. Putting the ID in the **filename** costs nothing and makes the pairing discoverable without
+opening every candidate file.
+
+### But a dictID is not a unique key, and two ways of getting one collide
+
+*Corrected 2026-08-19. This page said the default `dict_id=0` yields a **random** ID, read off
+`backend_cffi.py`'s docstring — **the backend that is not running**, which is the trap named at the top
+of this page. Measured on `cext` instead, and the measurement is in
+`../milestone-2-corpus/phase-10-body-store/notes.md`, Task 7.*
+
+| Measured | Result |
+|---|---|
+| `train_dictionary(dict_id=0)`, three runs, identical input | **The same ID every time.** Not random per call |
+| The same samples trained at levels **3, 9, 19** | **One ID, three different files** |
+| Eight dictionaries from **`zstd --train`** | **Six distinct files, all carrying dictID `1`** |
+
+**So the ID is determined by the training input and does not cover the entropy tables the level layers
+on top.** Whether libzstd hashes the content or seeds a PRNG from it was not established, and the
+design does not need it.
+
+**Two consequences, and the second is the one that bites:**
+
+1. **Do not bind a training level to an editable setting.** Change the level and you get different
+   dictionary bytes under the *same* ID — a file the reader looks up by ID and finds the wrong version
+   of.
+2. **A wrong dictionary of a matching ID fails loudly.** Decompressing against it raises
+   **`Data corruption detected`**; a frame decompressed with no dictionary at all raises
+   **`Dictionary mismatch`**. Neither returns plausible wrong bytes, so a reader keying on dictID can
+   afford to **try each candidate and keep the one that verifies**.
+
+**`zstd --train`'s constant `1` is the practical hazard**, because it is not hypothetical: every
+dictionary that tool produces collides with every other. A store that looks dictionaries up by ID has
+to tolerate that or refuse CLI-trained input.
 
 ## Reading list
 
@@ -140,12 +171,18 @@ makes the pairing discoverable without opening every candidate file.
 | `backend_c` on CPython; the env var can override | Read `zstandard/__init__.py` in this venv |
 | The GIL is released, in 21 balanced functions | Disassembled the shipped `backend_c…so`; stubs resolved through the Mach-O indirect symbol table with `otool -Iv`. Full record in `../milestone-2-corpus/phase-10-body-store/notes.md`, Task 4 |
 | `train_dictionary`'s signature and parameter semantics | Read `zstandard/__init__.pyi` and `zstandard/backend_cffi.py` in this venv |
-| `dict_id=0` means a random ID | Same, and it is stated in the docstring rather than inferred |
+| `dict_id=0` means libzstd assigns one, **deterministically in the training input** | The docstring calls it *random*, and that is the **CFFI** backend's docstring. **Measured on `cext`** at Phase 10's Task 7 — three runs, identical input, identical ID; and one ID across levels 3 / 9 / 19 with three different files |
 | The trainers disagree at their defaults; training is non-monotonic | Measured — `../milestone-2-corpus/phase-10-body-store/evidence/`, Task 6. **The numbers live there and, after Phase 10's Task 21, in `../reference/measurements.md`** |
 
 **What expires:** everything version-shaped — the symbol layout, the parameter list, which backend
 ships. **What does not:** that a frame names its own dictionary, that `dict_id=0` is a real value
-rather than an absence, and that training defaults are where two tools quietly disagree.
+rather than an absence, that an ID is **not** a unique key, and that training defaults are where two
+tools quietly disagree.
+
+**And one method note, since this page has now been wrong once in exactly this way:** every claim here
+that came from `backend_cffi.py` is evidence about the backend we do not run. The `dict_id` row was
+corrected for that reason; the `k`, `d` and `threads` rows are still docstring-sourced and have not
+been measured against `cext`.
 
 **To re-derive any of it, read the installed package.** In the GIL case the documentation could not
 have settled it at all, and the CFFI source would have answered about the backend that is not running.
