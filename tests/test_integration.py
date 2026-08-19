@@ -224,3 +224,121 @@ def _capturing() -> Iterator[list[logging.LogRecord]]:
         logger.removeHandler(handler)
         logger.setLevel(previous_level)
         logger.propagate = previous_propagate
+
+
+# --- the corpus, wired the way the app wires it, Task 12 -----------------------------------------
+
+
+def config_with_corpus(path: Path, directory: Path, **corpus: object) -> Config:
+    from ilirium_llm_router.config import Corpus
+
+    config = config_writing_to(path)
+    config.corpus = Corpus(enabled=True, dir=directory, **corpus)  # type: ignore[arg-type]
+    return config
+
+
+def index_rows(day: Path) -> list[dict[str, str]]:
+    with (day / "index.csv").open(newline="", encoding="utf-8") as handle:
+        return list(csv.DictReader(handle))
+
+
+def test_a_call_becomes_a_blob_and_an_index_row(tmp_path: Path) -> None:
+    """The wiring Task 12 adds: config → app → CorpusWriter → day folder on disk.
+
+    The store is built by the app from the config, exactly as `StatsWriter` already is, and drained
+    when the lifespan exits — so leaving the `with` block is what guarantees the worker finished.
+    """
+    corpus = tmp_path / "corpus"
+    with router(config_with_corpus(tmp_path / "calls.csv", corpus)) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    days = [p for p in corpus.iterdir() if p.is_dir() and p.name[0].isdigit()]
+    assert len(days) == 1
+    day = days[0]
+
+    written = index_rows(day)
+    assert len(written) == 1
+    assert len(written[0]["request_ref"]) == 64
+    assert len(written[0]["response_ref"]) == 64
+    assert written[0]["model"] == "claude-sonnet-5"
+    assert len(list(day.rglob("*.zst"))) == 2
+
+
+def test_the_stored_request_body_is_byte_identical_to_what_arrived(tmp_path: Path) -> None:
+    """The relay is byte-for-byte and so is the archive. Read back through the reader, from the day
+    folder alone, and checked against the bytes the test sent."""
+    from ilirium_llm_router.corpus import CorpusReader
+
+    corpus = tmp_path / "corpus"
+    with router(config_with_corpus(tmp_path / "calls.csv", corpus)) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    day = next(p for p in corpus.iterdir() if p.is_dir() and p.name[0].isdigit())
+    reader = CorpusReader(day)
+    stored = [reader.read(b) for b in reader.blobs("requests")]
+    assert stored == [CLAUDE_BODY]
+
+    replies = [reader.read(b) for b in reader.blobs("responses")]
+    assert replies == [REPLY]
+
+
+def test_the_corpus_disabled_leaves_no_trace(tmp_path: Path) -> None:
+    """Task 18's observation 1, through the app rather than through the writer: no directory, no
+    file, and the call still served."""
+    corpus = tmp_path / "corpus"
+    config = config_writing_to(tmp_path / "calls.csv")
+
+    with router(config) as client:
+        reply = client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert reply.status_code == 200
+    assert not corpus.exists()
+    assert len(rows(tmp_path / "calls.csv")) == 1
+
+
+def test_a_router_authored_400_records_absent_and_still_stores_the_request(tmp_path: Path) -> None:
+    """A body with no `model` is refused by the router, so the *reply* is ours. The request is not
+    — it arrived over the wire and is stored."""
+    from ilirium_llm_router.corpus import ABSENT
+
+    corpus = tmp_path / "corpus"
+    with router(config_with_corpus(tmp_path / "calls.csv", corpus)) as client:
+        reply = client.post(
+            "/v1/messages", content=b'{"messages":[]}', headers=CLAUDE_CODE_HEADERS
+        )
+
+    assert reply.status_code == 400
+    day = next(p for p in corpus.iterdir() if p.is_dir() and p.name[0].isdigit())
+    row = index_rows(day)[0]
+    assert row["response_ref"] == ABSENT
+    assert len(row["request_ref"]) == 64
+
+
+def test_arrived_equals_recorded_after_a_clean_run(tmp_path: Path) -> None:
+    """The counter pair doing its one job. It is always on, independent of `corpus.enabled`,
+    because it answers a `calls.csv` question and that file is always on."""
+    with router(config_writing_to(tmp_path / "calls.csv")) as client:
+        for _ in range(4):
+            client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+        counters = client.app.state.proxy.counters  # type: ignore[attr-defined]
+
+    assert counters.arrived == 4
+    assert counters.recorded == 4
+    assert counters.lost == 0
+
+
+def test_a_reply_over_the_ceiling_is_too_large_and_the_relay_is_untouched(tmp_path: Path) -> None:
+    """The ceiling discards the copy and stops accumulating. Every byte still reaches the caller,
+    because the copy was never in the path."""
+    from ilirium_llm_router.corpus import TOO_LARGE
+
+    corpus = tmp_path / "corpus"
+    config = config_with_corpus(tmp_path / "calls.csv", corpus, body_max_bytes=8)
+    with router(config) as client:
+        reply = client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert reply.content == REPLY
+    day = next(p for p in corpus.iterdir() if p.is_dir() and p.name[0].isdigit())
+    row = index_rows(day)[0]
+    assert row["response_ref"] == TOO_LARGE
+    assert row["request_ref"] == TOO_LARGE

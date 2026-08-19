@@ -74,6 +74,8 @@ and a day index can feed one spreadsheet."""
 # direction off the pathological single-huge-directory case without inventing a deeper tree.
 FANOUT = 2
 
+BLOB_SUFFIX = ".zst"
+
 # A zstd frame header is at most 18 bytes -- magic, the descriptor, the window byte, the dictionary
 # ID and the content size. Reading that much is enough to ask a stored blob which dictionary it
 # names, without decompressing it or even reading the rest of the file.
@@ -287,7 +289,7 @@ class CorpusWriter:
         # broken silently.
         self._ensure_dictionary_in(day)
 
-        destination = day.root / direction / digest[:FANOUT] / f"{digest}.zst"
+        destination = day.root / direction / digest[:FANOUT] / f"{digest}{BLOB_SUFFIX}"
         if destination.exists():
             # Dedup, scoped to this day. The same body sent eleven times in four minutes is one
             # blob and eleven index rows: the bytes collapse, the multiplicity does not.
@@ -572,6 +574,93 @@ class CorpusWriter:
 
     def _recorded_dict_id(self) -> str:
         return self._dictionary.hex_id if self._dictionary else NO_DICTIONARY
+
+
+class CorpusReader:
+    """Bodies back out of a day folder: blob → plaintext, verified as it reads.
+
+    **It reads a day folder and nothing above it.** That is the self-containment rule from the
+    reading direction: `tar` a day, unpack it anywhere, point this at it, and every blob opens. No
+    index, no `<dir>/dicts/`, no configuration.
+
+    **Every read is a free integrity check**, because the blob's filename *is* the sha256 of its
+    plaintext. Nothing extra is stored to make that true and nothing has to be trusted for it to
+    hold.
+
+    Task 14's trainer cannot assemble a sample list without this, which is why the reader ships in
+    this phase while the *tool* built on it is Phase 11's.
+    """
+
+    def __init__(self, day: Path) -> None:
+        self._day = Path(day)
+        self._by_id: dict[int, list[zstandard.ZstdCompressionDict]] | None = None
+
+    def directions(self) -> list[str]:
+        return [d for d in ("requests", "responses") if (self._day / d).is_dir()]
+
+    def blobs(self, direction: Direction) -> list[Path]:
+        """Every blob in one direction, sorted. The fan-out is an implementation detail here."""
+        return sorted((self._day / direction).glob(f"*/*{BLOB_SUFFIX}"))
+
+    def read(self, path: Path) -> bytes:
+        """One blob, decompressed and checked against its own name.
+
+        **The frame's dictID is a lookup hint, not a key.** `zstd --train` stamps `1` on every
+        dictionary it produces, so more than one file in a day's `dicts/` can answer to the same
+        ID — and a dictionary the router did not write can be dropped into the folder by anyone.
+        So every candidate is tried and the one that *verifies* is kept.
+
+        That is affordable because both failure modes are loud, measured 2026-08-19: the wrong
+        dictionary of a matching ID raises `Data corruption detected`, and no dictionary at all
+        raises `Dictionary mismatch`. Neither returns plausible wrong bytes. The digest check is
+        the belt to that pair of braces.
+        """
+        blob = path.read_bytes()
+        expected = path.name.removesuffix(BLOB_SUFFIX)
+        dict_id = zstandard.get_frame_parameters(blob).dict_id
+
+        for candidate in self._candidates(dict_id):
+            try:
+                plaintext = _decompress(blob, candidate)
+            except zstandard.ZstdError:
+                continue
+            if hashlib.sha256(plaintext).hexdigest() == expected:
+                return plaintext
+
+        raise CorpusError(
+            f"{path.name} did not open. Its frame names dictionary {dict_id:08x}; the day folder "
+            f"holds {len(self._candidates(dict_id))} candidate(s) for that ID and none produced "
+            f"bytes matching the digest in the filename."
+        )
+
+    def _candidates(self, dict_id: int) -> list[zstandard.ZstdCompressionDict | None]:
+        if dict_id == 0:
+            # A frame that names no dictionary, which is what the store writes before one exists.
+            return [None]
+        return list(self._dictionaries().get(dict_id, []))
+
+    def _dictionaries(self) -> dict[int, list[zstandard.ZstdCompressionDict]]:
+        """Every dictionary in the day's own `dicts/`, indexed by the ID it claims.
+
+        A list per ID rather than one dictionary, because IDs are not unique — that is the whole
+        reason `read` loops.
+        """
+        if self._by_id is None:
+            found: dict[int, list[zstandard.ZstdCompressionDict]] = {}
+            for path in sorted((self._day / "dicts").glob("*.dict")):
+                data = zstandard.ZstdCompressionDict(path.read_bytes())
+                found.setdefault(data.dict_id(), []).append(data)
+            self._by_id = found
+        return self._by_id
+
+
+def _decompress(blob: bytes, dictionary: zstandard.ZstdCompressionDict | None) -> bytes:
+    context = (
+        zstandard.ZstdDecompressor(dict_data=dictionary)
+        if dictionary is not None
+        else zstandard.ZstdDecompressor()
+    )
+    return context.decompress(blob)
 
 
 class _DayIndex:

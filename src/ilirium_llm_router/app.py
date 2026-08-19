@@ -23,6 +23,7 @@ from fastapi.responses import Response
 from starlette.requests import ClientDisconnect
 
 from .config import Config
+from .corpus import CorpusWriter
 from .proxy import Proxy, create_client, error_response
 from .stats import StatsWriter
 
@@ -33,12 +34,13 @@ def create_app(
     config: Config,
     client: httpx.AsyncClient | None = None,
     stats: StatsWriter | None = None,
+    corpus: CorpusWriter | None = None,
 ) -> FastAPI:
     """Build the app.
 
-    `client` and `stats` exist for tests, which pass a client wired to a stand-in backend and a
-    writer pointed at a temporary path, and close both themselves. In normal use the app owns them
-    and closes them on shutdown.
+    `client`, `stats` and `corpus` exist for tests, which pass a client wired to a stand-in backend
+    and writers pointed at temporary paths, and close them themselves. In normal use the app owns
+    them and closes them on shutdown.
     """
 
     @asynccontextmanager
@@ -49,7 +51,20 @@ def create_app(
             if writer is None:
                 writer = StatsWriter(config.stats)
                 stack.callback(writer.close)
-            app.state.proxy = Proxy(config, http, config.api_keys(), writer)
+            # The store is opt-in, so a disabled corpus is not merely an unused object: it is no
+            # object at all, no worker thread, and nothing created under `corpus.dir`.
+            store = corpus
+            if store is None and config.corpus.enabled:
+                store = CorpusWriter(
+                    directory=config.corpus.dir,
+                    compress_level=config.corpus.compress_level_zstd,
+                    body_max_bytes=config.corpus.body_max_bytes,
+                    queue_max_bytes=config.corpus.queue_max_bytes,
+                )
+                # Registered on the stack so the drain happens on the way out of lifespan, before
+                # the process exits and takes the daemon thread with it.
+                stack.callback(store.close)
+            app.state.proxy = Proxy(config, http, config.api_keys(), writer, store)
             yield
 
     app = FastAPI(title="ilirium_llm_router", lifespan=lifespan)

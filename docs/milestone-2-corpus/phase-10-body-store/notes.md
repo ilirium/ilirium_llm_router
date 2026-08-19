@@ -2244,6 +2244,75 @@ depth **at submit**, which is what makes it show pressure building before anythi
 the worker instead it would be near zero at any real load and therefore indistinguishable from
 working, which is why it is carried on the item.
 
+## Tasks 11, 12, 13 and 13a — the config, the wiring, the tests and the reader — 2026-08-19
+
+**Group C is complete.** The store exists, is off by default, is wired into the router, and a body
+goes in and comes back out verified. **217 tests**, from 158 at the start of the day.
+
+### Task 11 — nine keys, and the one that must be accepted
+
+`Corpus(Strict)` and `Retrain(Strict)`, `extra="forbid"` on **both** — without it on the nested model
+the whole block silently accepts typos, which was the second review's finding and is now a test.
+`--check` prints the block in all three of its states.
+
+**It prints when disabled too, and that is the point of printing it.** The store is opt-in, so *is it
+on?* is the question an operator actually has — and a block that appears only when enabled answers
+that by absence, which reads exactly like a version that does not have the feature at all.
+
+**A test asserts every key in the models also appears in `config.yaml`.** The shipped file is
+documentation as much as configuration, and a key added to one and not the other would ship
+undocumented.
+
+**Task 18's observation 1 predicted the count would move**: it said the suite *"cannot be 158 by
+then"*, having been corrected from a number nobody would re-derive. It is 217.
+
+### Task 12 — the wiring, and the memory it introduces
+
+`Call` gains `request_body`, `response_body` and `response_over_cap`; `Proxy` gains the store and the
+counter pair; `watch()` tees the response; `create_app` takes the writer the way it already takes
+`stats`.
+
+**The tee is the genuinely new thing in this phase.** `proxy.py` has never held a whole response —
+it streams chunk by chunk and forgets each one. Now it accumulates a copy, checked against
+`body_max_bytes` **on every chunk**, because the memory is spent while the call runs and the queue's
+bound is not consulted until after. Over the cap the copy is **discarded and stopped**, and the relay
+never notices: the copy was never in the path, which a test asserts by comparing the caller's bytes.
+
+**Nothing is held when the corpus is off.** No tee, no worker thread, no object — a disabled corpus is
+not an unused object, it is no object.
+
+### Task 13a — the reader, and the owner's dictID rule made real
+
+`CorpusReader` reads **a day folder and nothing above it**: no index, no `<dir>/dicts/`, no config.
+Every read verifies against the digest in the blob's own filename, which costs nothing because the
+filename *is* the digest.
+
+**The dictID is a lookup hint and the reader loops.** Where a day holds more than one dictionary
+answering to the frame's ID — which `zstd --train` guarantees, stamping `1` on everything — each is
+tried and the one that verifies is kept. **A test drops a decoy** carrying a patched matching ID
+beside the real dictionary and checks the body still reads.
+
+`--extract <day>` makes the round trip repeatable rather than a snippet written once. Driven over the
+real corpus: **40 blobs, 0 failed, every one verified.**
+
+### What was driven, beyond the tests
+
+| Driven | Result |
+|---|---|
+| `--extract` over 40 real bodies with a real dictionary | `40 blob(s), 0 failed`, `2346225 → 218611 bytes`, all verified |
+| `--check` with the corpus off, on, and on with `window_days: 0` | All three print; `corpus.dir` resolves **absolutely** against the config file's directory |
+| A call through the app with the corpus on | One day folder, two blobs, one 26-column row, and the request read back **byte-identical to what the test sent** |
+
+**The last one is the one worth insisting on.** It is not the writer being tested against itself: the
+bytes go in through `POST /v1/messages`, and come out through the reader, from the day folder alone.
+
+### One test that is the phase's central claim rather than a check
+
+`test_a_non_utf8_non_json_body_round_trips_byte_identically` — every byte value 0–255 twice over,
+plus a NUL run and sequences that are not valid UTF-8 at all. **This is what discharges failure mode 2
+by construction**: if the store ever decoded, parsed, normalised or re-encoded a body, that is what
+would catch it. The store never sees a body as anything but `bytes`.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*

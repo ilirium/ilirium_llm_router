@@ -23,6 +23,11 @@ def main() -> int:
     args = _parse_args()
     load_dotenv()
 
+    # Before the config is loaded, deliberately: reading a day folder back needs the folder and
+    # nothing else, which is the self-containment rule the reader exists to demonstrate.
+    if args.extract is not None:
+        return _extract(args.extract)
+
     try:
         config = load_config(args.config)
     except ConfigError as exc:
@@ -80,7 +85,60 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="validate the configuration, report it, and exit without starting the server",
     )
+    parser.add_argument(
+        "--extract",
+        type=Path,
+        metavar="DAY",
+        help="read every body back out of one corpus day folder, verify each against the digest "
+        "in its own filename, and report; does not start the server",
+    )
     return parser.parse_args()
+
+
+def _extract(day: Path) -> int:
+    """Read a day folder back and say whether all of it opens.
+
+    **Minimal on purpose.** The extraction *tool* — selection by session, call or model, output
+    layout, bulk verification — is Phase 11's. What this is for is making the round trip a thing
+    somebody can run rather than a snippet written once, which is what a check nobody can repeat
+    turns into.
+
+    It reads the day folder and nothing above it, so it is also the self-containment rule made
+    executable: `tar` a day, unpack it elsewhere, point this at it.
+    """
+    from .corpus import CorpusError, CorpusReader
+
+    if not day.is_dir():
+        print(f"error: {day} is not a directory", file=sys.stderr)
+        return 1
+
+    reader = CorpusReader(day)
+    directions = reader.directions()
+    if not directions:
+        print(f"error: {day} holds no requests/ or responses/ folder", file=sys.stderr)
+        return 1
+
+    total = plaintext = compressed = failed = 0
+    for direction in directions:
+        for blob in reader.blobs(direction):
+            total += 1
+            compressed += blob.stat().st_size
+            try:
+                plaintext += len(reader.read(blob))
+            except CorpusError as exc:
+                failed += 1
+                print(f"  FAILED  {direction}/{blob.name}: {exc}", file=sys.stderr)
+
+    manifest = day / "manifest"
+    if manifest.exists():
+        print(manifest.read_text(encoding="utf-8").strip())
+    dictionaries = sorted(p.name for p in (day / "dicts").glob("*.dict"))
+    print(f"dictionaries: {', '.join(dictionaries) if dictionaries else 'none'}")
+    print(f"{total} blob(s), {failed} failed")
+    if total and not failed:
+        print(f"{plaintext} → {compressed} bytes, {plaintext / compressed:.3f}x")
+        print("every blob verified against the digest in its own filename")
+    return 1 if failed else 0
 
 
 def _report(config: Config, path: Path) -> None:
