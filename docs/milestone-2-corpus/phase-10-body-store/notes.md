@@ -1480,6 +1480,145 @@ body down a pipe at roughly the measured cost — to buy parallelism it already 
 multiprocessing on that reasoning before any of it was measured, and the measurement agrees. **Without
 that paragraph the new section is an invitation to make the router slower.**
 
+## The second forward review — the retraining revision, 2026-08-19
+
+**Run under `../../method/IDM-004-reviewing-unexecuted-work.md` on the owner's instruction**, against
+the 263 insertions of `git diff 379264a..HEAD -- plan.md`. Charter beside this file:
+`review-charter-retraining.md`, named by subject so a third does not have to renumber it. **Nothing
+was fixed during either run.**
+
+**One deviation from the protocol, recorded rather than glossed.** `IDM-004` says the runs are
+parallel *"if the author goes first it will quietly repair whatever a cold reader would have stumbled
+on"*. The author pass was written **before** the cold run was launched, not during it. **The rule's
+purpose was met** — the document was not touched between them, so the cold reader saw exactly what
+the author reviewed — but the ordering was serial and the next run should launch the cold pass first.
+
+### The result, and it is the strongest evidence `IDM-004` has
+
+| | Findings |
+|---|---:|
+| Author run | **9** |
+| Cold run | **16** |
+| Found by both | **4** |
+| **Author only** | **5** |
+| **Cold only** | **12** |
+
+**The cold run found every one of the four highest-cost findings, and the author run found none of
+them.** `IDM-004`'s "what the first run cost" section had **one** run to reason from; this is the
+second, and it says the same thing more sharply. The cold reader is not a second opinion — it is the
+only pass that catches the defects that fail silently.
+
+**The five the author found alone are all of one kind**: they need the repository's history rather
+than the document. What Task 15's corpus actually looks like, that Task 6 has already run, what a
+CLI flag defaults to. **The author run is worth keeping and it is not the one that finds the
+dangerous things.**
+
+### Tier 1 — accepted, and each fails silently
+
+1. **The training `level` is unspecified, and the shipped defaults do not reproduce their own
+   headline.** *Cold; verified here.* `evidence/benchmark.py:355` trained the 13.65x row with
+   `{"k": 8000, "d": 8, "level": 19}`. `zstandard`'s trainer defaults `level = level or 3`
+   (`backend_cffi.py:2860`) when `steps`/`threads` are unset. The `retrain:` block ships `maxdict`
+   and `k` and fixes `d` as a constant **and never mentions `level`** — so an executor writes
+   `train_dictionary(maxdict, samples, k=…, d=8)`, trains at level 3, and gets a dictionary
+   documented as 13.65x that is not. **Nothing detects it**, and it makes Task 21's register row
+   wrong.
+2. **`write_dict_id` defaults to *off* on one of two construction paths.** *Cold; verified here.*
+   `ZstdCompressor` defaults it true, but `ZstdCompressionParameters.__init__` defaults
+   `write_dict_id=0` (`backend_cffi.py:414`) and pushes it to `ZSTD_c_dictIDFlag` (`:463`) — and the
+   two are mutually exclusive (`:1759`). **The entire design rests on a frame naming its own
+   dictionary.** Reach for `ZstdCompressionParameters` while tuning and every blob after that is
+   unreadable by Task 13a. Task 8 must require it and assert it.
+3. **The swap invariant names `<today>/dicts/`, and a blob can be written into yesterday's folder.**
+   *Cold.* The plan's own risk list, added the same day, says a body submitted at 23:59:59 and
+   written at 00:00:02 belongs to yesterday, and that **which timestamp decides the folder is
+   unspecified in Task 8**. So across a rollover one worker writes into two day folders holding one
+   compressor, and a swap copying into `<today>` leaves a later `<yesterday>` blob referencing a
+   dictID with no copy beside it. **Task 18 observation 7 cannot catch this** — it exercises a swap
+   *within* one day. The invariant must be per-write, not per-swap.
+4. **Leave-one-session-out has no degenerate-case rule, and the ordinary day is degenerate.** *Both
+   runs.* `run-02` and `run-03` carry **exactly one session each**; only `run-01` has three. One
+   session in the window means an empty training set. Also unstated: which session is held out, and
+   what happens on the first run when there is no incumbent — which the plan itself establishes is
+   the normal first case, since Group C ships before Group D.
+
+### Tier 2 — accepted, blocks execution
+
+5. **The attempt record is named three times and specified nowhere.** *Both.* The cold run added what
+   the author missed: **both obvious homes contradict a stated rule** — `<dir>/dicts/` collides with
+   Task 14c's "newest by filename" listing, and a day folder collides with self-containment.
+6. **The margin is required twice and defined nowhere.** *Both.* And the config block is **closed at
+   nine settings**, so it cannot become a tenth key without contradicting Tasks 11 and 14d. A module
+   constant is the answer the file does not give.
+7. **Task 11 and 14d both build the config block; Task 14 and 14b both own the comparison.** *Cold.*
+   **Task 11 is in Group C and executes first**, so an executor either builds nine keys there and
+   finds 14d empty, or builds five and contradicts Task 11's own sentence.
+8. **Task 18 observation 6 asks for something the trainer is designed to refuse.** *Cold.* It says to
+   install a dictionary with `--train-dict` from a second terminal — but the today-guard stops it,
+   and retraining from the same window cannot beat the incumbent trained from that window. **The
+   check that proves the pickup mechanism cannot be made to fire.**
+9. **Nothing gates the training thread on `corpus.enabled: false`.** *Cold.* It starts from lifespan
+   unconditionally; the only "off" is `retrain.window_days: 0`. A thread that creates
+   `<dir>/dicts/.incoming/` breaks Task 18 observation 1 — *"leaves no trace: no directory, no
+   file"*.
+10. **Window collection has no floor and no rule for fewer complete days than `window_days`.**
+    *Cold.* `train_dictionary` raises rather than degrading; the benchmark wraps it in `try/except`
+    for that reason. The symptom is a router that never retrains and says so only in the log.
+11. **Task 15 cannot use the tool Tasks 14/14e build.** *Author only.* Task 15 trains from
+    `logs/corpus-gate/`, which has no day folders; the CLI selects day folders with `--days N`. No
+    flag selects another source, so Task 15 writes a second sampling path — which "one tool, not
+    two" exists to prevent.
+12. **Task 14a holds a decision gate with no branch instruction.** *Author finding; cold filed it as
+    a question.* **The disagreement is itself the finding**: Task 6 was made to say *"on a negative
+    result, stop and propose"* by the first review, and 14a says only *"decided by that number, not
+    here"*. No threshold, no branch.
+13. **"A run killed mid-flight leaves no trace" is false, and nothing owns `.incoming/`.** *Cold.* A
+    daemon thread killed between write and rename leaves its partial file. Neither staging directory
+    has a cleanup owner or a tmp-name rule, so two writers can collide and rename interleaved bytes.
+14. **Neither 13a's reader nor 14's trainer names a file, and the two ref columns are never named.**
+    *Cold.* The index header is re-emitted in every day file, so a rename after any real capture
+    splits the corpus.
+
+### Tier 3 — accepted, cheap
+
+15. **`N`, the rescan cadence, is a bare letter in three places.** *Both.*
+16. **`:880` still says "25-column index row".** *Cold.* Two of three restatements were updated.
+17. **"Six lettered insertions" introduces a list of seven.** *Cold.* The header gets it right —
+    a count disagreeing with itself inside one file, in a file with a section about exactly that.
+18. **`:352` still reads "one worker until Task 6 says otherwise".** *Author.* Task 6 ran on
+    2026-08-18.
+19. **Task 14 says the procedure *keeps* its row in `procedures/README.md`.** *Cold question, filed
+    here as a finding after checking:* `docs/procedures/corpus-dictionary/` does not exist and that
+    file has no such row. "Keeping" should be "adding".
+20. **`--train-dict` with `window_days: 0` and no `--days` is a silent no-op.** *Author.*
+21. **Nothing says the manifest's schema version moves with the 26th column.** *Author.*
+22. **Single-flight is per-process; `--train-dict` is deliberately another process.** *Cold,
+    REPORTED.* Two CPU-bound runs, two writers in one staging directory, two racing guards.
+
+### Refused
+
+**None.** Every finding from both runs was verified or is cheap enough that verification costs more
+than the fix. The cold run's five most serious claims were re-checked against the source before being
+accepted, per `IDM-004`'s rule that a reviewer can be confidently wrong: `benchmark.py:355`,
+`backend_cffi.py:414`/`:463`/`:2860`, `plan.md:880`, `plan.md:800`, and Tasks 11/14d read side by
+side. **All five held.**
+
+### Questions for the owner — decisions, not defects
+
+1. **What threshold decides startup-only against startup-plus-rollover?** Does Task 14a decide alone,
+   or measure and come back? `CLAUDE.md`'s propose-before-implementing suggests the latter.
+2. **Should the margin, `N`, and the sweep ranges be module constants**, beside the shutdown timeout
+   that already sets that precedent? Confirming it closes three findings at no design cost.
+3. **Does typing `--train-dict` override the today-guard and the margin, or only `window_days: 0`?**
+   Finding 8 turns on this.
+4. **Which compression level does the comparison score at?** The write path is 9; every published
+   ratio is 19. Separate from finding 1, which is about the *training* level.
+5. **Is a fresh install expected never to train on its first day?** `window_days: 1` means the newest
+   *complete* day.
+6. **Does `docs/procedures/corpus-dictionary/` still need to exist**, given `--train-dict` and
+   `--tune-dict` are on the router's own CLI? Three entry points may be one too many.
+7. **Is the ~150 MB/year dictionary storage figure re-accepted?** Still raised-and-unratified.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*
