@@ -248,7 +248,9 @@ corpus:
                               # measured to move the ratio by 0.03%. MEASURED by Task 6, 2026-08-18:
                               # 94% of level 19's dicted ratio for an eighth of the per-body cost,
                               # and ~500x the target peak load on one worker
-  max_body_bytes: 1048576     # one body bigger than this is not stored: `too_large`
+  body_max_bytes: 1048576     # one body bigger than this is not stored: `too_large`. RENAMED from
+                              # max_body_bytes 2026-08-19 -- the other two size keys read
+                              # <what>_<max|min>_bytes, and this one alone read <max>_<what>_bytes
   queue_max_bytes: 67108864   # total bytes waiting to be written; over it: `dropped`
   retrain:                    # OFFLINE ONLY. Nothing under here touches a live call
     window_days: 1            # complete days of material to train from. 0 DISABLES automatic
@@ -286,7 +288,11 @@ there.)*
 | `TRAIN_LEVEL` | **3** | The zstd level used to **train** a dictionary, and **nothing else**. *(Was 9 and also did the scoring, until 2026-08-19 — see below.)* **Scoring is not a constant**: it reads `corpus.compress_level_zstd` |
 | `TRAIN_D` | 8 | COVER's dmer size. Task 6 used it throughout and never varied it |
 | `INSTALL_MARGIN` | **2%** | A candidate must beat the incumbent by more than this to be installed |
-| `RESCAN_EVERY` | 500 bodies | How often the worker relists `<dir>/dicts/`. Matches the summary line's cadence, so the worker has one periodic rhythm rather than two |
+| `RESCAN_EVERY` | 500 **bodies** | How often the worker relists `<dir>/dicts/`. *(Its stated reason — that matching the summary line gives "one periodic rhythm rather than two" — **was withdrawn 2026-08-19**: the summary is emitted from **submit**, not the worker, so the worker never had two; and this counts **bodies** where the summary counts **calls**, which one call can produce two of. They agree at 500 and are two decisions.)* |
+| `SUMMARY_EVERY` | 500 **calls** | How often `submit()` emits the `INFO` summary. *Named 2026-08-19; it had a cadence and no symbol* |
+| `DRAIN_TIMEOUT_S` | **5** | How long `close()` waits for the worker to finish the queue. **Chosen from Task 6's frozen per-body cost, not from the estimate this plan used to carry** — see "Shutdown" |
+| `LOCK_STALE_S` | **3600** (1 h) | When a `retrain.lock` left by a killed process is broken. **The asymmetry chose it:** breaking early runs two trainers at once, breaking late delays a **daily** event |
+| `INDEX_SCHEMA_VERSION` | **1** | Written into each day's `manifest` beside the column count. *Named and valued 2026-08-19* |
 | `TRAIN_BUDGET_S` | **60** | Above this, training is **startup-only**; at or below it, startup **and** day-rollover. Task 14a measures and applies it |
 | `WINDOW_MAX_DAYS` | 30 | The cap on widening the window in search of a second session; see below |
 
@@ -353,7 +359,7 @@ The two checks happen at opposite ends of a call:
   response starts arriving
     │
     ├─ chunk … chunk … chunk …      ← the copy grows HERE, while the call runs
-    │                                  max_body_bytes is checked on every chunk
+    │                                  body_max_bytes is checked on every chunk
     │
   call finishes, record() runs
     │
@@ -369,7 +375,7 @@ And the reverse is equally true: **the ceiling cannot bound a backlog.** A thous
 
 | | Bounds | Checked | Cannot help with |
 |---|---|---|---|
-| **`max_body_bytes`** | peak memory for **one** body | on every chunk, during the call | many bodies at once |
+| **`body_max_bytes`** | peak memory for **one** body | on every chunk, during the call | many bodies at once |
 | **`queue_max_bytes`** | total memory for **all waiting** bodies | once, at submit | one body that is huge |
 
 #### What the ceiling does when it fires
@@ -504,10 +510,22 @@ accountant.**
 ### Shutdown
 
 `close()` puts a sentinel and joins the worker **with a timeout**, then logs the final summary. A
-timeout rather than an unbounded wait because a full queue is ~640 bodies, which at tens of
-milliseconds each is a twenty-second shutdown — and a router that will not stop is worse than a
-corpus missing its last few bodies. **Anything abandoned is counted and named in that last line**, so
-the hole is recorded here exactly as it is anywhere else.
+timeout rather than an unbounded wait because **a router that will not stop is worse than a corpus
+missing its last few bodies**. **Anything abandoned is counted and named in that last line**, so the
+hole is recorded here exactly as it is anywhere else.
+
+**`DRAIN_TIMEOUT_S = 5`, and the number comes from Task 6 rather than from an estimate.** *Valued
+2026-08-19; it was named "a module constant" twice and given no figure — while being cited as **the
+precedent** for the other constants, so the precedent itself had no value.*
+
+*This paragraph read "a full queue is ~640 bodies, which at **tens of milliseconds each** is a
+**twenty-second** shutdown". **That was written before Group B and is wrong by roughly 70x.**
+`evidence/results.txt` measures the whole store path at level 9 — sha256, compress, write, fsync,
+rename — at **0.433 ms** median per body. So a full queue drains in **0.28 s**, or **1.4 s** if every
+stage simultaneously hits its p95, and 64 MiB at the measured 162.5 MB/s is **0.41 s** of compression.
+**Five seconds is ~3.5x the p95 worst case and ~18x the median**, which leaves the timeout doing what
+it is for — bounding a hang — rather than routinely cutting a drain short. **The estimate survived two
+forward reviews**, because neither was checking prose against the phase's own frozen evidence.*
 
 The timeout is a module constant rather than a sixth config key, on the same KISS grounds as the
 `workers` key that is also absent.
@@ -565,7 +583,7 @@ Two log lines, and the restraint is as deliberate as the lines:
 - **One `WARNING` the first time a body is dropped in a run**, with the reason and the pending bytes;
   then suppressed and counted. Warning on every drop turns overload into log spam, which is the
   moment the log most needs to stay readable.
-- **A periodic `INFO` summary**, **emitted from the submit path every 500 calls and once at close.**
+- **A periodic `INFO` summary**, **emitted from the submit path every `SUMMARY_EVERY` (500) calls and once at close.**
   *Defined 2026-08-18; it was named four times and specified never.* From **submit** rather than from
   the worker on purpose — a worker that has stalled emits nothing, and a stalled worker is exactly
   when the line is wanted; submits keep happening and carry the growing `pending` with them. No timer,
@@ -655,7 +673,7 @@ observation 7 cannot catch the rollover case**, since it exercises a swap within
 | **Trigger** | Startup, **and** day-rollover if the measured training time is at or under **`TRAIN_BUDGET_S` (60 s)**. Above it, startup only. *Task 14a measures and applies the constant; it does not choose a policy* |
 | **Guard** | A dictionary **or a retrain-log line** dated today ⇒ stop. **Refusals are recorded too**, or a candidate that loses is retrained from identical input on every restart, forever, for a verdict that cannot change. **`--train-dict` bypasses this guard** — see below |
 | **The retrain log** | **`<dir>/retrain.log`**, one line per attempt: UTC timestamp, window, sample count, candidate ratio, incumbent ratio, **the scoring level**, verdict. *(The level was added 2026-08-19 when scoring moved to `compress_level_zstd`: it is now operator-editable, so two ratios logged on different days are not comparable unless the line says what they were scored at.)* *Its home was chosen against two collisions the review found: `<dir>/dicts/` would be relisted by the pickup, and a day folder would make training state something a day needs — so it sits beside them, at the corpus root. **Nothing reads it to read a day**, which is the direction the self-containment rule actually forbids* |
-| **Single-flight** | One training run at a time **across processes**, not merely across threads — `--train-dict` is deliberately another process. An exclusive lock on `<dir>/retrain.lock`, released on exit; a stale lock from a killed process is broken by age |
+| **Single-flight** | One training run at a time **across processes**, not merely across threads — `--train-dict` is deliberately another process. An exclusive lock on `<dir>/retrain.lock`, released on exit; a stale lock from a killed process is broken by age — **`LOCK_STALE_S`, 3600 s** *(valued 2026-08-19)* |
 | **Material** | The newest **complete** day folders — `retrain.window_days` is a **minimum, not a fixed count**. Blobs read from `<day>/requests/`, decompressed through Task 13a's reader, which finds each day's dictionary by the frame's own dictID |
 | **Widening** | **Keep adding older complete days until the window holds at least two sessions**, up to `WINDOW_MAX_DAYS` (30). *Owner's decision 2026-08-19, and it exists because the split below cannot run otherwise: `run-02` and `run-03` each carry **exactly one session**, and one harness on one laptop — the stated target — produces single-session days as the ordinary case* |
 | **Floor** | Below a viable sample count, or with **no complete day at all**, it does not train: one `INFO` line and a retrain-log entry. **A fresh install therefore trains nothing on its first day**, which is correct — the store writes undicted frames meanwhile, at ~3.12x, and they stay valid forever |
@@ -841,11 +859,11 @@ outcome of Task 6 falsifies one of those two sentences**, and Task 11 is where i
 | # | Task |
 |---|---|
 | **7** | **The smoke test only** — that a dicted frame round-trips byte-identically. **`zstandard` was already added at Task 4**, which is what `uv add` does; this task adds no dependency. *(It read "Add `zstandard` to `pyproject.toml`; `make sync`" until 2026-08-18 — true before Group B existed, and afterwards a cold agent would find the work done and be unable to tell which task was stale.)* |
-| **8** | `src/ilirium_llm_router/corpus.py` — the blob store: content addressing on the plaintext, the per-day layout, `incoming/` → `fsync` → rename, dedup scoped to the day, **the `manifest` written once when a day folder opens, carrying the index's schema version and its column count** *(the count added 2026-08-19, when the index went from 25 columns to 26 and nothing said the manifest moved with it)*, and **a plain copy into `<day>/dicts/` of each dictionary the day uses, taken from `<dir>/dicts/`**. **It must work with `<dir>/dicts/` empty**, writing undicted frames. **And `write_dict_id` must be on, asserted rather than assumed** — *added 2026-08-19*: `ZstdCompressor` defaults it true, but `ZstdCompressionParameters` defaults it to **0** (`backend_cffi.py:414`) and the two are mutually exclusive, so reaching for the tuning path silently stops frames naming their dictionary and makes every blob after it unreadable by Task 13a. The whole design rests on that field |
-| **9** | The byte-bounded queue and its worker thread, **plus the arrived/recorded counter pair** — one `queue.SimpleQueue` with the byte accounting beside it, the drop policy, the timed drain on close, and **it never raises**: a body store is telemetry-shaped and telemetry does not get to break a call. Plus the once-per-run drop `WARNING` and the periodic summary line |
+| **8** | `src/ilirium_llm_router/corpus.py` — the blob store: content addressing on the plaintext, the per-day layout, `incoming/` → `fsync` → rename, dedup scoped to the day, **the `manifest` written once when a day folder opens, carrying the index's schema version and its column count** — **two lines, `index_schema_version: 1` and `index_columns: 26`** *(format and first value settled 2026-08-19; the file had neither)* *(the count added 2026-08-19, when the index went from 25 columns to 26 and nothing said the manifest moved with it)*, and **a plain copy into `<day>/dicts/` of each dictionary the day uses, taken from `<dir>/dicts/`**. **It must work with `<dir>/dicts/` empty**, writing undicted frames. **And `write_dict_id` must be on, asserted rather than assumed** — *added 2026-08-19*: `ZstdCompressor` defaults it true, but `ZstdCompressionParameters` defaults it to **0** (`backend_cffi.py:414`) and the two are mutually exclusive, so reaching for the tuning path silently stops frames naming their dictionary and makes every blob after it unreadable by Task 13a. The whole design rests on that field |
+| **9** | The byte-bounded queue and its worker thread, **plus the arrived/recorded counter pair** — one `queue.SimpleQueue` with the byte accounting beside it, the drop policy, the timed drain on close (**`DRAIN_TIMEOUT_S`, 5 s**), and **it never raises**: a body store is telemetry-shaped and telemetry does not get to break a call. Plus the once-per-run drop `WARNING` and the periodic summary line |
 | **10** | The day index: **26 columns**, header re-emitted in every file, the two ref cells named **`request_ref`** and **`response_ref`**, each holding a digest or one of `dropped` / `too_large` / `absent` / `error`. *(Named 2026-08-19: they were "two refs" everywhere and never a header string, and the header is re-emitted in every day file, so a rename after any real capture would split the corpus.)* `queue_ms`, `store_ms` and `queue_bytes` are appended after the refs, so the first twenty stay identical to `calls.csv`'s and in its order — then **`request_dict_id`**, added 2026-08-19 *(see below)* |
 | **11** | **The whole `corpus:` config block, and the only task that builds it** — **nine settings: five top-level and four under a nested `retrain:`**, `extra="forbid"` on **both** models, relative-path resolution against the config file's directory, and `--check` prints it. Neither limit may be disabled. `retrain.window_days` accepts **0**, which disables automatic retraining and is the one "off" value in the block |
-| **12** | Wire into `Proxy.record()`'s four call sites and `app.py`'s lifespan; hold the request body **and the response buffer** on `Call`, which is `observe.py`'s and is therefore an in-scope edit; tee the response in `watch()` up to `max_body_bytes`. **Plus the arrived/recorded counters, which live in `Proxy` and run whether or not the corpus is enabled.** `create_app` takes the writer the way it already takes `stats`, so a test can point one at a temporary path |
+| **12** | Wire into `Proxy.record()`'s four call sites and `app.py`'s lifespan; hold the request body **and the response buffer** on `Call`, which is `observe.py`'s and is therefore an in-scope edit — **`request_body`, `response_body` and `response_over_cap`**, *named 2026-08-19 and deliberately not `*_bytes`, which `Call` already uses for the two integer **counts** that become CSV columns*; tee the response in `watch()` up to `body_max_bytes`. **Plus the arrived/recorded counters, which live in `Proxy` and run whether or not the corpus is enabled.** `create_app` takes the writer the way it already takes `stats`, so a test can point one at a temporary path |
 | **13** | Tests, including **a non-UTF-8, non-JSON body round-tripping byte-identically** — that is what discharges failure mode 2 by construction rather than by assertion |
 | **13a** | **The reader, in `src/ilirium_llm_router/corpus.py` beside the store** — blob plus the day's `dicts/` → plaintext, finding the dictionary by the frame's own dictID, and **verifying as it reads**: the blob's filename *is* the sha256 of the plaintext, so every read is a free integrity check. **Not optional and not deferrable to Phase 11** — Task 14a's trainer cannot assemble a sample list without it. Plus a minimal `--extract`, which is what makes Task 18's layer-3 check repeatable rather than a snippet written once |
 
@@ -876,7 +894,7 @@ inside a running day, it is an ordinary analysis question and the index should a
 | **14b** | **The split and the margin** — leave-one-session-out holding out the **largest session of the newest complete day**, **scoring both dictionaries at `corpus.compress_level_zstd`** — the config key, *not* `TRAIN_LEVEL`, which trains only *(narrowed 2026-08-19)* — installing on a win above `INSTALL_MARGIN`, and **installing unconditionally when there is no incumbent**. Plus the widening rule: keep adding complete days until two sessions are present, capped at `WINDOW_MAX_DAYS`. Both biases are live and they run in opposite directions: scoring on the training day guarantees the candidate wins, and scoring anywhere inside a rolling window guarantees the incumbent does. Session membership comes from the index; sampling does not need it |
 | **14c** | **The pickup** — the worker rescans `<dir>/dicts/` on opening a day folder and every N bodies, and swaps when the newest name differs from what it loaded. **Ordering is the invariant: copy into the day folder, then build the compressor, then swap.** Newest is by **filename**, never mtime — `logs/` sits in a cloud-synced folder here. One `listdir` per N bodies, in the worker, off the request path |
 | ~~**14d**~~ | ~~The config~~ — **struck 2026-08-19 and absorbed into Task 11**, which already specified every clause of it: the nested block, `extra="forbid"` on both models, `--check` printing it, and `window_days: 0`. *The second review found two tasks owning one deliverable, with Task 11 executing first — so a reader would build nine keys at 11 and find 14d empty. **The letter is spent and not reused**, per `../../README.md`; a struck row shows the mechanism worked where a deleted one cannot* |
-| **14e** | **`--train-dict` and `--tune-dict`** — the manual command with a flag per `retrain` setting, flag winning over config for that one run, **working even when `window_days` is 0**, and **bypassing the once-a-day guard** — owner's decision 2026-08-19: typing the command is explicit consent to retrain, **but it does not bypass the margin**, so a hand-run cannot install a dictionary that loses. Plus **`--from <dir>`**, without which Task 15 cannot use this tool at all: it trains from `logs/corpus-gate/`, which has no day folders and is not a `corpus.dir`. `--tune-dict` sweeps `maxdict` × `k`, **prints the whole surface rather than the winner** (non-monotonic on both trainers), **labels its own output provisional** (no usable validation split), and **never installs.** It is a mode of the trainer, not a second instrument — Task 6 already found what happens when two things that should agree do not |
+| **14e** | **`--train-dict` and `--tune-dict`** — the manual command with a flag per `retrain` setting — **`--window-days`, `--sample-min-bytes`, `--maxdict`, `--k`**, mirroring the config keys one-for-one *(named 2026-08-19)* — flag winning over config for that one run, **working even when `window_days` is 0**, and **bypassing the once-a-day guard** — owner's decision 2026-08-19: typing the command is explicit consent to retrain, **but it does not bypass the margin**, so a hand-run cannot install a dictionary that loses. Plus **`--from <dir>`**, without which Task 15 cannot use this tool at all: it trains from `logs/corpus-gate/`, which has no day folders and is not a `corpus.dir`. `--tune-dict` sweeps `maxdict` × `k`, **prints the whole surface rather than the winner** (non-monotonic on both trainers), **labels its own output provisional** (no usable validation split), and **never installs.** It is a mode of the trainer, not a second instrument — Task 6 already found what happens when two things that should agree do not |
 | **14f** | Tests for all of the above, including **a swap mid-day leaving every blob in that day folder readable from the folder alone**, **the same across a day rollover** — the case a mid-day test cannot reach — and **an assertion that every frame written carries a dictID**, which is the field the reader and the whole no-recompression rule depend on |
 | **15** | Train the first real dictionary from the surviving `logs/corpus-gate/` corpus; **install it into `logs/corpus/dicts/`**; verify a dicted round-trip end to end and record the ratio. **Name which `maxdict` was chosen and why** — `logs/corpus-gate/dicts/` holds eight, and `../../reference/measurements.md` records training as non-monotonic at this sample count. **Task 6's best is `maxdict=262,144` at `k=8000` (13.65x), with 524 KB and 1 MB matching it on a larger file — but it is provisional, not a recommendation:** the corpus has **no usable validation split** (run-02 contributes two qualifying bodies), so that `k` was chosen with knowledge of the test slice. Either hold out by *session* rather than by run — the corpus carries five — or **name the choice as provisional.** Do not present it as measured-optimal. *(Added 2026-08-19: those two values are now the **defaults of `retrain.maxdict` and `retrain.k`**, so "provisional" is a property of the shipped configuration and not only of this task's write-up. And **the training set behind them was 48 bodies, 26 distinct** — 46% `overloaded_error` retries, which `gate.py` did not deduplicate and nobody had noticed.)* |
 
@@ -939,7 +957,7 @@ whole configuration without starting the server, which is the first half of ever
 | `corpus.enabled` | **new.** Opt-in; nothing is written until true | added |
 | `corpus.dir` | **new.** `logs/corpus` | added |
 | `corpus.compress_level_zstd` | **new.** The zstd level the write path uses, **and the level the trainer scores candidate against incumbent at** *(2026-08-19)*. Not the training level — that is `TRAIN_LEVEL`. Default measured by Task 6 | added |
-| `corpus.max_body_bytes` | **new.** One body larger than this is not stored | added |
+| `corpus.body_max_bytes` | **new.** One body larger than this is not stored | added |
 | `corpus.queue_max_bytes` | **new.** Total bytes waiting to be written | added |
 | `corpus.retrain.window_days` | **new, 2026-08-19.** Complete days of material to train from; **`0` disables automatic retraining** | added |
 | `corpus.retrain.sample_min_bytes` | **new, 2026-08-19.** A body below this is not a training sample. No path filter | added |
@@ -1011,16 +1029,22 @@ also appear in "The constants beside it, and why they are not keys", so **a valu
 and not the other is drift this repository has been bitten by before.** The rule is therefore —
 **change the number here, and the prose above keeps only the reason.**
 
-**Rows marked ❓ are named by this plan and given no value anywhere.** They were found by compiling
-this register, which is the first time anything enumerated them; see "What is not yet decided" at the
-end.
+**Rows were marked ❓ where this plan named something and gave it no value anywhere.** Compiling this
+register is the first time anything enumerated them — **there were eight, and all eight were closed on
+2026-08-19**; section 12 carries what each became and how it was decided. **The ❓ column is expected to
+be empty from here on**, and Task 24 checks that it still is.
 
 ### 1 · New modules
 
 | Module | Holds | Task |
 |---|---|---|
-| `src/ilirium_llm_router/corpus.py` | The blob store, the byte-bounded queue and its worker, the day index, **and the reader** | 8, 9, 10, 13a |
-| `src/ilirium_llm_router/dictionary.py` | The trainer, the training thread, the split, the margin | 14, 14a, 14b |
+| `src/ilirium_llm_router/corpus.py` | **`CorpusWriter`** — the blob store, the byte-bounded queue and its worker, the day index — and **`CorpusReader`** | 8, 9, 10, 13a |
+| `src/ilirium_llm_router/dictionary.py` | **`DictionaryTrainer`** — the trainer, the training thread, the split, the margin | 14, 14a, 14b |
+
+**`CorpusWriter` mirrors `StatsWriter` deliberately** *(named 2026-08-19)*: same shape — built from its
+config block, `close()`d by the app, owned rather than reached for globally *"so a test can point one
+at a temporary path"*, which is `stats.py`'s own words and exactly what Task 12 asks for. **The parallel
+is the point**, since `create_app` takes the two the same way.
 
 **Two modules, not one or three.** The store and the trainer share only the reader, which is why the
 reader lives with the store and the trainer imports it.
@@ -1037,7 +1061,7 @@ nested block silently accepts typos.
 | `corpus.dir` | `Path` | `logs/corpus` | resolved against the **config file's** directory | 11 |
 | `corpus.compress_level_zstd` | `int` | **9** | `ge=1, le=22`, **hardcoded** | 11 |
 | | | | *also the **scoring** level the trainer compares at — the one key read by both the write path and `dictionary.py`* | 14b |
-| `corpus.max_body_bytes` | `int` | **1_048_576** (1 MiB) | `gt=0` — **not disableable** | 11 |
+| `corpus.body_max_bytes` | `int` | **1_048_576** (1 MiB) | `gt=0` — **not disableable**. *Renamed from `max_body_bytes` 2026-08-19* | 11 |
 | `corpus.queue_max_bytes` | `int` | **67_108_864** (64 MiB) | `gt=0` — **not disableable** | 11 |
 | `corpus.retrain.window_days` | `int` | **1** | `ge=0`; **`0` disables automatic retraining** and is the one "off" value in the block | 11 |
 | `corpus.retrain.sample_min_bytes` | `int` | **1024** | `ge=1` | 11 |
@@ -1045,6 +1069,16 @@ nested block silently accepts typos.
 | `corpus.retrain.k` | `int` | **8000** | `gt=0` — **provisional**, not measured-optimal | 11 |
 
 `Config.resolve_paths()` gains `corpus.dir`, beside the two it already resolves.
+
+**The three size keys share one shape: `<what>_<max|min>_bytes`.** *Settled 2026-08-19, and it is what
+renamed `max_body_bytes` to **`body_max_bytes`**.* `queue_max_bytes` and `sample_min_bytes` were
+already that way and the third was the odd one out — a key read in isolation should put the **thing**
+first and the **direction** second, so the three sort and scan together. **The rename was free**: Task
+11 has not run, no `config.yaml` carries the key, and no code reads it.
+
+**`compress_level_zstd` deliberately does not follow that shape**, and it is not an exception being
+smuggled past: it is not a size. The owner's 2026-08-18 instruction stands — `level` already means a
+severity two keys away, so this one names its scale.
 
 ### 3 · Module constants
 
@@ -1056,16 +1090,19 @@ nested block silently accepts typos.
 | `RESCAN_EVERY` | **500** bodies | `corpus.py` | 14c | yes |
 | `TRAIN_BUDGET_S` | **60** | `dictionary.py` | 14a | yes |
 | `WINDOW_MAX_DAYS` | **30** | `dictionary.py` | 14b | yes |
-| `MIN_SESSIONS` *(name proposed)* | **2** | `dictionary.py` | 14b | no — the widening rule states the number in prose only |
-| the drain timeout on `close()` | ❓ **unset** | `corpus.py` | 9 | named twice as "a module constant", never given a number |
-| the summary cadence | **500** calls | `corpus.py` | 9 | **❓ one symbol or two?** — see below |
-| the index schema version in `manifest` | ❓ **unset** | `corpus.py` | 8 | no |
+| `MIN_SESSIONS` | **2** | `dictionary.py` | 14b | no — the widening rule stated the number in prose only |
+| `DRAIN_TIMEOUT_S` | **5** | `corpus.py` | 9 | **valued 2026-08-19** from Task 6's 0.433 ms/body |
+| `SUMMARY_EVERY` | **500** calls | `corpus.py` | 9 | **named 2026-08-19** — a second constant, not a shared one |
+| `LOCK_STALE_S` | **3600** | `dictionary.py` | 14a | **valued 2026-08-19** |
+| `INDEX_SCHEMA_VERSION` | **1** | `corpus.py` | 8 | **valued 2026-08-19** |
 
-**The cadence question is not pedantry.** `RESCAN_EVERY` is **500 bodies in the worker**; the summary
-line is **500 calls from the submit path**. Different threads, different counters, the same number —
-and the prose says they match *on purpose*, so that "the worker has one periodic rhythm rather than
-two". **One shared symbol makes that true and keeps it true; two symbols that happen to be 500 make it
-a coincidence that will drift.** The plan does not say which, and the code will have to.
+**The cadence question was not pedantry, and it resolved against the prose.** *Settled 2026-08-19:
+**two constants**, `RESCAN_EVERY = 500` **bodies** and `SUMMARY_EVERY = 500` **calls**.* The plan had
+said they match *on purpose*, so that *"the worker has one periodic rhythm rather than two"* — **and
+that reason does not survive reading.** The summary is emitted from **`submit()`**, on the event loop,
+so **the worker never had two rhythms to merge**; and the two count **different units**, one call being
+able to produce two bodies, so 500 bodies is ~250 calls. **They agree at 500 and are two decisions**,
+either of which can move without dragging the other.
 
 **`TRAIN_BUDGET_S = 60` is a gate with a branch, not a threshold to record.** At or under it Task 14a
 registers **both** triggers; above it, startup only. A run that measures the number and does not act
@@ -1078,11 +1115,11 @@ be wrong in a way nothing catches.*
 
 | Existing | Value | Why it is here |
 |---|---|---|
-| `observe.MAX_SCAN_BYTES` | **1_048_576** | **The same number as `max_body_bytes`'s default and a different job entirely** — it caps what the *usage scanner* buffers, and it is not configurable. Changing one does not change the other, and they are free to diverge |
+| `observe.MAX_SCAN_BYTES` | **1_048_576** | **The same number as `body_max_bytes`'s default and a different job entirely** — it caps what the *usage scanner* buffers, and it is not configurable. Changing one does not change the other, and they are free to diverge |
 | `stats.COLUMNS` | 20 names | **The index's first twenty columns are this tuple, in this order.** That is what lets a rotated `calls.csv` segment and a day index feed one spreadsheet |
 | `stats.MAX_ERROR_MESSAGE` | 200 | Applies to the index's `error_message` too, since the column is copied |
 | `proxy.TIMEOUT` | `connect=5, read=600, write=30, pool=5` | Unchanged. Named so a session does not read the corpus's timeouts as related to it |
-| `app.CATCH_ALL_METHODS` | 7 methods | The catch-all is **why** `max_body_bytes` exists — an unenumerated endpoint's reply can be any size |
+| `app.CATCH_ALL_METHODS` | 7 methods | The catch-all is **why** `body_max_bytes` exists — an unenumerated endpoint's reply can be any size |
 
 ### 5 · The index — 26 columns, in order
 
@@ -1106,7 +1143,7 @@ and **a rename after any real capture splits the corpus.** They are names, not l
 | Word | Where | Means |
 |---|---|---|
 | `dropped` | ref cells | the queue was over its byte bound |
-| `too_large` | ref cells | one body over `max_body_bytes` |
+| `too_large` | ref cells | one body over `body_max_bytes` |
 | `absent` | ref cells | **the router authored this body** — the 400, the 502, the injected SSE `error` event |
 | `error` | ref cells | compression or the write itself failed in the worker |
 | `none` | `request_dict_id` | stored with **no** dictionary |
@@ -1129,9 +1166,10 @@ empty cell, never a zero.*
 | the dictID in it | **8 lowercase hex** | a dictID is a `uint32`, so 8 is exact |
 | the trainer's staging file | `<pid>-<uuid>.tmp` | unique per run, so two processes cannot interleave into one valid-looking name |
 | `<dir>/retrain.log` | one line per attempt | UTC stamp, window, sample count, candidate ratio, incumbent ratio, verdict |
-| `<dir>/retrain.lock` | exclusive, released on exit | **across processes**; a stale lock is broken by age ❓ *(the age is unset)* |
+| `<dir>/retrain.lock` | exclusive, released on exit | **across processes**; a stale lock is broken after **`LOCK_STALE_S`, 3600 s** *(valued 2026-08-19)* |
 | a day folder | `YYYY-MM-DD` | **UTC-derived, never local** |
 | `<day>/index.csv`, `<day>/manifest`, `<day>/dicts/`, `<day>/incoming/` | — | `incoming/` here has **no** dot |
+| `<day>/manifest`'s contents | `index_schema_version: 1`<br>`index_columns: 26` | **two lines, and the format was as unset as the version** *(settled 2026-08-19)*. Key-and-colon because that is what `config.yaml` already reads like, and it greps |
 | a blob | `<day>/{requests,responses}/<2 hex>/<64 hex>.zst` | **2-character fan-out**, sha256 of the **plaintext**, `.zst` |
 
 **The `.incoming/` versus `incoming/` asymmetry is real and unexplained in the plan.** The defensible
@@ -1173,8 +1211,8 @@ therefore indistinguishable from working.
 | `Proxy.record()` | a third line, `corpus.submit(...)` — **four call sites** | 12 |
 | `Proxy` | the **arrived/recorded counter pair**, always on, independent of `corpus.enabled` | 9, 12 |
 | `Proxy.begin()` | increments `arrived` | 12 |
-| `observe.Call` | holds the request body **and** the response buffer ❓ *(field names unset)* | 12 |
-| `observe.watch()` | tees the response up to `max_body_bytes`, then **discards the copy and frees it** | 12 |
+| `observe.Call` | holds **`request_body`**, **`response_body`** and **`response_over_cap`** *(named 2026-08-19)* | 12 |
+| `observe.watch()` | tees the response up to `body_max_bytes`, then **discards the copy and frees it** | 12 |
 | `app.create_app()` | takes the writer **the way it already takes `stats`** | 12 |
 | `app.py` lifespan | starts and stops the worker; starts the training thread | 12, 14a |
 | `cli.py` | `--check` prints the block; **`--train-dict`, `--tune-dict`, `--extract`, `--from <dir>`** | 11, 13a, 14e |
@@ -1184,28 +1222,41 @@ therefore indistinguishable from working.
 ### 11 · CLI flags
 
 `--train-dict` and `--tune-dict` each take **a flag per `retrain` setting**, and the flag wins for
-that one run. ❓ **The four flag names are not fixed by this plan** — the obvious spelling is
-`--window-days`, `--sample-min-bytes`, `--maxdict`, `--k`, and `14e` should state them rather than
-invent them at the keyboard.
+that one run. **The four names mirror the config keys one-for-one** *(settled 2026-08-19)*:
+**`--window-days`, `--sample-min-bytes`, `--maxdict`, `--k`**, beside `--from <dir>`. **Mirroring is
+the rule rather than a preference** — it is what makes "the flag wins over the key for this run" a
+mapping a reader can see instead of a table they have to learn, and it is why `--k` keeps its
+one-letter spelling rather than being tidied into something prettier.
 
 `--train-dict` **bypasses the once-a-day guard** and works with `window_days: 0`; it **does not bypass
 the margin**. `--tune-dict` **never installs** and labels its own output provisional.
 
-### 12 · What is not yet decided — the ❓ rows collected
+### 12 · ~~What is not yet decided~~ — **all eight closed, 2026-08-19**
 
-**Compiling this register is what found them.** None is large; all of them are the class where a
-session at the keyboard invents a number and nothing records that it was invented.
+**Compiling this register is what found them.** Every one was the class where a session at the
+keyboard invents a number and nothing records that it was invented. **They were closed the same day
+they opened**, in one owner pass; rows are struck rather than deleted, because a row that vanishes
+cannot show the mechanism worked.
 
-| # | Missing | Why it matters | Whose |
+| # | Was missing | Settled as | Decided how |
 |---|---|---|---|
-| 1 | **The drain timeout's value** | Named as "a module constant" **twice**, and line 270 cites *"the precedent the shutdown timeout already set"* to justify the other six — **so the precedent itself has no value.** The prose reasons about a ~20 s worst case without proposing a number | owner |
-| 2 | **The `manifest`'s schema version** | Task 8 writes it. A version with no first value is a version nobody can compare against | owner, cheap |
-| 3 | **One cadence symbol or two** | The prose says the rhythms match *on purpose*; two symbols make that a coincidence | session, if the owner has no preference |
-| 4 | **The stale-lock age** on `retrain.lock` | "broken by age" with no age | owner |
-| 5 | **The four `--train-dict` flag names** | Task 14e | session |
-| 6 | **`Call`'s two new field names** | Task 12 | session |
-| 7 | **The class names** in `corpus.py` and `dictionary.py` | Tasks 8, 9, 13a, 14 | session |
-| ~~8~~ | ~~**Whether the scoring level should follow `compress_level_zstd`**~~ | **Closed out 2026-08-19**, the day it opened: **it does.** `TRAIN_LEVEL` drops to **3** and trains only. Kept struck rather than deleted — a row that vanishes cannot show the mechanism worked | owner, **decided** |
+| ~~1~~ | The drain timeout's value | **`DRAIN_TIMEOUT_S = 5`** | **By measurement** — Task 6's frozen 0.433 ms/body. It also **corrected the plan**, whose "twenty-second shutdown" was ~70x out and had survived two reviews |
+| ~~2~~ | The `manifest`'s schema version | **`INDEX_SCHEMA_VERSION = 1`**, plus the file's format, which was equally unset | Owner, on the simplest thing that compares |
+| ~~3~~ | One cadence symbol or two | **Two** — `RESCAN_EVERY` (bodies), `SUMMARY_EVERY` (calls) | **Against the plan's prose**, whose stated reason did not survive reading |
+| ~~4~~ | The stale-lock age | **`LOCK_STALE_S = 3600`** | Owner, on the asymmetry: early breaks run two trainers, late breaks delay a daily event |
+| ~~5~~ | The four `--train-dict` flag names | **`--window-days`, `--sample-min-bytes`, `--maxdict`, `--k`** | Owner — mirror the keys one-for-one |
+| ~~6~~ | `Call`'s new field names | **`request_body`, `response_body`, `response_over_cap`** | Owner. The register **found a live collision** — `Call` already carries `request_bytes`/`response_bytes` as integer counts — and that a **third** field was needed at all |
+| ~~7~~ | The class names | **`CorpusWriter`, `CorpusReader`, `DictionaryTrainer`** | Owner, on `StatsWriter`'s precedent |
+| ~~8~~ | Whether scoring follows `compress_level_zstd` | **It does**; `TRAIN_LEVEL` drops to 3 and trains only | Owner, and the only one of the eight that changed a decision rather than filling a hole |
+
+**Three of the eight were not merely holes.** Item 1 **contradicted** a number the plan asserts, item 3
+**refuted** a justification it gives, and item 6 turned up a **name collision on an existing object**
+plus a missing third field. **A register is not a tidying exercise** — asking "what is the value?" of
+every name at once is a different instrument from reading the prose, and it found things two forward
+review passes did not.
+
+**What Task 24 checks is therefore this whole section, not this table** — every row of the register
+against the code, with the ❓ column expected to be empty and each value matching what shipped.
 
 ### 13 · The one substantive finding this register produced — **found and closed the same day**
 

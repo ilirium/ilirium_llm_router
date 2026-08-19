@@ -1835,6 +1835,55 @@ structural rather than a lapse: **both read the plan as prose, task by task.** A
 config key defaulting to 9 read as consistent in prose and are only visibly a fuse when they sit in
 adjacent columns. **The register is the instrument that found it**, on its first compilation.
 
+## The register's eight open values, closed — 2026-08-19
+
+**One owner pass closed all eight ❓ rows** the register turned up. Item 8 (the training/scoring level
+split) has its own section above. The other seven:
+
+| Was missing | Settled as |
+|---|---|
+| The drain timeout | **`DRAIN_TIMEOUT_S = 5`** |
+| The `manifest`'s schema version **and format** | **`INDEX_SCHEMA_VERSION = 1`**, written as `index_schema_version: 1` / `index_columns: 26` |
+| One cadence symbol or two | **Two** — `RESCAN_EVERY = 500` bodies, `SUMMARY_EVERY = 500` calls |
+| The stale-lock age | **`LOCK_STALE_S = 3600`** |
+| The four CLI flag names | **`--window-days`, `--sample-min-bytes`, `--maxdict`, `--k`** |
+| `Call`'s new field names | **`request_body`, `response_body`, `response_over_cap`** |
+| The class names | **`CorpusWriter`, `CorpusReader`, `DictionaryTrainer`** |
+
+### Three of them were not holes, and that is the finding
+
+**A register is not a tidying exercise.** Asking *"what is the value?"* of every name at once is a
+different instrument from reading the prose task by task, and it caught three things the prose review
+could not.
+
+**1 · The drain timeout contradicted the plan's own frozen evidence.** `plan.md` justified it with
+*"a full queue is ~640 bodies, which at **tens of milliseconds each** is a **twenty-second**
+shutdown"*. **`evidence/results.txt` measures the whole store path at level 9 — sha256, compress,
+write, fsync, rename — at 0.433 ms per body.** So the real figure is **0.28 s**, or **1.4 s** if every
+stage hits its p95 at once; 64 MiB at the measured 162.5 MB/s is **0.41 s** of compression. **The plan
+was out by roughly 70x**, and it had survived two forward reviews — because a review reads the plan
+against itself, and this needed the plan read against the phase's own `evidence/`. **5 s** is ~3.5x the
+p95 worst case, so the timeout bounds a hang instead of routinely cutting a drain short.
+
+**2 · The cadence's justification did not survive reading.** `RESCAN_EVERY` was documented as matching
+the summary line *"so the worker has one periodic rhythm rather than two"*. **The summary is emitted
+from `submit()`, on the event loop — the worker never had two rhythms to merge.** And they count
+different units: one call can produce two bodies, so 500 bodies is ~250 calls. **They agree at 500 and
+are two decisions**, so they get two names.
+
+**3 · `Call` already uses the obvious names, for something else.** `request_bytes` and `response_bytes`
+are **integer counts** on that object and become CSV columns. Storing payloads under those names would
+have shadowed them on the same class. Hence `request_body` / `response_body` — and the register also
+turned up that a **third** field is needed: nothing distinguished *"no response body"* from *"discarded
+at the ceiling"*, which the ref cell has to report as `too_large`. That is **`response_over_cap`**.
+
+### And a rename, on the owner's instruction
+
+**`corpus.max_body_bytes` → `corpus.body_max_bytes`.** The other two size keys already read
+`<what>_<max|min>_bytes` — `queue_max_bytes`, `sample_min_bytes` — and this one alone put the direction
+first. **The rename was free**: Task 11 has not run, no `config.yaml` carries the key, nothing reads
+it. `compress_level_zstd` stays outside the shape because it is not a size.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*
