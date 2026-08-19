@@ -42,6 +42,7 @@ import threading
 import time
 import uuid
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
 
@@ -280,7 +281,7 @@ class CorpusWriter:
         This may raise: a full disk is a real thing. Task 9's worker is what catches it and writes
         `error` into the row, because one body failing must not stop the next.
         """
-        day = self._open_day(timestamp[:10])
+        day = self._open_day(self._day_of(timestamp))
         digest = hashlib.sha256(plaintext).hexdigest()
 
         # The invariant: whichever day folder this blob is going into must already hold this
@@ -496,7 +497,7 @@ class CorpusWriter:
         with self._lock:
             self._totals.queue_ms_max = max(self._totals.queue_ms_max, queue_ms)
 
-        day = self._open_day(item.record.timestamp[:10])
+        day = self._open_day(self._day_of(item.record.timestamp))
         if day.index is None:
             day.index = _DayIndex(day.root / "index.csv")
         day.index.append(
@@ -514,6 +515,27 @@ class CorpusWriter:
         )
 
     # -- days ---------------------------------------------------------------------------------
+
+    def _day_of(self, timestamp: str) -> str:
+        """`YYYY-MM-DD` from a call's timestamp, or today if that is not what it is.
+
+        **Checked rather than sliced, because the failure is silent and lands in the wrong place.**
+        An empty or malformed timestamp slices to something that is not a date, and joining that to
+        the corpus directory can resolve to **the corpus root itself** — which would put `manifest`,
+        `requests/` and `incoming/` beside `dicts/`, the folder the trainer writes to and this store
+        reads from. Every day folder is then ambiguous.
+
+        `observe.Call` always sets a UTC ISO timestamp, so this cannot fire in the router. It is
+        here because the store is telemetry-shaped and must not turn a bad value into a bad layout.
+        """
+        day = timestamp[:10]
+        if len(day) == 10 and day[4] == day[7] == "-" and day.replace("-", "").isdigit():
+            return day
+        today = datetime.now(UTC).strftime("%Y-%m-%d")
+        self._logger.warning(
+            "Corpus: %r is not a usable timestamp; filing under %s instead.", timestamp, today
+        )
+        return today
 
     def _open_day(self, day: str) -> _Day:
         """Create the day folder and everything under it, once, and remember it.

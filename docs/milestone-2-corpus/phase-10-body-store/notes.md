@@ -2313,6 +2313,30 @@ plus a NUL run and sequences that are not valid UTF-8 at all. **This is what dis
 by construction**: if the store ever decoded, parsed, normalised or re-encoded a body, that is what
 would catch it. The store never sees a body as anything but `bytes`.
 
+## Open at the end of Group C — 2026-08-19
+
+**Three things are open and none of them blocks Task 14.** Written down because the owner clears
+sessions deliberately and context keeps nothing.
+
+1. **How `compress_level_zstd` reaches the trainer.** Task 14b scores a candidate against the
+   incumbent at that **config key**, not at `TRAIN_LEVEL`, so `DictionaryTrainer` needs the value
+   passed in. `CorpusWriter` takes plain values rather than a config block, by the owner's decision
+   of 2026-08-19 — **the trainer should follow whichever shape reads better and say which it chose.**
+   Not a decision anyone is blocked on; it is a signature.
+2. **Whether `CorpusWriter` should now take `Corpus`.** The owner ruled that Task 8's plain-values
+   shape stands, with the `StatsWriter` mirror completed "in one line at Task 11 or 12". **Task 11
+   has since built the block and the change was still not made**, deliberately — nothing needed it,
+   and a signature churn mid-group buys nothing. It is a one-line change whenever somebody wants it.
+3. **`_days` grows one entry per day** in a long-running router: a `_Day` holds a path, a small set
+   of filenames and an open file handle. A few hundred small objects a year. **Named so nobody
+   rediscovers it as a leak** — and because the open handles are the part that would actually matter
+   if a router ran for years without restarting.
+
+**And one thing that is emphatically not open:** the four defects this group found are fixed, tested
+and committed. They are listed in the sections above, and the reason they are worth re-reading is not
+the bugs but the *shape* — **every one was found by driving, and one was hidden by a test that
+passed.**
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*

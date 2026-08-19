@@ -458,3 +458,17 @@ def test_extract_reads_a_day_back_and_reports(tmp_path: Path) -> None:
     assert finished.returncode == 0, finished.stderr
     assert "2 blob(s), 0 failed" in finished.stdout
     assert "every blob verified" in finished.stdout
+
+
+def test_a_malformed_timestamp_never_makes_the_corpus_root_a_day(tmp_path: Path) -> None:
+    """Sliced rather than checked, an empty timestamp resolves the day folder to the corpus root —
+    putting `manifest`, `requests/` and `incoming/` beside `dicts/`, which is the folder the trainer
+    writes to and the store reads from."""
+    store = writer(tmp_path)
+    store.store("", "requests", b"x" * 2048)
+    drain(store)
+
+    assert not (tmp_path / "manifest").exists()
+    assert not (tmp_path / "requests").exists()
+    days = [p.name for p in tmp_path.iterdir() if p.is_dir() and p.name[0].isdigit()]
+    assert len(days) == 1

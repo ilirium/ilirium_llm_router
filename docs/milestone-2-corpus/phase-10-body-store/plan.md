@@ -858,10 +858,21 @@ outcome of Task 6 falsifies one of those two sentences**, and Task 11 is where i
 > **And none of the four touches the write path.** That is what the nesting says: everything under
 > `retrain:` runs offline in its own thread, and a reader tuning a live call never has to look at it.
 
-### Group C — the store *(in progress)*
+### Group C — the store *(executed)*
 
-*Marker moved 2026-08-19 when Task 7 ran, per "Placeholders in this file": `*(in progress)*` is one of
-the two permitted spellings and the parenthesis stays exactly greppable.*
+*Marker moved to `*(in progress)*` when Task 7 ran and closed out on 2026-08-19 when Task 13a
+finished, per "Placeholders in this file". The parenthesis stays exactly greppable; the prose
+carries the state.*
+
+**All eight tasks ran on 2026-08-19: 7, 8, 9, 10, 11, 12, 13, 13a.** The store exists, is off by
+default, is wired into the router, and a body goes in through `POST /v1/messages` and comes back out
+through the reader, verified, from the day folder alone. **`make test` went 158 → 218.** The record
+is in `notes.md`; what it settled, and the four defects found by driving rather than by reading, are
+there rather than restated here.
+
+**Tasks 9 and 10 landed in one commit**, and 12/13/13a in another — stated because it is a departure
+from one-task-one-commit. Split, Task 9 would have committed a worker that computes an index row and
+discards it, the index being Task 10's. No task's contents changed.
 
 | # | Task |
 |---|---|
@@ -893,6 +904,11 @@ item.
 inside a running day, it is an ordinary analysis question and the index should answer it.
 
 ### Group D — the dictionary *(not started)*
+
+**This is where the next session starts, at Task 14.** Group C's reader (`CorpusReader` in
+`corpus.py`) is what Task 14a's trainer needs to assemble a sample list, and it ships. `TRAIN_LEVEL`,
+`INSTALL_MARGIN`, `TRAIN_BUDGET_S`, `WINDOW_MAX_DAYS`, `MIN_SESSIONS` and `LOCK_STALE_S` are all in
+"The register" with values; **none of them is in the code yet.**
 
 | # | Task |
 |---|---|
@@ -1322,7 +1338,7 @@ as an instance gets obeyed as an instance**, so this section names the instances
 | Where | Placeholder | Closed out at |
 |---|---|---|
 | The header, first line | *"Execution is under way; the group markers … say how far"* | Task 24. *Reworded 2026-08-18: it enumerated tasks, went stale the moment Task 4 ran, and was a second copy of the group markers. It now points at them instead, so there is one place to close out rather than two* |
-| ~~**Five**~~ **Four** group headings — ~~B,~~ C, D, E, F | `*(not started)*`, and `*(in progress)*` once a group's first task runs. Both are matched by the grep below, which is why those two are the only permitted spellings — **a third form would be invisible to it**, which is the defect finding 13 caught. **Group B closed out 2026-08-18** when Task 6 finished, and this count moved with it; a count that does not move is how this table went wrong before | Task 24, each group as it completes |
+| ~~**Five**~~ ~~**Four**~~ **Three** group headings — ~~B,~~ ~~C,~~ D, E, F | `*(not started)*`, and `*(in progress)*` once a group's first task runs. Both are matched by the grep below, which is why those two are the only permitted spellings — **a third form would be invisible to it**, which is the defect finding 13 caught. **Group B closed out 2026-08-18** when Task 6 finished and **Group C on 2026-08-19** when Task 13a did; the count moved with each, because a count that does not move is how this table went wrong before | Task 24, each group as it completes |
 | ~~Group **A**'s heading~~ | ~~`*(executed, except 3a)*`~~ | **Closed out 2026-08-18** when Task 3a finished, which is what this row said would close it. *Added earlier the same day: the table said "six" group headings and only five carried the marker, so the uncatalogued sixth was the one form the sweep could not see. Kept struck rather than deleted — a row that vanishes cannot show that the mechanism worked* |
 | The Record table below | `Merge commit \| not yet merged` | The merge itself |
 | "What is settled" | *"still open questions until Task 20"* | Task 20 |

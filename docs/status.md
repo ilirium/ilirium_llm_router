@@ -85,6 +85,37 @@ behaviour this file and `plan.md` both describe: *it rises when a task cites wha
 and falls when the file appears.* **`dictionary.py`'s citations are still outstanding and Task 14
 resolves them.**
 
+**2026-08-19, end of session — Group C is complete and the store works end to end.** Tasks 7 to 13a
+all ran. `src/ilirium_llm_router/corpus.py` holds `CorpusWriter` and `CorpusReader`; `config.py` has
+the nine-key block; `proxy.py`, `observe.py`, `app.py` and `cli.py` are wired. **`make test` went
+158 → 218.** **Group D, from Task 14, is where the next session starts.**
+
+**The claim this group had to make good, and did:** a body goes in through `POST /v1/messages` and
+comes back out through the reader, **byte-identical, verified against the digest in its own
+filename, from the day folder alone.** `tar` a day, unpack it elsewhere, and every blob opens. That
+is failure mode 2 — *archiving cannot stay opaque* — discharged by construction, and the test that
+makes it a check uses a body that is not UTF-8 and not JSON at all.
+
+**Four defects were found by driving rather than by reading, and they are the session's real
+output.** A repeat body after a mid-day dictionary swap named the **wrong dictionary** — and the
+first test missed it because two dictionaries shared a dictID, which is *this morning's* finding
+biting the instrument. The summary line reported **`→ 0 bytes`** because a counter was declared and
+never incremented. A malformed timestamp made the **corpus root** the day folder, writing `manifest`
+and `requests/` beside `dicts/`. And the `write_dict_id` assertion was only worth its line once it
+had been **broken on purpose** and seen to fire. **None of these would have failed a test suite,
+because none of them had a test until they were found.**
+
+**Four owner decisions were taken and are in `plan.md`'s settled table with their rejected
+alternatives:** the router stamps its **own content-derived dictID** (`content_dict_id()`, closing
+the levels-3/9/19 collision by construction); a repeat body's dictID is **read off the blob**; the
+`write_dict_id` check **refuses to start** rather than degrading quietly; and Task 8's two scope
+stretches stand.
+
+**Baselines, run not predicted: `make test` **218**, `make lint` clean, `make check` valid,
+`link-check.py` 82 files, **82 broken**, 2 roundabout.** It fell 86 → 81 when `corpus.py` appeared,
+then rose to 82 when the rewritten `prompt.md` cited `dictionary.py` — **the handoff file moving the
+baseline it quotes, which is the recursion to expect and not a defect.** Task 14 resolves it.
+
 **2026-08-19, later the same day — Phase 10 gained a register, and is *still* at Task 7.** **No `src/`
 change exists**; four commits, all documentation. `plan.md` gained **"The register"** — one reachable
 section holding **every constant, key, name and magic number the phase would build**, on the owner's
@@ -241,7 +272,7 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 10 — the body store, from Task 7.** **Planned and reviewed 2026-08-18, re-scoped
+1. **Execute Phase 10 — the body store, from Task 14 (Group D).** **Planned and reviewed 2026-08-18, re-scoped
    and reviewed a second time 2026-08-19; Groups A and B are done and no `src/` change exists yet.**
    The branch is in the table below and the task list is in
    `milestone-2-corpus/phase-10-body-store/plan.md`. **Do not re-plan or re-review it** — its
@@ -269,7 +300,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the new benchmark instrument, `pyproject.toml` / `uv.lock`, and — **since Task 8 — `src/ilirium_llm_router/corpus.py`, the first `src/` change of Milestone 2.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 9** — the byte-bounded queue, its worker thread and the arrived/recorded counter pair. **Groups A and B are done; Tasks 7 and 8 have run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new. `make test` 218.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 14** — the trainer, opening Group D. **Groups A, B and C are done**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*
