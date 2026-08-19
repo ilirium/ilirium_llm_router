@@ -10,22 +10,27 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-19 — Phase 10 was re-scoped by an interview, and it is still at Task 7.** **The router now
-retrains its own dictionary, automatically** — the plan had said training was an offline procedure run
-by hand, **that was never an owner decision**, and no review caught it because none asked whose it
-was. **Thirty-two tasks now**, seven lettered ones added and **nothing renumbered**. The config block
-goes from five keys to **nine**, four of them under a nested `corpus.retrain:`. **`plan.md`'s settled
-table and `notes.md`'s "The retraining interview" carry all of it** — including the rejected
-alternatives, which is the half a summary here would lose.
+**2026-08-19 — Phase 10 was re-scoped, reviewed again, and is still at Task 7.** **The router now
+retrains its own dictionary automatically** — the plan had said training was offline and manual,
+**that was never an owner decision**, and no review had asked whose it was. **Thirty-two tasks**,
+seven lettered, nothing renumbered; the config block went five keys to nine under a nested
+`corpus.retrain:`.
 
-**Two things it left pointed forward.** The **training wall clock is unmeasured** and Task 14a
-measures it *before* the trigger is wired, because UTC midnight is an arbitrary local hour. And **the
-extraction reader ships in this phase** — training cannot read its own samples without it — while the
-tool built on it is Phase 11's.
+**A second forward review ran under `method/IDM-004` and its 22 findings are applied** — charter is
+`review-charter-retraining.md`, merged list is in the phase's `notes.md`. **Do not re-review it.**
+**The cold run found 16 to the author run's 9, including all four that fail silently**, which is the
+strongest evidence `IDM-004` has. Eight findings needed owner decisions and all eight were made.
 
-**One correction it made to the corpus record:** `gate.py` never deduplicated, so **12.10× was trained
-on 48 bodies of which 26 are distinct** — 46% `overloaded_error` retries. The owner declined a rerun;
-Task 21 states the composition in the slice column instead.
+**The correction worth carrying:** `train_dictionary` takes a `level` that changes which dictionary
+you get and defaults to **3**; Task 6's **13.65×** was produced at **19**. The trainer now trains and
+scores at **9**, the write-path level, so **13.65× is no longer reproducible** and Task 15 records the
+level-9 ratio it actually gets.
+
+**Two new homes exist.** **`docs/wiki/`** — a tier for what was established by *reading* a dependency,
+with three pages and its test in `wiki/README.md`; and **`procedures/event-loop-lag/`**, which
+measured that a thread only protects the event loop when the work **releases the GIL**.
+`.claude/settings.json` gained `attribution.sessionUrl: false`, the first non-permission entry in it,
+with `IDM-002` amended to say what sorts anything that is not a permission.
 
 **2026-08-18 — Phase 10 is executing. Groups A and B are done; the next task is 7.**
 `feat/phase-10-body-store`, forked at `d885b2f`. Its `plan.md`
@@ -57,7 +62,8 @@ make a session act wrongly — `reference/measurements.md:34`, a slice whose sig
 
 **Before touching anything:** `procedures/link-check.py` before and after anything that moves, and
 `make test` must report **158**. The checker **does not report zero**: **68 broken and 2 roundabout on
-`main`**, **76 on this branch**, both re-derived by running on 2026-08-18. The excess is
+`main`** (2026-08-18), and **83 broken, 2 roundabout, 82 files on this branch**, re-derived by running
+on **2026-08-19**. The excess is
 `backlog.md`'s recurring false-positive class, and **it rises when a task cites what it is about to
 build and falls when the file appears** — today it went 79 → 80 → 76. **Run the tool; do not predict
 it from the docstring**, which Phase 8 proved twice gives the wrong answer. *(`make test` is ~0.6 s
@@ -123,9 +129,11 @@ arguing.*
 is the full inventory.*
 
 1. **Execute Phase 10 — the body store, from Task 7.** **Planned and reviewed 2026-08-18, re-scoped
-   2026-08-19; Groups A and B are done and no `src/` change exists yet.** The branch is in the table below and the task list is in
+   and reviewed a second time 2026-08-19; Groups A and B are done and no `src/` change exists yet.**
+   The branch is in the table below and the task list is in
    `milestone-2-corpus/phase-10-body-store/plan.md`. **Do not re-plan or re-review it** — its
-   re-derivation and its forward review have both run, and the review's 22 findings are applied.
+   re-derivation and **two** forward reviews have run, and **all findings from both are applied**
+   (22 in each; the second's charter is `review-charter-retraining.md`).
    *(The 2026-08-19 re-scope is not an exception to that: it was an **owner interview**, not a session
    re-planning work it had been handed, and what it settled is in the plan's settled table with its
    rejected alternatives.)*
@@ -148,7 +156,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the new benchmark instrument, and `pyproject.toml` / `uv.lock`. **`git diff main -- src/` is still empty; Task 8 is where that changes** | **Task 7** — the round-trip smoke test, opening Group C. **Groups A and B are done**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. **Re-scoped 2026-08-19** to thirty-two tasks: the router retrains itself, and `13a`/`14a`–`14f` are lettered because execution has begun |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the new benchmark instrument, and `pyproject.toml` / `uv.lock`. **`git diff main -- src/` is still empty; Task 8 is where that changes** | **Task 7** — the round-trip smoke test, opening Group C. **Groups A and B are done**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*
