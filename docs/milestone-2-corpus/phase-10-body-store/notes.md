@@ -1790,6 +1790,51 @@ own weaker dictionary. **Both land on the ~94% `plan.md` already records**, from
 dictionaries. **Task 15 still trains, installs, verifies a round-trip and records its own number** —
 this only says where it should land, and if it lands far from 12.9× something is wrong.
 
+### The decision: one constant became two sources — 2026-08-19
+
+**Owner's, taken the same day the register surfaced the question.** The plan's settled table carries
+the row and both rejected alternatives; this is the interview.
+
+**The question the owner asked** was whether `TRAIN_LEVEL` must differ from `compress_level_zstd`, and
+whether **3** — the library's own default — would do for training while 9 stays the archive level as
+*"a good balanced default, not the max"*. **Both halves are right**, and the second is what the frozen
+evidence already said: level 9 is 94% of level 19's dicted ratio at roughly 13x the throughput.
+
+**The correction the interview needed** was that `TRAIN_LEVEL` was doing **two jobs**, so re-valuing it
+to 3 would have fixed the inconsequential one and broken the useful one — scoring would have moved to
+3, which is the exact defect the 2026-08-19 retraining decision existed to remove. **The fix is a
+split, not a new value.**
+
+| | Was | Is |
+|---|---|---|
+| Archiving | `compress_level_zstd` (9) | unchanged |
+| **Scoring** | `TRAIN_LEVEL` (9) | **`compress_level_zstd`** (9) — read from config |
+| **Training** | `TRAIN_LEVEL` (9) | **`TRAIN_LEVEL` (3)** — and nothing else |
+
+**Two alternatives were rejected.**
+
+**Keeping 9 for training.** Once the two jobs are separated, the only argument 9 ever carried — *"it
+matches the write path"* — belongs to **scoring**. Training would then sit at a value with nothing
+behind it, where 3 is the library's own default and in the fastest tier. **Measured, not argued:**
+0.03% across levels 3 to 19.
+
+**Making both follow `compress_level_zstd`.** This looks simpler — one number, no constant, and it is
+what the original *"one level in the whole trainer"* was reaching for. **Refused on a hazard the
+measurement turned up:** every training level produces **one dictID**, so binding training to an
+editable key means **editing that key changes dictionary bytes without changing the ID the reader
+finds them by** — two different dictionaries, one ID, in one `dicts/` folder. A fixed `TRAIN_LEVEL`
+keeps that latent. **The two-source answer is not merely tidier; it is the safer of the two**, which
+is the opposite of how it looks.
+
+**One consequence carried into the design.** `<dir>/retrain.log` now records **the scoring level** on
+each line. It was a constant and is now operator-editable, so two ratios logged on different days are
+not comparable unless the line says what they were scored at.
+
+**And a note on where this came from.** Neither forward-review pass found it, and the reason is
+structural rather than a lapse: **both read the plan as prose, task by task.** A constant at 9 and a
+config key defaulting to 9 read as consistent in prose and are only visibly a fuse when they sit in
+adjacent columns. **The register is the instrument that found it**, on its first compilation.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*

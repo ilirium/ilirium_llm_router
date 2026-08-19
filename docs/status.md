@@ -22,9 +22,18 @@ seven lettered, nothing renumbered; the config block went five keys to nine unde
 strongest evidence `IDM-004` has. Eight findings needed owner decisions and all eight were made.
 
 **The correction worth carrying:** `train_dictionary` takes a `level` that changes which dictionary
-you get and defaults to **3**; Task 6's **13.65×** was produced at **19**. The trainer now trains and
-scores at **9**, the write-path level, so **13.65× is no longer reproducible** and Task 15 records the
-level-9 ratio it actually gets.
+you get and defaults to **3**; Task 6's **13.65×** was produced at **19**. So **13.65× is no longer
+reproducible**, and Task 15 records the level-9 ratio it actually gets — **measured 2026-08-19 at
+12.920×** on the provisional `maxdict`/`k`, which is where it should land.
+
+*This paragraph read "the trainer now trains and scores at **9**" until 2026-08-19, when compiling
+`plan.md`'s new **"The register"** found that one constant was doing **two jobs**. **There are three
+levels, not one:** archiving and **scoring** both read `corpus.compress_level_zstd` (9), while
+**training** uses `TRAIN_LEVEL`, now **3**. Scoring had to follow the key or an operator editing it
+would silently score at a level nothing writes at; training was measured to be **irrelevant — 0.03%
+across levels 3 to 19** on the held-out slice. Binding **both** to the key was refused on a hazard:
+every training level yields **one dictID**, so an edit would change dictionary bytes without changing
+the ID the reader finds them by.*
 
 **Two new homes exist.** **`docs/wiki/`** — a tier for what was established by *reading* a dependency,
 with three pages and its test in `wiki/README.md`; and **`procedures/event-loop-lag/`**, which
@@ -62,8 +71,9 @@ make a session act wrongly — `reference/measurements.md:34`, a slice whose sig
 
 **Before touching anything:** `procedures/link-check.py` before and after anything that moves, and
 `make test` must report **158**. The checker **does not report zero**: **68 broken and 2 roundabout on
-`main`** (2026-08-18), and **83 broken, 2 roundabout, 82 files on this branch**, re-derived by running
-on **2026-08-19**. The excess is
+`main`** (2026-08-18), and **85 broken, 2 roundabout, 82 files on this branch**, re-derived by running
+on **2026-08-19**. *(It was 83 the same day, until `plan.md`'s new "The register" cited
+`corpus.py` and `dictionary.py` — two forward citations that Tasks 8 and 14 resolve.)* The excess is
 `backlog.md`'s recurring false-positive class, and **it rises when a task cites what it is about to
 build and falls when the file appears** — today it went 79 → 80 → 76. **Run the tool; do not predict
 it from the docstring**, which Phase 8 proved twice gives the wrong answer. *(`make test` is ~0.6 s

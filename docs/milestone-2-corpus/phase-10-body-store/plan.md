@@ -80,6 +80,7 @@ the row on retraining below.)*
 | **How a running router picks one up** — *2026-08-19* | **The worker rescans `<dir>/dicts/`** and swaps when the newest differs from what it loaded. An in-process slot was this session's proposal and is **wrong**, because the manual command runs elsewhere. The trainer therefore publishes nothing: it writes a file, and that is the entire interface |
 | **Restarting to pick one up** — *2026-08-19* | **Rejected.** A router that restarts itself severs live SSE streams mid-generation; against a local model that is minutes of work destroyed. The swap touches one object between two queue items, a restart touches every open connection |
 | **Extraction** — *2026-08-19* | **The reader ships in this phase; the tool built on it is Phase 11's.** Not optional here — training cannot assemble a sample list without decompressing blobs, which is extraction's core path. Deferring all of it was the earlier plan and the owner corrected it |
+| **The training level, and the scoring level** — *2026-08-19* | **They are two different things and get two different sources.** Training uses **`TRAIN_LEVEL`, now 3**; scoring uses **`corpus.compress_level_zstd`**, read from config. This **narrows** the training-parameters row above: that decision was right that *scoring* belongs at the level bodies are stored at, and **overreached in binding training to it too**. Measured the same day on `gate.py`'s held-out split — training levels 3, 6, 9, 12 and 19 land within **0.03%** of each other, so the training level is **not a parameter**, while 19 costs 8x the wall clock. **Two alternatives were rejected.** *Keeping 9* — once the two are split, the only argument 9 ever had ("it matches the write path") belongs to scoring, leaving training at a value with nothing behind it, where 3 is the library's own default. *Making both follow `compress_level_zstd`* — simpler-looking, and **refused on a hazard**: all five training levels produce **one dictID**, so a key change would alter dictionary bytes without altering the ID the reader looks them up by. A fixed `TRAIN_LEVEL` keeps that latent |
 | **The retry finding** — *2026-08-19* | **No rerun.** `gate.py` trained on **48 bodies, 26 distinct** — 46% repeats, being `overloaded_error` retries — and the owner declined a measurement of the effect, on the ground that these sessions are too short for the numbers to be more than approximate and that they carry enough accuracy to execute against. **Task 21 states the training-set composition in the slice column** instead |
 
 ### And two questions the owner did not have to answer
@@ -240,7 +241,11 @@ lived, and sha256 over a 200 KB body on the event loop is small but not free.
 corpus:
   enabled: false              # opt-in. Nothing is written until this is true
   dir: logs/corpus            # relative paths resolve against the config file's directory
-  compress_level_zstd: 9      # the zstd level the write path uses. MEASURED by Task 6, 2026-08-18:
+  compress_level_zstd: 9      # the zstd level the write path uses -- AND the level the trainer scores
+                              # a candidate dictionary against the incumbent at, so the comparison
+                              # cannot drift from what is actually stored (2026-08-19). It does NOT
+                              # set the level a dictionary is TRAINED at; that is TRAIN_LEVEL = 3,
+                              # measured to move the ratio by 0.03%. MEASURED by Task 6, 2026-08-18:
                               # 94% of level 19's dicted ratio for an eighth of the per-body cost,
                               # and ~500x the target peak load on one worker
   max_body_bytes: 1048576     # one body bigger than this is not stored: `too_large`
@@ -278,14 +283,14 @@ there.)*
 
 | Constant | Value | What it is |
 |---|---|---|
-| `TRAIN_LEVEL` | **9** | The zstd level used **both** to train a dictionary and to score candidate against incumbent. **One level in the whole trainer** |
+| `TRAIN_LEVEL` | **3** | The zstd level used to **train** a dictionary, and **nothing else**. *(Was 9 and also did the scoring, until 2026-08-19 — see below.)* **Scoring is not a constant**: it reads `corpus.compress_level_zstd` |
 | `TRAIN_D` | 8 | COVER's dmer size. Task 6 used it throughout and never varied it |
 | `INSTALL_MARGIN` | **2%** | A candidate must beat the incumbent by more than this to be installed |
 | `RESCAN_EVERY` | 500 bodies | How often the worker relists `<dir>/dicts/`. Matches the summary line's cadence, so the worker has one periodic rhythm rather than two |
 | `TRAIN_BUDGET_S` | **60** | Above this, training is **startup-only**; at or below it, startup **and** day-rollover. Task 14a measures and applies it |
 | `WINDOW_MAX_DAYS` | 30 | The cap on widening the window in search of a second session; see below |
 
-**`TRAIN_LEVEL = 9` is a correction, and it is the one the review called silent.** *Found 2026-08-19.*
+**The level is a correction, and it is the one the review called silent.** *Found 2026-08-19.*
 `train_dictionary` takes a `level` that changes **which dictionary you get**, and `zstandard` defaults
 it to **3** when `steps` and `threads` are unset — `backend_cffi.py:2860`, `level = level or 3`.
 Task 6 produced **13.65x** by passing `level=19` explicitly (`evidence/benchmark.py:355`). The config
@@ -293,11 +298,31 @@ block shipped `maxdict` and `k` and **never mentioned `level`**, so an executor 
 3 and shipped a dictionary documented as 13.65x that is not — with nothing detecting it, and Task 21's
 register row wrong.
 
-**The owner's decision is to train and score at the level bodies are actually stored at**, which makes
-the comparison answer the question that matters — *which dictionary compresses better in production* —
-rather than one nobody asked. **The cost is named:** `13.65x` is no longer the reproducible figure,
-because it was measured at 19. **Task 15 records the level-9 ratio it actually gets**, and Task 21
-carries the level in the slice column beside it.
+**That correction was right about scoring and overreached to training, and the second half was undone
+the same day.** *Amended 2026-08-19, after compiling "The register" below.* It concluded *"train and
+score at the level bodies are actually stored at"* and made **one** constant do both — but the two are
+independent knobs. **Scoring at the write level is sound**, and it is the question that matters:
+*which dictionary compresses better in production*. **Training at the write level answers no question
+at all** — a dictionary trained at 3 is perfectly valid for archives written at 9, and nothing binds
+one to the other.
+
+**So the constant was split, and each half went to its proper source.** Scoring reads
+`corpus.compress_level_zstd`, because a constant that merely *equals* the key today is a coincidence
+that breaks the moment an operator edits it — the scoring level would silently stop being the level
+anything writes at, falsifying the sentence the whole decision rests on. **Training keeps a constant,
+now 3**, on a measurement rather than on an argument: across levels 3, 6, 9, 12 and 19 the held-out
+ratio moves by **0.03%**, two orders of magnitude below `INSTALL_MARGIN` — so a change to
+`TRAIN_LEVEL` alone can never install a dictionary, and the choice is **self-limiting**. `notes.md`
+carries the table.
+
+**Pass it explicitly even so.** Relying on `level = level or 3` means relying on a branch that fires
+only when `steps` **and** `threads` are both unset, and that same branch quietly sets `steps = 4`.
+The discipline is the one `k` already earned: **pass the parameter, do not inherit it.**
+
+**The cost is named and the split does not change it:** `13.65x` is no longer the reproducible figure,
+because it was measured at **write** level 19. **Task 15 records the level-9 ratio it actually gets** —
+measured 2026-08-19 at **12.920x** on the provisional `maxdict`/`k`, which is where it should land —
+and Task 21 carries **both** levels in the slice column, since one number now has two of them.
 
 **`INSTALL_MARGIN = 2%` is provisional and says so.** There is no data to choose it from: the frozen
 sweep shows neighbouring parameter choices differing by −15% to +14%, so anything from 1% to 10% is
@@ -629,14 +654,14 @@ observation 7 cannot catch the rollover case**, since it exercises a swap within
 | **Enabled** | **`corpus.enabled` must be true.** No thread starts otherwise, and nothing under `<dir>/` is created — Task 18's observation 1 is *"leaves no trace: no directory, no file"*, and a trainer that makes `<dir>/dicts/.incoming/` breaks it. `retrain.window_days: 0` is the second, independent off switch |
 | **Trigger** | Startup, **and** day-rollover if the measured training time is at or under **`TRAIN_BUDGET_S` (60 s)**. Above it, startup only. *Task 14a measures and applies the constant; it does not choose a policy* |
 | **Guard** | A dictionary **or a retrain-log line** dated today ⇒ stop. **Refusals are recorded too**, or a candidate that loses is retrained from identical input on every restart, forever, for a verdict that cannot change. **`--train-dict` bypasses this guard** — see below |
-| **The retrain log** | **`<dir>/retrain.log`**, one line per attempt: UTC timestamp, window, sample count, candidate ratio, incumbent ratio, verdict. *Its home was chosen against two collisions the review found: `<dir>/dicts/` would be relisted by the pickup, and a day folder would make training state something a day needs — so it sits beside them, at the corpus root. **Nothing reads it to read a day**, which is the direction the self-containment rule actually forbids* |
+| **The retrain log** | **`<dir>/retrain.log`**, one line per attempt: UTC timestamp, window, sample count, candidate ratio, incumbent ratio, **the scoring level**, verdict. *(The level was added 2026-08-19 when scoring moved to `compress_level_zstd`: it is now operator-editable, so two ratios logged on different days are not comparable unless the line says what they were scored at.)* *Its home was chosen against two collisions the review found: `<dir>/dicts/` would be relisted by the pickup, and a day folder would make training state something a day needs — so it sits beside them, at the corpus root. **Nothing reads it to read a day**, which is the direction the self-containment rule actually forbids* |
 | **Single-flight** | One training run at a time **across processes**, not merely across threads — `--train-dict` is deliberately another process. An exclusive lock on `<dir>/retrain.lock`, released on exit; a stale lock from a killed process is broken by age |
 | **Material** | The newest **complete** day folders — `retrain.window_days` is a **minimum, not a fixed count**. Blobs read from `<day>/requests/`, decompressed through Task 13a's reader, which finds each day's dictionary by the frame's own dictID |
 | **Widening** | **Keep adding older complete days until the window holds at least two sessions**, up to `WINDOW_MAX_DAYS` (30). *Owner's decision 2026-08-19, and it exists because the split below cannot run otherwise: `run-02` and `run-03` each carry **exactly one session**, and one harness on one laptop — the stated target — produces single-session days as the ordinary case* |
 | **Floor** | Below a viable sample count, or with **no complete day at all**, it does not train: one `INFO` line and a retrain-log entry. **A fresh install therefore trains nothing on its first day**, which is correct — the store writes undicted frames meanwhile, at ~3.12x, and they stay valid forever |
 | **Sampling** | Plaintext length ≥ `retrain.sample_min_bytes`. **No dedup step is needed within one day** — content addressing means the store holds one blob per distinct body. Across a widened window duplicates return, and there the filename *is* the digest, so it costs one `set()` |
 | **Split** | Leave-one-session-out, **held-out slice from the newest day**, holding out its largest session. `session_id` is index column 2; membership is not in the blob store, so the index is read for the split even though sampling does not need it |
-| **Compare** | Candidate and incumbent both compressed at **`TRAIN_LEVEL`**, the level the write path stores at. Install only on a win exceeding **`INSTALL_MARGIN`**. **With no incumbent, any candidate that trains is installed** — the ordinary first case, since Group C ships before Group D |
+| **Compare** | Candidate and incumbent both compressed at **`corpus.compress_level_zstd`** — read from config, **not `TRAIN_LEVEL`**, so the comparison cannot drift from the level the write path actually stores at. Install only on a win exceeding **`INSTALL_MARGIN`**. **With no incumbent, any candidate that trains is installed** — the ordinary first case, since Group C ships before Group D |
 | **Install** | `<dir>/dicts/.incoming/<pid>-<uuid>.tmp` → fsync → rename to `req-<UTC>-<dictID>.dict`. **The tmp name is unique per run**, so two processes cannot rename interleaved bytes into one valid-looking file |
 | **Never** | Raises into a call. Telemetry-shaped: it logs and dies quietly |
 
@@ -848,7 +873,7 @@ inside a running day, it is an ordinary analysis question and the index should a
 |---|---|
 | **14** | **The trainer, in `src/ilirium_llm_router/dictionary.py`** — its own module, because the store and the trainer share only the reader — `zstandard` rather than the binary, **the refusal mechanism** — it measures a candidate against the incumbent and will not install a worse one. *(The **split and the margin** that mechanism uses are Task 14b's; this task builds the machinery, not the rule. Narrowed 2026-08-19, the second review having found both tasks claiming the comparison.)* Directly from `zstd --train` being non-monotonic at 68 samples. **It must set `k` explicitly** — *added 2026-08-18 from Task 6*: `zstandard` uses COVER and its own choice of `k` is up to **15% worse** than `zstd --train`, while `k=8000` is **13% better**. The library's optimiser is a trap at this sample count, and nothing said so before the measurement. **It records its own wall clock**, which Task 14a then needs. *(Amended 2026-08-19: this task read `docs/procedures/corpus-dictionary/` — the trainer must live in `src/` because the router now calls it, and `docs/procedures/` is the documentation tier. **There is no `docs/procedures/corpus-dictionary/`** — owner's decision 2026-08-19: `--train-dict` and `--tune-dict` live on the router's own CLI and are documented in `../../reference/corpus.md` at Task 19, so a procedure folder would be a third place describing one command. *This row previously said the procedure "keeps its row" in `../../procedures/README.md`; there was no row and no folder to keep.)* |
 | **14a** | **The trigger and the training thread** — `threading.Thread(daemon=True)`, started from `app.py`'s lifespan and, if the measurement permits, from the worker's day-rollover path. Single-flight; the today-guard including the **attempt record** so a refusal is not retried from identical input forever; window collection and blob decompression through Task 13a's reader; the sample floor. **It never raises into a call.** **Its first act is to measure the training wall clock**, log it, and **apply `TRAIN_BUDGET_S`**: at or under 60 s it registers both triggers, above it registers startup only. *The threshold is the owner's, set 2026-08-19, so this task applies a rule rather than choosing a policy — the second review found it holding a gate with no branch instruction, which is the defect the first review had already fixed once in Task 6.* **Say so out loud if the measured time lands near the budget**, since the widening rule above is what would push it there |
-| **14b** | **The split and the margin** — leave-one-session-out holding out the **largest session of the newest complete day**, scoring both dictionaries at `TRAIN_LEVEL`, installing on a win above `INSTALL_MARGIN`, and **installing unconditionally when there is no incumbent**. Plus the widening rule: keep adding complete days until two sessions are present, capped at `WINDOW_MAX_DAYS`. Both biases are live and they run in opposite directions: scoring on the training day guarantees the candidate wins, and scoring anywhere inside a rolling window guarantees the incumbent does. Session membership comes from the index; sampling does not need it |
+| **14b** | **The split and the margin** — leave-one-session-out holding out the **largest session of the newest complete day**, **scoring both dictionaries at `corpus.compress_level_zstd`** — the config key, *not* `TRAIN_LEVEL`, which trains only *(narrowed 2026-08-19)* — installing on a win above `INSTALL_MARGIN`, and **installing unconditionally when there is no incumbent**. Plus the widening rule: keep adding complete days until two sessions are present, capped at `WINDOW_MAX_DAYS`. Both biases are live and they run in opposite directions: scoring on the training day guarantees the candidate wins, and scoring anywhere inside a rolling window guarantees the incumbent does. Session membership comes from the index; sampling does not need it |
 | **14c** | **The pickup** — the worker rescans `<dir>/dicts/` on opening a day folder and every N bodies, and swaps when the newest name differs from what it loaded. **Ordering is the invariant: copy into the day folder, then build the compressor, then swap.** Newest is by **filename**, never mtime — `logs/` sits in a cloud-synced folder here. One `listdir` per N bodies, in the worker, off the request path |
 | ~~**14d**~~ | ~~The config~~ — **struck 2026-08-19 and absorbed into Task 11**, which already specified every clause of it: the nested block, `extra="forbid"` on both models, `--check` printing it, and `window_days: 0`. *The second review found two tasks owning one deliverable, with Task 11 executing first — so a reader would build nine keys at 11 and find 14d empty. **The letter is spent and not reused**, per `../../README.md`; a struck row shows the mechanism worked where a deleted one cannot* |
 | **14e** | **`--train-dict` and `--tune-dict`** — the manual command with a flag per `retrain` setting, flag winning over config for that one run, **working even when `window_days` is 0**, and **bypassing the once-a-day guard** — owner's decision 2026-08-19: typing the command is explicit consent to retrain, **but it does not bypass the margin**, so a hand-run cannot install a dictionary that loses. Plus **`--from <dir>`**, without which Task 15 cannot use this tool at all: it trains from `logs/corpus-gate/`, which has no day folders and is not a `corpus.dir`. `--tune-dict` sweeps `maxdict` × `k`, **prints the whole surface rather than the winner** (non-monotonic on both trainers), **labels its own output provisional** (no usable validation split), and **never installs.** It is a mode of the trainer, not a second instrument — Task 6 already found what happens when two things that should agree do not |
@@ -913,7 +938,7 @@ whole configuration without starting the server, which is the first half of ever
 | `stats.max_bytes`, `stats.backup_count` | 5 MiB × 10 | **unchanged, and deliberately** — a milestone non-goal |
 | `corpus.enabled` | **new.** Opt-in; nothing is written until true | added |
 | `corpus.dir` | **new.** `logs/corpus` | added |
-| `corpus.compress_level_zstd` | **new.** The zstd level the write path uses; default measured by Task 6 | added |
+| `corpus.compress_level_zstd` | **new.** The zstd level the write path uses, **and the level the trainer scores candidate against incumbent at** *(2026-08-19)*. Not the training level — that is `TRAIN_LEVEL`. Default measured by Task 6 | added |
 | `corpus.max_body_bytes` | **new.** One body larger than this is not stored | added |
 | `corpus.queue_max_bytes` | **new.** Total bytes waiting to be written | added |
 | `corpus.retrain.window_days` | **new, 2026-08-19.** Complete days of material to train from; **`0` disables automatic retraining** | added |
@@ -1011,6 +1036,7 @@ nested block silently accepts typos.
 | `corpus.enabled` | `bool` | `false` | must be boolean | 11 |
 | `corpus.dir` | `Path` | `logs/corpus` | resolved against the **config file's** directory | 11 |
 | `corpus.compress_level_zstd` | `int` | **9** | `ge=1, le=22`, **hardcoded** | 11 |
+| | | | *also the **scoring** level the trainer compares at — the one key read by both the write path and `dictionary.py`* | 14b |
 | `corpus.max_body_bytes` | `int` | **1_048_576** (1 MiB) | `gt=0` — **not disableable** | 11 |
 | `corpus.queue_max_bytes` | `int` | **67_108_864** (64 MiB) | `gt=0` — **not disableable** | 11 |
 | `corpus.retrain.window_days` | `int` | **1** | `ge=0`; **`0` disables automatic retraining** and is the one "off" value in the block | 11 |
@@ -1024,7 +1050,7 @@ nested block silently accepts typos.
 
 | Symbol | Value | Module | Task | Also in the prose table |
 |---|---|---|---|---|
-| `TRAIN_LEVEL` | **9** | `dictionary.py` | 14 | yes |
+| `TRAIN_LEVEL` | **3** | `dictionary.py` | 14 | yes — **training only**; scoring reads `corpus.compress_level_zstd` |
 | `TRAIN_D` | **8** | `dictionary.py` | 14 | yes |
 | `INSTALL_MARGIN` | **0.02** (2%) | `dictionary.py` | 14b | yes |
 | `RESCAN_EVERY` | **500** bodies | `corpus.py` | 14c | yes |
@@ -1179,20 +1205,42 @@ session at the keyboard invents a number and nothing records that it was invente
 | 5 | **The four `--train-dict` flag names** | Task 14e | session |
 | 6 | **`Call`'s two new field names** | Task 12 | session |
 | 7 | **The class names** in `corpus.py` and `dictionary.py` | Tasks 8, 9, 13a, 14 | session |
-| 8 | **Whether the scoring level should follow `compress_level_zstd`** | **This one is not cosmetic** — see the note below | owner |
+| ~~8~~ | ~~**Whether the scoring level should follow `compress_level_zstd`**~~ | **Closed out 2026-08-19**, the day it opened: **it does.** `TRAIN_LEVEL` drops to **3** and trains only. Kept struck rather than deleted — a row that vanishes cannot show the mechanism worked | owner, **decided** |
 
-### 13 · The one substantive finding this register produced
+### 13 · The one substantive finding this register produced — **found and closed the same day**
 
-**`TRAIN_LEVEL` is a module constant at 9; `compress_level_zstd` is a config key defaulting to 9.**
-The decision of 2026-08-19 justified `TRAIN_LEVEL = 9` as *"the level bodies are actually stored at"*
-— **and an operator who sets `compress_level_zstd: 19` silently falsifies that sentence.** The
-comparison then scores candidate against incumbent at a level nothing writes at, which is the exact
-defect the decision was made to remove.
+**What it found.** `TRAIN_LEVEL` was a module constant at 9 doing **two jobs**, while
+`compress_level_zstd` was a config key defaulting to 9. The decision of 2026-08-19 justified the
+constant as *"the level bodies are actually stored at"* — **and an operator setting
+`compress_level_zstd: 19` silently falsifies that sentence**, leaving the comparison scoring candidate
+against incumbent at a level nothing writes at. That is the exact defect the decision was made to
+remove, reintroduced through the back door by making the write level configurable and the scoring
+level not.
 
-**It is one line to fix and it is the owner's to choose**, because the fix is a decision about which
-of the two is the constant: score at `config.corpus.compress_level_zstd` and keep `TRAIN_LEVEL` for
-training alone, or keep one constant and record that `compress_level_zstd` is expected to stay at 9.
-**Recorded here rather than resolved** — see the measurement below, which is what turned the question up.
+**Three levels, not one.** Naming them separately is most of the fix:
+
+| | Source | Value | Job |
+|---|---|---|---|
+| **Archive** | `corpus.compress_level_zstd` | 9 | what bodies are compressed at, per body, in the worker |
+| **Scoring** | `corpus.compress_level_zstd` | 9 | what candidate and incumbent are compared at |
+| **Training** | `TRAIN_LEVEL` | **3** | what `train_dictionary(level=)` is passed |
+
+**What was decided, 2026-08-19.** Scoring follows the key, because a constant that merely *equals* it
+today is a coincidence with a fuse in it. Training keeps a constant and drops to **3** — measured
+irrelevant at **0.03%** across levels 3 to 19 on the held-out slice, so the value is chosen on the
+library's own default rather than on a borrowed argument. The settled table carries the row and both
+rejected alternatives.
+
+**Why "both from the key" was refused, since it is the simpler-looking answer.** All five training
+levels produce **one dictID** — the ID comes from content that `k`, `d` and the samples fix, and the
+level changes only the entropy tables layered on it. Bind training to an editable key and **editing
+that key changes dictionary bytes without changing the ID the reader looks them up by.** A fixed
+`TRAIN_LEVEL` keeps that hazard latent, which is why the two-source answer is not merely tidier but
+**safer than the one-source one.**
+
+**And the register is what produced it.** Two forward-review passes read this plan as prose and neither
+asked what value each name held; the defect is invisible until a constant and a config key sit in
+adjacent columns with the same number in them.
 
 ---
 
