@@ -1661,6 +1661,97 @@ margin, the two having both claimed the comparison.
 sample volume large, and sample volume is what training time scales with. At present corpus sizes I
 expect seconds, not minutes. Task 14a measures it and must say so if it lands near the budget.
 
+## The register, and the training-level question it answered — 2026-08-19
+
+**Written on the owner's instruction, before Task 7 executed:** put every constant, magic number and
+new name the phase would implement into **one reachable section of `plan.md`**, so they can be checked
+against the code when the phase is ready. It is `plan.md`'s **"The register"**, thirteen subsections,
+and **Task 24 now checks it row by row.**
+
+**Compiling it is what found the gaps**, which is the argument for having done it as a list rather
+than trusting the prose: **eight values are named by the plan and given no number anywhere.** The
+worst is the **drain timeout** — called "a module constant" twice, and cited at `plan.md:270` as *"the
+precedent the shutdown timeout already set"* to justify the other six constants. **The precedent
+itself has no value.** Also unset: the `manifest`'s schema version, the stale-lock age, whether the
+worker's rescan cadence and the summary cadence are one symbol or two, and four CLI flag names.
+
+**Two forward-review passes did not catch these**, and the reason is worth keeping: both reviewed the
+plan *as prose*, task by task. **A register is a different instrument** — it asks "what is the value?"
+of every name at once, and an absent number is only visible when the numbers are in a column.
+
+### The side question: is a dictionary's training level the same thing as the archive level?
+
+**No. They are three different things and the plan collapses them into one.**
+
+| | What it is | Where |
+|---|---|---|
+| **The archive level** | the level bodies are compressed at, per body, in the worker | `corpus.compress_level_zstd`, a **config key**, default 9 |
+| **The scoring level** | the level candidate and incumbent are compared at | `TRAIN_LEVEL`, a **module constant**, 9 |
+| **The training level** | `train_dictionary(level=)` — it changes **which dictionary bytes you get** | `TRAIN_LEVEL`, the same constant |
+
+**The scoring level genuinely should equal the archive level.** That argument is sound and is what the
+2026-08-19 decision actually established: the question worth answering is *which dictionary compresses
+better in production*.
+
+**The training level is an independent knob and that argument does not transfer to it.** A dictionary
+trained at level 3 is perfectly valid for archives written at level 9; nothing binds a dictionary to a
+level. So *"train at the level bodies are stored at"* answers no question — it is not wrong, it is
+**unmotivated**, and the plan states it as though the two must agree.
+
+### Measured, because the docstring does not settle it
+
+`train_dictionary`'s docstring calls `level` *"target compression level **when trying parameter
+variations**"*, which reads as **inert once `k` and `d` are fixed** — no variations, no effect. **That
+reading is wrong.** Run 2026-08-19, `zstandard 0.25.0` / `cext` / libzstd 1.5.7, all 68 request bodies
+≥ 1,024 bytes across all three `logs/corpus-gate/` runs, `k=8000`, `d=8`, `maxdict=262144`:
+
+| Training level | Wall clock | sha256 of the dictionary | Ratio when the samples are stored at **level 9** |
+|---|---|---|---|
+| 3 | 0.04 s | `3a8e570cb8f3dd87…` | 38.535× |
+| **9** | 0.05 s | `db50af3541179888…` | **38.566×** |
+| 19 | 0.46 s | `603121db6da39770…` | 38.429× |
+
+**Three different dictionaries.** The level survives a fixed `k`/`d` because it also feeds the entropy
+tables libzstd bakes into the dictionary header, not only the parameter search.
+
+**And it barely matters: 0.08% between the best and level 3.** That is two orders of magnitude below
+`INSTALL_MARGIN = 2%`, and far below the −15%/+14% the frozen sweep found between neighbouring `k` and
+`maxdict`. **So the decision to train at 9 is harmless; only its stated reason is stronger than the
+evidence.** Training level is not where the value is — `k` and the corpus are, which Task 6 already
+found.
+
+**38.5× is not a corpus figure and must not be quoted as one.** It is **self-scored** — trained and
+measured on the same 68 bodies, with no held-out slice — which is exactly the "candidate always wins"
+bias `plan.md` describes. It is a *relative* number, valid only for comparing the three rows against
+each other. **Phase 9's 12.10× remains the milestone's figure.**
+
+### The one thing that is not cosmetic
+
+**`TRAIN_LEVEL` is a constant at 9 while `compress_level_zstd` is a key defaulting to 9.** Set
+`compress_level_zstd: 19` and the scoring level silently stops being the level anything writes at —
+**which falsifies the exact sentence the decision rests on.** Recorded as ❓8 in the register and left
+for the owner: either the scoring level reads `config.corpus.compress_level_zstd`, or the plan records
+that `compress_level_zstd` is expected to stay at 9.
+
+### A latent hazard, found in passing and not yet a defect
+
+**All three dictionaries above report the same dictID (`1395207755`).** The dictID is derived from the
+dictionary's *content*, which `k`/`d`/samples fix — and the level changes only the entropy tables on
+top of it. So **two genuinely different dictionaries can carry one dictID**, and `plan.md` has the
+reader find a dictionary **by** dictID.
+
+**It is latent, not live**, because `TRAIN_LEVEL` is a single constant: every automatically-trained
+dictionary uses one level, and a retrain on identical input reproduces the incumbent byte for byte and
+loses the margin. **It goes live the moment the training level becomes configurable** — which is what
+❓8 would be reopening. Worth knowing before that choice is made, not after. *(The digest in the
+filename means such a mix-up fails loudly at the reader's integrity check rather than returning wrong
+bytes — but it is still an unreadable day.)*
+
+**One hint for Task 14a, offered as a hint and not as its measurement.** Training took **0.04–0.46 s**
+here, which is far under `TRAIN_BUDGET_S = 60`. **That is not Task 14a's number**: it excludes
+decompressing every blob through the reader, and 68 samples is smaller than a widened window. Task 14a
+still measures the real thing.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*

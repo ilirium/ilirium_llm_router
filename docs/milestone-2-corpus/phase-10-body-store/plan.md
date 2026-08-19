@@ -271,6 +271,11 @@ given no value anywhere.* **Module constants, on the precedent the shutdown time
 owner's decision, the same day. Configuration this project does not need is configuration it does not
 get, and none of these is a number an operator would know how to choose.
 
+**The complete list of every constant, key and name is "The register" below**; this table carries the
+six whose *reason for not being a config key* needed arguing. *(Pointer added 2026-08-19 with the
+register. The register is authoritative for the value, this table for the why — so a number is changed
+there.)*
+
 | Constant | Value | What it is |
 |---|---|---|
 | `TRAIN_LEVEL` | **9** | The zstd level used **both** to train a dictionary and to score candidate against incumbent. **One level in the whole trainer** |
@@ -878,7 +883,7 @@ depends on — a dependency cannot be scheduled after the thing that needs it.
 | **21** | The numbers into `../../reference/measurements.md` — **all four columns or they do not go in** |
 | **22** | `../implementation-plan.md` — Phase 10 from outline to record, and the central claim's three failure modes marked honestly, including the one this phase does not discharge |
 | **23** | **Replace or delete `../../prompt.md`.** It names Phase 10 and nothing else, and `../../README.md` records that it is the one file there allowed to go stale — which is why it must be closed out rather than left |
-| **24** | Close out: `notes.md`'s "Verified by"; the **widened** placeholder sweep; `make test`; `link-check.py` **run, not predicted**; merge `--no-ff` with the message from a temp file; the hash into `notes.md` **and** this file's Record table |
+| **24** | Close out: `notes.md`'s "Verified by"; **"The register" checked row by row against the code, every ❓ closed or carried forward with a reason**; the **widened** placeholder sweep; `make test`; `link-check.py` **run, not predicted**; merge `--no-ff` with the message from a temp file; the hash into `notes.md` **and** this file's Record table |
 
 ---
 
@@ -966,6 +971,228 @@ to replace:
 one worth insisting on: **the swap ordering fails silently.** Get it backwards and everything works
 until a crash lands between two steps, after which one day folder holds a blob whose dictID names a
 dictionary that is not in it — and nothing reports that until somebody tries to read it back.*
+
+---
+
+## The register — every name and number this phase introduces
+
+*Added 2026-08-19, on the owner's instruction: **one reachable section holding every constant, magic
+number and new name the phase would implement, so they can be checked against the code when the phase
+is ready.** Task 24 checks it, and Task 18 already checks the configuration half.*
+
+**This section is authoritative for the *value*; the prose above is authoritative for the *why*.**
+That split is deliberate and the risk in it is named rather than hidden: six of the constants below
+also appear in "The constants beside it, and why they are not keys", so **a value changed in one place
+and not the other is drift this repository has been bitten by before.** The rule is therefore —
+**change the number here, and the prose above keeps only the reason.**
+
+**Rows marked ❓ are named by this plan and given no value anywhere.** They were found by compiling
+this register, which is the first time anything enumerated them; see "What is not yet decided" at the
+end.
+
+### 1 · New modules
+
+| Module | Holds | Task |
+|---|---|---|
+| `src/ilirium_llm_router/corpus.py` | The blob store, the byte-bounded queue and its worker, the day index, **and the reader** | 8, 9, 10, 13a |
+| `src/ilirium_llm_router/dictionary.py` | The trainer, the training thread, the split, the margin | 14, 14a, 14b |
+
+**Two modules, not one or three.** The store and the trainer share only the reader, which is why the
+reader lives with the store and the trainer imports it.
+
+### 2 · Configuration — nine keys
+
+**`Corpus(Strict)` and `Retrain(Strict)`**, following `config.py`'s existing one-class-per-block shape
+(`Server`, `Logging`, `Stats`). **`extra="forbid"` comes from `Strict` and must be on both**, or the
+nested block silently accepts typos.
+
+| Key | Type | Default | Bound | Built by |
+|---|---|---|---|---|
+| `corpus.enabled` | `bool` | `false` | must be boolean | 11 |
+| `corpus.dir` | `Path` | `logs/corpus` | resolved against the **config file's** directory | 11 |
+| `corpus.compress_level_zstd` | `int` | **9** | `ge=1, le=22`, **hardcoded** | 11 |
+| `corpus.max_body_bytes` | `int` | **1_048_576** (1 MiB) | `gt=0` — **not disableable** | 11 |
+| `corpus.queue_max_bytes` | `int` | **67_108_864** (64 MiB) | `gt=0` — **not disableable** | 11 |
+| `corpus.retrain.window_days` | `int` | **1** | `ge=0`; **`0` disables automatic retraining** and is the one "off" value in the block | 11 |
+| `corpus.retrain.sample_min_bytes` | `int` | **1024** | `ge=1` | 11 |
+| `corpus.retrain.maxdict` | `int` | **262_144** | `gt=0` — **provisional**, not measured-optimal | 11 |
+| `corpus.retrain.k` | `int` | **8000** | `gt=0` — **provisional**, not measured-optimal | 11 |
+
+`Config.resolve_paths()` gains `corpus.dir`, beside the two it already resolves.
+
+### 3 · Module constants
+
+| Symbol | Value | Module | Task | Also in the prose table |
+|---|---|---|---|---|
+| `TRAIN_LEVEL` | **9** | `dictionary.py` | 14 | yes |
+| `TRAIN_D` | **8** | `dictionary.py` | 14 | yes |
+| `INSTALL_MARGIN` | **0.02** (2%) | `dictionary.py` | 14b | yes |
+| `RESCAN_EVERY` | **500** bodies | `corpus.py` | 14c | yes |
+| `TRAIN_BUDGET_S` | **60** | `dictionary.py` | 14a | yes |
+| `WINDOW_MAX_DAYS` | **30** | `dictionary.py` | 14b | yes |
+| `MIN_SESSIONS` *(name proposed)* | **2** | `dictionary.py` | 14b | no — the widening rule states the number in prose only |
+| the drain timeout on `close()` | ❓ **unset** | `corpus.py` | 9 | named twice as "a module constant", never given a number |
+| the summary cadence | **500** calls | `corpus.py` | 9 | **❓ one symbol or two?** — see below |
+| the index schema version in `manifest` | ❓ **unset** | `corpus.py` | 8 | no |
+
+**The cadence question is not pedantry.** `RESCAN_EVERY` is **500 bodies in the worker**; the summary
+line is **500 calls from the submit path**. Different threads, different counters, the same number —
+and the prose says they match *on purpose*, so that "the worker has one periodic rhythm rather than
+two". **One shared symbol makes that true and keeps it true; two symbols that happen to be 500 make it
+a coincidence that will drift.** The plan does not say which, and the code will have to.
+
+**`TRAIN_BUDGET_S = 60` is a gate with a branch, not a threshold to record.** At or under it Task 14a
+registers **both** triggers; above it, startup only. A run that measures the number and does not act
+on it leaves the design with the hole "Placeholders in this file" names.
+
+### 4 · Constants that already exist and that this phase must not collide with
+
+*Compiled because two of them share a value with something new, and a reader who conflates them will
+be wrong in a way nothing catches.*
+
+| Existing | Value | Why it is here |
+|---|---|---|
+| `observe.MAX_SCAN_BYTES` | **1_048_576** | **The same number as `max_body_bytes`'s default and a different job entirely** — it caps what the *usage scanner* buffers, and it is not configurable. Changing one does not change the other, and they are free to diverge |
+| `stats.COLUMNS` | 20 names | **The index's first twenty columns are this tuple, in this order.** That is what lets a rotated `calls.csv` segment and a day index feed one spreadsheet |
+| `stats.MAX_ERROR_MESSAGE` | 200 | Applies to the index's `error_message` too, since the column is copied |
+| `proxy.TIMEOUT` | `connect=5, read=600, write=30, pool=5` | Unchanged. Named so a session does not read the corpus's timeouts as related to it |
+| `app.CATCH_ALL_METHODS` | 7 methods | The catch-all is **why** `max_body_bytes` exists — an unenumerated endpoint's reply can be any size |
+
+### 5 · The index — 26 columns, in order
+
+**Columns 1–20 are `stats.COLUMNS` verbatim.** Columns 21–26 are this phase's, and the order is
+load-bearing:
+
+| # | Column | Holds |
+|---|---|---|
+| 21 | `request_ref` | 64-char sha256 hex, **or** `dropped` / `too_large` / `absent` / `error` |
+| 22 | `response_ref` | the same |
+| 23 | `queue_ms` | wait before a worker took it. Real on a `dropped` row |
+| 24 | `store_ms` | hash + compress + write + fsync. **Empty, never `0`, when no body was stored** |
+| 25 | `queue_bytes` | pending bytes at submit. Real on a `dropped` row |
+| 26 | `request_dict_id` | 8-char hex dictID, **or** `none` when stored undicted, **or empty** when no request body was stored |
+
+**The header is re-emitted in every day file**, so these six strings are on disk in every day folder
+and **a rename after any real capture splits the corpus.** They are names, not labels.
+
+### 6 · The sentinel words, and why words
+
+| Word | Where | Means |
+|---|---|---|
+| `dropped` | ref cells | the queue was over its byte bound |
+| `too_large` | ref cells | one body over `max_body_bytes` |
+| `absent` | ref cells | **the router authored this body** — the 400, the 502, the injected SSE `error` event |
+| `error` | ref cells | compression or the write itself failed in the worker |
+| `none` | `request_dict_id` | stored with **no** dictionary |
+| *(empty cell)* | `store_ms`, `request_dict_id` | genuinely absent |
+
+**A word can never be mistaken for a 64-char digest, and `0` is a real dictID** — which is why the
+undicted case gets a word and not a zero. `../../reference/observability.md`: *an absent value is an
+empty cell, never a zero.*
+
+### 7 · Names that go on disk
+
+**These are as much a schema as the columns are** — a rename after any capture is a migration.
+
+| Path | Form | Note |
+|---|---|---|
+| `<dir>/dicts/` | — | **the source**; the trainer writes here, the router reads here |
+| `<dir>/dicts/.incoming/` | — | **dot-prefixed**, unlike a day's `incoming/` |
+| a dictionary | `req-<UTC>-<dictID>.dict` | e.g. `req-2026-08-18T104500Z-a3f91c2b.dict` |
+| the UTC stamp in it | `%Y-%m-%dT%H%M%SZ` | **"newest" is by filename, never mtime** — `logs/` is inside a cloud-synced folder here |
+| the dictID in it | **8 lowercase hex** | a dictID is a `uint32`, so 8 is exact |
+| the trainer's staging file | `<pid>-<uuid>.tmp` | unique per run, so two processes cannot interleave into one valid-looking name |
+| `<dir>/retrain.log` | one line per attempt | UTC stamp, window, sample count, candidate ratio, incumbent ratio, verdict |
+| `<dir>/retrain.lock` | exclusive, released on exit | **across processes**; a stale lock is broken by age ❓ *(the age is unset)* |
+| a day folder | `YYYY-MM-DD` | **UTC-derived, never local** |
+| `<day>/index.csv`, `<day>/manifest`, `<day>/dicts/`, `<day>/incoming/` | — | `incoming/` here has **no** dot |
+| a blob | `<day>/{requests,responses}/<2 hex>/<64 hex>.zst` | **2-character fan-out**, sha256 of the **plaintext**, `.zst` |
+
+**The `.incoming/` versus `incoming/` asymmetry is real and unexplained in the plan.** The defensible
+reason is that `<dir>/dicts/` is *listed* by the pickup and a dot-prefix keeps staging out of that
+listing, while a day's `incoming/` sits among named siblings nothing globs. **If that is the reason it
+should be written down; if it is not, one of the two should change.**
+
+### 8 · The queue, and its item
+
+| Name | Type | Note |
+|---|---|---|
+| `_queue` | `queue.SimpleQueue` | **unbounded**; thread-safe both ends, `put` never blocks |
+| `_lock` | `threading.Lock` | guards `_pending` only. **Held for nanoseconds, never across I/O** |
+| `_pending` | `int` | **payload bytes** waiting — `len(req) + len(res)`, *not* `sys.getsizeof` |
+
+**The item is a 5-tuple:** `(CallRecord, request_bytes, response_bytes, submitted_at,
+pending_at_submit)`. The last two exist because `queue_ms` and `queue_bytes` are values **only
+`submit()` can see** — read in the worker, `queue_bytes` would record depth at dequeue, near zero, and
+therefore indistinguishable from working.
+
+**The ~33-byte `bytes` header is deliberately not counted.** This is a tripwire, not an accountant.
+
+### 9 · Derived numbers — arithmetic, not settings
+
+*Here so that nobody re-derives them wrongly or writes one into the code as a constant.*
+
+| Number | From |
+|---|---|
+| **~640 bodies** — the queue's item capacity at the default | 67_108_864 ÷ 103_935 ≈ 645 |
+| **103_935 bytes** — the median request | Phase 9's measured corpus, not a setting |
+| **~1–3 calls/s** — the target peak | extrapolated from 0.14 and 0.03 calls/s measured |
+| **~2,930 bodies/s** — one worker at level 9 | Task 6, and it is **~500×** the target peak. This is why there is no `workers` key |
+| **~250 MB/year** bodies, **~150 MB/year** dictionaries | extrapolations the owner has accepted as too small to act on |
+
+### 10 · New surface on existing objects
+
+| Where | Change | Task |
+|---|---|---|
+| `Proxy.record()` | a third line, `corpus.submit(...)` — **four call sites** | 12 |
+| `Proxy` | the **arrived/recorded counter pair**, always on, independent of `corpus.enabled` | 9, 12 |
+| `Proxy.begin()` | increments `arrived` | 12 |
+| `observe.Call` | holds the request body **and** the response buffer ❓ *(field names unset)* | 12 |
+| `observe.watch()` | tees the response up to `max_body_bytes`, then **discards the copy and frees it** | 12 |
+| `app.create_app()` | takes the writer **the way it already takes `stats`** | 12 |
+| `app.py` lifespan | starts and stops the worker; starts the training thread | 12, 14a |
+| `cli.py` | `--check` prints the block; **`--train-dict`, `--tune-dict`, `--extract`, `--from <dir>`** | 11, 13a, 14e |
+
+**No new route.** `/health` is unchanged and the catch-all forwards everything else.
+
+### 11 · CLI flags
+
+`--train-dict` and `--tune-dict` each take **a flag per `retrain` setting**, and the flag wins for
+that one run. ❓ **The four flag names are not fixed by this plan** — the obvious spelling is
+`--window-days`, `--sample-min-bytes`, `--maxdict`, `--k`, and `14e` should state them rather than
+invent them at the keyboard.
+
+`--train-dict` **bypasses the once-a-day guard** and works with `window_days: 0`; it **does not bypass
+the margin**. `--tune-dict` **never installs** and labels its own output provisional.
+
+### 12 · What is not yet decided — the ❓ rows collected
+
+**Compiling this register is what found them.** None is large; all of them are the class where a
+session at the keyboard invents a number and nothing records that it was invented.
+
+| # | Missing | Why it matters | Whose |
+|---|---|---|---|
+| 1 | **The drain timeout's value** | Named as "a module constant" **twice**, and line 270 cites *"the precedent the shutdown timeout already set"* to justify the other six — **so the precedent itself has no value.** The prose reasons about a ~20 s worst case without proposing a number | owner |
+| 2 | **The `manifest`'s schema version** | Task 8 writes it. A version with no first value is a version nobody can compare against | owner, cheap |
+| 3 | **One cadence symbol or two** | The prose says the rhythms match *on purpose*; two symbols make that a coincidence | session, if the owner has no preference |
+| 4 | **The stale-lock age** on `retrain.lock` | "broken by age" with no age | owner |
+| 5 | **The four `--train-dict` flag names** | Task 14e | session |
+| 6 | **`Call`'s two new field names** | Task 12 | session |
+| 7 | **The class names** in `corpus.py` and `dictionary.py` | Tasks 8, 9, 13a, 14 | session |
+| 8 | **Whether the scoring level should follow `compress_level_zstd`** | **This one is not cosmetic** — see the note below | owner |
+
+### 13 · The one substantive finding this register produced
+
+**`TRAIN_LEVEL` is a module constant at 9; `compress_level_zstd` is a config key defaulting to 9.**
+The decision of 2026-08-19 justified `TRAIN_LEVEL = 9` as *"the level bodies are actually stored at"*
+— **and an operator who sets `compress_level_zstd: 19` silently falsifies that sentence.** The
+comparison then scores candidate against incumbent at a level nothing writes at, which is the exact
+defect the decision was made to remove.
+
+**It is one line to fix and it is the owner's to choose**, because the fix is a decision about which
+of the two is the constant: score at `config.corpus.compress_level_zstd` and keep `TRAIN_LEVEL` for
+training alone, or keep one constant and record that `compress_level_zstd` is expected to stay at 9.
+**Recorded here rather than resolved** — see the measurement below, which is what turned the question up.
 
 ---
 
