@@ -138,6 +138,21 @@ measurement rather than documentation, and its answers expire with each release.
 are easy to get wrong: nothing sent has ever been *rejected*, a large fixed preamble arrives before
 the user types anything, and prefill on a local model is measured in minutes.
 
+## What we learned about somebody else's software
+
+→ `docs/wiki/` — **read the relevant page before putting work in the background, and before assuming
+anything about `zstandard`.** It holds what was established by *reading* a dependency rather than by
+trusting its documentation, with the sources linked and the versions pinned.
+
+Two things a session would otherwise get confidently wrong. **`BackgroundTask` is not the mechanism
+for background work** — it is awaited inside a request's ASGI cycle — and **`asyncio.create_task` is
+the one that quietly stalls every concurrent request**, because CPU-bound work on the event loop
+blocks it. And **`zstandard`'s dictionary trainer needs `k` set explicitly**; left to its own
+optimiser it is materially worse on a small corpus, and the tool is not the variable.
+
+`docs/wiki/README.md` holds the test that separates this tier from `reference/`: **`reference/` is
+this router and the backends it dispatches to; `wiki/` is what it is built from.**
+
 ## Open proposals — the EPDs
 
 Questions **written up and deliberately not decided** live in `docs/epd/`, indexed by

@@ -1325,6 +1325,68 @@ the largest thing on the machine. Three seconds makes the whole question moot; f
 saturated CPU makes rollover-triggering indefensible and startup-only the answer. **The measurement
 comes before the trigger is wired**, and that ordering is the decision.
 
+## The `wiki/` tier, created on this branch — 2026-08-19
+
+**Owner's decision, at the end of the retraining interview**, and it is recorded here because it is a
+change to the documentation structure that appears inside a `feat/` phase branch — which needs an
+explanation rather than a reader's guess.
+
+**What it is:** `docs/wiki/`, for behaviour of the libraries and tools this project is **built from**,
+established by reading them, with sources linked and version pins. Two pages:
+`background-work-in-fastapi.md`, `zstandard-and-libzstd.md` and `reading-a-c-extension-binary.md`. `docs/README.md` gains an eighth
+filing row, a tier section, and a clause on rule 1 separating a **backend** (something the router
+dispatches to → `reference/`) from a **dependency** (something it is built from → `wiki/`).
+
+**Why it exists:** the answers that produced it — which background mechanism fits which shape of work,
+and what `zstandard` does that its documentation does not say — were established during this phase and
+**would otherwise have survived only in this file**, which is archive. Nobody opens a phase note to
+find out how `BackgroundTask` behaves.
+
+### The rule it cuts against, named rather than glossed
+
+**`../../method/IDM-001-git-branching.md` says work belonging to a later phase never goes on an
+earlier phase's branch, even documentation** — and **Phase 8 created the `method/` tier as a phase of
+its own**, which is the precedent for treating a new tier as phase-shaped work.
+
+**Three options were put to the owner** — its own `docs/` branch off `main`, this branch, or parking
+it in `../../backlog.md` — **and this branch was chosen.** The argument on that side is real: the
+content is Phase 10's own research, and the alternative leaves it in a session that gets cleared.
+**The cost is equally real and is the reason for this section:** a reader running `git log` over this
+branch finds a documentation tier appearing inside a `feat/` phase, and nothing in the phase's plan
+predicts it. It is here because the owner decided it, not because it was overlooked.
+
+**It is not in `plan.md`'s task list and no task number was spent on it.** Adding one would say this
+phase planned it, and this phase did not.
+
+### Two things deliberately not done
+
+**No number was moved into a wiki page.** `../../README.md`'s rule that a measurement's canonical row
+is `../../reference/measurements.md` is unchanged; both pages **cite** the phase evidence and say
+where the numbers will live after Task 21. A tier that starts quoting numbers becomes the second copy
+the structure exists to prevent.
+
+**The upstream links were fetched after all** — consent was given later the same day, and it was
+worth having. **22 URLs, 21 returned 200 and one did not resolve at all**: `www.uvicorn.org`, written
+from knowledge because it looks exactly like the address that project would have. Its own README gives
+`uvicorn.dev`. **A plausible URL reads as verified until somebody clicks it**, which is the whole
+argument for checking rather than for writing carefully.
+
+**Two content claims were checked rather than only the status codes**, since a 200 says a page exists
+and nothing about whether it supports the sentence citing it. FastAPI's Caveat section does send heavy
+computation to *"other bigger tools like Celery"*, as claimed. **Starlette's background-tasks page gives
+no warning about long or heavy work at all** — which is a better justification for the wiki page than
+the one originally written: the constraint is real, and the only way to find it is to read
+`background.py`.
+
+**A third page was added the same day, on the owner's instruction:**
+`reading-a-c-extension-binary.md`, which was earlier recommended as a *section* of the `zstandard`
+page. Writing it separately paid immediately. **Every command in it was run rather than recounted**,
+and doing so found that Task 4's method had done unnecessary work: `otool -tV` annotates each stub call
+with its symbol name, so the index arithmetic against the `__stubs` section and `otool -Iv` was never
+required. **The finding itself re-derived exactly** — 21 functions, 0 unbalanced, the same instruction
+sequence — which is the useful half: the conclusion held and only the route to it was longer than it
+needed to be.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*
