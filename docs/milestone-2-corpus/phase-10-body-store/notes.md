@@ -1619,6 +1619,48 @@ side. **All five held.**
    `--tune-dict` are on the router's own CLI? Three entry points may be one too many.
 7. **Is the ~150 MB/year dictionary storage figure re-accepted?** Still raised-and-unratified.
 
+### The findings applied, and the eight decisions that closed them — 2026-08-19
+
+**All 22 were applied the same day, and none was refused.** Eight of them could not be closed by an
+editor because they needed a decision; the owner made all eight in one pass.
+
+| Decision | |
+|---|---|
+| **One session in the window** | **Widen** — keep adding complete days until two sessions are present, capped at `WINDOW_MAX_DAYS`. `retrain.window_days` becomes a **minimum**. Splitting by call and skipping the day were both offered; skipping was rejected because a one-harness laptop is the stated target and would then never retrain |
+| **The margin, `N`, the sweep ranges** | **Module constants**, on the shutdown timeout's precedent. Config stays at nine settings |
+| **`--train-dict`'s exemptions** | **Bypasses the once-a-day guard, keeps the margin.** Typing it is consent to retrain, not consent to install something worse |
+| **The trigger** | **`TRAIN_BUDGET_S = 60`**, a constant. Task 14a measures and *applies* it rather than choosing a policy |
+| **The training level** | **`TRAIN_LEVEL = 9`** — the level bodies are actually stored at, used for training **and** scoring, one level in the whole trainer |
+| **The scoring level** | **The same constant.** Impossible to get out of step |
+| **Day one** | **Train nothing, log why.** Undicted frames meanwhile; they stay valid forever |
+| **`procedures/corpus-dictionary/`** | **Dropped.** The CLI is the procedure and `reference/corpus.md` documents it |
+
+**The storage figure was settled separately and is not a blocker:** too small to act on, and a raw
+approximation whose severity is not judgeable without real usage data. **Revisited against measurement
+rather than arithmetic**, which is the footing the day-thinness item already sits on.
+
+**`TRAIN_LEVEL = 9` is the correction that mattered most**, and it is worth stating what it costs:
+**13.65x is no longer the reproducible figure**, because it was produced at level 19. Task 15 records
+the level-9 ratio it actually gets and Task 21 carries the level beside it. **The alternative was
+keeping 19 and shipping a dictionary tuned for a level the router never uses** — a number that stays
+comparable while describing nothing.
+
+**One value is mine rather than the owner's and is flagged as such.** `INSTALL_MARGIN = 2%` had no
+data to be chosen from: the frozen sweep's neighbouring parameters differ by −15% to +14%, so anything
+from 1% to 10% is arguable. **2% is above run-to-run noise and below every real improvement the sweep
+found**, and it is provisional on the same terms as the storage figure.
+
+**Two structural changes came out of the review rather than out of a decision.** Task **14d is struck
+and absorbed into Task 11**, which already specified every clause of it and executes first — the
+letter is spent and not reused, and the row is struck rather than deleted so the mechanism is visible.
+And Task **14** was narrowed to the refusal *machinery* while Task **14b** owns the split and the
+margin, the two having both claimed the comparison.
+
+**Said out loud, as the owner asked.** The 60-second budget is most likely to be breached by the
+**widening rule they had just chosen** — pulling in many days on a quiet machine is what makes the
+sample volume large, and sample volume is what training time scales with. At present corpus sizes I
+expect seconds, not minutes. Task 14a measures it and must say so if it lands near the budget.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*
