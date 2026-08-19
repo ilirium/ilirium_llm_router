@@ -6,11 +6,19 @@ Two scripts answering one question, from inside and from outside:
 |---|---|
 | `event_loop_lag.py` | **The mechanism.** A coroutine ticks every 10 ms and records how late it woke. No server, no socket |
 | `uvicorn_lag.py` | **The deployment.** Real FastAPI, real uvicorn on `127.0.0.1:8791`, HTTP round-trips timed from a **separate process** so the client cannot contend for the server's GIL |
+| `cpu_offload.py` | **The follow-up.** If the work does *not* release the GIL, which offload works — process pool, hand-rolled workers with a bounded queue, or subinterpreters — and what each costs to hand a payload to |
 
 ```
 uv run python docs/procedures/event-loop-lag/event_loop_lag.py
 uv run python docs/procedures/event-loop-lag/uvicorn_lag.py
+uv run python docs/procedures/event-loop-lag/cpu_offload.py     # and see the note below
 ```
+
+**Run `cpu_offload.py` under both interpreters.** `InterpreterPoolExecutor` needs **3.14**, and the
+venv is 3.13, so under `uv run python` that regime is skipped and under `python3` (3.14 here) all
+four run. It is the one script in this folder with **no dependencies at all** — the work is pure
+arithmetic on purpose, GIL-holding work being the whole subject — so bare `python3` is correct for it
+and wrong for the other two.
 
 **`uv run python`, never bare `python3`** — `python3` on this machine is a 3.14 without `zstandard`.
 Each takes about 15 seconds and prints to stdout; neither writes a file, so there is no `runs/`

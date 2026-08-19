@@ -1432,6 +1432,54 @@ access to Python objects or Python's C API"*, and **names `zlib` and `hashlib` a
 compressing or hashing** — the same pattern Task 4 read out of `zstandard`'s binary. So the mechanism
 now has an authoritative statement behind it and not only this project's measurement.
 
+## The general case, and a claim this session got wrong twice — 2026-08-19
+
+**The owner asked for the wiki to cover CPU-bound work that *holds* the GIL, and explicitly not to
+answer "Celery" — "it itself is toooooo complex".** Fair: a task queue solves durability and
+distribution, and *"this call is slow"* is a different problem that three cheaper rungs already
+solve.
+
+`cpu_offload.py` joins `../../procedures/event-loop-lag/`, measuring four mechanisms under Python
+3.14.7 on ten cores, three consecutive runs. **`ProcessPoolExecutor` and `InterpreterPoolExecutor`
+both protect the loop completely** — p99 of 0.74 and 0.78 ms against an idle floor of 1.10 — while a
+thread sits at 13.00. **Hand-rolled `Process` workers on a bounded queue do the most work by far**,
+2901 units against 1398, because fire-and-forget skips the result round trip — **and have the worst
+tail, a p99 of 16 ms**, because the producer side is GIL-holding Python in your own process.
+
+### The correction, and it was reasoned from documentation both times
+
+**This session told the owner that subinterpreters' advantage is "startup and memory cost, not data
+transfer", because the stdlib docs say both executors "serialize the callable and arguments using
+pickle".** That inference is wrong, and the measurement says so plainly: handing a **16 MB argument**
+costs **6.36 ms** to a process and **0.42 ms** to a subinterpreter — about **15x** — with per-call
+overhead roughly halved as well.
+
+**Pickling is not the expensive part; the pipe is.** The documentation is accurate and the inference
+drawn from it was not, which is the same failure shape as the `threading.Thread` row earlier the same
+day: **a true sentence, over-generalised, and believed because no instance contradicted it.** Two in
+one day is a pattern worth naming rather than a coincidence.
+
+### Two instrument defects, both found by running
+
+**Pool warm-up.** Both executors spawn workers lazily on first submit, and with the spawn start
+method that re-imports the module. Paid inside the measurement window it appears as a tail belonging
+to startup rather than to steady state. The instrument now warms every pool before the clock starts —
+and the hand-rolled tail **survived** the warm-up, which is what makes it a finding rather than an
+artefact.
+
+**A p50 below idle is not superiority.** Both pools read ~0.20 against an idle floor of ~1.04, and the
+reason is sleep granularity: a loop with other work wakes more precisely than one sleeping a full
+tick. **The p99 is the honest column**, and the page says so rather than quoting the flattering
+number.
+
+### One thing written down defensively
+
+**The section ends by saying none of it applies to this project's worker.** `zstd` releases the GIL,
+so the thread is already right, and "upgrading" it to a process pool would pickle every 100–200 KB
+body down a pipe at roughly the measured cost — to buy parallelism it already has. `plan.md` rejected
+multiprocessing on that reasoning before any of it was measured, and the measurement agrees. **Without
+that paragraph the new section is an invitation to make the router slower.**
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*
