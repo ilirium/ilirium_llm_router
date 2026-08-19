@@ -33,6 +33,21 @@ measured on `cext`, the trap is real. **That wiki page was corrected**, per the 
 contradicting finding's measurement stays in the phase note and the correction goes to the file that
 owns the fact — it had called `dict_id=0` a *random* ID, from a CFFI docstring.
 
+**The owner then asked whether we can stamp our own dictID, and we can — so we will.** Measured:
+`train_dictionary(dict_id=N)` takes **any `uint32` verbatim**, and the ID also lives at **bytes `[4:8]`
+of the dictionary file** after magic `0xEC30A437`, so a trained dictionary can be **re-stamped in
+place** with the compressed output byte-for-byte the same size. **Decided 2026-08-19: the router
+derives its own** — sha256 of the dictionary with its own ID field zeroed, first four bytes, `or 1`,
+as `content_dict_id()` in `dictionary.py`, applied by Task 14. It gives **three IDs across levels 3 /
+9 / 19 where libzstd gives one**, so that hazard is closed by construction. **`TRAIN_LEVEL` is not
+reversed** and stays 3 on its own measurement. Two traps are recorded: an out-of-range `dict_id`
+**does not raise**, and a derived ID of **0** would make every frame claim to be undicted.
+
+**One thing deliberately left unmeasured:** zstd's frame-format spec reserves dictionary IDs `<=
+32767` and `>= 2**31` for public distribution. libzstd accepted every value tried, this corpus is
+private, and the owner declined to constrain the derived ID to the non-reserved band — **recorded as a
+known gap** rather than closed.
+
 **Baselines, run not predicted: `make test` 158 (0.66 s), `link-check.py` 82 files, 86 broken, 2
 roundabout — both unchanged.** 86 is correct here: this task cited nothing unbuilt, and the two files
 it added are not `*.md`.

@@ -1996,6 +1996,70 @@ both give: the excess is forward citations to `corpus.py` and `dictionary.py`, w
 resolve. It stays at 86 here because **this task created no document that cites anything unbuilt** —
 `evidence/smoke.py` and `evidence/smoke.txt` are not `*.md` and the checker globs `*.md` only.
 
+## The dictID becomes ours — 2026-08-19
+
+**The owner's question after Task 7 — *can we pass our own generated dictID?* — and the answer is yes,
+by two routes.** Measured, then decided the same day. `evidence/smoke.py` section 6 carries the run.
+
+### What was measured
+
+| | Result |
+|---|---|
+| `train_dictionary(dict_id=N)` | **Any `uint32` verbatim.** 1, 32767, 32768, `2**31`, `2**32-1` all reach the frame unchanged and round-trip |
+| `dict_id=2**32` | **Does not raise.** It silently yields libzstd's own assigned ID — indistinguishable from passing `0` |
+| Where the ID lives | **Bytes `[4:8]` of the dictionary file**, little-endian, after magic `0xEC30A437`. The field and `dict_id()` always agree |
+| Re-stamping a trained dictionary | **Works.** New ID reported, new ID in the frame, round-trips, and the **compressed output is byte-for-byte the same size** — the ID plays no part in compression |
+| The original-ID copy against a re-stamped blob | Refuses it: `Dictionary mismatch` |
+| A **content-derived** ID at levels 3 / 9 / 19 | **Three distinct IDs**, where libzstd gives **one** |
+| Re-stamping a stamped dictionary | **Idempotent**, and the ID survives re-derivation |
+
+**`ZstdCompressionDict` takes no `dict_id` argument** — checked in `__init__.pyi`. That is why the
+second route is a byte rewrite rather than an API call, and it is also why the ID is a property of the
+**file** rather than of the object holding it.
+
+### What was decided
+
+**The router stamps its own, derived from the dictionary's content.** `content_dict_id(raw)` — sha256
+of the dictionary **with its own ID field zeroed**, first four bytes, big-endian, `or 1`. It goes in
+`dictionary.py` and Task 14 applies it.
+
+**Zeroing the field first is what makes it a fixed point** rather than a self-reference: the ID is
+stored inside the bytes being hashed, so the derivation has to define a canonical form. Measured
+idempotent, which is the property that matters.
+
+**`or 1` is not decoration.** dictID **0** means *no dictionary*. A hash landing on zero would make
+every frame written against that dictionary claim to be undicted — a one-in-four-billion path to a
+corpus that misreports itself, and one line to close.
+
+**And the out-of-range result changes how it is passed.** `2**32` does not raise; it falls back
+silently to libzstd's ID. So the derived value is **masked to 32 bits by the caller** rather than
+trusted to be in range — the failure mode otherwise is a dictionary that looks stamped and is not.
+
+### Three alternatives, and why each was declined
+
+| Rejected | Why |
+|---|---|
+| **Leave libzstd's default** | It leaves the levels 3/9/19 collision live, closed only by the policy that `TRAIN_LEVEL` is a fixed constant |
+| **Fold the hash into zstd's non-reserved band `32768 … 2**31-1`** | Offered and declined. This corpus is private, libzstd accepted **every** `uint32` tested, and **the reserved-range claim is documented rather than measured** — so the constraint would be paid on an unverified premise. Recorded as a known gap instead |
+| **A timestamp-based ID** | Unique per run, but it identifies the **run** and not the bytes. Retraining on identical material would give a different ID for an identical file, and identical bytes would stop being detectable |
+
+### What it does and does not change
+
+**It does not retire Task 13a's try-each-and-verify loop.** `zstd --train` stamps `1` on everything and
+a day folder is a plain directory somebody can drop a file into, so a reader keying on dictID still has
+to tolerate more than one candidate. **What the stamp removes is the collision we would otherwise have
+produced ourselves.**
+
+**It does not reverse `TRAIN_LEVEL`.** The constant stays 3 on its own measurement — 0.03% across
+levels 3 to 19, and 19 costing 8x the wall clock. What changes is that the *hazard* it was also
+keeping latent is now closed by construction. **Two mechanisms for one failure is right here**, since
+the stamp is our code and the constant is what protects a build where somebody has removed it.
+
+**One honest note on the arithmetic.** A 32-bit ID collides by birthday at roughly 65,000 dictionaries
+for an even chance. At one a day that is centuries, and **only a collision inside a single day folder
+would matter** — which is what the reader's loop and the digest in the blob's filename already handle.
+The stamp improves the odds; it is not what makes the design safe.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*

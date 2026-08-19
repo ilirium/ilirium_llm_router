@@ -48,4 +48,33 @@ corpus 40 bodies from run-03, both directions
   PASS  the right file reads it  2817 bytes
   PASS  the WRONG file of the same id fails loudly  decompression error: Data corruption detected
 
+6 -- we can assign the dictID ourselves, and it fixes what 5 found
+      a) train_dictionary(dict_id=N) takes any uint32 verbatim:
+         dict_id=0           -> dict 297180423   frame 297180423   round-trip True
+         dict_id=1           -> dict 1           frame 1           round-trip True
+         dict_id=32767       -> dict 32767       frame 32767       round-trip True
+         dict_id=32768       -> dict 32768       frame 32768       round-trip True
+         dict_id=2147483648  -> dict 2147483648  frame 2147483648  round-trip True
+         dict_id=4294967295  -> dict 4294967295  frame 4294967295  round-trip True
+         dict_id=4294967296  -> dict 297180423   frame 297180423   round-trip True
+  PASS  an OUT-OF-RANGE dict_id falls back silently, it does not raise  2**32 gave libzstd's own id, with no error
+      b) the id lives at bytes[4:8] of the dictionary file:
+         magic 0xEC30A437, bytes[4:8] LE = 297180423, dict_id() = 297180423
+  PASS  the field and the reported id agree
+      c) so a trained dictionary can be re-stamped in place:
+  PASS  the new id is reported and lands in the frame
+  PASS  it still round-trips
+  PASS  compressed size is unchanged -- the id is pure metadata
+  PASS  the original-id copy refuses the blob  decompression error: Dictionary mismatch
+      d) a CONTENT-derived id, which libzstd's is not:
+         level  3: libzstd  297180423   ours 2114556345 = 7e0991b9
+         level  9: libzstd  297180423   ours 3424163866 = cc18981a
+         level 19: libzstd  297180423   ours 1346912414 = 5048409e
+  PASS  one libzstd id across the three levels
+  PASS  THREE distinct ids from the content  which is the collision closed
+      e) and the derivation is a defined fixed point:
+  PASS  re-stamping a stamped dictionary is idempotent
+  PASS  its id survives re-derivation
+  PASS  a stamped dictionary still round-trips
+
 all checks passed

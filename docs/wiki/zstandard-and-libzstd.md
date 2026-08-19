@@ -150,6 +150,31 @@ design does not need it.
 dictionary that tool produces collides with every other. A store that looks dictionaries up by ID has
 to tolerate that or refuse CLI-trained input.
 
+### You can assign the ID yourself, by either of two routes
+
+**Measured 2026-08-19, same place.** This is the answer to *"can we stop relying on libzstd's ID?"*,
+and it is yes.
+
+| Route | What to know |
+|---|---|
+| `train_dictionary(dict_id=N)` | Takes **any `uint32` verbatim** — 1, 32767, 32768, `2**31`, `2**32-1` all reach the frame unchanged |
+| **Bytes `[4:8]` of the dictionary file** | Little-endian, straight after magic `0xEC30A437`. Rewrite them and `dict_id()` reports the new value. **`ZstdCompressionDict` has no `dict_id` argument**, so this is the only way to change one after training |
+
+**Re-stamping is safe and free.** The re-stamped dictionary round-trips and the compressed output is
+**byte-for-byte the same size** — the ID plays no part in compression, only in what the frame records.
+The original-ID copy then refuses those blobs with `Dictionary mismatch`, as it should.
+
+**Two traps if you do this:**
+
+1. **An out-of-range `dict_id` does not raise.** `2**32` silently yields libzstd's own assigned ID,
+   which is indistinguishable from having passed `0`. **Mask to 32 bits in the caller.**
+2. **Never let a derived ID be `0`.** Zero means *no dictionary*, so a hash landing there makes every
+   frame claim to be undicted.
+
+**If the ID is derived from the dictionary's content, zero its own ID field first.** The field lives
+inside the bytes being hashed, so the derivation needs a canonical form; with the field zeroed it is a
+fixed point, and re-stamping an already-stamped dictionary is idempotent.
+
 ## Reading list
 
 - `python-zstandard` documentation — <https://python-zstandard.readthedocs.io/>
