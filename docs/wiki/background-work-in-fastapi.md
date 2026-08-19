@@ -29,7 +29,7 @@ the failure mode all four mechanisms below are judged against.
 | **`BackgroundTask`** / `BackgroundTasks`<br>`starlette/background.py` | Runs **after the response is sent**, but it is `await`ed as part of that request's ASGI cycle. Sync callables are pushed to the threadpool, async ones are awaited on the loop | A short tidy-up **belonging to one request** — closing an upstream response, firing a notification | Anything long. A minutes-long task holds one request's cycle open. It is also **per-request**, so it cannot express "once a day" or "at startup" |
 | **`run_in_threadpool`**<br>`starlette/concurrency.py` | `functools.partial` then `anyio.to_thread.run_sync` — the **shared** worker pool every sync offload in the app already uses | Short blocking calls you must `await` from a handler — a sync DB driver, a small file read | Long jobs. The pool is a `CapacityLimiter(40)` shared with everything else, so occupying a slot for minutes starves unrelated work. And you still need something to await it |
 | **`asyncio.create_task`** | A coroutine scheduled on the **event loop itself** | Genuinely async, I/O-bound fire-and-forget | **CPU-bound work of any kind.** This is the tempting wrong answer: it looks async-native and it is the only option here that can actually stall the server |
-| **`threading.Thread`** | A real OS thread, outside every pool the framework manages | **Long-running or CPU-bound background work** — a queue consumer, a periodic job, compression | Anything needing to hand a result back to a coroutine; that is what `run_in_threadpool` is for |
+| **`threading.Thread`** | A real OS thread, outside every pool the framework manages | **Long-running work, and CPU-bound work *that releases the GIL*** — compression, hashing, a queue consumer, a periodic job | **Pure-Python CPU-bound work.** Measured below: a thread improves the median and *worsens* the tail. Also anything needing to hand a result back to a coroutine — that is `run_in_threadpool` |
 
 ### And `lifespan` is not a mechanism — it is the place
 
@@ -85,6 +85,46 @@ abandoned**, not on a convention:
 
 Both patterns are in this codebase, and the difference between them is deliberate.
 
+## Measured: a thread is not enough on its own
+
+**Corrected 2026-08-19.** The row above first said a thread suits *"CPU-bound background work"*
+without qualification. **That is true only when the work releases the GIL**, and the three examples
+originally given all happen to — which is why the overgeneralisation read as proven. It was measured
+rather than argued: `../procedures/event-loop-lag/`, two instruments, three consecutive runs each.
+
+**HTTP round-trip milliseconds against real uvicorn, timed from a separate process** — the number a
+caller actually feels:
+
+| Regime | p50 | p99 | vs idle p50 |
+|---|---:|---:|---|
+| `idle` | 0.53 | 1.06 | the floor |
+| `inline` — CPU in a coroutine | 17.43 | 18.12 | **33x** |
+| `thread-python` — a thread holding the GIL | 6.57 | 24.77 | **12x**, and a **23x** tail |
+| `thread-hashlib` — a thread releasing it | 0.75 | 1.18 | **1.4x** |
+| `thread-zstd` — this project's worker | 0.73 | 1.13 | **1.4x** |
+
+**Three things to take from that, and the second is the non-obvious one.**
+
+1. **A GIL-releasing thread is free.** `hashlib` and `zstandard` are indistinguishable from an idle
+   server. This is the case the whole design rests on, and it holds.
+2. **A GIL-holding thread gives a better median than inline but a *worse tail*.** 6.57 against 17.43
+   at p50, and 24.77 against 18.12 at p99. **Inline yields deterministically**, so its latency is bad
+   but bounded; **a thread is preempted at the OS's discretion**, so the tail is longer and less
+   predictable. *"Move it to a thread"* can make the number people watch look better while making the
+   worst case worse.
+3. **The floor is not zero and the ratios are what travel.** Absolute figures are one machine on one
+   day; core count and scheduler move them.
+
+*The isolated instrument agrees — idle 2.04, inline 17.29, `thread-python` 11.09, `thread-hashlib`
+2.04, `thread-zstd` 2.03 in loop-lag milliseconds. **These are not router measurements and are
+deliberately not in `../reference/measurements.md`**, whose subject is what this router does; they
+are instrument output supporting this page, and their home is the procedure that produces them.*
+
+**One defect was found by running rather than reading**, and it is worth knowing because it is easy
+to repeat: the first version measured lag on the **same task** that did the inline work. That
+serialises them, so the work consumed slack instead of appearing as delay, and `inline` reported
+*better than idle*. **An inline blocking call harms every *other* task**, so seeing it takes two.
+
 ## Reading list
 
 **Framework**
@@ -99,6 +139,8 @@ Both patterns are in this codebase, and the difference between them is deliberat
 **The threading layer underneath**
 
 - AnyIO worker threads and the capacity limiter — <https://anyio.readthedocs.io/en/stable/threads.html>
+- **"Running Blocking Code"**, which states the inline case exactly: *"if a function performs a CPU-intensive calculation for 1 second, all concurrent asyncio Tasks and IO operations would be delayed by 1 second"* — <https://docs.python.org/3/library/asyncio-dev.html>. It also documents `loop.slow_callback_duration`, which logs any callback over 100 ms in debug mode and is the cheapest way to catch this in a running app
+- `sys.setswitchinterval`, the knob governing how badly a GIL-holding thread degrades the loop — note its warning that *"the actual value can be higher, especially if long-running internal functions or methods are used"*, and that which thread runs next is the OS's decision — <https://docs.python.org/3/library/sys.html#sys.setswitchinterval>
 - `asyncio` event loop, `run_in_executor` — <https://docs.python.org/3/library/asyncio-eventloop.html#executing-code-in-thread-or-process-pools>
 - `asyncio` developer notes on blocking the loop — <https://docs.python.org/3/library/asyncio-dev.html>
 - `threading` — <https://docs.python.org/3/library/threading.html>
@@ -106,7 +148,7 @@ Both patterns are in this codebase, and the difference between them is deliberat
 
 **The GIL, if you need to establish it rather than assume it**
 
-- Thread State and the GIL, and the `Py_BEGIN_ALLOW_THREADS` macro pair — <https://docs.python.org/3/c-api/init.html#thread-state-and-the-global-interpreter-lock>
+- **Thread state and the GIL** — <https://docs.python.org/3/c-api/threads.html>. The authoritative statement of the mechanism this page rests on: *"it is also useful to call it over long-running native code that doesn't need access to Python objects or Python's C API"* — and it names `zlib` and `hashlib` as detaching the thread state when compressing or hashing. **`zstandard` follows the same pattern**, which is what makes the worker thread real. *(Cited as `c-api/init.html#thread-state-…` until 2026-08-19: that URL still returns **200**, but the content moved and `init.html` is now a bare index. **A status code says a page exists, not that it says what you claim.**)*
 - `python-zstandard` documentation — <https://python-zstandard.readthedocs.io/>
 - Zstandard format, including the dictionary ID a frame carries — <https://github.com/facebook/zstd/blob/dev/doc/zstd_compression_format.md>
 

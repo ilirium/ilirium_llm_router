@@ -1387,6 +1387,51 @@ required. **The finding itself re-derived exactly** — 21 functions, 0 unbalanc
 sequence — which is the useful half: the conclusion held and only the route to it was longer than it
 needed to be.
 
+## The wiki's first claim was challenged, and it was wrong — 2026-08-19
+
+**The owner asked whether `background-work-in-fastapi.md`'s `threading.Thread` row would "really work
+as you think", and asked for supporting sources and an isolated test.** It did not, as written, and
+**the page was corrected from measurement rather than from the argument.**
+
+**What was wrong:** the row said a plain thread suits *"CPU-bound background work"* with no
+qualification. **A thread only protects the event loop when the work releases the GIL.** The three
+examples given — compression, a queue consumer, a periodic job — all happen to, **which is exactly why
+the overgeneralisation read as proven**: every instance was correct, so nobody checked the rule.
+
+**The instrument is `../../procedures/event-loop-lag/`**, promoted from a scratch script because it is
+re-runnable and answers a question that returns with every Python upgrade. Two halves: loop lag from
+inside, and HTTP round-trips against real uvicorn from a **separate process**, so the client cannot
+contend for the server's GIL. Three consecutive runs of each; the ratios were stable to within
+tenths of a millisecond.
+
+**The result, in HTTP round-trip milliseconds** — idle 0.53 p50, `inline` 17.43, `thread-python` 6.57
+p50 but **24.77 p99**, `thread-hashlib` 0.75, `thread-zstd` 0.73.
+
+**Three things came out of it, and the second was not expected.** A GIL-releasing thread is
+**indistinguishable from an idle server**, so this project's design holds. **A GIL-holding thread gives
+a better median than inline and a worse tail** — inline yields deterministically and is bad but
+bounded, while a thread is preempted at the OS's discretion, so *"move it to a thread"* can improve the
+number people watch while worsening the worst case. And the floor is not zero, so the ratios travel and
+the absolutes do not.
+
+**A defect in the instrument was found by running it**, which is the working agreement's own rule
+about fixing the instrument before believing the result. The first version measured lag on the **same
+task** that did the inline work; that serialises them, so the work consumed slack rather than appearing
+as delay, and **`inline` reported *better than idle*** — an impossible result that would have been
+easy to report as a surprising finding. An inline blocking call harms every *other* task, so seeing it
+requires two.
+
+**And a link defect the status-code sweep could not catch.** `docs.python.org/3/c-api/init.html#…`
+returns **200**, but the content moved to `c-api/threads.html` and `init.html` is now a bare index.
+**A status code says a page exists, not that it says what you claim** — it was three wiki pages'
+citation for the GIL mechanism, and the replacement carries the quote it is cited for.
+
+**The supporting documentation is stronger than the disassembly alone.** CPython's own C-API page says
+detaching the thread state *"is also useful to call it over long-running native code that doesn't need
+access to Python objects or Python's C API"*, and **names `zlib` and `hashlib` as doing it when
+compressing or hashing** — the same pattern Task 4 read out of `zstandard`'s binary. So the mechanism
+now has an authoritative statement behind it and not only this project's measurement.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*

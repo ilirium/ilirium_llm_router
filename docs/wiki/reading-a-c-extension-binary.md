@@ -175,7 +175,7 @@ them, which is why Step 1 is the most robust step here.
 - `nm(1)`, `otool(1)`, `objdump(1)` — `man nm`, and Apple's developer documentation
 - Mach-O file format, including `__stubs` and the indirect symbol table — <https://github.com/aidansteele/osx-abi-macho-file-format-reference>
 - Extending Python with C, where `Py_BEGIN_ALLOW_THREADS` is introduced — <https://docs.python.org/3/extending/extending.html>
-- Thread State and the GIL, the C API reference for the macro pair — <https://docs.python.org/3/c-api/init.html#thread-state-and-the-global-interpreter-lock>
+- Thread State and the GIL, the C API reference for the macro pair — <https://docs.python.org/3/c-api/threads.html>
 - Python binary wheels, and what a wheel is required to contain — <https://packaging.python.org/en/latest/specifications/binary-distribution-format/>
 - Arm 64-bit instruction set, for reading the disassembly — <https://developer.arm.com/documentation/ddi0487/latest/>
 

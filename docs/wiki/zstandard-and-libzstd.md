@@ -127,7 +127,7 @@ makes the pairing discoverable without opening every candidate file.
 - **The frame format, including the dictionary ID field** — <https://github.com/facebook/zstd/blob/dev/doc/zstd_compression_format.md>
 - **Dictionary training API and the COVER/fastCover parameters** — <https://github.com/facebook/zstd/blob/dev/lib/zdict.h>
 - The manual, for what a level actually maps to — <https://github.com/facebook/zstd/blob/dev/doc/zstd_manual.html>
-- Thread State and the GIL, and the `Py_BEGIN_ALLOW_THREADS` pair — <https://docs.python.org/3/c-api/init.html#thread-state-and-the-global-interpreter-lock>
+- Thread State and the GIL, and the `Py_BEGIN_ALLOW_THREADS` pair — <https://docs.python.org/3/c-api/threads.html>
 - `otool(1)`, for `-Iv` and the indirect symbol table — Apple's developer documentation, or `man otool`
 
 *Upstream landing pages, chosen to outlive version numbers. **All checked from this machine on
