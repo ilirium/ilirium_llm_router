@@ -109,6 +109,35 @@ def _report(config: Config, path: Path) -> None:
         f"{config.stats.file}  (rotate at {_mib(config.stats.max_bytes)}, "
         f"keep {config.stats.backup_count})"
     )
+    _report_corpus(config)
+
+
+def _report_corpus(config: Config) -> None:
+    """Print the corpus block, including when it is off.
+
+    **Printed even when disabled, and that is the point of printing it.** The store is opt-in, so
+    the question an operator actually has is *is it on?* — and a block that appears only when
+    enabled answers that by absence, which reads the same as a version that does not have the
+    feature at all.
+    """
+    corpus = config.corpus
+    if not corpus.enabled:
+        print(f"Corpus:   off  (would write to {corpus.dir})")
+        return
+    print(
+        "Corpus:   "
+        f"{corpus.dir}  (zstd level {corpus.compress_level_zstd}, "
+        f"body max {_mib(corpus.body_max_bytes)}, queue max {_mib(corpus.queue_max_bytes)})"
+    )
+    retrain = corpus.retrain
+    if retrain.window_days == 0:
+        print("          retrain: off  (the newest installed dictionary keeps being used)")
+        return
+    print(
+        f"          retrain: {retrain.window_days} day(s) minimum, "
+        f"samples from {retrain.sample_min_bytes} bytes, "
+        f"maxdict {retrain.maxdict}, k {retrain.k}"
+    )
 
 
 def _credential(backend: Backend) -> str:

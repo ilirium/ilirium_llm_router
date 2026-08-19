@@ -59,3 +59,30 @@ stats:
   file: logs/calls.csv
   max_bytes: 5242880    # 5 MiB
   backup_count: 10
+
+# The body store. Opt-in, off by default, and nothing under `dir` is created until it is on.
+#
+# `calls.csv` above is always on because it is cheap and holds nothing sensitive. Neither is true
+# here: bodies hold source code, file contents and anything typed. So this is one switch, and off.
+corpus:
+  enabled: false
+  dir: logs/corpus
+  # The level bodies are stored at -- AND the level the trainer scores a candidate dictionary
+  # against the incumbent at, so the comparison cannot drift from what is actually stored. It is
+  # NOT the level a dictionary is trained at; that is TRAIN_LEVEL = 3, measured to move the ratio
+  # by 0.03%. 9 was measured by Task 6: 94% of level 19's dicted ratio for an eighth of the cost.
+  compress_level_zstd: 9
+  # Two limits, because they are checked at two different moments and neither can cover the other.
+  # This one bounds peak memory for ONE body, on every chunk while the call runs.
+  body_max_bytes: 1048576     # 1 MiB
+  # And this one bounds memory for ALL WAITING bodies, once at submit. A thousand ordinary 100 KB
+  # bodies are each far under the ceiling and together are 100 MB in the queue.
+  queue_max_bytes: 67108864   # 64 MiB
+  # Everything below runs offline, in its own thread, and never in the path of a call.
+  retrain:
+    window_days: 1            # a MINIMUM; 0 disables automatic retraining entirely
+    sample_min_bytes: 1024
+    # Both provisional rather than measured-optimal: the corpus has no usable validation split, so
+    # these were chosen knowing the slice they were scored on. Training is non-monotonic in both.
+    maxdict: 262144
+    k: 8000
