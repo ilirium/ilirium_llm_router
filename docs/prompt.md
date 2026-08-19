@@ -33,7 +33,7 @@ The branch already exists: `feat/phase-10-body-store`, forked from `main` at
 and Task 8 is where that changes** — Task 7 is only a round-trip smoke test.
 
 Read `docs/status.md` first, then
-`docs/milestone-2-corpus/phase-10-body-store/plan.md` — twenty-five tasks in six
+`docs/milestone-2-corpus/phase-10-body-store/plan.md` — thirty-two tasks in six
 groups — and its `notes.md` beside it.
 
 **Do not re-plan and do not re-review.** Both have already happened and both are

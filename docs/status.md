@@ -10,8 +10,25 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-19 — Phase 10 was re-scoped by an interview, and it is still at Task 7.** **The router now
+retrains its own dictionary, automatically** — the plan had said training was an offline procedure run
+by hand, **that was never an owner decision**, and no review caught it because none asked whose it
+was. **Thirty-two tasks now**, seven lettered ones added and **nothing renumbered**. The config block
+goes from five keys to **nine**, four of them under a nested `corpus.retrain:`. **`plan.md`'s settled
+table and `notes.md`'s "The retraining interview" carry all of it** — including the rejected
+alternatives, which is the half a summary here would lose.
+
+**Two things it left pointed forward.** The **training wall clock is unmeasured** and Task 14a
+measures it *before* the trigger is wired, because UTC midnight is an arbitrary local hour. And **the
+extraction reader ships in this phase** — training cannot read its own samples without it — while the
+tool built on it is Phase 11's.
+
+**One correction it made to the corpus record:** `gate.py` never deduplicated, so **12.10× was trained
+on 48 bodies of which 26 are distinct** — 46% `overloaded_error` retries. The owner declined a rerun;
+Task 21 states the composition in the slice column instead.
+
 **2026-08-18 — Phase 10 is executing. Groups A and B are done; the next task is 7.**
-`feat/phase-10-body-store`, forked at `d885b2f`, **twenty-five tasks in six groups**. Its `plan.md`
+`feat/phase-10-body-store`, forked at `d885b2f`. Its `plan.md`
 was re-derived and then forward-reviewed under `method/IDM-004`, 22 findings, all applied — **do not
 re-plan or re-review it**, and do not reopen the owner decisions in its settled table. **No `src/`
 change exists yet**; `git diff main -- src/` is empty and **Task 8** is where that changes.
@@ -105,10 +122,13 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 10 — the body store, from Task 7.** **Planned and reviewed 2026-08-18; Groups A and
-   B are done and no `src/` change exists yet.** The branch is in the table below and the task list is in
+1. **Execute Phase 10 — the body store, from Task 7.** **Planned and reviewed 2026-08-18, re-scoped
+   2026-08-19; Groups A and B are done and no `src/` change exists yet.** The branch is in the table below and the task list is in
    `milestone-2-corpus/phase-10-body-store/plan.md`. **Do not re-plan or re-review it** — its
    re-derivation and its forward review have both run, and the review's 22 findings are applied.
+   *(The 2026-08-19 re-scope is not an exception to that: it was an **owner interview**, not a session
+   re-planning work it had been handed, and what it settled is in the plan's settled table with its
+   rejected alternatives.)*
    `EPD-003`'s open questions 3–6 are answered in that plan and are **not yet written back into
    `EPD-003` itself** — that is its Task 20. *(This item read "Plan and execute" and restated what the
    phase must settle; the plan now holds that, so restating it here would be the second copy this
@@ -128,7 +148,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the new benchmark instrument, and `pyproject.toml` / `uv.lock`. **`git diff main -- src/` is still empty; Task 8 is where that changes** | **Task 7** — the round-trip smoke test, opening Group C. **Groups A and B are done**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the new benchmark instrument, and `pyproject.toml` / `uv.lock`. **`git diff main -- src/` is still empty; Task 8 is where that changes** | **Task 7** — the round-trip smoke test, opening Group C. **Groups A and B are done**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. **Re-scoped 2026-08-19** to thirty-two tasks: the router retrains itself, and `13a`/`14a`–`14f` are lettered because execution has begun |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

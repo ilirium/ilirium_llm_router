@@ -1170,6 +1170,161 @@ above is **not** a replacement: it carries all three of the biases the slice not
 reported on. Task 21 puts these numbers in the register with all four columns, and that is where the
 slice travels with the number.
 
+## The retraining interview, 2026-08-19
+
+**A fourth interview, and the first to reverse a position this plan had been treating as settled.**
+The owner asked a plain question — *how do you plan to run dictionary training: threads, processes,
+who controls it, how do you know a new dictionary is ready, and how do you check it beats the old
+one?* — and the answer this file could give was **manual, offline, run by a person**, which is what
+`plan.md`'s "One thing that is never in a worker" says.
+
+**That was never the owner's decision.** It is this plan's own prose. It does not appear in "What is
+settled, and by whom", no interview produced it, and **neither forward-review pass questioned it** —
+both checked the plan against the code and against itself, and neither asked *who decided this*.
+`../implementation-plan.md` names *"a dictionary bootstrap and retraining policy"* as something this
+phase must settle; the plan settled the bootstrap and the refusal rule and left the policy half
+unwritten. **The owner had assumed retraining was automatic all along.**
+
+**This is a defect class, not an incident**, and it is why point 5 below goes to `../../backlog.md`
+as a method item: a plan that carries an explicit *"settled, and by whom"* table makes the check
+mechanical — any load-bearing position **not** in that table is the plan's own assumption, and a
+review that inherits it silently has skipped a step no amount of self-consistency checking will
+catch.
+
+### What was decided
+
+| | Decision | What was offered and declined |
+|---|---|---|
+| **Who triggers training** | **The router, automatically.** Not a person | Manual-only, which is what the plan said and what a session would have built |
+| **Trigger timing** | **Measure the training wall clock first, then choose** between startup-only and startup-plus-day-rollover | Committing to rollover now. Declined on the same grounds Group B exists: the number is unknown and the design should not be argued from a guess |
+| **Manual command** | **`--train-dict`**, beside `--check`. It works even when automatic retraining is disabled | Automatic-only. Typing the command is explicit consent; refusing it would leave a machine that opted out of automation unable to train at all |
+| **Window** | **Rolling, `retrain.window_days`, default 1.** **`0` disables automatic retraining** and the router keeps using the newest dictionary already installed | A separate `retrain.enabled` boolean, which `0` makes redundant. The owner's encoding **removed** a key rather than adding one |
+| **Sample rule** | **Size only — no path filter.** `retrain.sample_min_bytes`, default 1024 | Filtering to `/v1/messages` as well. **Measured to be a no-op** — see below — and the path filter would have excluded `count_tokens` requests, which carry the same preamble and are ideal material |
+| **Parameters** | **`retrain.maxdict` (262,144) and `retrain.k` (8,000)**, both **provisional**, both overridable per run by a CLI flag. `d` is fixed at 8 as a module constant | Hard-coding them. The right values depend on the operator's own corpus, which is what the sweep tool is for |
+| **Config shape** | **A nested `corpus.retrain:` block.** Five write-path keys stay top-level; the four offline settings group beneath | Nine flat keys. Nesting is what `backends`, `logging` and `stats` already do, and it separates settings that touch a live call from ones that never do |
+| **Pickup on a running router** | **The worker rescans `<dir>/dicts/`** — on opening a day folder and every N bodies — and swaps when the newest differs from what it loaded | An in-process slot published by the training thread. **This was this session's own proposal and it is wrong**; see the corrections below |
+| **Comparison** | **Leave-one-session-out, held-out slice from the newest day**, margin required, refusal recorded | Scoring on the training material, which inverts the refusal rule; see below |
+| **Install** | **`dicts/.incoming/` → fsync → rename**, the discipline the blobs already use. Refusals recorded too | Writing in place. A router starting mid-write would read a truncated dictionary |
+| **dictID** | **In the dictionary's filename**, libzstd-assigned. Plus a **26th index column**, `request_dict_id` | Setting `dict_id` explicitly, which has to dodge collisions across machines and buys nothing the filename does not |
+| **Sweep tool** | **A mode of the trainer, `--tune-dict`**, never a separate instrument, and it never installs | A second tool. Task 6 already found what happens when two things that should agree do not |
+| **Extraction** | **The reader ships in this phase**; the tool built on it is Phase 11's | Deferring all of it. Training cannot read its own samples without decompressing blobs, so the reader is not optional here |
+| **Responses** | **Still undicted.** Parked in `../../backlog.md` | Training a response dictionary in this phase |
+| **Self-restarting router** | **Rejected** | Restarting to pick up a dictionary. It severs live SSE streams mid-generation; the swap touches one object, a restart touches every open connection |
+
+### Four things measured during the interview, none of which needed a new instrument
+
+**1 — The path filter is a no-op on this corpus.** Every request body of 1,024 bytes or more, across
+all three runs, is already a `/v1/messages` body. The only other path is `/api/hello`, whose five
+requests are **0 bytes**. So size-only and size-plus-path select the identical 68 samples, and the
+comparability cost of dropping the path filter — that 12.10x and 13.65x were measured under the
+narrower rule — **does not exist**: the sample set is byte-for-byte the same one they were measured
+on.
+
+**2 — The duplicates in this corpus are retries after `overloaded_error`.** 73 request bodies, **47
+distinct**; five groups of duplicates covering 31 bodies, the largest being one 103,935-byte body
+sent **11 times** inside a single session and another sent 9 times inside a second. Every one of
+those eleven calls returned 119 bytes reading
+`{"type":"error","error":{"type":"overloaded_error",...}}`. The harness resent the identical body
+after each refusal. **This was not known and no document recorded it.**
+
+**3 — The duplication is concentrated in the training slice.** `run-01` is 49 bodies / **25
+distinct**; `run-02` is 3 / 3; `run-03` — the held-out test slice — is 21 / **21**. So the slice the
+dictionary is scored on has no duplicates at all, while the slice it was trained on is nearly half
+repeats.
+
+**4 — `gate.py` did not deduplicate.** Read, not inferred: `load()` appends one path per manifest
+row, `train_paths` is that raw list, and it goes to `zstd --train` unchanged. No `hashlib`, no `set`.
+Measured on its exact rule: **48 training bodies, 26 distinct — 46% repeats.**
+
+**The owner declined a rerun to size the effect**, on the ground that these sessions were too short
+for the numbers to be more than approximate and that they carry enough accuracy to execute against.
+**Recorded as a decision rather than an omission**, because the alternative reading — that nobody
+noticed — is exactly what this file exists to prevent. What follows from it: **Task 21 states the
+training-set composition in the slice column** so the number travels with how it was produced.
+
+### Two corrections this session made to its own proposal
+
+**The in-process slot was wrong, and the manual command is what exposed it.** The first design had
+the training thread publish a dictionary path into a slot the worker reads. **A manual `--train-dict`
+runs in a different process and cannot reach that slot**, so a hand-trained dictionary would land in
+`dicts/` and a long-running router would never see it — reintroducing the exact failure the swap
+existed to prevent, through the feature that makes it useful. **The worker watching the directory
+serves both paths with one mechanism**, and the trainer then publishes nothing at all: it writes a
+file, and that is the whole interface.
+
+**Deduplicating before training was already solved by the store, and the owner caught it.** This
+session carried "walk the index and dedup by ref digest" as a required step after finding the retry
+storm. But **content addressing means the store holds one blob per distinct body**, so a trainer
+reading `<day>/requests/` cannot see a duplicate at a one-day window even if it wanted to. The
+residual need is narrower than stated: **the store deduplicates per day by design**, so only a
+multi-day window can reintroduce duplicates, and there the filename *is* the digest, so it costs one
+`set()`. **The retry-storm risk was correspondingly overstated** — a day with an `overloaded_error`
+storm writes one blob, not eleven. Phase 9's corpus shows 38% duplication only because
+`logs/corpus-gate/` was a raw per-call capture with no content addressing.
+
+**And deduplication loses no information**, which is worth stating because it is easy to assume
+otherwise: the index keeps one row per call, all carrying the same digest, so *this body was sent
+eleven times in four minutes* stays fully recoverable. The bytes collapse; the multiplicity does not.
+
+### The comparison, and why the obvious form inverts the rule it implements
+
+**Train on a day and score on that same day, and the candidate always wins** — it has seen those
+bodies and the incumbent has not. That does not weaken Task 14's refuse-a-worse-one rule, it
+**reverses** it: a worse dictionary would be installed daily while each run logged an improvement.
+
+**With a rolling window the opposite bias appears.** Yesterday's incumbent was trained on days
+N-8…N-2, so a held-out slice drawn from anywhere inside the window is material the *incumbent* has
+already seen — and now the comparison flatters the incumbent and refuses good candidates forever.
+
+**So the held-out slice comes from the newest complete day only**, which is the sole material the
+incumbent certainly has not seen, and which the candidate excludes by construction. **At the chosen
+default of one day this is the clean case**, since the window and the newest day are the same thing.
+
+### How it runs, and what it is not
+
+**There is no "call thread".** Uvicorn runs one asyncio event loop and every request is a coroutine
+on it; nothing spins up a thread per call today and retraining does not either. Training is a plain
+`threading.Thread(daemon=True)`, started from `app.py`'s lifespan and — if the wall clock permits —
+from the worker's day-rollover path. **The project already has this pattern for the corpus worker, so
+retraining adds no new concept.**
+
+**It does not pause the router, for three reasons that fail differently:** nothing on the event loop
+awaits it, so no request can block behind it; the GIL is released during the heavy work, which
+Task 4 read off the shipped binary for `_train_dictionary` and `_Decompressor_decompress` alike; and
+CPU contention remains real even so, which is precisely why the wall clock is measured before the
+trigger is chosen.
+
+**What FastAPI and Starlette offer, and why none of it fits** — read from the installed packages
+rather than recalled:
+
+| Mechanism | Verdict |
+|---|---|
+| `BackgroundTask` — `starlette/background.py:12` | **Wrong tool.** Runs after the response but is `await`ed inside that request's ASGI cycle, so a long run holds one request open. It is per-request; training is not. `proxy.py:224` already uses it correctly for its real purpose |
+| `run_in_threadpool` — `starlette/concurrency.py:31` | Right mechanism, **wrong pool.** It delegates to `anyio.to_thread.run_sync`, the shared pool every sync offload uses; occupying a slot for minutes competes with all of it |
+| `asyncio.create_task` | **The one that would actually pause the router.** CPU-bound work on the loop blocks every concurrent request — and it is the most tempting, because it looks like the async-native answer |
+| `lifespan` | Not a background mechanism, but the correct **place** to start one. Already in use at `app.py:44` |
+
+**Shutdown needs nothing.** Because the install is `.incoming/` → fsync → rename, a training run
+killed mid-flight leaves **no trace** — no partial dictionary, nothing half-written. Abandonment is
+safe by construction. That is a different rule from the corpus worker, which drains with a timeout
+because it is holding bodies that would otherwise be lost, and **the two threads having different
+shutdown rules is deliberate rather than inconsistent.**
+
+### What this costs, and what is still unratified
+
+**Named, and accepted by silence rather than by decision — so it is written here rather than
+implied.** The "plain copies" decision was costed at ~40–80 MB a year when a new dictionary was a
+rare event. **One dictionary per day, plus a copy in every day folder that uses it, is roughly double
+that** — call it ~150 MB a year. Still small, and still the right shape, but it is a figure the owner
+accepted under a different assumption and it has not been re-accepted.
+
+**And the training wall clock is unmeasured**, which is now load-bearing in a way it was not before:
+on a router left running for days, training fires unattended, and **UTC midnight is an arbitrary
+local hour** — it may land in the middle of a working afternoon beside a local model that is already
+the largest thing on the machine. Three seconds makes the whole question moot; four minutes of
+saturated CPU makes rollover-triggering indefensible and startup-only the answer. **The measurement
+comes before the trigger is wired**, and that ordering is the decision.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*

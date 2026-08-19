@@ -13,6 +13,51 @@ archive as the survey it was. Where an item is fully argued elsewhere this file 
 restates** — three of the heaviest are EPDs, and copying their substance here would create the second
 copy the documentation structure exists to prevent.
 
+**Grouped by kind, method first.** *Section order set 2026-08-19, on the owner's instruction.* Method
+items come first because they change **how the next piece of work is done**, so a session that reads
+only the top of this file still reads the part that governs the rest of its behaviour. After that:
+documentation defects, decisions waiting on a person, measurements left open, work with an owner-shaped
+decision behind it, and instruments and housekeeping.
+
+---
+
+## Method — how work is planned, reviewed and recorded
+
+**These change the `docs/method/` tier, and an `IDM` is in force the moment it is written** — unlike an
+EPD, which is parked by definition. An item here is therefore a proposal to change what sessions are
+*required* to do.
+
+**A forward review must classify each position by *authority*, not only by correctness.** Proposed
+2026-08-19, from the defect that produced Phase 10's retraining interview.
+
+*What happened:* `phase-10-body-store/plan.md` stated, in its own prose, that dictionary training
+*"belongs to an offline procedure the router never calls"* — training run by hand, by a person. **The
+owner had assumed all along that the router retrained itself automatically**, and only found out by
+asking a direct question after Group B had closed. The position appeared **nowhere** in that plan's
+"What is settled, and by whom" table. `milestone-2-corpus/implementation-plan.md` names *"a dictionary
+bootstrap and retraining policy"* as something the phase must settle; the bootstrap was settled and the
+policy half was never written.
+
+*Why it is a method item and not an incident:* the plan was reviewed forward under
+`method/IDM-004-reviewing-unexecuted-work.md` by **two passes** — the authoring session and a
+fresh-context agent — which returned 22 findings between them. **Neither asked whose decision it
+was.** Both checked the plan against the code and against itself, which is what the protocol asks for,
+and self-consistency cannot detect a position that is consistently wrong.
+
+*The proposed rule, and it is mechanical rather than a matter of judgement:* a plan that carries an
+explicit settled-by-whom table makes the check trivial — **any load-bearing position not in that table
+is the plan's own assumption, and the review reports it as unratified rather than inheriting it.** The
+instrument already exists; nothing asked the reviewer to use it that way.
+
+*Where it should land:* **an amendment to `IDM-004` rather than a new IDM**, on the argument that it is
+a rule about what a review must *find*, and `IDM-004` is the review protocol — two review protocols
+would be the drift the method tier exists to prevent. **Left open deliberately**, because that is a
+judgement for whoever writes it and this item should not presume it.
+
+*Why it is parked rather than done:* it is a documentation change with no deadline, and Phase 10 is
+executing. Doing it mid-phase would put method work on a `feat/` branch, which
+`method/IDM-001-git-branching.md` is explicit about.
+
 ---
 
 ## Documentation defects found and not fixed
@@ -80,6 +125,25 @@ streams, so this is about the router's second code path rather than about live t
 varies per model — several have no `vision`, several no `reasoning` — so nothing in the
 honoured/ignored table transfers without re-running the probes. *Parked because* it is re-running an
 existing instrument rather than building one, and expires with each LM Studio release anyway.
+
+**What one day of real use actually contains, and where the training floor is.** *Added 2026-08-19,
+from Phase 10's retraining interview; `EPD-003`'s corpus is the subject.* Phase 10 retrains from a
+rolling window whose **default is one day**, and nothing anywhere says whether one day holds enough
+material to train a dictionary from. *For scale, measured:* Phase 9's **entire** corpus — three runs,
+8.8 MB — yields **68 qualifying request bodies**, and its dictionaries were trained on **48**. A quiet
+day could plausibly be under ten. *Parked because* **no day-partitioned corpus has ever existed** —
+Phase 10's store is the first thing that will produce one, so the measurement cannot be taken until it
+has been running for a while. *Weaker than it looks?* No, and it has a consequence already built:
+until it is answered the sample floor is a guess, and **the refuse-a-worse-one rule is what stops a
+guess doing damage.**
+
+**Whether a response dictionary pays.** *Added 2026-08-19.* Responses are stored **undicted, forever,
+by default** — Phase 10 trains a request dictionary only. *Parked because* nothing has measured it.
+*Weaker than it looks?* **The opposite — it is stronger than its absence suggests**, and that is the
+reason it is written down. The asymmetry is not a finding that responses do not benefit; it is
+inherited from what Phase 9's gate happened to measure, and its own `evidence/README.md` says it
+answers nothing about responses. **Under automatic retraining it would otherwise become permanent by
+default rather than by decision.** Responses may well be the larger volume; nobody has looked.
 
 **Before planning any of these, grep the frozen artefacts first.** Phases 3, 4 and 5 each found a
 third or more of their work already done, measured, or misdescribed. The limit is worth knowing too:
