@@ -1752,6 +1752,44 @@ here, which is far under `TRAIN_BUDGET_S = 60`. **That is not Task 14a's number*
 decompressing every blob through the reader, and 68 samples is smaller than a widened window. Task 14a
 still measures the real thing.
 
+### The training level, measured on a held-out slice — 2026-08-19
+
+**The self-scored table above was too weak to choose a value on, so it was re-run on `gate.py`'s own
+split**: trained on run-01 + run-02, evaluated on **run-03**, size filter ≥ 1,024 bytes — which
+`plan.md` measured to be equivalent to `path == /v1/messages` on this corpus. **Scoring is at the
+write level, 9, throughout**; only the *training* level varies.
+
+Undicted baseline: **701,407 bytes, 2.997×** — which is **Task 6's frozen figure to the byte**
+(`evidence/results.txt`: level 9, no dict, 701,407 bytes, 3.00×). **Two instruments written a day
+apart agree exactly**, which is the cross-check that makes the rest of this table worth reading.
+
+| Training level | Train wall clock | dictID | Test bytes | Ratio at write level 9 |
+|---|---|---|---|---|
+| **3** | 0.03 s | 2026200612 | 162,725 | **12.920×** |
+| 6 | 0.03 s | 2026200612 | 162,702 | 12.922× |
+| 9 | 0.03 s | 2026200612 | 162,719 | 12.920× |
+| 12 | 0.03 s | 2026200612 | 162,726 | 12.920× |
+| 19 | 0.24 s | 2026200612 | 162,776 | 12.916× |
+
+**The spread is 0.03%.** On the held-out slice the training level is, for practical purposes, **not a
+parameter at all** — and level 19 is both the worst of the five and **eight times slower to train**.
+
+**This is two orders of magnitude below `INSTALL_MARGIN = 2%`**, which has a useful consequence:
+**changing `TRAIN_LEVEL` alone can never install a dictionary**, because no candidate it produces can
+beat the incumbent by the margin. The choice is self-limiting, which is another way of saying it does
+not matter.
+
+**The dictID is identical across all five levels**, confirming on five points what the earlier probe
+saw on three: **the ID is derived from content that `k`, `d` and the samples fix, and the level changes
+only the entropy tables layered on it.**
+
+**A by-product, and it is not Task 15's record.** **12.920× is the level-9 dicted ratio** on the
+provisional `maxdict=262144, k=8000`, on `gate.py`'s split. It cross-checks against Task 6's 13.65×
+at level 19: **12.920 ÷ 13.65 = 94.7%**, and the frozen level table gives 10.28 ÷ 10.95 = 93.9% on its
+own weaker dictionary. **Both land on the ~94% `plan.md` already records**, from two different
+dictionaries. **Task 15 still trains, installs, verifies a round-trip and records its own number** —
+this only says where it should land, and if it lands far from 12.9× something is wrong.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*
