@@ -52,6 +52,39 @@ known gap** rather than closed.
 roundabout — both unchanged.** 86 is correct here: this task cited nothing unbuilt, and the two files
 it added are not `*.md`.
 
+**2026-08-19, later still — Task 8 has landed and `git diff main -- src/` is no longer empty.**
+`src/ilirium_llm_router/corpus.py`, the blob store: content addressing on the plaintext, the per-day
+layout, `write → fsync → rename`, dedup scoped to the day, the `manifest`, and the per-day dictionary
+copy. **The queue is Task 9's, the index rows Task 10's, the config Task 11's, the reader 13a's.**
+
+**It was exercised rather than asserted, and `make test`'s 158 is not the evidence** — no test touches
+the file until Task 13. What was driven against `logs/corpus-gate/run-03-anthropic/`: an undicted
+first run, a byte-identical round trip whose sha256 equals the blob's filename, dedup, the stale-`.tmp`
+sweep, and **a writer that stores nothing creating no directory at all** (Task 18's observation 1).
+**The one that counts: `tar` the day, unpack it elsewhere, and all 40 blobs opened and verified
+against their own filenames from that folder alone.**
+
+**The `write_dict_id` assertion was checked by breaking it on purpose.** Forced onto the
+`ZstdCompressionParameters` path, construction raises `CorpusError`. **An assertion nobody has seen
+fail is a comment.** It raises rather than falling back to undicted: *"telemetry must never break a
+call"* governs the request path, and construction is not a call.
+
+**A gap the plan flagged is closed.** *"Which timestamp decides the folder is unspecified in Task 8"* —
+it is the **call's own `timestamp`**, so a body stamped `23:59:59` lands in yesterday's folder even
+when it is written after midnight. Driven across the boundary, not assumed.
+
+**Two judgement calls, both in `notes.md`:** the index's column *names* are declared at Task 8 so the
+`manifest` can write `len(INDEX_COLUMNS)` rather than a hardcoded 26 that could drift from Task 10's
+tuple; and `CorpusWriter` takes a directory and a level rather than a config block, because **Task 11
+is the only task that builds that block** and it runs later. No register value moved.
+
+**Baselines, run not predicted: `make test` 158 (0.75 s), `make check` valid, and `link-check.py`
+82 files, 2 roundabout, and broken down from 86 to `81`.** **The fall is the point** — five forward
+citations to `src/ilirium_llm_router/corpus.py` resolved the moment the file appeared, which is the
+behaviour this file and `plan.md` both describe: *it rises when a task cites what it is about to build
+and falls when the file appears.* **`dictionary.py`'s citations are still outstanding and Task 14
+resolves them.**
+
 **2026-08-19, later the same day — Phase 10 gained a register, and is *still* at Task 7.** **No `src/`
 change exists**; four commits, all documentation. `plan.md` gained **"The register"** — one reachable
 section holding **every constant, key, name and magic number the phase would build**, on the owner's
@@ -236,7 +269,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the new benchmark instrument, and `pyproject.toml` / `uv.lock`. **`git diff main -- src/` is still empty; Task 8 is where that changes.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 8** — `corpus.py`, the blob store, and **the first `src/` change of the milestone**. **Groups A and B are done and Task 7 has run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the new benchmark instrument, `pyproject.toml` / `uv.lock`, and — **since Task 8 — `src/ilirium_llm_router/corpus.py`, the first `src/` change of Milestone 2.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 9** — the byte-bounded queue, its worker thread and the arrived/recorded counter pair. **Groups A and B are done; Tasks 7 and 8 have run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

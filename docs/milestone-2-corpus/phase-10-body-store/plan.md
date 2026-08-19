@@ -1455,9 +1455,12 @@ for Task 24, because it was never a task's to close.)*
 - **A day trained from is a day the router may still be writing to.** A body submitted at 23:59:59 and
   written at 00:00:02 belongs to *yesterday* if the folder is derived from the call's timestamp — so
   the day folder can grow while training reads it. Harmless in effect, the dictionary missing a body
-  or two, but **which timestamp decides the folder is unspecified in Task 8** and the trainer must
+  or two, but ~~**which timestamp decides the folder is unspecified in Task 8**~~ and the trainer must
   tolerate the directory changing under it. *Found 2026-08-19; it is a Task 8 gap, not only a
-  retraining one.*
+  retraining one.* **The Task 8 half was closed when Task 8 ran, the same day: the folder comes from
+  the call's own `timestamp`**, so a body stamped 23:59:59 lands in yesterday's folder however late it
+  is written — driven across the boundary, not assumed. **The trainer half stands**: a day folder can
+  still grow while training reads it.
 - **Forward citations inflate the link-checker count.** This file names files it will create —
   `reference/corpus.md`, `procedures/corpus-dictionary/`, `src/ilirium_llm_router/corpus.py`. That is
   `../../backlog.md`'s recurring false-positive class, not breakage; Phase 8's plan contributed 23.

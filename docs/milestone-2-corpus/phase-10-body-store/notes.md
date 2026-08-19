@@ -2060,6 +2060,79 @@ for an even chance. At one a day that is centuries, and **only a collision insid
 would matter** — which is what the reader's loop and the digest in the blob's filename already handle.
 The stamp improves the odds; it is not what makes the design safe.
 
+## Task 8 — the blob store, and the first `src/` change of the milestone — 2026-08-19
+
+**`src/ilirium_llm_router/corpus.py`, 350 lines.** `git diff main -- src/` is no longer empty, which
+is the sentence three sessions have been carrying forward.
+
+**What it holds:** content addressing on the plaintext, the per-day layout, `write → fsync → rename`
+out of `incoming/`, dedup scoped to the day, the `manifest`, and the plain copy of each dictionary a
+day uses. **The queue and worker are Task 9's, the index rows are Task 10's, the config block is
+Task 11's, the reader is Task 13a's** — none of them is here.
+
+### Exercised, not asserted
+
+**`make test` still reports 158 and that is not the evidence.** The suite has no test touching this
+file until Task 13, so a green run says only that the import breaks nothing. What was actually driven,
+against the real bodies in `logs/corpus-gate/run-03-anthropic/`:
+
+| Driven | Result |
+|---|---|
+| No dictionary present at all | Stores undicted, `dict_id` cell reads `none`, day `dicts/` stays empty |
+| Round trip | Byte-identical, and the sha256 of the decompressed bytes equals the blob's filename |
+| The same body twice | One blob on disk, one digest returned |
+| **`tar` the day, unpack it elsewhere, read every blob** | **40 of 40 opened and verified against their own filenames**, using only that folder's `dicts/` |
+| A stale `.tmp` left in `incoming/` | Swept at the next day-open; `incoming/` ends empty |
+| A writer that stores nothing | **Creates no directory at all** — Task 18's observation 1 |
+| Newest-by-filename selection | Picked `req-2026-08-18T…` over `req-2026-08-17T…`; ignored `README.txt` and `.incoming/` |
+
+**40 blobs, 2,102,371 bytes of plaintext, 218,611 bytes on disk.** That is both directions mixed
+against a request-trained dictionary, so it is **not** a comparable ratio and Task 15's is still the
+number.
+
+**Baselines: `make test` 158, `make check` valid, `link-check.py` 82 files, **81** broken, 2
+roundabout — down from 86.** **The fall is the confirmation, not a tidy-up**: five forward citations
+to `src/ilirium_llm_router/corpus.py` resolved the moment the module existed. `dictionary.py`'s are
+still outstanding and Task 14 resolves them.
+
+### The assertion fires, which is the only reason it is worth having
+
+**`write_dict_id` was checked by breaking it on purpose.** Monkey-patching the compressor onto the
+`ZstdCompressionParameters` path — the one that defaults the field to **0** — makes the construction
+raise `CorpusError`, naming the frame's ID, the dictionary's, and the cause. **An assertion nobody has
+seen fail is a comment**, and this one had to be worth its line: it is the field the reader, the
+no-recompression rule and every blob's future readability all rest on.
+
+**It raises rather than falling back to undicted, and that is a deliberate reading of the
+non-negotiable.** *"Telemetry must never break a call"* governs the request path; this runs at
+construction, which is not a call. **A store quietly writing blobs nobody can read is worse than one
+that refuses to start.**
+
+### The Task 8 gap the plan flagged, now closed
+
+`plan.md`'s risk list: *"which timestamp decides the folder is unspecified in Task 8"*. **It is the
+call's own `timestamp`, not the clock at write time** — `observe.Call` sets it in UTC at arrival, so
+the day folder and the index row inside it can never disagree.
+
+**Driven across the boundary:** a body stamped `23:59:59.500` and stored after a body stamped
+`00:00:02.100` lands in **yesterday's** folder while the second lands in today's. That is the
+behaviour the plan predicted and called harmless, and it is now the behaviour rather than an
+assumption. It is also why the dictionary copy is a **per-write precondition** rather than a per-swap
+step — one worker writes into two day folders across a rollover while holding one compressor.
+
+### Two judgement calls worth naming
+
+**1 · The index's column names are defined here, not at Task 10.** The `manifest` has to write
+`index_columns: 26` at Task 8, and a hardcoded `26` that could disagree with Task 10's real tuple is
+precisely the drift a manifest exists to detect. So `INDEX_EXTRA_COLUMNS` and `INDEX_COLUMNS` are
+declared here and the manifest writes `len(INDEX_COLUMNS)`. **Task 10 uses them rather than inventing
+them; no register value moved.**
+
+**2 · `CorpusWriter` takes a directory and a level, not a config block.** `plan.md` says it mirrors
+`StatsWriter`, which takes its config model — but **Task 11 is the only task that builds the `corpus:`
+block**, and it runs after this one. Taking primitives now keeps the task boundary honest;
+**completing the mirror is a one-line change at Task 11 or 12** and is noted in the class docstring.
+
 ## Verified by
 
 *Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*
