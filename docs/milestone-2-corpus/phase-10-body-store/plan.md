@@ -1,7 +1,9 @@
 # Phase 10 — the body store: plan
 
 **Written 2026-08-18 on `feat/phase-10-body-store`, forked from `main` at `d885b2f`. Execution is
-under way; the group markers under "The tasks" say how far, and are the only place that says so.**
+complete through Task 24; the group markers under "The tasks" say so task by task, and are the only
+place that says so. The branch is **not merged — that is the owner's to do**, and the Record table
+below carries the placeholder until it is.**
 
 *This line read "Group A has executed; Tasks 4 to 24 have not" until 2026-08-18, when Task 4
 executed and made it false. **It was a second copy of what the group markers already carry**, and a
@@ -976,7 +978,7 @@ opens is line 48, `CALLS_CSV = ROOT / "logs" / "calls.csv"`, built from segments
 a grep for the path. Both lines are repointed. A sweep list compiled by grepping a path finds prose,
 not construction.
 
-### Group F — verify, harvest and close *(Tasks 18 and 18a executed)*
+### Group F — verify, harvest and close *(executed, except the merge — the owner's)*
 
 | # | Task |
 |---|---|
@@ -1425,8 +1427,8 @@ as an instance gets obeyed as an instance**, so this section names the instances
 
 | Where | Placeholder | Closed out at |
 |---|---|---|
-| The header, first line | *"Execution is under way; the group markers … say how far"* | Task 24. *Reworded 2026-08-18: it enumerated tasks, went stale the moment Task 4 ran, and was a second copy of the group markers. It now points at them instead, so there is one place to close out rather than two* |
-| ~~**Five**~~ ~~**Four**~~ **Three** group headings — ~~B,~~ ~~C,~~ D, E, F | `*(not started)*`, and `*(in progress)*` once a group's first task runs. Both are matched by the grep below, which is why those two are the only permitted spellings — **a third form would be invisible to it**, which is the defect finding 13 caught. **Group B closed out 2026-08-18** when Task 6 finished and **Group C on 2026-08-19** when Task 13a did; the count moved with each, because a count that does not move is how this table went wrong before | Task 24, each group as it completes |
+| The header, first line | *"Execution is under way; the group markers … say how far"* | **Closed out 2026-08-20 at Task 24** — it now says execution is complete through Task 24 and that the merge is the owner's. *Reworded 2026-08-18: it enumerated tasks, went stale the moment Task 4 ran, and was a second copy of the group markers. It now points at them instead, so there is one place to close out rather than two* |
+| ~~**Five**~~ ~~**Four**~~ ~~**Three**~~ **No** group headings — ~~B,~~ ~~C,~~ ~~D,~~ ~~E,~~ ~~F~~ | ~~`*(not started)*`~~ | **All closed out by 2026-08-20.** D at Task 15, E at Task 17, F at Task 18a — F reads *(Tasks 18 and 18a executed)* rather than a bare *executed*, because Tasks 19–24 are the harvest and the marker should not claim them before they run |
 | ~~Group **A**'s heading~~ | ~~`*(executed, except 3a)*`~~ | **Closed out 2026-08-18** when Task 3a finished, which is what this row said would close it. *Added earlier the same day: the table said "six" group headings and only five carried the marker, so the uncatalogued sixth was the one form the sweep could not see. Kept struck rather than deleted — a row that vanishes cannot show that the mechanism worked* |
 | The Record table below | `Merge commit \| not yet merged` | The merge itself |
 | "What is settled" | *"still open questions until Task 20"* | Task 20 |

@@ -10,6 +10,43 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-20, end of session — Phase 10 is complete through Task 24. The branch is not merged, and
+that is the owner's to do.** Thirty-three tasks in six groups, thirty-two planned plus **Task 18a**
+inserted during execution. **`make test` 158 → 310.** The harvest ran: `docs/reference/corpus.md` is
+the durable spec, `EPD-003`'s last four questions are closed in place, the numbers are in
+`measurements.md`, and `implementation-plan.md` carries Phase 10 as a record rather than an outline.
+
+**`docs/prompt.md` was replaced, not deleted.** It now opens with the merge command and what closes
+after it, then what the phase left standing deliberately.
+
+**The one thing waiting: `git merge --no-ff feat/phase-10-body-store`.** Two placeholders close with
+it — the Record table in `plan.md` and `notes.md`'s first line. Both are named in `prompt.md` so the
+merging session does not have to find them.
+
+**What the phase does not claim, stated in the documents rather than only here.** **Failure mode 3 is
+not discharged** — archiving cannot *break* a call, which was driven, but whether it *slows* one is
+unmeasured and needs a driven session with capture on against off. **A call can still vanish**; Task
+18a made that visible rather than impossible. **There is no headline compression ratio**, on the
+owner's instruction: every figure is a small-sample confirmation that the mechanism works, and
+`measurements.md` says so beside the rows.
+
+**The closing sweep earned its keep.** The widened placeholder grep caught **this file** still saying
+`EPD-003`'s questions were "not yet written back" — false the moment Task 20 ran. The register was
+checked row by row and **every row matches the code**: fourteen module constants, nine config keys,
+the 26-column index compared as tuples against `stats.COLUMNS`, and four sentinel words.
+
+**One near-miss worth carrying.** `notes.md` was **truncated to zero bytes** while its "Verified by"
+section was being written — a `cp` that sat after a heredoc terminator instead of behind the `&&` it
+depended on, so it ran with an empty source. **Nothing was lost, because the Task 18 record had
+already been committed.** It is written into `notes.md` rather than quietly fixed: the habit of
+committing a long record before continuing to write is what made it a near-miss instead of a loss.
+
+**Baselines, run not predicted: `make test` 310, `make lint` clean, `make check` valid on both
+configs, `link-check.py` 86 files, 75 broken, 2 roundabout.** *(It was 85 / 79 for most of the phase.
+`corpus.md` added one file and resolved exactly four forward citations of itself — verified by moving
+the file aside, after a first attempt using `git stash` proved nothing because `stash` does not remove
+an untracked file.)*
+
 **2026-08-20, later — Task 18 has run and Task 18a was inserted to make it finishable. Nine of ten
 observations passed first time; the tenth exposed a defect.** `make test` went **308 → 310**. The
 harvest — Tasks 19 to 22 — is next and is now gated by a check that actually completed.
@@ -604,8 +641,9 @@ is the full inventory.*
    *(The 2026-08-19 re-scope is not an exception to that: it was an **owner interview**, not a session
    re-planning work it had been handed, and what it settled is in the plan's settled table with its
    rejected alternatives.)*
-   `EPD-003`'s open questions 3–6 are answered in that plan and are **not yet written back into
-   `EPD-003` itself** — that is its Task 20. *(This item read "Plan and execute" and restated what the
+   `EPD-003`'s open questions 3–6 are **closed in `EPD-003` itself, 2026-08-20 at Task 20** —
+   three answered, and **retention marked out of scope for Milestone 2** on the owner's decision
+   rather than answered. *(This item read "Plan and execute" and restated what the
    phase must settle; the plan now holds that, so restating it here would be the second copy this
    structure exists to prevent.)*
 2. **Decide `EPD-001` or `002`.** Both are blocked on a person rather than on work, and both are argued
@@ -623,7 +661,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread, and `cli.py` carrying `--train-dict` / `--tune-dict` / `--from`. `make test` 308.** `plan.md` now carries **"The register"**, and every value in it is settled, and the telemetry paths now read `logs/telemetry/` | **Tasks 19-22** — the harvest. **Groups A to E are done and Task 18 has run**, nine of ten observations first time and the tenth after **Task 18a** made it performable at all; `make test` 310 — **E moved nothing on disk**, on the owner's decision, so `logs/telemetry/` does not exist until the router next starts; the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread, and `cli.py` carrying `--train-dict` / `--tune-dict` / `--from`. `make test` 308.** `plan.md` now carries **"The register"**, and every value in it is settled, and the telemetry paths now read `logs/telemetry/` | **The merge, and it is the owner's.** **All thirty-three tasks are done**; Task 18 ran, nine of ten observations first time and the tenth after **Task 18a** made it performable at all; `make test` 310 — **E moved nothing on disk**, on the owner's decision, so `logs/telemetry/` does not exist until the router next starts; the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

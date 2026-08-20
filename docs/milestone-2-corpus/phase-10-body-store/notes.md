@@ -3204,4 +3204,74 @@ passed.**
 
 ## Verified by
 
-*Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*
+*Written at Task 24, 2026-08-20. **Run, not predicted** — every number below came from executing the
+command on the closing tree.*
+
+| Check | Result |
+|---|---|
+| `make test` | **310 passed.** 158 at the start of the phase |
+| `make lint` | clean, `ruff@0.16.1` |
+| `make check` | valid on `../../../config.yaml` **and** on `../../procedures/dying-backend/router.yaml` |
+| `../../procedures/link-check.py` | **86 files, 75 broken, 2 roundabout** |
+| Task 18's ten observations | nine first time; the tenth after Task 18a made it performable |
+| The register, row by row | **every row matches the code** — below |
+| The widened placeholder sweep | run, and it caught a stale claim — below |
+
+**The link-check figure moved, and the movement was verified rather than explained away.** It was
+**85 files, 79 broken** for most of this phase and closes at **86 / 75**: `../../reference/corpus.md`
+added one file and resolved **exactly four** forward citations of itself — two in `plan.md`, one in
+each review charter. **The first attempt to verify that was wrong, and is worth recording:** `git
+stash` does not remove an **untracked** file, so the before-and-after runs were identical and both
+reported zero, which reads as a clean result. Redone by moving the file aside. **It never reports
+zero**; the remaining 75 are `../../backlog.md`'s known false-positive class and citations of files
+later phases create.
+
+### The register, checked row by row
+
+**All fourteen module constants match**, each name grepped against `src/`: `TRAIN_LEVEL` 3, `TRAIN_D`
+8, `INSTALL_MARGIN` 0.02, `RESCAN_EVERY` 500, `TRAIN_BUDGET_S` 60, `WINDOW_MAX_DAYS` 30,
+`MIN_SESSIONS` 2, `DRAIN_TIMEOUT_S` 5.0, `SUMMARY_EVERY` 500, `LOCK_STALE_S` 3600,
+`INDEX_SCHEMA_VERSION` 1, `DICT_MAGIC` `0xEC30A437`, and `TUNE_MAXDICT` / `TUNE_K` as their tuples.
+*(`DRAIN_TIMEOUT_S` is `5.0` against a row reading **5**; the row says "5 s" and means the duration,
+so that is a float literal rather than a discrepancy.)*
+
+**All nine configuration keys match**, names and defaults: `enabled` False, `dir` `logs/corpus`,
+`compress_level_zstd` 9 bounded 1–22, `body_max_bytes` 1_048_576, `queue_max_bytes` 67_108_864,
+`window_days` 1 with `ge=0`, `sample_min_bytes` 1024, `maxdict` 262_144, `k` 8000.
+
+**The index matches, checked by importing rather than by reading:** **26 columns**, the first twenty
+**identical to `stats.COLUMNS`** compared as tuples, the six new ones in the register's order, and
+`INDEX_SCHEMA_VERSION` 1. **All four sentinel words match** — `dropped`, `too_large`, `absent`, and
+`STORE_ERROR = "error"`.
+
+**Two things happened to the register during Groups E and F rather than being found wrong:**
+`logs/telemetry/` was added to section 7, and **Task 18a added nothing at all** — a log line and a
+test, so no constant, no key, no column. That is stated because a task that touched `src/` and added
+no register row should say so rather than leave the question open.
+
+### The placeholder sweep, and what it caught
+
+The widened grep from "Placeholders in this file" was run over the phase folder **and `../../status.md`**,
+and it earned its keep: **`status.md` still said `EPD-003`'s open questions 3–6 were "not yet written
+back into `EPD-003` itself"**, which Task 20 had just made false. Corrected. The plan's own header and
+its group-marker row were closed out at the same time.
+
+**Two placeholders are left standing and both are correct:** the Record table's *"not yet merged"* and
+this file's first line. **The merge is the owner's**, so no session can close them — and
+`../../prompt.md` names both, so the session that merges does.
+
+### One thing that went wrong in the writing of this section
+
+**This file was truncated to zero bytes and restored from the last commit.** A compound command
+stripped the stub line into a scratch file, and the `cp` that copied it back sat on a new line after a
+heredoc terminator rather than behind the `&&` — so when the first step failed, the copy ran anyway
+against an empty file. **Nothing was lost, because the Task 18 record had already been committed**,
+which is the whole argument for committing a long record before continuing to write. Recorded rather
+than quietly fixed: the near-miss is the finding, and the habit that saved it is worth naming.
+
+### What this phase does not claim
+
+**Failure mode 3 is not discharged**, and `../implementation-plan.md` says so in its table rather than
+implying otherwise. **A call can still vanish**, and Task 18a made that visible rather than
+impossible. **There is no headline compression ratio**, deliberately, on the owner's instruction: the
+figures are small-sample confirmations that the mechanism works.
