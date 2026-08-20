@@ -1,6 +1,7 @@
-# Phase 10 evidence — the corpus benchmark, and the Task 7 smoke test
+# Phase 10 evidence — the benchmark, the smoke test, and Task 18's two probes
 
-**Two runs, four files.** Task 6's benchmark and Task 7's smoke test.
+**Four runs, six files.** Task 6's benchmark, Task 7's smoke test, and the two instruments Task 18
+used to drive observations no test covers.
 
 | File | What it is |
 |---|---|
@@ -8,7 +9,8 @@
 | `results.txt` | Its output, 2026-08-18, verbatim |
 | `smoke.py` | **Task 7's round-trip check, 2026-08-19.** It has **no live copy** — see below |
 | `smoke.txt` | Its output, 2026-08-19, verbatim |
-
+| `task-18-open-a-day-folder.py` | **Observations 2, 3 and 7, 2026-08-20.** Opens every blob in a day folder using **only that folder's own `dicts/`**, and checks each plaintext against the sha256 in its filename. Takes the day folder as its one argument, so it runs against any of them |
+| `task-18-rollover-with-a-swap.py` | **Observation 10, 2026-08-20.** A day rollover **with a dictionary swap inside it** — a body stored into *yesterday's* folder after the writer has swapped. **The one observation no test covers**, because the day comes from the call's own timestamp and neither `curl` nor `TestClient` can set that |
 **For the benchmark, run the live copy, not this one** — `../../../procedures/` is the re-runnable
 tier and this is the archive. The rule is `../../../README.md`'s: an instrument's script lives in
 `procedures/`, and the results a claim rests on are frozen in the phase's `evidence/`. Phase 9 froze
@@ -22,6 +24,18 @@ say different things, a check that has been superseded belongs only in the archi
 
 **Both want `uv run python`, never bare `python3`** — on this machine `python3` is 3.14 and
 `zstandard` is in the 3.13 venv, so the wrong interpreter fails looking like a missing dependency.
+
+**Task 18's two probes are frozen here and have no `procedures/` copy, for different reasons than
+`smoke.py`.** `task-18-open-a-day-folder.py` is genuinely re-runnable and takes a path, but what it
+checks — a day folder opening from itself alone — is now asserted by `tests/test_corpus.py` against
+real code, so the script is the *record of how it was driven* rather than the check itself.
+`task-18-rollover-with-a-swap.py` is the opposite case: **nothing in the suite covers it**, because
+the day a blob lands in comes from the call's own timestamp and no test client can set that. It is
+kept because losing it would mean rewriting it from the notes.
+
+**Neither is the reproduction of the counter defect.** That one became a permanent test —
+`tests/test_integration.py::test_a_caller_gone_at_response_start_is_counted_as_lost` — which is
+strictly better than an evidence script, and is why no third file sits here.
 
 *This directory exists because the forward review found that **nothing froze the benchmark's results**
 and nothing said why the directory was absent — both of which `../../../README.md` requires. It was
