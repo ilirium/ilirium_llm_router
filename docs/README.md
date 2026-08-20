@@ -461,29 +461,16 @@ while the filing rules above are used every week.
 
 ### Opening a milestone
 
-Mined from Milestone 1's opening rather than invented. In order:
+→ **`method/IDM-005-opening-a-milestone.md`** holds all of it, and is canonical. **Open it before
+naming a milestone's central claim, before writing `implementation-plan.md`, or before opening the
+folder and the branch.** In one line, so you know whether you need it: eight steps mined from
+Milestone 1 — name the falsifiable claim and the non-goals, refute it cheaply, **capture the real
+input before specifying anything**, spike what the architecture depends on, fork the
+expensive-to-reverse questions as EPDs, mark every spec statement measured / inferred / assumed, plan
+at decreasing resolution, then open the folder and the branch.
 
-1. **Name the falsifiable central claim, and the non-goals.** Milestone 1's was "no protocol
-   translation is needed, and a local model can drive a real coding session" — a sentence that could
-   have come out false.
-2. **Run the cheapest experiment that could refute it**, before specifying anything.
-3. **Capture the real input.** This is the highest-leverage step and it is easy to skip. Milestone 1
-   captured 118 KB of actual request bytes on day one; it turned up three body fields nobody had
-   anticipated, and a full-body parse would have silently dropped all three. The capture did not
-   inform the architecture, it **changed** it. Everything else at that stage was reasoning; this was
-   the only step able to contradict the reasoning.
-4. **Spike whatever the architecture depends on**, filing each spike straight into `procedures/` or
-   `captures/` so it is re-runnable rather than a memory.
-5. **Settle the expensive-to-reverse questions as EPD forks**, and answer them explicitly.
-6. **Write the spec, marking every statement measured / inferred / assumed**, and give each assumption
-   the cheap check that would settle it. Milestone 1's spec was reliable where it recorded measurements
-   and unreliable where it recorded predictions, with both in the same prose — several predictions
-   were an hour's work to test and stood for five phases.
-7. **Write `implementation-plan.md` at decreasing resolution** — the next phase in full, the one after
-   in outline, the rest as a title and the question it exists to close. Plans here are wrong on
-   contact often enough that detail beyond the next phase is waste. The phase written in full gets a
-   numbered **task list** in its own `plan.md`; see "The unit of work inside a plan is a task".
-8. **Open the folder and the branch.**
+*The playbook was written into this file on 2026-08-16 and moved out on 2026-08-20, unchanged.
+`EPD-004` decision 12 put it here; the addendum at that decision says why it left.*
 
 ### Closing a milestone
 
