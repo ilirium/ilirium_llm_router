@@ -10,6 +10,31 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-20, later — Task 14f has run. Every lettered task in Group D is done; only Task 15
+remains.** **`make test` went 301 → 308.**
+
+**14f's three named cases had already landed with 14c**, so this task began with a **coverage audit
+rather than with writing tests** — the only honest way to answer *"tests for all of the above"*
+without padding. Thirty-five methods in `dictionary.py` checked against whether the test file names
+them at all; seven unmentioned, four of those covered through their callers, and **three genuinely
+untested — one of them a stated behaviour of the design**: `_sweep_staging` (*"`.incoming/` is swept
+at startup"*), `_spawn` (in-process single-flight, which sits **on top of** the cross-process lock,
+not instead of it), and `_run_quietly`. Two positive cases were missing beside them — `on_day_rollover`
+was only tested where the budget **refuses**, and `start()` had never been driven from call to
+installed file.
+
+**One test would have been worthless written the obvious way.** *"The training thread never raises"*
+cannot be asserted by the process surviving: an uncaught exception in a thread **also** leaves the
+process alive, so spawn-join-assert-still-here passes with the handler deleted. It asserts on the
+**log** instead, which is the only observable the behaviour has. **`caplog` is new to this repository**
+and is introduced for exactly that one case.
+
+**Six mutations, all caught**, two of them failing two tests each — the sweep mutation also broke
+Task 18's observation 1, that a disabled corpus leaves no trace.
+
+**Baselines, run not predicted: `make test` 308, `make lint` clean, `make check` valid,
+`link-check.py` 82 files, 79 broken, 2 roundabout — unchanged.**
+
 **2026-08-20, end of session — Task 14e has run; only 14f remains and Task 15 is unblocked.**
 `--train-dict`, `--tune-dict` and `--from <dir>` all work and were driven against the real corpus.
 **`make test` went 293 → 301.**
@@ -454,8 +479,8 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 10 — the body store, from Task 14f (Group D).** **Planned and reviewed 2026-08-18, re-scoped
-   and reviewed a second time 2026-08-19; Groups A, B and C are done, and Tasks 14, 14a, 14b, 14c and 14e built the trainer, its automatic path, the pickup and the manual commands on 2026-08-20.**
+1. **Execute Phase 10 — the body store, from Task 15 (the last of Group D).** **Planned and reviewed 2026-08-18, re-scoped
+   and reviewed a second time 2026-08-19; Groups A, B and C are done, and every lettered task of Group D ran on 2026-08-20, building the trainer, its automatic path, the pickup, the manual commands and their tests.**
    The branch is in the table below and the task list is in
    `milestone-2-corpus/phase-10-body-store/plan.md`. **Do not re-plan or re-review it** — its
    re-derivation and **two** forward reviews have run, and **all findings from both are applied**
@@ -482,7 +507,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread, and `cli.py` carrying `--train-dict` / `--tune-dict` / `--from`. `make test` 301.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 14f** — the remaining Group D tests — then **Task 15**, which trains and installs the first real dictionary. **Groups A, B and C are done, and Tasks 14, 14a, 14b, 14c and 14e have run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread, and `cli.py` carrying `--train-dict` / `--tune-dict` / `--from`. `make test` 308.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 15** — train and install the first real dictionary into `logs/corpus/dicts/`, then Groups E and F. **Groups A, B and C are done, and every lettered task of Group D has run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

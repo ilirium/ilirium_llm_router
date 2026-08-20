@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import csv
 import os
+import threading
 import time
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -955,7 +956,9 @@ def plain_writer(root: Path) -> CorpusWriter:
 def install_one(root: Path, samples: list[bytes]) -> str:
     """Install a dictionary the way another process would — because that is the only way one ever
     arrives. The trainer publishes a file and nothing else."""
-    subject = DictionaryTrainer(Corpus(enabled=True, dir=root, retrain=Retrain(maxdict=16_384, k=200)))
+    subject = DictionaryTrainer(
+        Corpus(enabled=True, dir=root, retrain=Retrain(maxdict=16_384, k=200))
+    )
     return subject.install(subject.train(samples)).name
 
 
@@ -1296,3 +1299,141 @@ def test_a_cli_override_wins_over_the_config_for_that_run(tmp_path: Path) -> Non
     assert overridden.retrain.maxdict == 16_384
     assert overridden.retrain.k == 8000, "an unmentioned key keeps its configured value"
     assert corpus.retrain.maxdict == 262_144, "the original block is not mutated"
+
+
+# -- the thread, the sweep and the triggers (Task 14f) ------------------------------------------
+
+
+def two_session_corpus(root: Path) -> None:
+    """Two complete days, one session each, so the window has to widen to find a second."""
+    days = [(datetime.now(UTC) - timedelta(days=n)).strftime("%Y-%m-%d") for n in (2, 1)]
+    day_folder(root, days[0], {"older": bodies(14, seed=3)})
+    day_folder(root, days[1], {"newer": bodies(14, seed=7)})
+
+
+def test_startup_sweeps_a_staging_file_a_killed_run_left_behind(tmp_path: Path) -> None:
+    """*"A killed run leaves no trace"* is only true if somebody sweeps.
+
+    The **installed** path is atomic, so a run killed mid-flight publishes nothing a reader would
+    load — but a thread killed between write and rename does leave its partial file, and no task
+    owned cleaning it up until this one.
+    """
+    staging = tmp_path / "dicts" / ".incoming"
+    staging.mkdir(parents=True)
+    leftover = staging / "1234-abcdef.tmp"
+    leftover.write_bytes(b"half a dictionary")
+
+    DictionaryTrainer(
+        Corpus(enabled=True, dir=tmp_path, retrain=Retrain(window_days=0))
+    ).start()
+
+    assert not leftover.exists()
+
+
+def test_the_sweep_creates_nothing_when_there_is_nothing_to_sweep(tmp_path: Path) -> None:
+    """Task 18's observation 1 again: a corpus that has never written has no staging folder, and
+    looking for one must not bring it into existence."""
+    root = tmp_path / "never-written"
+    DictionaryTrainer(
+        Corpus(enabled=True, dir=root, retrain=Retrain(window_days=0))
+    ).start()
+
+    assert not root.exists()
+
+
+def test_only_one_training_thread_runs_at_a_time_in_this_process(tmp_path: Path) -> None:
+    """**On top of the cross-process lock, not instead of it.** The file lock stops two *processes*
+    training at once; this stops the worker spawning a second thread while the first is still going,
+    which the lock would only turn into a thread that starts and immediately gives up.
+    """
+    subject = trainer(tmp_path)
+    running, release = threading.Event(), threading.Event()
+    monkey = pytest.MonkeyPatch()
+    monkey.setattr(subject, "run", lambda: (running.set(), release.wait(timeout=5)))
+    try:
+        subject._spawn("first")
+        assert running.wait(timeout=5), "the first thread started"
+        first = subject._thread
+
+        subject._spawn("second")
+        assert subject._thread is first, "no second thread while the first is alive"
+    finally:
+        release.set()
+        if subject._thread is not None:
+            subject._thread.join(timeout=5)
+        monkey.undo()
+
+
+def test_a_new_thread_may_start_once_the_previous_one_has_finished(tmp_path: Path) -> None:
+    subject = trainer(tmp_path)
+    monkey = pytest.MonkeyPatch()
+    monkey.setattr(subject, "run", lambda: None)
+    try:
+        subject._spawn("first")
+        first = subject._thread
+        assert first is not None
+        first.join(timeout=5)
+
+        subject._spawn("second")
+        assert subject._thread is not first
+        if subject._thread is not None:
+            subject._thread.join(timeout=5)
+    finally:
+        monkey.undo()
+
+
+def test_the_training_thread_never_raises_into_the_process(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """**Telemetry-shaped: it logs and dies quietly.** A corpus that stops filling is bad; a router
+    that stops serving because the corpus stopped filling is worse.
+
+    Asserted on the log rather than on survival alone — an uncaught exception in a thread also
+    leaves the process alive, so "it did not crash" would pass with the handler deleted.
+    """
+    subject = trainer(tmp_path)
+    monkey = pytest.MonkeyPatch()
+
+    def explode() -> None:
+        raise RuntimeError("training exploded")
+
+    monkey.setattr(subject, "run", explode)
+    try:
+        with caplog.at_level("WARNING", logger="ilirium_llm_router"):
+            subject._spawn("boom")
+            assert subject._thread is not None
+            subject._thread.join(timeout=5)
+    finally:
+        monkey.undo()
+
+    assert "training exploded" in caplog.text
+    assert "RuntimeError" in caplog.text
+
+
+def test_a_rollover_inside_the_budget_starts_a_training_thread(tmp_path: Path) -> None:
+    """The positive half of `TRAIN_BUDGET_S`; the refusing half is tested above."""
+    two_session_corpus(tmp_path)
+    subject = trainer(tmp_path)
+    subject._apply_budget(0.01)
+
+    subject.on_day_rollover()
+
+    assert subject._thread is not None
+    subject._thread.join(timeout=10)
+    assert subject.incumbent() is not None, "the rollover run installed a dictionary"
+
+
+def test_the_startup_trigger_trains_and_installs_on_its_own_thread(tmp_path: Path) -> None:
+    """**The whole automatic path, from `start()` to a file in `dicts/`**, with nothing awaited on
+    the caller's side — which is the property that keeps training off the event loop."""
+    two_session_corpus(tmp_path)
+    subject = trainer(tmp_path)
+
+    subject.start()
+
+    assert subject._thread is not None
+    subject._thread.join(timeout=10)
+    installed = subject.incumbent()
+    assert installed is not None and installed.name.startswith("req-")
+    assert "verdict=installed" in subject.retrain_log.read_text(encoding="utf-8")
+    assert not subject.retrain_lock.exists(), "the lock is released by the thread that took it"

@@ -2640,6 +2640,53 @@ probe compression included — on every rescan, and a log line announcing a swit
 **`make test` 293** (282 before), **`make lint` clean**, **`make check` valid**, `link-check.py`
 **82 files, 79 broken, 2 roundabout — unchanged.**
 
+## Task 14f — the tests the rest of Group D did not already have — 2026-08-20
+
+**Every lettered task in Group D has now run. Only Task 15 remains.** **`make test` went 301 → 308.**
+
+**Its three named cases had already landed with Task 14c** — a mid-day swap leaving every blob
+readable from the day folder alone, the same across a rollover, and an assertion that every frame
+carries a dictID. They were built there rather than here because they are what *proves* the pickup,
+not what checks it afterwards.
+
+**So this task started with an audit rather than with writing tests**, which is the only honest way
+to answer *"tests for all of the above"* without padding: every method in `dictionary.py` was checked
+against whether the test file names it at all. **Thirty-five methods; seven never mentioned.** Two of
+those (`__init__`, `dicts_dir`) are exercised by everything, and two more (`_break_stale_lock`,
+`_sessions_in`) are covered through their callers. **Three were genuinely untested, and one of them
+is a stated behaviour of the design.**
+
+| Gap | Why it mattered |
+|---|---|
+| **`_sweep_staging`** | *"`.incoming/` is swept at startup"* is in the plan and nothing tested it. The **installed** path is atomic so a killed run publishes nothing — but a thread killed between write and rename leaves its partial file, and no task owned cleaning it up |
+| **`_spawn`** | In-process single-flight, which sits **on top of** the cross-process lock rather than instead of it. Without it the worker can spawn a second thread while the first runs, which the file lock would only turn into a thread that starts and immediately gives up |
+| **`_run_quietly`** | *"It logs and dies quietly."* Untested, and the obvious test is worthless — see below |
+
+**Two positive cases were missing beside them**: `on_day_rollover` was only tested in the branch
+where the budget **refuses**, and `start()` had never been driven from call to installed file.
+
+### The test that would have been worthless, and why it needed `caplog`
+
+**"The training thread never raises" cannot be asserted by the process surviving**, because an
+uncaught exception in a thread also leaves the process alive — Python prints a traceback and carries
+on. A test that spawned, joined and asserted "still here" would pass with the handler **deleted**.
+
+So it asserts on the **log**: the warning naming `RuntimeError` and the message. That is the only
+observable the behaviour actually has. **`caplog` is new to this repository** and is introduced here
+for exactly one reason — the case where the specified behaviour *is* "write a line and stop".
+
+### Six mutations, all caught
+
+Startup stops sweeping; the sweep creates the folder it is looking in; `_spawn` drops its liveness
+check; `_run_quietly` stops catching; `start()` never spawns; `on_day_rollover` never spawns.
+**Every one failed a targeted test**, and two of them failed *two* — the sweep mutation also broke
+Task 18's observation 1, which is the invariant that a disabled corpus leaves no trace.
+
+### Baselines, re-derived by running them
+
+**`make test` 308** (301 before), **`make lint` clean**, **`make check` valid**, `link-check.py`
+**82 files, 79 broken, 2 roundabout — unchanged.**
+
 ## Task 14e — the manual commands, and a leakage defect the number gave away — 2026-08-20
 
 **`--train-dict`, `--tune-dict` and `--from <dir>` all work, driven against the real corpus.**

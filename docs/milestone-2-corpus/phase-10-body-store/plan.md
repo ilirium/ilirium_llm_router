@@ -907,11 +907,14 @@ inside a running day, it is an ordinary analysis question and the index should a
 ### Group D — the dictionary *(in progress)*
 
 *Marker moved from `*(not started)*` when Task 14 ran on 2026-08-20, per "Placeholders in this
-file". The parenthesis stays exactly greppable; the prose carries the state.*
+file". It closes out at Task 15, which is the last task in the group. The parenthesis stays exactly
+greppable; the prose carries the state.*
 
-**Tasks 14, 14a, 14b, 14c and 14e have run; only 14f remains** — and 14f's three named cases
-(a mid-day swap, the same across a rollover, and every frame carrying a dictID) were built with 14c,
-because they are what proves the pickup rather than checks it afterwards. **Task 15 is unblocked.** `src/ilirium_llm_router/
+**Every lettered task has run — 14, 14a, 14b, 14c, 14e and 14f. Only Task 15 remains**, and it is
+unblocked: `--train-dict --from` is what it needs and it is driven and working. **`make test` is
+308.** 14f's three named cases (a mid-day swap, the same across a rollover, and every frame carrying
+a dictID) were built with 14c, because they are what proves the pickup rather than checks it
+afterwards; 14f itself closed the gaps a coverage audit found. `src/ilirium_llm_router/
 dictionary.py` holds `content_dict_id()`, `stamp()`, and `DictionaryTrainer` — the trainer, the
 training thread, the window, the split, the margin, the guard, the cross-process lock and
 `retrain.log`. **Every constant this group needs is now in the code**: `TRAIN_LEVEL` (3),
