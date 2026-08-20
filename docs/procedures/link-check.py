@@ -86,7 +86,10 @@ session expecting zero would either "fix" the prose or conclude the work is unfi
 
 - `.claude/agents/local-helper.md` — `EPD-001` naming the subagent file it *would* create.
 - `docs/procedures/closing-a-milestone.md` — `EPD-004`'s escape hatch if a playbook outgrows the
-  manual.
+  manual. **Named and not taken.** The closing playbook did outgrow it — 51 lines against a 40-line
+  trigger — and on 2026-08-20 it went to `docs/method/IDM-006-closing-a-milestone.md` instead, because
+  `method/` did not exist when the hatch was written. So this path stays a deliberate absence
+  permanently rather than pending: `EPD-004:626` still names it, and nothing will ever build it.
 
 **This list was seven until 2026-08-17, and five of the seven stopped being permanent in a single
 phase.** Phase 8 built the tracked `.claude/settings.json` and the `docs/method/` tier, so
@@ -97,6 +100,22 @@ the 71 above is now 61 — and the sentence that used to follow it said those 71
 Two attempts at predicting this count from the old prose, one in Phase 8's plan and one in its
 re-derivation, were both wrong and wrong in the same direction, because the prose partitions hits by
 *where they live* while what resolves them is *which path they name*.
+
+**Re-run 2026-08-20, mid-Phase-10: 99 broken, 2 roundabout — and the partition above no longer holds.**
+Two things moved it, and neither is a documentation defect:
+
+- **Phase 10 is in flight.** Nineteen hits name `reference/corpus.md`, `procedures/corpus-dictionary/`
+  and `procedures/corpus-benchmark/runs/` — a plan and two review charters describing files their own
+  phase has not landed yet. They resolve when it merges, exactly as `docs/method/` ×2 did in Phase 8.
+- **Thirteen name `.claude/settings.local.json`, which is untracked**, and that is a property of this
+  script worth knowing before comparing any two runs: **the count depends on files git does not
+  carry.** A fresh clone — or a second `git worktree`, which is where this was found — reports **99**;
+  the checkout holding the local settings file reports **86**. Neither is wrong, and a session that
+  compares its own run against a docstring written on the other one will conclude something broke.
+
+Deriving a fresh partition here would bake in a number that changes the day Phase 10 merges, so the
+list above is Phase 8's and is left as Phase 8's. What this run does establish is narrower and is the
+reason it was made: **moving both playbooks out to `docs/method/` on 2026-08-20 added no broken path.**
 
 **Also worth knowing before trusting a clean run:** this script reads `*.md` only when handed a
 directory, so citations in `config.yaml`, the `Makefile`, `pyproject.toml`, `.env.example` and `src/` are
