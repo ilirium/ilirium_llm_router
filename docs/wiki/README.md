@@ -56,3 +56,4 @@ differently from what the installed version actually does.
 | `background-work-in-fastapi.md` | You are about to move work off the request path — a periodic job, a slow write, a compression — and need to know which of the four mechanisms fits, and which one quietly stalls the server |
 | `zstandard-and-libzstd.md` | You need to know whether `zstandard` blocks the interpreter, which backend is running, what its dictionary trainer does with a parameter you left out, or how a blob finds its dictionary again |
 | `reading-a-c-extension-binary.md` | You need to know what a compiled Python extension really does — does it release the GIL, does it call what you think — and the wheel ships only a `.so` |
+| `claude-code-auto-mode.md` | A session is burning context on tool results, or you want to change **how** Claude edits files rather than what it may do — and need to know that auto mode's working-style instruction is undocumented and has no settings key |

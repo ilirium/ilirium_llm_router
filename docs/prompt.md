@@ -15,6 +15,13 @@ Read `docs/status.md` first, then
 `docs/milestone-2-corpus/phase-10-body-store/plan.md` — **thirty-two tasks in
 six groups** — and its `notes.md` beside it.
 
+**Read those two by section, not in wide sweeps.** `notes.md` is ~3,000 lines and
+`plan.md` ~1,600, and both grow every session. Grep the headings first
+(`grep -n '^## ' <file>`) and read the sections the task needs; `cat` on a whole
+source file or a 200-line `sed` sweep over a document is how a session spends a
+fifth of its context before writing anything. `docs/wiki/claude-code-auto-mode.md`
+says why that is worse than it looks under auto mode.
+
 **Do not re-plan and do not re-review.** The plan was re-derived against the
 code before publication, then forward-reviewed **twice** under
 `docs/method/IDM-004-reviewing-unexecuted-work.md`. **All findings from both are
@@ -65,7 +72,7 @@ Baselines to re-derive **by running, never by prediction**:
   the cloud-synced folder evicts the virtualenv takes **two to three minutes**
   on hydration alone. **A slow first run is not a hang.**
 - `make lint` clean, `make check` valid.
-- `docs/procedures/link-check.py` reports **79 broken, 2 roundabout, 82 files**
+- `docs/procedures/link-check.py` reports **79 broken, 2 roundabout, 83 files**
   on this branch, run 2026-08-20 **after this file was written**. **It never
   reports zero.** The excess is `backlog.md`'s known false-positive class plus
   forward citations to files later tasks create.
