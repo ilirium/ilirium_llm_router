@@ -72,7 +72,7 @@ Baselines to re-derive **by running, never by prediction**:
   the cloud-synced folder evicts the virtualenv takes **two to three minutes**
   on hydration alone. **A slow first run is not a hang.**
 - `make lint` clean, `make check` valid.
-- `docs/procedures/link-check.py` reports **79 broken, 2 roundabout, 83 files**
+- `docs/procedures/link-check.py` reports **79 broken, 2 roundabout, 85 files**
   on this branch, run 2026-08-20 **after this file was written**. **It never
   reports zero.** The excess is `backlog.md`'s known false-positive class plus
   forward citations to files later tasks create.
