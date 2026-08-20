@@ -14,8 +14,8 @@ real work — tool use, file editing, running commands — through the same addr
 translation is involved: LM Studio implements the same `/v1/messages`, so the request body is
 forwarded byte for byte and the reply streamed back untouched.
 
-Every call also leaves a line in a rotating log and a row in `logs/calls.csv` — 20 columns covering
-tokens, cache hits, time to first byte, duration and how the call ended.
+Every call also leaves a line in a rotating log and a row in `logs/telemetry/calls.csv` — 20 columns
+covering tokens, cache hits, time to first byte, duration and how the call ended.
 
 **Milestone 1 is complete** — six phases, 158 tests, and the central claim measured rather than
 argued: a single session reached both backends, and a local model handled tool use, file editing and

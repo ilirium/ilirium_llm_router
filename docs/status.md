@@ -10,6 +10,37 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-20, later — Group E is done. Tasks 16 and 17 have run, and Group F is next.** `calls.csv`
+and `router.log` are now `logs/telemetry/calls.csv` and `logs/telemetry/router.log` in `config.yaml`
+and in `config.py`'s two defaults, and **eleven live sites** across four repository files, four
+documents and two instruments were repointed. **No test was added: this changes where two files are
+written, not what the router does.**
+
+**The live files were not moved, and that is an owner decision rather than an omission.**
+`logs/calls.csv` (42,479 bytes) and `logs/router.log` (60,244 bytes) stay at `logs/`; the router
+creates the new pair on its next start, so **`logs/telemetry/` does not exist yet.** The row is in
+`plan.md`'s "What is settled, and by whom". **Task 18's layer-3 check therefore starts from an empty
+location**, which makes *"a real call produces a row"* unambiguous.
+
+**Task 17's sweep list was one citation short, and the missing one was the load-bearing half.**
+`notes.md` finding 9 names `probe.py:290` — the printed message. The path the probe *opens* is
+`probe.py:48`, `CALLS_CSV = ROOT / "logs" / "calls.csv"`, assembled from segments and so invisible to
+the grep that built the list. Repointing only the message would have left the probe reading a file
+that no longer exists while naming the new one. **Both are fixed.** The audit that found it searched
+for the segment, not the path.
+
+**Two green results were interrogated rather than accepted.** `link-check.py` reporting an unchanged
+count is also what a tool that never looked would report — so the mechanism was read: `resolves()`
+returns `True` for any first segment in `RUNTIME = {"logs"}`, so the new paths **are** reached and
+**are** deliberately skipped. And two mutations that both failed the *same* test were re-read for
+*which* assertion fired; the two `config.py` defaults are pinned separately, not by a short circuit.
+
+**Baselines, run not predicted: `make test` 308, `make lint` clean, `make check` valid,
+`link-check.py` 85 files, 79 broken, 2 roundabout — unchanged.** *(The entry below reads **82
+files**, and that is not a stale figure copied forward: the three commits since it added three `.md`
+files — 69 tracked then, 72 now. Checked, because a count that drifts while everything around it
+holds is exactly the shape of a number nobody re-ran.)*
+
 **2026-08-20, later — Task 15 has run and Group D is complete.** A real dictionary is installed:
 `logs/corpus/dicts/req-2026-08-20T110338Z-0e4d84d1.dict`, 262,144 bytes, put there by the router's
 own `--train-dict` rather than by hand. **The first durable state this phase has created outside a
@@ -547,7 +578,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread, and `cli.py` carrying `--train-dict` / `--tune-dict` / `--from`. `make test` 308.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 16** — the telemetry move, opening Group E. **Groups A, B, C and D are all done**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread, and `cli.py` carrying `--train-dict` / `--tune-dict` / `--from`. `make test` 308.** `plan.md` now carries **"The register"**, and every value in it is settled, and the telemetry paths now read `logs/telemetry/` | **Task 18** — the configuration check, opening Group F. **Groups A, B, C, D and E are all done** — **E moved nothing on disk**, on the owner's decision, so `logs/telemetry/` does not exist until the router next starts; the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

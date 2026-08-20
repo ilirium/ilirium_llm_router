@@ -55,6 +55,10 @@ the rejected alternatives. *(The rows are marked with their date. This section i
 decision's authority is recorded, which is exactly why the 2026-08-19 interview happened at all — see
 the row on retraining below.)*
 
+**A third row was added 2026-08-20, during execution rather than in an interview.** Task 16 was
+written to ask before it touched the live files, so it did; the answer is an owner decision and
+belongs here rather than in a commit message nobody greps.
+
 | | Decision |
 |---|---|
 | **Capture default** — `EPD-003` open question 4 | **Opt-in, one switch, off by default.** `corpus.enabled: false`. The CSV is always on because it is cheap and holds nothing sensitive, and **neither is true here** — bodies hold source code, file contents and anything typed. **The named cost:** the durable day-partitioned index exists only when the corpus does, so `calls.csv`'s expiry stays unfixed on a machine that never turns the corpus on. A two-switch shape — index always-on, bodies opt-in — was offered and declined, on one config knob rather than two |
@@ -87,6 +91,7 @@ the row on retraining below.)*
 | **Task 8's two scope stretches** — *2026-08-19* | **Both stand.** The index's **column names** are declared in `corpus.py` so the `manifest` writes `len(INDEX_COLUMNS)` rather than a hand-typed 26 that could drift from Task 10's tuple — the manifest exists to detect exactly that. And **`CorpusWriter` takes a directory and a level**, not a config block, because **Task 11 is the only task that builds that block** and it runs later; completing the `StatsWriter` mirror is a one-line change there. **No register value moved by either** |
 | **The dictID the router stamps** — *2026-08-19* | **We assign it ourselves, derived from the dictionary's content.** sha256 of the dictionary **with its own ID field zeroed**, first four bytes, big-endian, `or 1`. **Not libzstd's**, which Task 7 measured does *not* cover the entropy tables: the same samples at levels 3, 9 and 19 give **one ID and three different files**, while the content-derived one gives **three**. **Three alternatives were rejected.** *Leaving libzstd's default* — it leaves that collision live and manageable only by policy. *Folding the hash into zstd's non-reserved range `32768 … 2**31-1`* — offered, and declined on the ground that this corpus is private, libzstd accepted **every** `uint32` tested, and the reserved-range claim is documented rather than measured. *A timestamp-based ID* — unique per run but it identifies the **run**, not the bytes, so retraining on identical material would yield a different ID for an identical file |
 | **The retry finding** — *2026-08-19* | **No rerun.** `gate.py` trained on **48 bodies, 26 distinct** — 46% repeats, being `overloaded_error` retries — and the owner declined a measurement of the effect, on the ground that these sessions are too short for the numbers to be more than approximate and that they carry enough accuracy to execute against. **Task 21 states the training-set composition in the slice column** instead |
+| **Task 16's live files** — *2026-08-20* | **They are not moved; `logs/telemetry/` starts empty.** The task row below ends *"and the live files on disk"*, and this session asked before touching them. The owner chose to leave `logs/calls.csv` (42,479 bytes, last written 2026-08-17) and `logs/router.log` (60,244 bytes, written by Task 15's install) where they are and let the router create the new pair on its next start. **Two alternatives were rejected:** *moving both*, which keeps one growing history but relocates the only record of Milestone 1's traffic, and *copying them*, which leaves two copies of which only one grows and nothing to tell a later session which is real. **The consequence is named rather than left to be discovered:** Task 18's layer-3 check now starts from an empty location, so *"a real call produces a row"* cannot be confused with a row that was already there. The two files stay on disk, unread; `logs/` is gitignored either way |
 
 ### And two questions the owner did not have to answer
 
@@ -956,12 +961,20 @@ one exception this phase holds was spent before anything executed, and Group B's
 sits in Group C because **Group C ships before Group D** and the reader is what Group D's trainer
 depends on — a dependency cannot be scheduled after the thing that needs it.
 
-### Group E — the telemetry move *(not started)*
+### Group E — the telemetry move *(executed)*
 
 | # | Task |
 |---|---|
 | **16** | Move `calls.csv` and `router.log` into `logs/telemetry/` — `config.yaml`, `config.py`'s two defaults, `tests/test_config.py`, `tests/test_logging_setup.py`, and the live files on disk |
 | **17** | The sweep `../../procedures/link-check.py` **cannot see** — `CLAUDE.md`, `README.md`, `../../reference/observability.md`, `../../procedures/testing-against-claude-code.md`, `../../procedures/lmstudio-capability-probes/probe.py`, **and `../../procedures/link-check.py:45`**, whose docstring uses `logs/calls.csv` as its worked example — a stale path *inside the instrument Task 24 runs*, and one it cannot catch itself because it globs `*.md`. Stating which archive and EPD hits were **left** and why |
+
+**Two things happened in execution that these two rows do not say**, both recorded in `notes.md`
+under *"Tasks 16 and 17"*. **Task 16's live files were not moved** — the owner decided that when
+asked, and the row is in "What is settled, and by whom" above. **Task 17's sweep list was one
+citation short:** it names `probe.py` for the *message* at line 290, but the path the probe actually
+opens is line 48, `CALLS_CSV = ROOT / "logs" / "calls.csv"`, built from segments and so invisible to
+a grep for the path. Both lines are repointed. A sweep list compiled by grepping a path finds prose,
+not construction.
 
 ### Group F — verify, harvest and close *(not started)*
 

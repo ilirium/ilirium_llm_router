@@ -2915,6 +2915,101 @@ The **write path under concurrency** (one worker by design), the **arrived/recor
 scanner**, and **Tasks 14e and 15**, which are not built. This looked at the dictionary and reader
 path, because that is where Task 14c's defect lived and where the same shape would recur.
 
+## Tasks 16 and 17 — the telemetry move, and a citation the sweep list missed — 2026-08-20
+
+**Group E is done in two commits and moved nothing on disk.** `logs/telemetry/` is now what
+`config.yaml` and `config.py` name, and every live document and instrument that cited the old paths
+was repointed. **`make test` stayed at 308** — this group adds no tests, because it changes no
+behaviour, only where two files are written.
+
+### The owner decided the live files stay where they are
+
+`plan.md`'s Task 16 row ends *"and the live files on disk"*, and this session asked before touching
+them, as `CLAUDE.md` requires. **The owner chose to leave them and let the router start fresh.**
+`logs/calls.csv` (42,479 bytes, last written 2026-08-17) and `logs/router.log` (60,244 bytes, last
+written 2026-08-20 at 14:03 by Task 15's dictionary install) are **still at `logs/`**, and nothing
+now reads them.
+
+**This is recorded because it will otherwise read as an oversight** — which is the same reason
+Task 17 states what it left. The consequences, written down rather than discovered later:
+
+- **`logs/telemetry/` does not exist yet.** Nothing creates it until the router runs; both handlers
+  `mkdir(parents=True)` at `logging_setup.py:74` and `stats.py:155`, so it needs no task of its own.
+  `make check` prints the new absolute paths and creates nothing — confirmed by listing `logs/`
+  after running it.
+- **Task 18's layer-3 check therefore starts from an empty location**, which makes its observations
+  *stronger*, not weaker: "a real call produces a row" cannot be confused with a row that was
+  already there.
+- **The two orphaned files are still the only record of Milestone 1's traffic** and of Task 15's
+  install. They are not deleted, and `logs/` is gitignored either way.
+
+### Task 17 found a citation the sweep list did not have
+
+`notes.md` finding 9 above names **`probe.py:290`** — the message *"is the router writing
+logs/calls.csv?"*. That is the printed string. **The path the probe actually opens is
+`probe.py:48`**, `CALLS_CSV = ROOT / "logs" / "calls.csv"`, built from segments, which is why a grep
+for the literal string missed it when finding 9 was written.
+
+**Repointing only line 290 would have left the probe reading a file that no longer exists while
+printing a message naming the new one** — a check that reports *"csv row not found"* for the wrong
+reason. Both lines are repointed. **This is the same shape as Group D's register correction**: the
+finding described the code less than completely, so the finding is corrected here rather than the
+code being bent to it.
+
+**The general lesson, and it is not about this one line:** a sweep list compiled by grepping for a
+path finds prose, not construction. Anything assembled from `/`-joined segments is invisible to it.
+The audit that caught this was `grep -rn '"logs"' --include='*.py'` — the segment, not the path.
+
+### The eleven live sites
+
+| File | Sites |
+|---|---|
+| `config.yaml` | 2 — `logging.file`, `stats.file` |
+| `../../../src/ilirium_llm_router/config.py` | 2 — the `Logging` and `Stats` defaults |
+| `../../../tests/test_config.py` | 2 — the resolve-against-the-config-file assertions |
+| `../../../tests/test_logging_setup.py` | 1 — a docstring naming the default |
+| `../../../CLAUDE.md` | 1 |
+| `../../../README.md` | 1 |
+| `../../reference/observability.md` | 2 — the config-shape block |
+| `../../procedures/testing-against-claude-code.md` | 3 |
+| `../../procedures/lmstudio-capability-probes/probe.py` | **2** — the constant *and* the message |
+| `../../procedures/link-check.py` | 1 — the docstring's worked example, inside the instrument Task 24 runs |
+
+**Four markdown paragraphs were rewrapped**, because `logs/telemetry/` is ten characters wider than
+`logs/` and the repository wraps prose at 100.
+
+### What was left in the archive and the EPDs, and why
+
+**Q9 option A, decided: live documents only.** `../../README.md` licenses repointing a *path* in
+archived prose because a path is navigation; it does not license repointing a *claim*. Seven hits
+were left, and they fall into two kinds:
+
+| Left | Why |
+|---|---|
+| `../../epd/EPD-002-token-counting-for-local-backends.md:5, :57` | Claims about a session recorded on 2026-07-31. Repointing would say a file recorded it that did not exist that day |
+| `../phase-9-corpus-gate/notes.md:147` | *"`logs/calls.csv` before the capture — 177 lines, 29,831 bytes"* is a **measurement**, not an address |
+| `../../milestone-1-core/phase-5-config-and-timeouts/evidence/needle-completes-at-1800.txt:11, :19` and `needle-dies-at-30.txt:25` | Frozen probe output. Evidence is not edited |
+| `../../epd/EPD-004-documentation-structure.md:65` and `../../milestone-1-core/phase-7-docs-restructure/plan.md:78` | Both quote **`probe.py:40`** and `ROOT = HERE.parent.parent` — already two migrations stale, because Phase 7 moved the probe a level deeper and it is now `probe.py:44` with three `.parent`s. **They are records of what was measured then, and reading correctly is exactly what makes them evidence** |
+
+**None of the seven is unfollowable, before or after.** `link-check.py` skips anything whose first
+segment is `logs/` — verified at `../../procedures/link-check.py:174`, not assumed.
+
+### Interrogating the two checks that passed
+
+*"What would make this positive anyway?"*, applied to the two results that could each have been
+green for the wrong reason.
+
+1. **`link-check.py` reported `85 files, 79 broken, 2 roundabout` before and after.** Unchanged is
+   what a tool that never looked also reports. The mechanism was read rather than trusted:
+   `resolves()` at line 174 returns `True` for any candidate whose first segment is in
+   `RUNTIME = {"logs"}`, so `logs/telemetry/calls.csv` **is** reached and **is** deliberately
+   skipped. The count was never going to move, and now that is a finding rather than a hope.
+2. **Two mutations, both caught — but both by the same test.** Reverting either default in
+   `config.py` fails `test_relative_paths_resolve_against_the_config_file`, which asserts twice. One
+   failing test for two mutations is what a short-circuit looks like, so the second run was read for
+   *which* assertion fired: the `logging` assertion passed and the `stats` assertion failed. **Both
+   defaults are pinned separately.**
+
 ## Open at the end of Group C — 2026-08-19
 
 **Three things are open and none of them blocks Task 14.** Written down because the owner clears

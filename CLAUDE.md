@@ -114,8 +114,8 @@ these.** This is an index, not a summary — a one-line restatement would drift,
 ## Observability
 
 Every call leaves two traces: a line in a rotating log that uvicorn's own lines join, and a row in
-`logs/calls.csv` with 20 columns. Usage is read off a **tee** of the passing bytes, never by parsing
-and rebuilding them.
+`logs/telemetry/calls.csv` with 20 columns. Usage is read off a **tee** of the passing bytes, never
+by parsing and rebuilding them.
 
 → `docs/reference/observability.md` — read it before touching the recorder, adding a column, or
 interpreting a row. In particular: telemetry never breaks a call, the CSV is in **completion order**

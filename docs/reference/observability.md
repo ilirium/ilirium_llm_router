@@ -122,12 +122,12 @@ columns; the relay is never affected, so the cap can cost observation and never 
 ```yaml
 logging:
   level: INFO
-  file: logs/router.log
+  file: logs/telemetry/router.log
   max_bytes: 10485760   # 10 MiB
   backup_count: 5
 
 stats:
-  file: logs/calls.csv
+  file: logs/telemetry/calls.csv
   max_bytes: 5242880    # 5 MiB
   backup_count: 10
 ```
