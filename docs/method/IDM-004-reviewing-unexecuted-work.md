@@ -1,8 +1,8 @@
 # IDM-004 — Reviewing work that has not happened yet
 
 **In force 2026-08-18.** Written after running it once, on Phase 10's plan, and from what that cost
-rather than from what it seemed like it should be. `../README.md`'s own playbook rule — *write this
-playbook last, from what it cost* — is why it did not exist before that run.
+rather than from what it seemed like it should be. `IDM-006-closing-a-milestone.md`'s step 9 — *write
+this playbook last, from what it cost* — is why it did not exist before that run.
 
 ---
 
@@ -208,11 +208,13 @@ rewriting rather than defending.
   *a phase that must produce findings will manufacture them* are inherited here whole. The boundary
   between the two protocols is stated above rather than in that file, because a reader arriving at a
   plan is holding this one.
-- **`../README.md`'s closing playbook** — *write this playbook last, from what it cost*, which is why
-  this document was written after the first run and not before it. The owner chose that ordering
-  explicitly on 2026-08-18, against the alternative of specifying the protocol first.
-- **`../README.md`'s record of a fresh-context review that verified the wrong thing** — the single
-  piece of evidence that iteration 1 exists to answer.
+- **`IDM-006-closing-a-milestone.md`, step 9** — *write this playbook last, from what it cost*, which
+  is why this document was written after the first run and not before it. The owner chose that ordering
+  explicitly on 2026-08-18, against the alternative of specifying the protocol first. *(That rule was
+  in `../README.md`'s closing playbook until 2026-08-20.)*
+- **`IDM-006-closing-a-milestone.md`, step 8's record of a fresh-context review that verified the
+  wrong thing** — the single piece of evidence that iteration 1 exists to answer. *(In `../README.md`'s
+  closing playbook until 2026-08-20.)*
 - **`IDM-000`** — the tier's conventions, and the admission test this document passes: it contains no
   fact about the router, and every rule in it survives a change of subject.
 - **First run:** `../milestone-2-corpus/phase-10-body-store/review-charter.md` is the worked example

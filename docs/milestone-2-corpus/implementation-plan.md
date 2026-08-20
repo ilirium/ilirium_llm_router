@@ -2,8 +2,10 @@
 
 **Opened 2026-08-17 on `docs/phase-8-method-and-guardrails`, forked from `main` at `6253cbc`.**
 
-Written at **decreasing resolution**, per the opening playbook's step 7 in `../README.md`: the next
+Written at **decreasing resolution**, per the opening playbook's step 7: the next
 phase in full, the one after in outline, the rest as a title and the question it exists to close.
+*The opening playbook moved from `../README.md` to `../method/IDM-005-opening-a-milestone.md` on
+2026-08-20, unchanged; every reference to it below resolves there.*
 Plans here are wrong on contact often enough that detail beyond the next phase is waste — four of
 Milestone 1's six phases found their own plan wrong on contact.
 
