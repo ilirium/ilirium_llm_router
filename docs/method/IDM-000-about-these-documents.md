@@ -3,7 +3,8 @@
 **IDM stands for Ilirium Development Method.**
 
 A method document states **how the work is done** — how a branch is named, how the harness is
-configured, which tools are pinned and why. Not how the router works: that is `../reference/`.
+configured, which tools are pinned and why, how a milestone is opened and closed. Not how the router
+works: that is `../reference/`.
 
 ## An IDM is the opposite of an EPD in status
 
@@ -131,3 +132,5 @@ exist yet.
 | **002** | [Harness configuration: the permission allowlist](IDM-002-harness-configuration.md) | 2026-08-17 | The tracked/local split and its admission test, the exact-match `.env` deny and why it does not reopen `EPD-004` decision 19, and what an allowlist entry does to a rule nobody re-read |
 | **003** | [Development tooling](IDM-003-development-tooling.md) | 2026-08-17 | The ruff pin, both halves, why `make lint` cannot catch a column-width change, and how to try a version. And `ty`: tried and refused, recorded rather than deleted |
 | **004** | [Reviewing work that has not happened yet](IDM-004-reviewing-unexecuted-work.md) | 2026-08-18 | The **forward** review, and the line between it and `../README.md`'s closing one. Derive the charter before reviewing; run the author and a cold reader **in parallel** on different questions; six rules including read-only and *nothing found is a complete answer*. Written from one run that returned 22 findings at 18% overlap, and refuted a claim the author had already written into four documents |
+| **005** | [Opening a milestone](IDM-005-opening-a-milestone.md) | 2026-08-20 | Eight steps mined from Milestone 1's opening: name the falsifiable central claim, refute it cheaply, **capture the real input before specifying anything**, spike, fork the expensive questions as EPDs, mark the spec measured / inferred / assumed, plan at decreasing resolution, open the folder and the branch. Moved from `../README.md` unchanged |
+| **006** | [Closing a milestone](IDM-006-closing-a-milestone.md) | 2026-08-20 | Nine steps: freeze, write the milestone README, harvest into `../reference/`, `lessons.md`, `measurements.md`, `../backlog.md`, reset `../status.md`, repoint and re-check, rewrite the playbook. Moved from `../README.md` **and repaired** — the version written there was the narrative of the restructure that produced it, with five of the seven decided steps missing. Each restored step names the Phase 7 commit that ran it |

@@ -112,7 +112,7 @@ has a trigger.
 ### `method/` — how the work is done
 
 Rules about the process rather than about the router: branch naming, harness configuration, which tools
-are pinned and why. **The conventions, the status vocabulary and the index are in
+are pinned and why, and both milestone playbooks. **The conventions, the status vocabulary and the index are in
 `method/IDM-000-about-these-documents.md`** — read it before writing one. Numbered `IDM-NNN-<slug>.md`,
 and there is deliberately no `README.md` in the tier: `IDM-000` *is* the index, matching `epd/`.
 
