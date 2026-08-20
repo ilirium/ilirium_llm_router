@@ -14,6 +14,7 @@ shape it expects, and the shape Claude Code expects is Anthropic's error object 
 
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncIterator
 from contextlib import AsyncExitStack, asynccontextmanager
 
@@ -25,10 +26,38 @@ from starlette.requests import ClientDisconnect
 from .config import Config
 from .corpus import CorpusWriter
 from .dictionary import DictionaryTrainer
-from .proxy import Proxy, create_client, error_response
+from .proxy import Counters, Proxy, create_client, error_response
 from .stats import StatsWriter
 
+logger = logging.getLogger(__name__)
+
 CATCH_ALL_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+
+
+def _report_counters(counters: Counters) -> None:
+    """The one line that answers *did every call that arrived become a row?*
+
+    **A call that never reaches `record()` leaves no other trace at all** -- no CSV row, no log
+    line, no corpus entry -- so this pair is the only place that hole is visible. Emitted at
+    shutdown whether or not the corpus is on, which is the whole point: `corpus.enabled` is false
+    by default, and the corpus summary carrying every other total is not written at all then.
+
+    `lost` is normally 0, and a non-zero count is a real case rather than a theoretical one. A
+    caller already gone when the response starts makes `send` raise before the streaming
+    generator's first step, so `watch`'s `finally` -- and the `record()` inside it -- never runs.
+    Driven and measured 2026-08-20 at Task 18a, on the ASGI app directly, because the window is
+    too narrow to hit reliably over a socket.
+
+    **This reports the hole; it does not close it.** Owner's decision, 2026-08-20: writing the
+    missing row from somewhere else has to guarantee it can never write one twice, and a duplicated
+    row is worse than a missing one. `docs/backlog.md` carries the item.
+    """
+    logger.info(
+        "calls: %d arrived, %d recorded, %d lost",
+        counters.arrived,
+        counters.recorded,
+        counters.lost,
+    )
 
 
 def create_app(
@@ -74,7 +103,13 @@ def create_app(
                 # worker drains because it holds bodies that exist nowhere else. Two threads, two
                 # shutdown rules, for reasons that differ.
                 trainer.start()
-            app.state.proxy = Proxy(config, http, config.api_keys(), writer, store)
+            proxy = Proxy(config, http, config.api_keys(), writer, store)
+            # Registered last so it runs *first* on the way out -- the stack is LIFO and the
+            # corpus summary is registered above. On its own line rather than folded into that
+            # summary, because the corpus is off by default and this pair has to be readable on
+            # the configuration the router actually ships with.
+            stack.callback(_report_counters, proxy.counters)
+            app.state.proxy = proxy
             yield
 
     app = FastAPI(title="ilirium_llm_router", lifespan=lifespan)

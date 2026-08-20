@@ -21,6 +21,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import httpx
+import pytest
 from conftest import CLAUDE_BODY, CLAUDE_CODE_HEADERS, make_config
 from fastapi.testclient import TestClient
 
@@ -342,3 +343,103 @@ def test_a_reply_over_the_ceiling_is_too_large_and_the_relay_is_untouched(tmp_pa
     row = index_rows(day)[0]
     assert row["response_ref"] == TOO_LARGE
     assert row["request_ref"] == TOO_LARGE
+
+
+def asgi_scope() -> dict[str, object]:
+    """A minimal HTTP scope for `POST /v1/messages`, so the app can be called without a server."""
+    return {
+        "type": "http",
+        "asgi": {"version": "3.0"},
+        "http_version": "1.1",
+        "method": "POST",
+        "scheme": "http",
+        "path": "/v1/messages",
+        "raw_path": b"/v1/messages",
+        "query_string": b"",
+        "root_path": "",
+        "headers": [(k.encode(), v.encode()) for k, v in CLAUDE_CODE_HEADERS.items()],
+        "client": ("127.0.0.1", 50000),
+        "server": ("127.0.0.1", 8787),
+    }
+
+
+async def call_with_caller_gone(app: object) -> None:
+    """One call straight into the ASGI app, with the caller already gone when the response starts.
+
+    **`TestClient` cannot express this.** It consumes the whole response, so the streaming generator
+    always takes its first step and `watch`'s `finally` always runs. Here `send` is ours, and *a
+    caller that is already gone* is a `send` that raises on `http.response.start` -- which is what
+    uvicorn does when the socket has closed underneath it.
+    """
+    messages: list[dict[str, object]] = [
+        {"type": "http.request", "body": CLAUDE_BODY, "more_body": False}
+    ]
+
+    async def receive() -> dict[str, object]:
+        return messages.pop(0) if messages else {"type": "http.disconnect"}
+
+    async def send(message: dict[str, object]) -> None:
+        if message["type"] == "http.response.start":
+            raise OSError("the caller is gone")
+
+    await app(asgi_scope(), receive, send)  # type: ignore[operator]
+
+
+def test_the_counter_pair_is_reported_at_shutdown(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Observation 5 of Task 18, and it could not be performed before this line existed.
+
+    **The pair is useless if nothing emits it.** It was counted correctly and read only by the test
+    above, which reaches into `app.state.proxy` -- a path no running router has. Asserting on the
+    log is the only way to check the thing that actually ships.
+    """
+    with (
+        caplog.at_level(logging.INFO, logger="ilirium_llm_router.app"),
+        router(config_writing_to(tmp_path / "calls.csv")) as client,
+    ):
+        for _ in range(3):
+            client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert "calls: 3 arrived, 3 recorded, 0 lost" in caplog.text
+
+
+def test_a_caller_gone_at_response_start_is_counted_as_lost(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """The hole the counter pair exists for, driven rather than argued.
+
+    `record()` lives in `watch`'s `finally`. When the caller is already gone at response-start the
+    generator never takes its first step, so that `finally` never runs: **no CSV row, no log line,
+    no corpus entry -- no trace at all except this counter.** `proxy.py` names the same case in the
+    comment justifying its `BackgroundTask(reply.aclose)`, which covers the connection but not the
+    row.
+
+    **The row is deliberately not written here.** Owner's decision, 2026-08-20: report the hole, do
+    not close it, because writing the row from elsewhere must guarantee it can never write one
+    twice. This test pins the reporting, and would start failing the day somebody closes the hole
+    -- which is the right moment to be told.
+    """
+    path = tmp_path / "calls.csv"
+    app = create_app(config_writing_to(path), httpx.AsyncClient(transport=httpx.MockTransport(
+        lambda request: httpx.Response(200, headers=JSON_HEADERS, content=REPLY)
+    )))
+
+    async def run() -> None:
+        async with app.router.lifespan_context(app):
+            try:
+                await call_with_caller_gone(app)
+            except OSError:
+                pass  # it propagates to the server, which has nobody to answer
+            counters = app.state.proxy.counters
+            assert counters.arrived == 1
+            assert counters.recorded == 0, "a row was written; the hole may have been closed"
+            assert counters.lost == 1
+
+    with caplog.at_level(logging.INFO, logger="ilirium_llm_router.app"):
+        asyncio.run(run())
+
+    assert "calls: 1 arrived, 0 recorded, 1 lost" in caplog.text
+    # The file exists -- `StatsWriter` writes its header at startup -- but carries no data row,
+    # which is precisely the hole: the call happened and the CSV cannot show it.
+    assert rows(path) == [], "the lost call must leave no row -- that is what makes it lost"
