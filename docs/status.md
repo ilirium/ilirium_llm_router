@@ -10,6 +10,58 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-20, later — Tasks 14a and 14b have run and the router retrains itself.**
+`DictionaryTrainer` now carries the training thread, both triggers, the cross-process lock, the
+today-guard, the window, the leave-one-session-out split and `retrain.log`. **`make test` went
+250 → 282.** **14c, 14e and 14f remain**, then Task 15.
+
+**They landed in one commit** — the same departure Tasks 9 and 10 made, for the same reason: split,
+14a would have committed a thread that collects a window and discards it, since a run cannot reach a
+verdict without 14b's held-out slice.
+
+**Driven end to end on a two-day corpus built from `logs/corpus-gate/`, in a scratchpad.** The window
+**widened** to two days because each day carries one session; the split held out 20 and trained on 24
+with no body on both sides; the first run **installed**, the second was **stopped by the guard**, and
+`--train-dict`'s bypass trained and was **refused on the margin**. A fresh `CorpusWriter` then loaded
+the installed dictionary by name, stored a body against it, and that body **read back byte-identical
+from the day folder alone**. A genuinely separate process held the lock and this one could not
+acquire.
+
+**A race was found by reading and would not have been found by driving.** The today-guard was checked
+only *before* the lock, so two processes could both pass it, queue, and have the loser retrain from
+exactly what the winner just used. **Checked twice now** — the cheap check first so the common case
+never takes the lock, the correct one under it.
+
+**The sample floor should not get a number, and that is the finding to carry.** `plan.md` stops
+training *"below a viable sample count"* and the register gives no value. Measured: libzstd refuses at
+5 and accepts at 8 **for these sizes**, and the threshold moves with `k` and sample length — its error
+is `Src size is incorrect`, about **total bytes, not a count**. **A fixed `MIN_SAMPLES` would wrap a
+constraint that is not a count.** What ships: the two floors needing no constant are checked and
+recorded, and libzstd's own refusal is caught into `retrain.log`. **Flagged for the owner, not
+closed.**
+
+**The lock is `O_EXCL`, not `flock`, and that is a reading of the plan rather than a preference** —
+*"a stale lock from a killed process is broken by age"* only describes `O_EXCL`, since `flock` is
+released by the kernel on death and would make `LOCK_STALE_S` dead code. The cost is named: a
+`kill -9` holds it for up to an hour. **Its age is read from inside the file, never from mtime**, and
+a test touches the mtime to prove it.
+
+**Two more register holes closed:** `retrain.log`'s *format* was never shaped (now UTC stamp plus
+`key=value`), and its `seconds` field is load-bearing — `TRAIN_BUDGET_S` is read back from it so the
+rollover trigger survives a restart, which the in-memory design could not do. The `.incoming/` versus
+`incoming/` question the register raised is also **closed**: the dot-prefix keeps staging out of the
+listing the pickup globs.
+
+**Eight mutations, all caught** — including the holdout taking the smallest session, the window never
+widening, and the rollover firing on a process's first day. **One test helper was wrong twice**, both
+times the helper and not the code: it generated 26 distinct bodies and repeated, so the
+content-addressed store collapsed two sessions into one; and its bodies were ~410 bytes, **under the
+1,024-byte sample floor**, so the trainer correctly refused them all.
+
+**Baselines, run not predicted: `make test` 282, `make lint` clean, `make check` valid,
+`link-check.py` 82 files, 79 broken, 2 roundabout — unchanged**, correctly: this task cited nothing
+unbuilt and added no `*.md`.
+
 **2026-08-20 — Task 14 has run and Group D is open.** `src/ilirium_llm_router/dictionary.py` exists:
 `content_dict_id()`, `stamp()`, and `DictionaryTrainer` with `train` / `score` / `consider` /
 `install`. **`make test` went 218 → 250.** The thread and trigger are 14a's, the split and the margin
@@ -313,8 +365,8 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 10 — the body store, from Task 14a (Group D).** **Planned and reviewed 2026-08-18, re-scoped
-   and reviewed a second time 2026-08-19; Groups A, B and C are done, and Task 14 built the trainer on 2026-08-20.**
+1. **Execute Phase 10 — the body store, from Task 14c (Group D).** **Planned and reviewed 2026-08-18, re-scoped
+   and reviewed a second time 2026-08-19; Groups A, B and C are done, and Tasks 14, 14a and 14b built the trainer and its automatic path on 2026-08-20.**
    The branch is in the table below and the task list is in
    `milestone-2-corpus/phase-10-body-store/plan.md`. **Do not re-plan or re-review it** — its
    re-derivation and **two** forward reviews have run, and **all findings from both are applied**
@@ -341,7 +393,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()`. `make test` 250.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 14a** — the trigger and the training thread. **Groups A, B and C are done, and Task 14 has run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so 14a's `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread. `make test` 282.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 14c** — the pickup. **Groups A, B and C are done, and Tasks 14, 14a and 14b have run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

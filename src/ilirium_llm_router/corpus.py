@@ -41,6 +41,7 @@ import queue
 import threading
 import time
 import uuid
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -236,8 +237,10 @@ class CorpusWriter:
         compress_level: int,
         body_max_bytes: int,
         queue_max_bytes: int,
+        on_day_rollover: Callable[[], None] | None = None,
     ) -> None:
         self._dir = Path(directory)
+        self._on_day_rollover = on_day_rollover
         self._level = compress_level
         self._body_max_bytes = body_max_bytes
         self._queue_max_bytes = queue_max_bytes
@@ -554,7 +557,20 @@ class CorpusWriter:
         _write_manifest(root / "manifest")
 
         opened = _Day(root=root, dictionaries=_names_in(root / "dicts"))
+        rolled_over = bool(self._days)
         self._days[day] = opened
+
+        # **A rollover, not the first day of the process.** Opening the first day folder after a
+        # restart is not a rollover -- the startup trigger has already fired for that -- and firing
+        # here too would train twice for one event. `self._days` being non-empty is what tells them
+        # apart.
+        if rolled_over and self._on_day_rollover is not None:
+            try:
+                self._on_day_rollover()
+            except Exception as exc:  # noqa: BLE001 — the worker must survive its own hook
+                self._logger.warning(
+                    "Corpus: the day-rollover hook failed: %s: %s", type(exc).__name__, exc
+                )
         return opened
 
     # -- dictionaries -------------------------------------------------------------------------

@@ -24,6 +24,7 @@ from starlette.requests import ClientDisconnect
 
 from .config import Config
 from .corpus import CorpusWriter
+from .dictionary import DictionaryTrainer
 from .proxy import Proxy, create_client, error_response
 from .stats import StatsWriter
 
@@ -55,15 +56,24 @@ def create_app(
             # object at all, no worker thread, and nothing created under `corpus.dir`.
             store = corpus
             if store is None and config.corpus.enabled:
+                # The trainer is built first so the writer can call it on a day rollover. It starts
+                # no thread and creates no directory until `start()`.
+                trainer = DictionaryTrainer(config.corpus)
                 store = CorpusWriter(
                     directory=config.corpus.dir,
                     compress_level=config.corpus.compress_level_zstd,
                     body_max_bytes=config.corpus.body_max_bytes,
                     queue_max_bytes=config.corpus.queue_max_bytes,
+                    on_day_rollover=trainer.on_day_rollover,
                 )
                 # Registered on the stack so the drain happens on the way out of lifespan, before
                 # the process exits and takes the daemon thread with it.
                 stack.callback(store.close)
+                # **No matching callback for the trainer, and that is deliberate.** Its install is
+                # write -> fsync -> rename, so a run abandoned at shutdown publishes nothing; the
+                # worker drains because it holds bodies that exist nowhere else. Two threads, two
+                # shutdown rules, for reasons that differ.
+                trainer.start()
             app.state.proxy = Proxy(config, http, config.api_keys(), writer, store)
             yield
 

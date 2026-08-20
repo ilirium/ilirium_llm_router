@@ -908,12 +908,18 @@ inside a running day, it is an ordinary analysis question and the index should a
 *Marker moved from `*(not started)*` when Task 14 ran on 2026-08-20, per "Placeholders in this
 file". The parenthesis stays exactly greppable; the prose carries the state.*
 
-**Task 14 has run; 14a, 14b, 14c, 14e and 14f have not.** `src/ilirium_llm_router/dictionary.py`
-exists and holds `content_dict_id()`, `stamp()`, and `DictionaryTrainer` with `train` / `score` /
-`consider` / `install`. **`TRAIN_LEVEL` (3), `TRAIN_D` (8) and `DICT_MAGIC` are now in the code;
-`INSTALL_MARGIN`, `TRAIN_BUDGET_S`, `WINDOW_MAX_DAYS`, `MIN_SESSIONS` and `LOCK_STALE_S` are still
-only in "The register".** Group C's reader (`CorpusReader` in `corpus.py`) is what Task 14a's
-trainer needs to assemble a sample list, and it ships.
+**Tasks 14, 14a and 14b have run; 14c, 14e and 14f have not.** `src/ilirium_llm_router/
+dictionary.py` holds `content_dict_id()`, `stamp()`, and `DictionaryTrainer` — the trainer, the
+training thread, the window, the split, the margin, the guard, the cross-process lock and
+`retrain.log`. **Every constant this group needs is now in the code**: `TRAIN_LEVEL` (3),
+`TRAIN_D` (8), `DICT_MAGIC`, `INSTALL_MARGIN` (0.02), `TRAIN_BUDGET_S` (60), `WINDOW_MAX_DAYS` (30),
+`MIN_SESSIONS` (2) and `LOCK_STALE_S` (3600). Group C's reader (`CorpusReader`) is what assembles
+the sample list, and it ships.
+
+**14a and 14b landed in one commit**, stated because it is a departure from one-task-one-commit and
+it is the same departure Tasks 9 and 10 made for the same reason. Split, **14a would have committed a
+thread that collects a window and discards it**: a training run cannot reach a verdict without a
+held-out slice, and the slice is 14b's. No task's contents changed.
 
 **Measured at Task 14, and it decides 14a's gate:** training the whole surviving corpus takes
 **0.03 s** against a `TRAIN_BUDGET_S` of **60**, so day-rollover triggering is permitted by three
@@ -1221,6 +1227,13 @@ reason is that `<dir>/dicts/` is *listed* by the pickup and a dot-prefix keeps s
 listing, while a day's `incoming/` sits among named siblings nothing globs. **If that is the reason it
 should be written down; if it is not, one of the two should change.**
 
+> **Closed 2026-08-20 at Task 14a: that is the reason, and it is now written down** — in
+> `DictionaryTrainer.install`'s docstring, beside the code the reason governs. It is load-bearing
+> rather than cosmetic: `newest_dictionary()` takes the newest `.dict` in `<dir>/dicts/`, and a
+> half-written staging file picked up as the newest one is a router compressing against a truncated
+> dictionary. `corpus._is_dictionary` already refuses dotfiles for the same reason, so the rule is
+> enforced in two places and stated in one.
+
 ### 8 · The queue, and its item
 
 | Name | Type | Note |
@@ -1261,6 +1274,7 @@ therefore indistinguishable from working.
 | `app.py` lifespan | starts and stops the worker; starts the training thread | 12, 14a |
 | `cli.py` | `--check` prints the block; **`--train-dict`, `--tune-dict`, `--extract`, `--from <dir>`** | 11, 13a, 14e |
 | `corpus.py` | **`newest_dictionary()`** — new, and the *"newest is by filename, never mtime"* rule lifted out of `CorpusWriter._load_newest_dictionary` so the worker and the trainer share one copy | 14 |
+| `CorpusWriter.__init__` | **`on_day_rollover`** — an optional callback the worker fires when it opens a day folder that is not the one it had. **Not on the first day of a process**, which the startup trigger already covers; and a hook that raises is caught, because the worker stands between a body and the disk *(added 2026-08-20)* | 14a |
 | `corpus.py` | **`_write_atomically` → `write_atomically`** — same function, now shared, because the trainer's install is `write → fsync → rename` for a sharper reason than the store's | 14 |
 
 **No new route.** `/health` is unchanged and the catch-all forwards everything else.

@@ -2442,6 +2442,126 @@ That is the behaviour this phase describes — *the count rises when a task cite
 build and falls when the file appears* — and the previous session's note that the handoff file was
 moving the baseline it quoted is now discharged.
 
+## Tasks 14a and 14b — the router retrains itself — 2026-08-20
+
+**The automatic path is complete and driven.** `DictionaryTrainer` now carries the training thread,
+both triggers, the cross-process lock, the today-guard, the window, the leave-one-session-out split
+and `retrain.log`. **`make test` went 250 → 282.**
+
+**They landed in one commit**, which is a departure from one-task-one-commit and the same one Tasks 9
+and 10 made. Split, **14a would have committed a thread that collects a window and discards it** — a
+run cannot reach a verdict without a held-out slice, and the slice is 14b's. No task's contents
+changed.
+
+### Driven end to end, against real bodies
+
+A two-day corpus built from `logs/corpus-gate/` — run-01 as the older day, run-03 as the newer, one
+session each — in a scratchpad, never in `logs/corpus/`:
+
+| Step | Result |
+|---|---|
+| Window at `window_days: 1` | **Widened to two days**, because each day carries one session |
+| Split | 24 training / 20 held out; **no body on both sides** |
+| First run | **Installed** `req-2026-08-20T083429Z-65377c1a.dict`, 12.310x, no incumbent |
+| Second run | **Guard stopped it** — returned `None`, trained nothing |
+| `bypass_guard=True` | Trained, and **refused**: `0.00% against 2.00%` |
+| A fresh `CorpusWriter` | **Loaded the installed dictionary by name**, stored a body against dictID `65377c1a` |
+| That body, read back | **Byte-identical, from the day folder alone**, dictionary copied in |
+| A genuinely separate process holding the lock | This one **could not acquire** |
+
+**24 training samples from a 46-body day is correct, not a loss.** The store is content-addressed and
+dedups per day, and run-01 is the retry storm — 46 bodies at or above the sample floor, **24
+distinct**. The multiplicity survives in the index rows; only the bytes collapse.
+
+**12.310x here against 12.920x at Task 14 is not a regression**, and the two are not comparable: Task
+14 trained on run-01 + run-02 **raw** (48 samples, 26 distinct) as `gate.py` did, while this trains on
+run-01 **deduplicated** (24). Fewer samples, slightly weaker dictionary. **Task 15 is what records a
+number**, and this is not it.
+
+### The race that reading found and driving would not have
+
+**The today-guard was checked before taking the lock, and only there.** Two processes can both pass
+it — `--train-dict` beside an automatic run is exactly that case — then queue on the lock, and the
+loser wakes up and retrains from precisely the material the winner has just used. **It is now checked
+twice**: the cheap check first, so the common case never takes the lock, and the correct one under it.
+Neither is redundant.
+
+### Two things the plan left unvalued, and only one of them needed a number
+
+**The retrain-log format was named field by field and never shaped.** Settled as UTC stamp followed by
+`key=value` pairs — it greps, and a line is read by eye far more often than parsed. Recorded in the
+register, the same way Task 8's `manifest` format was.
+
+**`seconds` on that line is load-bearing beyond the record.** `TRAIN_BUDGET_S` is read back from the
+newest one at startup, which closes a hole the in-memory design has: a router that starts at 23:00
+and is guarded — because it already trained today — reaches midnight having measured nothing, so the
+rollover trigger it is entitled to would never register.
+
+**The sample floor has no value in the register, and it should not get one.** *This is the finding to
+carry.* `plan.md` says training stops *"below a viable sample count"* and the register gives no
+number. Measured rather than invented: libzstd refuses at 5 samples and accepts at 8 **for these
+sizes**, and the threshold moves with `k` and with sample length — the error is `Src size is
+incorrect`, which is about **total source bytes**, not a count. **So a fixed `MIN_SAMPLES` would be an
+invented number wrapping a constraint that is not a count.** What ships instead: the two floors that
+need no constant — *no complete day* and *nothing on one side of the split* — are checked and
+recorded, and libzstd's own refusal is caught and written to `retrain.log` as a failed attempt.
+**Flagged rather than closed**: if the owner wants an explicit floor it is one line, but nothing
+measured supports a particular one.
+
+### The lock is `O_EXCL` and not `flock`, which is a reading of the plan rather than a preference
+
+The plan says *"a stale lock from a killed process is broken by age — `LOCK_STALE_S`"*. **That
+sentence only describes `O_EXCL`**: `flock` is released by the kernel when its holder dies, so a
+killed process leaves no stale lock and `LOCK_STALE_S` would be dead code. The cost is named in the
+docstring — a `kill -9` leaves the lock for up to an hour — and that is the asymmetry the owner
+already weighed when valuing the constant.
+
+**The age comes from inside the file, never from its mtime**, on the same ground that makes "newest is
+by filename": `logs/` sits in a cloud-synced folder and a sync rewrites mtimes. **There is a test that
+touches the mtime and checks the lock is still judged stale.**
+
+### The rollover trigger, and the case that makes it subtle
+
+**Opening the first day folder of a process is not a rollover** — the startup trigger has already
+fired for that day, and firing here too would train twice on every restart. `self._days` being
+non-empty is what tells them apart.
+
+**Driven across five cases**, all correct: first day (no fire), second body same day (no fire),
+crossing midnight (**fires once**), another body in the new day (no second fire), and **a body stamped
+23:59:59 arriving after midnight** — which reopens a day the worker already knows and correctly does
+*not* fire. That last one is this plan's own rollover hazard, and it is the case a mid-day test cannot
+reach. **A hook that raises is caught**, because the worker stands between a body and the disk.
+
+### Eight mutations, all caught
+
+Applied one at a time to the finished code: today no longer excluded from the window; the window never
+widens; the holdout takes the *smallest* session; the guard ignores the retrain log; the lock is never
+released; a stale lock is never broken; the rollover fires on the first day; the budget never refuses.
+**Every one failed a targeted test.** *(Task 14's first pass had two survive, which is why this is now
+run as a matter of course rather than as a flourish.)*
+
+### One test helper was wrong twice, and both were the helper rather than the code
+
+**It generated 26 distinct bodies and repeated.** The store is content-addressed, so the repeats
+collapsed into one blob and two sessions became one — a split test finding an empty holdout. **And
+then the bodies were ~410 bytes, under the 1,024-byte sample floor**, so the trainer correctly refused
+all of them and the same test still failed. Both are now documented in the helper's own docstring,
+because the second one masquerades as a broken floor check.
+
+### The branch no test reached
+
+Every earlier test injects a `CorpusWriter`, so `app.py`'s own construction — the branch that **also
+builds the trainer and starts its thread** — had never run under test. Driven, then covered: a request
+through the app with the corpus on leaves a day folder, a `retrain.log` reading `no-complete-day`, **no
+lock left behind and no surviving thread**; with the corpus off, `<dir>` is **not created at all**,
+which is Task 18's observation 1 still holding.
+
+### Baselines, re-derived by running them
+
+**`make test` 282** (250 before), **`make lint` clean**, **`make check` valid**, `link-check.py`
+**82 files, 79 broken, 2 roundabout — unchanged**, which is correct: this task cited nothing unbuilt
+and added no `*.md`.
+
 ## Open at the end of Group C — 2026-08-19
 
 **Three things are open and none of them blocks Task 14.** Written down because the owner clears
