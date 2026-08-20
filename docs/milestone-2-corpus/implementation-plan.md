@@ -20,8 +20,14 @@ Milestone 1's six phases found their own plan wrong on contact.
 | It fails if | Status |
 |---|---|
 | **The size forces infrastructure** — per-call files cost so much more than a stream that a database or blob service becomes the answer | **Tested in Phase 9 and survived.** 12.10× held-out against 3.12× unaided; per-file lands at 2.47× a stream, and a year of use stays in the low hundreds of MB |
-| **Archiving cannot stay opaque** — something in the write path turns out to need the body parsed | Untested. Phase 10 |
-| **Archiving slows or breaks a call** — a 200 KB blob cannot leave the request path the way a 300-byte CSV row can | Untested. Phase 10, and `EPD-003`'s constraints already name the shape of the answer: a bounded off-thread queue that drops the body rather than stalling |
+| **Archiving cannot stay opaque** — something in the write path turns out to need the body parsed | **Tested in Phase 10 and survived.** The write path hashes and compresses **raw bytes** and never parses one. `peek()` still reads `model` and `stream`, but it predates the corpus, reads a copy, and rewrites nothing — the stored blob is the arriving bytes. Task 18 read five bodies back off disk **byte-identical to what the client sent**, and a day folder unpacked elsewhere opened all of them |
+| **Archiving slows or breaks a call** — a 200 KB blob cannot leave the request path the way a 300-byte CSV row can | **NOT discharged, and this phase says so rather than letting the table imply otherwise.** *Half of it survived:* archiving cannot **break** a call — the queue is byte-bounded, drops rather than stalls, and Task 18 saw a forced drop become a row with `dropped` in both ref cells, one `WARNING`, and no blob. **Whether it *slows* one is unmeasured.** The scope had no live session, and in-process timing is not the same measurement. What would settle it: **one driven session with capture on against one with it off**, comparing `ttfb_ms` and `duration_ms` over the same work. A later phase, or an addendum |
+
+**Read the first row's numbers as small-sample confirmations that compression works, not as
+performance claims.** *Added 2026-08-20, on the owner's instruction at Phase 10's Task 21.* Every
+compression figure this milestone owns comes from a handful of sessions — Phase 9's from 73 bodies,
+Phase 10's from 21 held out — and they exist to show the mechanism functions, not to advertise a
+ratio. **A number here is evidence that the gate was passed, not a specification.**
 
 **Non-goals**, named now rather than discovered later:
 
@@ -32,6 +38,11 @@ Milestone 1's six phases found their own plan wrong on contact.
 - **Reconstructing transcripts inside the router.** Bodies go in opaque and come out opaque.
 - **Changing `calls.csv`.** Not its rotation, not its columns. It is a comparison instrument over a
   recent window, and the corpus brings its own durable index.
+- **Retention for the corpus.** *Added 2026-08-20, on the owner's decision, closing `EPD-003`'s open
+  question 5.* Nothing deletes an archived body, and **no policy was decided, designed or deferred to
+  a trigger** — this milestone declines the question rather than answering it. It may become a feature
+  in a later milestone. **Not in `../backlog.md`, deliberately:** that file holds unscheduled work,
+  and this is a scope boundary, which belongs here.
 
 ---
 
@@ -117,7 +128,7 @@ Two halves, in this order:
 
 *Everything below Phase 9 is a title and a question. Nothing about it is planned.*
 
-### Phase 10 — the body store *(outline)*
+### Phase 10 — the body store *(record — executed 2026-08-18 to 2026-08-20)*
 
 **The question it exists to close:** what does the router store, and where. **Phase 9 answered the
 prerequisite** — per-call files are the unit — so this is now answerable and is a `feat/` phase, the
@@ -146,6 +157,27 @@ What it must settle, beyond the sketch:
   and deliberately bundled here rather than done as a `chore/`: it touches `config.yaml` and paths cited
   from `src/` docstrings, which `link-check.py` cannot see, so it wants one move and one sweep rather
   than two.
+
+**What it actually built, 2026-08-20.** Thirty-three tasks in six groups — thirty-two planned, plus
+**Task 18a** inserted during execution. `corpus.py` and `dictionary.py` are new; `config.py`,
+`proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` changed. **`make test` 158 → 310.**
+The store writes content-addressed per-call blobs into UTC day folders against a shared dictionary,
+each day folder carrying a **plain copy** of every dictionary its blobs reference, so it opens
+elsewhere from itself alone. The router **trains its own dictionary** offline in a thread, installs
+one only when it beats the incumbent by a margin, and picks up a dictionary another process installed
+without restarting. `calls.csv` and `router.log` moved to `logs/telemetry/`.
+
+**The record of what was found, not just what was built.** The phase's defects were found by
+**driving and by attacking the tests**, never by the suite as written — a dictionary built from
+unvalidated bytes that silently destroyed its own blobs, a leakage that produced a plausible
+`26.210x`, a second `26.870x` by a different mechanism the same day, and a counter pair that counted
+correctly and **reported nothing**. `phase-10-body-store/notes.md` carries all of them.
+
+**One thing it did not build, deliberately: it does not close the recorder's blind spot.** Task 18a
+made the loss *visible* — a caller already gone at response-start leaves no row, now observed rather
+than theorised — and the owner's decision was to **report the hole, not close it**, because writing
+the row from elsewhere must guarantee it can never write one twice.
+
 
 ### The closing review phase — *unnamed, number unallocated*
 

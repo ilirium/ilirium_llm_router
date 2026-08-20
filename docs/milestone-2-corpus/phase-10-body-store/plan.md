@@ -1065,7 +1065,7 @@ to replace:
 3. **A day folder is self-contained** — `tar` it, unpack it elsewhere, and every blob in it opens.
 4. **A dropped body is a row, not an absence** — force the queue bound low, and see `dropped` in the cell, the `WARNING` once, and the counter afterwards.
 5. **`arrived` equals `recorded`** in the summary after a clean shutdown, which is the counter pair doing its one job.
-6. **A dictionary installed while the router is running is picked up without a restart** — write one into `<dir>/dicts/` with `--train-dict` from a second terminal, and see the next bodies compressed against it. *Added 2026-08-19, and **runnable only because the manual command bypasses the once-a-day guard** — the second review found this check asking for something the trainer was designed to refuse.*
+6. **A dictionary installed while the router is running is picked up without a restart** — write one into `<dir>/dicts/` with `--train-dict` from a second terminal, and see the following bodies compressed against it. **Corrected 2026-08-20 at Task 18: not the *next* bodies.** The pickup is `RESCAN_EVERY` = **500 bodies**, and one call stores two, so the swap is invisible until the **250th call** after the install — or until a day folder opens, which is the other trigger. It took 260 calls to see. The code comment was right; this line was not, and this line is what a later session tests against. *Added 2026-08-19, and **runnable only because the manual command bypasses the once-a-day guard** — the second review found this check asking for something the trainer was designed to refuse.*
 7. **A day folder that saw a mid-day swap still opens from itself alone** — two dictionaries in its `dicts/`, blobs referencing both, and `tar`-and-unpack-elsewhere still reads every one. This is what the copy-before-swap ordering exists for, and it is the only observation that can catch that ordering being wrong.
 8. **`retrain.window_days: 0` trains nothing** — no thread, no retrain-log line, no new dictionary, and the router still using the newest one already installed.
 9. **`corpus.enabled: false` starts no trainer either** — the stronger form of observation 1, and a separate switch from the one above. No `<dir>/`, no `dicts/`, no `.incoming/`, nothing.
@@ -1492,6 +1492,19 @@ backends**, and the frozen CSV has one with 10,027 response bytes already stream
 **What remains is a race, not a class of calls**: only if the generator is closed *before its first
 `__anext__`* is there no frame to throw into, so nothing runs. **It has never been observed here.**
 Named, not fixed, and the counter pair is what would first show it happening.
+
+> **Observed 2026-08-20 at Task 18a. The sentence above is spent, and it was right to hedge.** The
+> race is real and reproducible: a caller already gone when the response starts makes `send` raise on
+> `http.response.start`, the generator never takes its first step, `watch`'s `finally` never runs, and
+> **`record()` is never called** — `1 arrived, 0 recorded, 1 lost`, no row of any kind. An ordinary
+> *queued* disconnect still records, so the 2026-08-18 correction stands.
+>
+> **`proxy.py:256` had already named the case** — *"a generator that never runs at all, and so never
+> reaches its own `finally`"* — in the comment justifying `BackgroundTask(reply.aclose)`. `record()`
+> is inside that `finally`. Covered for the connection, uncovered for the row.
+>
+> **Still named rather than fixed**, and now *visible*: Task 18a emits the pair at shutdown on every
+> configuration. Closing the hole still needs the duplicate-row guarantee, which is unchanged.
 
 **Whether the router could run as several processes.** Recorded in `../../backlog.md` rather than
 built. The idea's session-distinguishing half is **already solved and measured** — `session_id` and
