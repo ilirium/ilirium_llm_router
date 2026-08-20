@@ -2640,6 +2640,83 @@ probe compression included — on every rescan, and a log line announcing a swit
 **`make test` 293** (282 before), **`make lint` clean**, **`make check` valid**, `link-check.py`
 **82 files, 79 broken, 2 roundabout — unchanged.**
 
+## Task 14e — the manual commands, and a leakage defect the number gave away — 2026-08-20
+
+**`--train-dict`, `--tune-dict` and `--from <dir>` all work, driven against the real corpus.**
+**`make test` went 293 → 301.** **Only 14f remains, and Task 15 is unblocked.**
+
+Four flags mirror the `retrain` keys one-for-one — `--window-days`, `--sample-min-bytes`,
+`--maxdict`, `--k` — which is why `--k` keeps its one-letter spelling: the mirroring is what makes
+*"the flag wins over the key for this run"* a mapping a reader can see rather than a table they have
+to learn.
+
+### The defect, and it announced itself as an implausibly good number
+
+**The first `--train-dict --from logs/corpus-gate` run reported `26.210x`** against an expected
+~12.9x. The line above it said what was wrong:
+
+> `training on 30 sample(s) from dicts, run-02-lmstudio, run-03-anthropic, holding out 46 from run-01`
+
+**`dicts` is not a session.** `logs/corpus-gate/dicts/` holds **eight dictionaries trained on those
+very captures**, and "each immediate subdirectory is a session" swept them in as training material —
+while `run-01`, whose content is *inside those dictionaries*, was the held-out slice. **That is the
+exact leakage leave-one-session-out exists to prevent, reintroduced through a directory listing.**
+
+**Excluded by content, not by folder name.** A file whose first four bytes are zstd's dictionary
+magic is never a training sample, wherever it sits — the name `dicts/` is a convention and the magic
+number is a fact, and `--from` may be pointed at any layout at all.
+
+**It is the fifth time this phase a result was wrong in a plausible direction — and the first time
+the number itself was the alarm.** 26x is *too good*, and that is the only reason it was caught in
+the same minute rather than shipped into Task 15's record.
+
+### And the split rule was wrong beside it
+
+The first cut held out the **largest** session. On this corpus `run-01` is **46 of the 70** usable
+bodies, so the majority would be held out and the minority trained on — backwards. **It now holds out
+the last session by name**, which for `logs/corpus-gate/` is `run-03-anthropic`: **exactly `gate.py`'s
+split**, train on run-01 + run-02 and score on run-03. Comparability with the frozen evidence is the
+whole reason the owner chose "one subdirectory is one session", so the split has to land there too.
+
+**And it does, to three decimals.** After the fix:
+
+> `training on 48 sample(s) from run-01-anthropic, run-02-lmstudio, holding out 20 from
+> run-03-anthropic` → **12.920x**, dictID **`0e4d84d1`**
+
+**The same ratio and the same dictID Task 14's exercise produced by a different route.** A CLI path
+and a hand-written script independently reproducing one dictionary is the strongest cross-check this
+phase has had.
+
+### Driven, and each behaviour separately
+
+| Driven | Result |
+|---|---|
+| `--train-dict --from` with **`corpus.enabled: false`** | Trains and installs. Owner's decision: typing it is consent |
+| A **second** `--train-dict` | **Bypasses the guard** — it trains — and is **REFUSED on the margin**, `+0.00%` against 2% |
+| `--tune-dict --from` | Prints the **whole 4×3 surface** plus the undicted baseline, labels itself provisional |
+| Dictionaries before and after the sweep | **1 and 1** — a sweep never installs |
+| `--maxdict 0` | Rejected by the config model's own bounds, not by libzstd much later |
+
+**The sweep reproduces Task 6's shape**, which is what reusing its grid was for: non-monotonic in `k`
+at 112,640 (10.051x at k=8000, falling to **8.657x** at k=16000), and a plateau above 262,144 where a
+bigger cap buys nothing but a larger file.
+
+### Five mutations, and the one that survived was right to
+
+Dictionaries no longer excluded; hold out the largest instead of the last; a one-session source
+accepted; the sweep installs. **All four caught.**
+
+**The fifth was a genuine redundancy rather than a gap.** `_with_overrides` validated the `retrain`
+block and then rebuilt the whole `Corpus`, which validates the nested block again — so replacing the
+inner call with an unvalidated `model_copy` changed nothing. **The dead line is gone**, and removing
+the *remaining* validation now fails a test. A mutation that survives is either a missing test or a
+line that was doing nothing, and it is worth finding out which.
+
+### Baselines, re-derived by running them
+
+**`make test` 301** (293 before), **`make lint` clean**, **`make check` valid**, `link-check.py`
+**82 files, 79 broken, 2 roundabout — unchanged.**
+
 ## An audit for more of the same class — 2026-08-20
 
 **Prompted by the owner after Task 14c: *are there similar problems we have not found?*** The class

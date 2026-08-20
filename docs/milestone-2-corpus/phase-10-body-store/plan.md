@@ -909,9 +909,9 @@ inside a running day, it is an ordinary analysis question and the index should a
 *Marker moved from `*(not started)*` when Task 14 ran on 2026-08-20, per "Placeholders in this
 file". The parenthesis stays exactly greppable; the prose carries the state.*
 
-**Tasks 14, 14a, 14b and 14c have run; 14e and 14f have not** — though 14f's three named cases
+**Tasks 14, 14a, 14b, 14c and 14e have run; only 14f remains** — and 14f's three named cases
 (a mid-day swap, the same across a rollover, and every frame carrying a dictID) were built with 14c,
-because they are what proves the pickup rather than checks it afterwards.** `src/ilirium_llm_router/
+because they are what proves the pickup rather than checks it afterwards. **Task 15 is unblocked.** `src/ilirium_llm_router/
 dictionary.py` holds `content_dict_id()`, `stamp()`, and `DictionaryTrainer` — the trainer, the
 training thread, the window, the split, the margin, the guard, the cross-process lock and
 `retrain.log`. **Every constant this group needs is now in the code**: `TRAIN_LEVEL` (3),
@@ -1156,6 +1156,8 @@ severity two keys away, so this one names its scale.
 | `LOCK_STALE_S` | **3600** | `dictionary.py` | 14a | **valued 2026-08-19** |
 | `INDEX_SCHEMA_VERSION` | **1** | `corpus.py` | 8 | **valued 2026-08-19** |
 | `DICT_MAGIC` | **`0xEC30A437`** | `dictionary.py` | 14 | no — **added 2026-08-20, at Task 14**, see below |
+| `TUNE_MAXDICT` | **(112_640, 262_144, 524_288, 1_048_576)** | `dictionary.py` | 14e | no — **added 2026-08-20**; Task 6's grid, so a sweep is comparable with the frozen `evidence/` table |
+| `TUNE_K` | **(2_000, 8_000, 16_000)** | `dictionary.py` | 14e | no — **added 2026-08-20**, the other axis of the same grid |
 
 **`DICT_MAGIC` is the one row this register gained during execution rather than before it**, and it
 is here because the register is checked row by row at Task 24: a constant living in the code and not

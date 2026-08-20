@@ -112,6 +112,20 @@ single-session days as the ordinary case, and a leave-one-session-out split cann
 holding one — so the window widens into older complete days until it finds a second.
 """
 
+TUNE_MAXDICT = (112_640, 262_144, 524_288, 1_048_576)
+TUNE_K = (2_000, 8_000, 16_000)
+"""The grid `--tune-dict` sweeps when neither axis is pinned: **twelve trainings**.
+
+**Task 6's grid, deliberately.** Reusing it means a sweep run today can be read against the table
+frozen in this phase's `evidence/`, which is the only other measurement of this shape that exists
+here. Choosing a fresh range would produce numbers nobody could compare to anything.
+
+**It is a starting point, not a recommendation**, and the tool says so in its own output: the range
+was chosen for a 48-body corpus and training is **non-monotonic in both axes**, so the surface is
+printed whole rather than reduced to a winner. Pinning `--maxdict` or `--k` narrows the sweep to
+that value.
+"""
+
 LOCK_STALE_S = 3600
 """When a `retrain.lock` left behind by a killed process is broken, in seconds.
 
@@ -230,6 +244,22 @@ def _id_from_digest(digest: bytes) -> int:
     return (int.from_bytes(digest[:4], "big") & 0xFFFFFFFF) or 1
 
 
+def _is_zstd_dictionary(payload: bytes) -> bool:
+    """Whether these bytes are a zstd dictionary rather than a body.
+
+    **A dictionary is never a training sample, and this is not hypothetical.**
+    `logs/corpus-gate/dicts/` sits beside the capture directories and holds eight dictionaries that
+    were *trained on those very captures* — so treating it as a session fed run-01's content back in
+    as training material while run-01 was the held-out slice. **Measured 2026-08-20: that reported
+    26.210x against a true figure near 12.9x.** It is the exact leakage the leave-one-session-out
+    split exists to prevent, reintroduced through a directory listing.
+
+    Checked by content rather than by folder name, because the name is a convention and the magic
+    number is a fact — and `--from` may be pointed at any layout at all.
+    """
+    return len(payload) >= 4 and int.from_bytes(payload[:4], "little") == DICT_MAGIC
+
+
 def stamp(raw: bytes, dict_id: int) -> bytes:
     """Return `raw` with its dictionary ID field set to `dict_id`.
 
@@ -300,7 +330,9 @@ class DictionaryTrainer:
         """The dictionary a candidate has to beat, or `None` if there is not one yet."""
         return newest_dictionary(self.dicts_dir)
 
-    def train(self, samples: list[bytes]) -> Candidate:
+    def train(
+        self, samples: list[bytes], *, maxdict: int | None = None, k: int | None = None
+    ) -> Candidate:
         """Train one dictionary from `samples` and stamp our own ID into it.
 
         **The order is train, then derive, then stamp — and it cannot be otherwise.** The plan
@@ -315,12 +347,14 @@ class DictionaryTrainer:
         trap at this sample count, and comparing the two tools at their defaults leads to the wrong
         conclusion about which tool to use. **The tool is not the variable; `k` is.**
         """
+        size = maxdict if maxdict is not None else self._retrain.maxdict
+        segment = k if k is not None else self._retrain.k
         started = time.monotonic()
         try:
             trained = zstandard.train_dictionary(
-                self._retrain.maxdict,
+                size,
                 samples,
-                k=self._retrain.k,
+                k=segment,
                 d=TRAIN_D,
                 level=TRAIN_LEVEL,
             )
@@ -338,8 +372,8 @@ class DictionaryTrainer:
             raw=stamp(raw, dict_id),
             dict_id=dict_id,
             samples=len(samples),
-            maxdict=self._retrain.maxdict,
-            k=self._retrain.k,
+            maxdict=size,
+            k=segment,
             train_seconds=elapsed,
         )
 
@@ -578,6 +612,96 @@ class DictionaryTrainer:
                 (holdout if on_the_slice else training).append(body)
         return training, holdout
 
+    def external_split(self, source: Path) -> tuple[list[bytes], list[bytes]]:
+        """`(training samples, held-out slice)` from a directory that is **not** a corpus.
+
+        **Each immediate subdirectory is one session.** `logs/corpus-gate/` holds `run-01-anthropic`,
+        `run-02-lmstudio` and `run-03-anthropic`, so the leave-one-session-out rule runs unchanged
+        and the result stays comparable with the figures already frozen in this phase's `evidence/`.
+        Owner's decision, 2026-08-20.
+
+        **A `requests/` folder inside a session is used if it is there**, and the session's own files
+        otherwise. Only request bodies train a request dictionary; `responses/` is never read.
+
+        **Nothing is deduplicated, deliberately.** `gate.py` did not, and every published ratio was
+        measured on the raw list — so deduplicating here would silently stop this being the same
+        measurement. The automatic path *does* dedup, because the store is content-addressed and
+        cannot hold a repeat, and that difference is real rather than an inconsistency: these are
+        loose files that were never content-addressed. **The distinct count is reported** so the
+        training-set composition travels with the number.
+        """
+        sessions: dict[str, list[bytes]] = {}
+        for child in sorted(p for p in source.iterdir() if p.is_dir()):
+            folder = child / "requests" if (child / "requests").is_dir() else child
+            bodies = [
+                body
+                for path in sorted(folder.iterdir())
+                if path.is_file() and path.stat().st_size >= self._retrain.sample_min_bytes
+                for body in [path.read_bytes()]
+                if not _is_zstd_dictionary(body)
+            ]
+            if bodies:
+                sessions[child.name] = bodies
+
+        if len(sessions) < MIN_SESSIONS:
+            self._logger.warning(
+                "Corpus: %s holds %d session(s) with usable bodies; %d are needed to hold one out. "
+                "Each immediate subdirectory counts as a session.",
+                source,
+                len(sessions),
+                MIN_SESSIONS,
+            )
+            return [], []
+
+        # **The last session by name is held out, not the largest.** For `logs/corpus-gate/` that is
+        # `run-03-anthropic`, which reproduces `gate.py`'s own split -- train on run-01 + run-02,
+        # score on run-03 -- and comparability with the figures already frozen in `evidence/` is the
+        # entire reason "one subdirectory is one session" was chosen. Holding out the *largest*
+        # would also invert the intent: run-01 is 46 of the 70 usable bodies, so the majority of the
+        # material would be held out and the minority trained on.
+        held_out_name = max(sessions)
+        holdout = sessions.pop(held_out_name)
+        training = [body for bodies in sessions.values() for body in bodies]
+        self._logger.info(
+            "Corpus: training on %d sample(s) from %s, holding out %d from %s",
+            len(training),
+            ", ".join(sorted(sessions)),
+            len(holdout),
+            held_out_name,
+        )
+        return training, holdout
+
+    def tune(
+        self,
+        training: list[bytes],
+        holdout: list[bytes],
+        *,
+        maxdicts: tuple[int, ...] = TUNE_MAXDICT,
+        ks: tuple[int, ...] = TUNE_K,
+    ) -> list[tuple[int, int, int, int, float]]:
+        """Sweep `maxdict` x `k` and return the **whole surface**: one row per combination.
+
+        **It never installs**, and the caller prints every row rather than a winner. Training is
+        **non-monotonic in both axes** — measured on both trainers — so "the best cell" is a property
+        of this corpus and this slice, not a recommendation. A tool that printed only the winner
+        would be inviting exactly the reading the measurement refuses.
+
+        Rows are `(maxdict, k, dictionary bytes, scored bytes, ratio)`, scored at
+        `corpus.compress_level_zstd` like every other comparison here.
+        """
+        plaintext = sum(len(sample) for sample in holdout)
+        surface: list[tuple[int, int, int, int, float]] = []
+        for maxdict in maxdicts:
+            for k in ks:
+                try:
+                    candidate = self.train(training, maxdict=maxdict, k=k)
+                except CorpusError as exc:
+                    self._logger.warning("Corpus: maxdict=%d k=%d did not train: %s", maxdict, k, exc)
+                    continue
+                scored = self.score(candidate.raw, holdout)
+                surface.append((maxdict, k, len(candidate.raw), scored, plaintext / scored))
+        return surface
+
     # -- the guard, the lock and the log ------------------------------------------------------
 
     @property
@@ -683,7 +807,13 @@ class DictionaryTrainer:
 
     # -- the run, and the thread it happens on -------------------------------------------------
 
-    def run(self, *, bypass_guard: bool = False, window_days: int | None = None) -> Verdict | None:
+    def run(
+        self,
+        *,
+        bypass_guard: bool = False,
+        window_days: int | None = None,
+        source: Path | None = None,
+    ) -> Verdict | None:
         """One training attempt, end to end. `None` when it did not get as far as a verdict.
 
         **Never raises.** Every exit is a log line and, where an attempt was really made, a
@@ -714,7 +844,7 @@ class DictionaryTrainer:
                     "Corpus: another run trained while this one waited for the lock; not training."
                 )
                 return None
-            return self._attempt(window_days)
+            return self._attempt(window_days, source)
         except Exception as exc:  # noqa: BLE001 — a trainer never raises into the router
             self._logger.warning(
                 "Corpus: dictionary training failed: %s: %s", type(exc).__name__, exc
@@ -724,18 +854,27 @@ class DictionaryTrainer:
         finally:
             self._release()
 
-    def _attempt(self, window_days: int | None) -> Verdict | None:
+    def _attempt(self, window_days: int | None, source: Path | None = None) -> Verdict | None:
         started = time.monotonic()
-        days = self.window(window_days=window_days)
-        if not days:
-            # A fresh install trains nothing on its first day, and that is correct: the store
-            # writes undicted frames meanwhile, at ~3.1x, and they stay valid forever.
-            self._logger.info("Corpus: no complete day to train from yet; not training.")
-            self._record({"verdict": "skipped", "reason": "no-complete-day"})
-            return None
 
-        training, holdout = self.split(days)
-        window = f"{days[0]}..{days[-1]}" if len(days) > 1 else days[0]
+        if source is not None:
+            # `--from`: the material comes from somewhere that is not a corpus, and **only the
+            # material does.** The lock, `retrain.log` and the install all stay under `corpus.dir`,
+            # so a hand-run is recorded in the same log as every automatic one and the dictionary
+            # lands where the router will actually read it. Owner's decision, 2026-08-20.
+            days: list[str] = []
+            training, holdout = self.external_split(source)
+            window = str(source)
+        else:
+            days = self.window(window_days=window_days)
+            if not days:
+                # A fresh install trains nothing on its first day, and that is correct: the store
+                # writes undicted frames meanwhile, at ~3.1x, and they stay valid forever.
+                self._logger.info("Corpus: no complete day to train from yet; not training.")
+                self._record({"verdict": "skipped", "reason": "no-complete-day"})
+                return None
+            training, holdout = self.split(days)
+            window = f"{days[0]}..{days[-1]}" if len(days) > 1 else days[0]
         if not training or not holdout:
             # Below a viable sample count. The floor is libzstd's own rather than a number invented
             # here -- see `train`, which reports what it refused and why.

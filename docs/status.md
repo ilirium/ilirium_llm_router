@@ -10,6 +10,43 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-20, end of session — Task 14e has run; only 14f remains and Task 15 is unblocked.**
+`--train-dict`, `--tune-dict` and `--from <dir>` all work and were driven against the real corpus.
+**`make test` went 293 → 301.**
+
+**A leakage defect was caught by its own number being too good.** The first
+`--train-dict --from logs/corpus-gate` reported **26.210x** against an expected ~12.9x, because
+`logs/corpus-gate/dicts/` — **eight dictionaries trained on those very captures** — was swept in as
+a "session" of training material while `run-01`, whose content sits inside them, was the held-out
+slice. **The exact leakage leave-one-session-out exists to prevent, reintroduced through a directory
+listing.** Now excluded **by content**: a file starting with zstd's dictionary magic is never a
+training sample, wherever it sits, because the folder name is a convention and the magic number is a
+fact.
+
+**The split rule was wrong beside it.** It held out the *largest* session — on this corpus `run-01`
+is 46 of 70 usable bodies, so the majority would be held out and the minority trained on. It now
+holds out **the last session by name**, which is `run-03-anthropic`: **exactly `gate.py`'s split**,
+which is what makes the result comparable with the frozen evidence — the whole reason
+"one subdirectory is one session" was chosen.
+
+**After both fixes it lands on 12.920x and dictID `0e4d84d1` — the same ratio and the same
+dictionary Task 14's hand-written exercise produced by a different route.** A CLI path and a script
+independently reproducing one dictionary is the strongest cross-check this phase has had.
+
+**Each behaviour driven separately:** `--train-dict` works with **`corpus.enabled: false`**; a second
+run **bypasses the guard and is refused on the margin** (`+0.00%` against 2%); `--tune-dict` prints
+the **whole 4×3 surface** and installs nothing (1 dictionary before and after); `--maxdict 0` is
+rejected by the config model's own bounds rather than by libzstd much later. The sweep **reproduces
+Task 6's shape** — non-monotonic in `k` at 112,640, plateau above 262,144.
+
+**Five mutations; four caught.** The survivor was a **genuine redundancy, not a gap**:
+`_with_overrides` validated the `retrain` block and then rebuilt the whole `Corpus`, which validates
+it again. The dead line is gone and removing the remaining validation now fails a test. **A surviving
+mutation is either a missing test or a line doing nothing, and it is worth finding out which.**
+
+**Baselines, run not predicted: `make test` 301, `make lint` clean, `make check` valid,
+`link-check.py` 82 files, 79 broken, 2 roundabout — unchanged.**
+
 **2026-08-20, later still — Task 14c has run and a running router picks up a new dictionary.** The
 worker relists `<dir>/dicts/` every `RESCAN_EVERY` (500) bodies **and** on opening a day folder, and
 swaps when the newest name differs. **`make test` went 282 → 293.** **14e and 14f remain**, then
@@ -417,8 +454,8 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 10 — the body store, from Task 14e (Group D).** **Planned and reviewed 2026-08-18, re-scoped
-   and reviewed a second time 2026-08-19; Groups A, B and C are done, and Tasks 14, 14a, 14b and 14c built the trainer, its automatic path and the pickup on 2026-08-20.**
+1. **Execute Phase 10 — the body store, from Task 14f (Group D).** **Planned and reviewed 2026-08-18, re-scoped
+   and reviewed a second time 2026-08-19; Groups A, B and C are done, and Tasks 14, 14a, 14b, 14c and 14e built the trainer, its automatic path, the pickup and the manual commands on 2026-08-20.**
    The branch is in the table below and the task list is in
    `milestone-2-corpus/phase-10-body-store/plan.md`. **Do not re-plan or re-review it** — its
    re-derivation and **two** forward reviews have run, and **all findings from both are applied**
@@ -445,7 +482,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread. `make test` 293.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 14e** — `--train-dict`, `--tune-dict` and `--from`. **Groups A, B and C are done, and Tasks 14, 14a, 14b and 14c have run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread, and `cli.py` carrying `--train-dict` / `--tune-dict` / `--from`. `make test` 301.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 14f** — the remaining Group D tests — then **Task 15**, which trains and installs the first real dictionary. **Groups A, B and C are done, and Tasks 14, 14a, 14b, 14c and 14e have run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

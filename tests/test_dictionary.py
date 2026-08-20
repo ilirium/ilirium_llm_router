@@ -1165,3 +1165,134 @@ def test_a_rescan_that_finds_nothing_new_keeps_the_compressor_it_has(tmp_path: P
         assert writer._dictionary is loaded, "an unchanged dicts/ must not rebuild anything"
     finally:
         writer.close()
+
+
+# -- --from, --train-dict and --tune-dict (Task 14e) --------------------------------------------
+
+
+def loose_corpus(root: Path, sessions: dict[str, list[bytes]]) -> Path:
+    """A directory that is **not** a corpus: one subdirectory per session, loose files inside.
+
+    This is `logs/corpus-gate/`'s shape — the material Task 15 trains from, which has no day
+    folders, no index and no content addressing.
+    """
+    source = root / "loose"
+    for name, payloads in sessions.items():
+        folder = source / name / "requests"
+        folder.mkdir(parents=True)
+        for i, payload in enumerate(payloads):
+            (folder / f"{i:05d}.bin").write_bytes(payload)
+    return source
+
+
+def test_each_subdirectory_is_a_session_and_the_last_by_name_is_held_out(tmp_path: Path) -> None:
+    """**Reproduces `gate.py`'s own split** — train on run-01 + run-02, score on run-03 — and
+    comparability with the frozen evidence is the entire reason this rule was chosen."""
+    source = loose_corpus(
+        tmp_path,
+        {"run-01": bodies(20), "run-02": bodies(4, seed=40), "run-03": bodies(10, seed=80)},
+    )
+
+    training, holdout = trainer(tmp_path).external_split(source)
+
+    assert len(holdout) == 10, "run-03, the last by name"
+    assert len(training) == 24, "run-01 and run-02 together"
+    assert not set(training) & set(holdout)
+
+
+def test_the_largest_session_is_not_what_gets_held_out(tmp_path: Path) -> None:
+    """Holding out the largest would invert the intent: on the real corpus `run-01` is 46 of the 70
+    usable bodies, so the majority would be held out and the minority trained on."""
+    source = loose_corpus(tmp_path, {"run-01": bodies(30), "run-02": bodies(6, seed=40)})
+
+    training, holdout = trainer(tmp_path).external_split(source)
+
+    assert len(training) == 30 and len(holdout) == 6
+
+
+def test_dictionaries_are_never_training_samples(tmp_path: Path) -> None:
+    """**The leakage defect, and it was measured rather than imagined.**
+
+    `logs/corpus-gate/dicts/` sits beside the capture directories and holds dictionaries trained on
+    those very captures. Taken as a session, it fed the held-out slice's own content back in as
+    training material and reported **26.210x** against a true figure near **12.9x** — the exact bias
+    leave-one-session-out exists to prevent, reintroduced through a directory listing.
+
+    Excluded **by content**, not by folder name: the name is a convention, the magic number is a
+    fact, and `--from` may be pointed at any layout at all.
+    """
+    source = loose_corpus(tmp_path, {"run-01": bodies(20), "run-02": bodies(10, seed=40)})
+    trained = zstandard.train_dictionary(16_384, bodies(60), k=200, d=8, level=3).as_bytes()
+    dicts = source / "dicts"
+    dicts.mkdir()
+    for i in range(3):
+        (dicts / f"heldout-{i}.dict").write_bytes(trained)
+
+    training, holdout = trainer(tmp_path).external_split(source)
+
+    assert all(not raw.startswith(b"\x37\xa4\x30\xec") for raw in training + holdout)
+    assert len(training) == 20 and len(holdout) == 10, "dicts/ contributed no session at all"
+
+
+def test_a_source_with_too_few_sessions_trains_nothing(tmp_path: Path) -> None:
+    source = loose_corpus(tmp_path, {"only-one": bodies(20)})
+
+    assert trainer(tmp_path).external_split(source) == ([], [])
+
+
+def test_from_installs_into_the_corpus_not_into_the_source(tmp_path: Path) -> None:
+    """**`--from` redirects the material and nothing else.** The lock, `retrain.log` and the install
+    stay under `corpus.dir`, so a hand-run is recorded in the same log as every automatic one and
+    the dictionary lands where the router will actually read it."""
+    source = loose_corpus(tmp_path, {"run-01": bodies(30), "run-02": bodies(10, seed=40)})
+    subject = trainer(tmp_path)
+
+    verdict = subject.run(bypass_guard=True, source=source)
+
+    assert verdict is not None and verdict.installed
+    assert newest_dictionary(tmp_path / "dicts") is not None, "installed under corpus.dir"
+    assert not (source / "dicts").exists(), "nothing written into the source"
+    assert "retrain.log" in [p.name for p in tmp_path.iterdir()]
+
+
+def test_the_sweep_returns_the_whole_surface_and_installs_nothing(tmp_path: Path) -> None:
+    """Training is **non-monotonic in both axes**, so a tool that printed one winner would invite
+    exactly the reading the measurement refuses."""
+    subject = trainer(tmp_path)
+    training, holdout = bodies(40), bodies(10, seed=90)
+
+    surface = subject.tune(training, holdout, maxdicts=(8_192, 16_384), ks=(200, 400))
+
+    assert len(surface) == 4, "one row per combination, not a winner"
+    assert all(ratio > 1 for *_rest, ratio in surface)
+    assert not (tmp_path / "dicts").exists(), "a sweep never installs"
+
+
+def test_a_cli_override_is_revalidated_rather_than_forced_in(tmp_path: Path) -> None:
+    """**`model_copy(update=)` would skip validation**, so `--maxdict 0` would sail past the `gt=0`
+    the config model declares and fail much later inside libzstd. Rebuilding through
+    `model_validate` keeps one set of bounds for a key and its flag."""
+    import argparse
+
+    from ilirium_llm_router.cli import _with_overrides
+
+    corpus = Corpus(enabled=True, dir=tmp_path)
+    args = argparse.Namespace(window_days=None, sample_min_bytes=None, maxdict=0, k=None)
+
+    with pytest.raises(ValueError):
+        _with_overrides(corpus, args)
+
+
+def test_a_cli_override_wins_over_the_config_for_that_run(tmp_path: Path) -> None:
+    import argparse
+
+    from ilirium_llm_router.cli import _with_overrides
+
+    corpus = Corpus(enabled=True, dir=tmp_path, retrain=Retrain(maxdict=262_144, k=8000))
+    args = argparse.Namespace(window_days=None, sample_min_bytes=None, maxdict=16_384, k=None)
+
+    overridden = _with_overrides(corpus, args)
+
+    assert overridden.retrain.maxdict == 16_384
+    assert overridden.retrain.k == 8000, "an unmentioned key keeps its configured value"
+    assert corpus.retrain.maxdict == 262_144, "the original block is not mutated"
