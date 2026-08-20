@@ -2313,16 +2313,148 @@ plus a NUL run and sequences that are not valid UTF-8 at all. **This is what dis
 by construction**: if the store ever decoded, parsed, normalised or re-encoded a body, that is what
 would catch it. The store never sees a body as anything but `bytes`.
 
+## Task 14 — the trainer, and two tests that were passing for the wrong reason — 2026-08-20
+
+**Group D is open.** `src/ilirium_llm_router/dictionary.py` exists: `content_dict_id()`, `stamp()`,
+`DictionaryTrainer` with `train` / `score` / `consider` / `install`, and the two result values
+`Candidate` and `Verdict`. **`make test` went 218 → 250.**
+
+**What this task deliberately does not build**, so nobody reads the absence as a gap: the thread, the
+trigger, the single-flight lock and `retrain.log` are **14a's**; the leave-one-session-out split,
+`INSTALL_MARGIN` and the widening rule are **14b's**. `consider()` takes the margin and the holdout
+slice as *arguments* for exactly that reason — this task builds the machinery, not the rule, which is
+the narrowing the second review applied when it found both tasks claiming the comparison.
+
+### The number, and it landed where the notes said it would
+
+Driven against `logs/corpus-gate/` on gate.py's own split — train on run-01 + run-02, hold out
+run-03, request bodies ≥ 1,024 bytes, scored at write level 9:
+
+| | |
+|---|---|
+| Training samples | **48, of which 26 distinct** — the documented composition, reproduced |
+| Held-out | 20 bodies, 20 distinct, 2,102,371 bytes |
+| Undicted | **701,407 bytes, 2.997x** |
+| Dicted | **162,725 bytes, 12.920x** |
+| Train wall clock | **0.03 s** |
+
+**Both figures match to the byte.** 701,407 is Task 6's frozen undicted number and 162,725 is the
+level-3 row of the training-level table measured on 2026-08-19 — **a third instrument agreeing with
+two written on different days**, which is what makes the rest of this worth reading. **13.65x remains
+unreproducible** and this is not an attempt to reproduce it: that figure was produced at *write* level
+19. Task 15 still records its own.
+
+**0.03 s against `TRAIN_BUDGET_S` of 60 makes 14a's gate a formality on a corpus this size** — the
+question the owner declined to settle in advance is settled by three orders of magnitude. It should
+be re-measured, not assumed, once a window can hold real days.
+
+### Two tests were green and proving nothing, and mutation testing is what found them
+
+**Group C's lesson applied deliberately:** when a check comes back positive, ask what would make it
+positive anyway. Seven mutations were introduced into the finished module one at a time; **two of them
+did not break a single test.**
+
+| Mutation | First run | After |
+|---|---|---|
+| `improvement > margin` → `>=` | caught | caught |
+| `content_dict_id` stops zeroing the ID field | caught | caught |
+| **the `or 1` guard deleted** | **survived** | caught |
+| **`train` stops forwarding `k`** | **survived** | caught |
+| `train` stops forwarding `d` | — | caught |
+| `score` reads `TRAIN_LEVEL` instead of the config key | — | caught |
+| `stamp` skips the magic check | — | caught |
+
+**The `or 1` guard was untestable through its own public function**, because no dictionary can be
+constructed whose sha256 begins with four zero bytes. The fix was to split the arithmetic into
+`_id_from_digest(digest)`, which can be handed an all-zero digest directly. **An unreachable branch
+and a deleted branch are indistinguishable from the outside**, which is the same argument that made
+Group C break the `write_dict_id` assertion on purpose.
+
+**The `k` test was exercising the library rather than this module.** It called
+`zstandard.train_dictionary` directly and read `.k` back off the returned object — so it passed
+unchanged with `DictionaryTrainer.train` no longer forwarding `k` at all. It is now behavioural: two
+different `k` values must produce two different dictionaries, which they do. **This matters more than
+it looks**, because an unforwarded `k` is precisely the 15%-worse trap Task 6 measured, and it would
+have shipped silently.
+
+**A third weakness was found the same way and it was not a mutation.** The refusal test trained twice
+on identical material — and retraining on unchanged input is **byte-identical**, so the improvement
+was exactly `0.0`. It proved that an *identical* dictionary is refused and never touched a genuinely
+**worse** one, which is the case non-monotonicity actually produces and the whole mechanism exists
+for. A candidate trained on unrelated material now supplies a **negative** improvement, and the
+strictness test was rebuilt on a real positive margin rather than on zero.
+
+### The plan offers two routes for the dictID and only one of them can work
+
+*Recorded because the plan's "or" reads as a free choice and is not.* Task 14's row says to pass the
+ID to `train_dictionary(dict_id=)` **or** write it into bytes `[4:8]` afterwards, and both were
+measured to work. But the ID is **derived from the trained bytes**, so it does not exist until
+training has finished: passing it to `train_dictionary` means training twice for a file identical to
+the one already in hand. **The order is train → derive → stamp**, and re-stamping was already
+measured idempotent and byte-identical in output.
+
+### One thing the instrument said that was not true
+
+**The first exercise run reported our stamped dictID and libzstd's as the same value**, which reads
+exactly like a stamp that never applied. It had not failed: the script read the "libzstd" ID off
+`candidate.raw`, which is **already stamped**, so it was reporting our own value back under the wrong
+label. Measured properly against an unstamped training run of the same material, libzstd says
+**2026200612** and we say **239961297**.
+
+**Fix the instrument before believing the result** — and the reason it is written down is that the
+number it printed was *plausible*, which is the only kind of wrong reading that survives being looked
+at.
+
+### The three decisions this task needed, and what each was chosen over
+
+All three went to the owner on 2026-08-20 rather than being taken at the keyboard.
+
+| Decision | Chosen | Over |
+|---|---|---|
+| **`DICT_MAGIC` gets a name and a register row** | A named constant, checked before `stamp` overwrites the four bytes behind it, with a row added to "The register" | Inlining the literal unnamed, so nothing new reaches the register; or skipping the check, since in practice the bytes always come straight from `train_dictionary` |
+| **`newest_dictionary()` is lifted into `corpus.py` and shared** | One function, called by both the worker and the trainer | **Duplicating** the rule — which would let the trainer score against one file while the worker wrote against another, each half correct alone; or **importing the private names**, a boundary violation for whoever next changes `corpus.py`'s internals |
+| **`DictionaryTrainer` takes the `Corpus` config block** | The block, since the trainer reads **six of the nine keys** and 14e's per-run overrides become one `model_copy(update=…)` | Plain values, matching `CorpusWriter` — six arguments, and six places to thread a CLI override through |
+
+**The middle one changed Group C code**, which is named rather than left to a diff: `_write_atomically`
+was made public as `write_atomically` on the same reasoning, the trainer's install needing the same
+`write → fsync → rename` for a sharper reason than the store's — a router starting mid-write would
+otherwise load a truncated dictionary. Both are pure extractions and **Group C's 218 tests passed
+unchanged** before anything new was added.
+
+### Baselines, re-derived by running them
+
+**`make test` 250** (218 before), **`make lint` clean**, **`make check` valid**, and `link-check.py`
+**82 files, 79 broken, 2 roundabout**.
+
+**The fall is 82 → 79, and this session predicted 81 and was wrong.** The prediction was written into
+this file before the tool was run, which is the exact thing the phase's own handoff warns about —
+*"treat it as a direction, not a target"*, and *three earlier sessions got this number wrong by
+reading the docstring or quoting a stale figure instead of running the tool.* **A fourth would have,
+had the number not been checked before the commit.**
+
+**The arithmetic, measured rather than reasoned:** `src/ilirium_llm_router/dictionary.py` was cited
+**three** times in `docs/` at `HEAD` — once in `../../prompt.md` and **twice in this plan's own
+register**, in the new-modules row and the module-constants row. All three resolved the moment the
+file appeared. The handoff's claim that *"one of the 82 is this very section"* was true and
+incomplete: the register had been citing the file since the day it was compiled.
+
+That is the behaviour this phase describes — *the count rises when a task cites what it is about to
+build and falls when the file appears* — and the previous session's note that the handoff file was
+moving the baseline it quoted is now discharged.
+
 ## Open at the end of Group C — 2026-08-19
 
 **Three things are open and none of them blocks Task 14.** Written down because the owner clears
 sessions deliberately and context keeps nothing.
 
-1. **How `compress_level_zstd` reaches the trainer.** Task 14b scores a candidate against the
-   incumbent at that **config key**, not at `TRAIN_LEVEL`, so `DictionaryTrainer` needs the value
-   passed in. `CorpusWriter` takes plain values rather than a config block, by the owner's decision
-   of 2026-08-19 — **the trainer should follow whichever shape reads better and say which it chose.**
-   Not a decision anyone is blocked on; it is a signature.
+1. ~~**How `compress_level_zstd` reaches the trainer.**~~ **Closed at Task 14, 2026-08-20.**
+   `DictionaryTrainer` takes the **`Corpus` config block**, so `score()` reads
+   `self._corpus.compress_level_zstd` directly. Chosen over plain values because the trainer reads
+   **six of the nine keys** — `dir` and `compress_level_zstd` plus all four under `retrain` — where
+   `CorpusWriter` reads four and never sees `retrain` at all; and because Task 14e's per-run CLI
+   overrides become one `model_copy(update=…)` of the block rather than six threaded parameters.
+   **The asymmetry with `CorpusWriter` is deliberate and is written into the class's docstring**, so
+   it does not read as an accident to whoever sees the two side by side.
 2. **Whether `CorpusWriter` should now take `Corpus`.** The owner ruled that Task 8's plain-values
    shape stands, with the `StatsWriter` mirror completed "in one line at Task 11 or 12". **Task 11
    has since built the block and the change was still not made**, deliberately — nothing needed it,

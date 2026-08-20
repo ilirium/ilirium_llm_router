@@ -305,7 +305,7 @@ class CorpusWriter:
 
         blob = self._compressor().compress(plaintext)
         destination.parent.mkdir(parents=True, exist_ok=True)
-        _write_atomically(blob, destination, day.root / "incoming")
+        write_atomically(blob, destination, day.root / "incoming")
         return Stored(digest, self._recorded_dict_id(), len(blob))
 
     # -- reading back --------------------------------------------------------------------------
@@ -569,12 +569,12 @@ class CorpusWriter:
         Returning `None` is the ordinary case at first run, not a failure: the store ships before
         the trainer does, so the first day's bodies are written undicted and stay valid forever.
         """
-        candidates = sorted(name for name in _names_in(self._dir / "dicts") if _is_dictionary(name))
-        if not candidates:
+        newest = newest_dictionary(self._dir / "dicts")
+        if newest is None:
             return None
 
-        name = candidates[-1]
-        data = zstandard.ZstdCompressionDict((self._dir / "dicts" / name).read_bytes())
+        name = newest.name
+        data = zstandard.ZstdCompressionDict(newest.read_bytes())
         loaded = _Dictionary(name=name, data=data, compressor=_build_compressor(data, self._level))
         self._logger.info(
             "Corpus: compressing against dictionary %s (dictID %s)", name, loaded.hex_id
@@ -795,12 +795,34 @@ def _write_manifest(path: Path) -> None:
     )
 
 
-def _write_atomically(payload: bytes, destination: Path, staging: Path) -> None:
+def newest_dictionary(dicts_dir: Path) -> Path | None:
+    """The dictionary that counts as current in a `dicts/` folder, or `None` if there is not one.
+
+    **Newest is by filename, never by mtime.** `logs/` sits inside a cloud-synced folder on the
+    machine this was built for, and a sync rewrites mtimes; the name leads with a UTC stamp
+    precisely so that sorting it is meaningful.
+
+    **Shared rather than duplicated, and that is the whole reason it is a function.** The corpus
+    worker asks this to decide what to compress against, and `dictionary.py`'s trainer asks it to
+    decide which dictionary a candidate has to beat. Two copies of the rule that disagreed would
+    have the trainer scoring against one file while the worker wrote against another — and nothing
+    would report it, because each half would be behaving correctly on its own.
+    """
+    candidates = sorted(name for name in _names_in(dicts_dir) if _is_dictionary(name))
+    return dicts_dir / candidates[-1] if candidates else None
+
+
+def write_atomically(payload: bytes, destination: Path, staging: Path) -> None:
     """`write → fsync → rename`, so a reader never sees a partial blob.
 
     The rename is what makes a blob's appearance atomic; the `fsync` before it is what stops a
     crash leaving a correctly-named file full of nothing. `os.replace` is atomic within a
     filesystem, which `staging` being inside the same day folder guarantees.
+
+    **Shared with `dictionary.py`**, which installs a trained dictionary the same way and for a
+    sharper reason: a router starting mid-write would otherwise load a truncated dictionary. The
+    `<pid>-<uuid>.tmp` name is what makes the trainer's *"two processes cannot rename interleaved
+    bytes into one valid-looking file"* true, since `--train-dict` is deliberately another process.
     """
     staging.mkdir(parents=True, exist_ok=True)
     temporary = staging / f"{os.getpid()}-{uuid.uuid4().hex}.tmp"
@@ -824,7 +846,7 @@ def _copy_atomically(source: Path, destination: Path, staging: Path) -> None:
     """
     if destination.exists():
         return
-    _write_atomically(source.read_bytes(), destination, staging)
+    write_atomically(source.read_bytes(), destination, staging)
 
 
 def _sweep(staging: Path, logger: logging.Logger) -> None:

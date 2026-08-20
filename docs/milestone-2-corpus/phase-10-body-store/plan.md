@@ -903,12 +903,21 @@ item.
 "which bodies used the old one" was worth opening a blob for. With automatic retraining installing one
 inside a running day, it is an ordinary analysis question and the index should answer it.
 
-### Group D — the dictionary *(not started)*
+### Group D — the dictionary *(in progress)*
 
-**This is where the next session starts, at Task 14.** Group C's reader (`CorpusReader` in
-`corpus.py`) is what Task 14a's trainer needs to assemble a sample list, and it ships. `TRAIN_LEVEL`,
-`INSTALL_MARGIN`, `TRAIN_BUDGET_S`, `WINDOW_MAX_DAYS`, `MIN_SESSIONS` and `LOCK_STALE_S` are all in
-"The register" with values; **none of them is in the code yet.**
+*Marker moved from `*(not started)*` when Task 14 ran on 2026-08-20, per "Placeholders in this
+file". The parenthesis stays exactly greppable; the prose carries the state.*
+
+**Task 14 has run; 14a, 14b, 14c, 14e and 14f have not.** `src/ilirium_llm_router/dictionary.py`
+exists and holds `content_dict_id()`, `stamp()`, and `DictionaryTrainer` with `train` / `score` /
+`consider` / `install`. **`TRAIN_LEVEL` (3), `TRAIN_D` (8) and `DICT_MAGIC` are now in the code;
+`INSTALL_MARGIN`, `TRAIN_BUDGET_S`, `WINDOW_MAX_DAYS`, `MIN_SESSIONS` and `LOCK_STALE_S` are still
+only in "The register".** Group C's reader (`CorpusReader` in `corpus.py`) is what Task 14a's
+trainer needs to assemble a sample list, and it ships.
+
+**Measured at Task 14, and it decides 14a's gate:** training the whole surviving corpus takes
+**0.03 s** against a `TRAIN_BUDGET_S` of **60**, so day-rollover triggering is permitted by three
+orders of magnitude. **Re-measure rather than inherit it** once a window can hold real days.
 
 | # | Task |
 |---|---|
@@ -1062,7 +1071,7 @@ be empty from here on**, and Task 24 checks that it still is.
 | Module | Holds | Task |
 |---|---|---|
 | `src/ilirium_llm_router/corpus.py` | **`CorpusWriter`** — the blob store, the byte-bounded queue and its worker, the day index — and **`CorpusReader`** | 8, 9, 10, 13a |
-| `src/ilirium_llm_router/dictionary.py` | **`DictionaryTrainer`** — the trainer, the training thread, the split, the margin — and **`content_dict_id()`**, the dictID derivation *(added 2026-08-19)* | 14, 14a, 14b |
+| `src/ilirium_llm_router/dictionary.py` | **`DictionaryTrainer`** — the trainer, the training thread, the split, the margin — and **`content_dict_id()`**, the dictID derivation *(added 2026-08-19)*. Beside them, built at Task 14: **`stamp()`**, which writes an ID into a dictionary's bytes `[4:8]`, and the two result values **`Candidate`** and **`Verdict`** *(named 2026-08-20)* | 14, 14a, 14b |
 
 **`CorpusWriter` mirrors `StatsWriter` deliberately** *(named 2026-08-19)*: same shape — built from its
 config block, `close()`d by the app, owned rather than reached for globally *"so a test can point one
@@ -1118,6 +1127,17 @@ severity two keys away, so this one names its scale.
 | `SUMMARY_EVERY` | **500** calls | `corpus.py` | 9 | **named 2026-08-19** — a second constant, not a shared one |
 | `LOCK_STALE_S` | **3600** | `dictionary.py` | 14a | **valued 2026-08-19** |
 | `INDEX_SCHEMA_VERSION` | **1** | `corpus.py` | 8 | **valued 2026-08-19** |
+| `DICT_MAGIC` | **`0xEC30A437`** | `dictionary.py` | 14 | no — **added 2026-08-20, at Task 14**, see below |
+
+**`DICT_MAGIC` is the one row this register gained during execution rather than before it**, and it
+is here because the register is checked row by row at Task 24: a constant living in the code and not
+in this table would read as drift, which is the thing the table exists to catch. It is zstd's
+dictionary magic number, little-endian in a dictionary file's first four bytes — **the four bytes
+immediately in front of the ID field that `stamp()` overwrites**. Checked before the overwrite, so
+that stamping something which is not a dictionary raises instead of writing four bytes into the
+middle of it and returning bytes that *look* stamped. **Owner's decision, 2026-08-20**, taken over
+inlining the literal unnamed and over skipping the check: the failure it prevents would not surface
+until a body compressed against the result could not be read back.
 
 **The cadence question was not pedantry, and it resolved against the prose.** *Settled 2026-08-19:
 **two constants**, `RESCAN_EVERY = 500` **bodies** and `SUMMARY_EVERY = 500` **calls**.* The plan had
@@ -1240,8 +1260,17 @@ therefore indistinguishable from working.
 | `app.create_app()` | takes the writer **the way it already takes `stats`** | 12 |
 | `app.py` lifespan | starts and stops the worker; starts the training thread | 12, 14a |
 | `cli.py` | `--check` prints the block; **`--train-dict`, `--tune-dict`, `--extract`, `--from <dir>`** | 11, 13a, 14e |
+| `corpus.py` | **`newest_dictionary()`** — new, and the *"newest is by filename, never mtime"* rule lifted out of `CorpusWriter._load_newest_dictionary` so the worker and the trainer share one copy | 14 |
+| `corpus.py` | **`_write_atomically` → `write_atomically`** — same function, now shared, because the trainer's install is `write → fsync → rename` for a sharper reason than the store's | 14 |
 
 **No new route.** `/health` is unchanged and the catch-all forwards everything else.
+
+**The two `corpus.py` rows are Group C code changed at Task 14**, which is worth naming rather than
+leaving to a diff. *Owner's decision, 2026-08-20*, over the two alternatives: **duplicating** the
+rule in `dictionary.py`, which would let the trainer score against one file while the worker wrote
+against another with each half behaving correctly on its own; and **importing the private names**,
+which reads as a boundary violation to whoever next changes `corpus.py`'s internals. Both changes
+are pure extractions and Group C's tests pass unchanged.
 
 ### 11 · CLI flags
 

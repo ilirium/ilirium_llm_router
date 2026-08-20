@@ -10,6 +10,47 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-20 — Task 14 has run and Group D is open.** `src/ilirium_llm_router/dictionary.py` exists:
+`content_dict_id()`, `stamp()`, and `DictionaryTrainer` with `train` / `score` / `consider` /
+`install`. **`make test` went 218 → 250.** The thread and trigger are 14a's, the split and the margin
+14b's — `consider()` takes both the holdout slice and the margin as arguments, which is the narrowing
+the second review applied.
+
+**The number landed exactly where two earlier instruments said it would: 12.920x** on gate.py's split
+at write level 9, with the undicted baseline at **701,407 bytes / 2.997x** — Task 6's frozen figure to
+the byte. **A third instrument agreeing with two written on different days** is what makes it worth
+recording. Training took **0.03 s** against `TRAIN_BUDGET_S` of 60, so 14a's gate is a formality at
+this corpus size — **re-measure it, do not inherit it.** `13.65x` is still not reproducible and no
+attempt was made; Task 15 records its own.
+
+**Two tests were green and proving nothing, and seven deliberate mutations are what found them.** The
+`or 1` guard against a zero dictID was **unreachable through its own public function** — no
+dictionary's sha256 starts with four zero bytes — so the arithmetic was split into `_id_from_digest`
+to make the branch testable. And the `k` test called `zstandard.train_dictionary` **directly**, so it
+passed unchanged with the trainer no longer forwarding `k` at all — the exact 15%-worse trap Task 6
+measured, and it would have shipped silently. A third weakness needed no mutation: the refusal test
+retrained on identical material, which is **byte-identical**, so its improvement was exactly `0.0` and
+it never touched a genuinely *worse* candidate. **All three are fixed and all seven mutations now fail
+exactly one targeted test.**
+
+**One instrument lied plausibly.** The first exercise run reported our stamped dictID and libzstd's as
+the same value — it was reading the "libzstd" ID off bytes that were *already stamped*. Measured
+against an unstamped run, libzstd says **2026200612** and we say **239961297**. **Fix the instrument
+before believing the result**, and this one is written down because the wrong number was *plausible*.
+
+**Three owner decisions, in `plan.md`'s register and `notes.md` with their rejected alternatives:**
+`DICT_MAGIC` gets a name and a register row; `newest_dictionary()` is **lifted into `corpus.py` and
+shared** so the worker and the trainer cannot drift on which dictionary is current (`_write_atomically`
+went public as `write_atomically` on the same reasoning); and `DictionaryTrainer` takes the **`Corpus`
+config block**, closing Group C's open item 1.
+
+**Baselines, run not predicted: `make test` 250, `make lint` clean, `make check` valid, `link-check.py`
+82 files, **79 broken**, 2 roundabout.** **It fell 82 → 79, and this session predicted 81 and was
+wrong** — `dictionary.py` was cited **three** times, once in `prompt.md` and **twice in the plan's own
+register**, not once. The prediction was caught only because the tool was run before the commit, which
+is the fourth time this phase has made that mistake and the first time it was caught in the same
+session.
+
 **2026-08-19, later still — Task 7 has run and Group C is open.** The smoke test passed on the first
 run: 40 bodies, both directions, dicted at level 9 and undicted, **all byte-identical**, sha256 of the
 round trip equal to sha256 of the original. Frozen as `evidence/smoke.py` / `smoke.txt`. **Still no
@@ -272,8 +313,8 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 10 — the body store, from Task 14 (Group D).** **Planned and reviewed 2026-08-18, re-scoped
-   and reviewed a second time 2026-08-19; Groups A and B are done and no `src/` change exists yet.**
+1. **Execute Phase 10 — the body store, from Task 14a (Group D).** **Planned and reviewed 2026-08-18, re-scoped
+   and reviewed a second time 2026-08-19; Groups A, B and C are done, and Task 14 built the trainer on 2026-08-20.**
    The branch is in the table below and the task list is in
    `milestone-2-corpus/phase-10-body-store/plan.md`. **Do not re-plan or re-review it** — its
    re-derivation and **two** forward reviews have run, and **all findings from both are applied**
@@ -300,7 +341,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new. `make test` 218.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 14** — the trainer, opening Group D. **Groups A, B and C are done**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()`. `make test` 250.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 14a** — the trigger and the training thread. **Groups A, B and C are done, and Task 14 has run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so 14a's `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*
