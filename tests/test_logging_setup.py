@@ -69,7 +69,7 @@ def test_a_line_reaches_the_configured_file(tmp_path: Path) -> None:
 
 
 def test_the_directory_is_created_if_it_is_missing(tmp_path: Path) -> None:
-    """The configured default is `logs/router.log`, and `make clean` leaves `logs/` alone."""
+    """The default is `logs/telemetry/router.log`, and `make clean` leaves `logs/` alone."""
     path = tmp_path / "logs" / "nested" / "router.log"
     setup_logging(Logging(file=path)).info("Router starting")
 
