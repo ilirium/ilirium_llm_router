@@ -30,7 +30,10 @@ from ilirium_llm_router.config import Corpus, Retrain
 from ilirium_llm_router.corpus import (
     ABSENT,
     INDEX_COLUMNS,
+    NO_DICTIONARY,
+    RESCAN_EVERY,
     CorpusError,
+    CorpusReader,
     CorpusWriter,
     newest_dictionary,
 )
@@ -938,3 +941,227 @@ def test_a_disabled_corpus_starts_no_trainer_and_creates_nothing(tmp_path: Path)
         assert test_client.post("/v1/messages", content=CLAUDE_BODY).status_code == 200
 
     assert not root.exists()
+
+
+# -- the pickup (Task 14c), and the self-containment cases (Task 14f) ---------------------------
+
+
+def plain_writer(root: Path) -> CorpusWriter:
+    return CorpusWriter(
+        directory=root, compress_level=9, body_max_bytes=1 << 20, queue_max_bytes=1 << 26
+    )
+
+
+def install_one(root: Path, samples: list[bytes]) -> str:
+    """Install a dictionary the way another process would — because that is the only way one ever
+    arrives. The trainer publishes a file and nothing else."""
+    subject = DictionaryTrainer(Corpus(enabled=True, dir=root, retrain=Retrain(maxdict=16_384, k=200)))
+    return subject.install(subject.train(samples)).name
+
+
+def test_a_new_dictionary_is_not_picked_up_before_the_rescan_is_due(tmp_path: Path) -> None:
+    """One `listdir` per 500 bodies, in the worker. **Cheap because it is rare**, and a body or two
+    written undicted after an install is not a defect — the frames stay valid forever."""
+    writer = plain_writer(tmp_path)
+    try:
+        writer.store("2026-08-19T09:00:00.000+00:00", "requests", bodies(1)[0])
+        install_one(tmp_path, bodies())
+        stored = writer.store("2026-08-19T10:00:00.000+00:00", "requests", bodies(1, seed=9)[0])
+        assert stored.dict_id == NO_DICTIONARY
+    finally:
+        writer.close()
+
+
+def test_a_new_dictionary_is_picked_up_once_the_rescan_is_due(tmp_path: Path) -> None:
+    writer = plain_writer(tmp_path)
+    try:
+        writer.store("2026-08-19T09:00:00.000+00:00", "requests", bodies(1)[0])
+        name = install_one(tmp_path, bodies())
+        for i in range(RESCAN_EVERY):
+            writer.store("2026-08-19T11:00:00.000+00:00", "requests", b"filler %d" % i + b"x" * 40)
+
+        stored = writer.store("2026-08-19T12:00:00.000+00:00", "requests", bodies(1, seed=77)[0])
+        assert writer.dictionary_name == name
+        assert stored.dict_id != NO_DICTIONARY
+    finally:
+        writer.close()
+
+
+def test_opening_a_new_day_rescans_without_waiting(tmp_path: Path) -> None:
+    """Otherwise a dictionary installed overnight would not be seen until 500 more bodies had gone
+    past — and the retrain that produced it fires precisely at the rollover."""
+    writer = plain_writer(tmp_path)
+    try:
+        writer.store("2026-08-19T09:00:00.000+00:00", "requests", bodies(1)[0])
+        name = install_one(tmp_path, bodies())
+        stored = writer.store("2026-08-20T00:00:02.000+00:00", "requests", bodies(1, seed=5)[0])
+
+        assert writer.dictionary_name == name
+        assert stored.dict_id != NO_DICTIONARY
+    finally:
+        writer.close()
+
+
+def test_a_repeat_body_after_a_swap_still_names_the_dictionary_it_was_stored_with(
+    tmp_path: Path,
+) -> None:
+    """**Group C's rule, now exercised under a real mid-day swap.** A body first stored undicted and
+    seen again after a dictionary arrives must report the dictID of the blob **on disk**, not the
+    compressor's — *which bodies used which dictionary* is the entire reason the column exists."""
+    writer = plain_writer(tmp_path)
+    repeated = bodies(1, seed=3)[0]
+    try:
+        first = writer.store("2026-08-19T09:00:00.000+00:00", "requests", repeated)
+        assert first.dict_id == NO_DICTIONARY
+        install_one(tmp_path, bodies())
+        for i in range(RESCAN_EVERY):
+            writer.store("2026-08-19T11:00:00.000+00:00", "requests", b"filler %d" % i + b"x" * 40)
+        assert writer.dictionary_name is not None, "the swap happened"
+
+        again = writer.store("2026-08-19T15:00:00.000+00:00", "requests", repeated)
+        assert again.dict_id == NO_DICTIONARY, "read off the blob, never from the compressor"
+    finally:
+        writer.close()
+
+
+def test_a_mid_day_swap_leaves_every_blob_readable_from_the_day_folder_alone(
+    tmp_path: Path,
+) -> None:
+    """**The invariant the whole layout exists for.** `tar` the day, unpack it elsewhere, and every
+    blob opens — including the ones written before the swap, against no dictionary at all."""
+    writer = plain_writer(tmp_path)
+    try:
+        for i in range(3):
+            writer.store("2026-08-19T09:00:00.000+00:00", "requests", bodies(1, seed=i)[0])
+        install_one(tmp_path, bodies())
+        for i in range(RESCAN_EVERY):
+            writer.store("2026-08-19T11:00:00.000+00:00", "requests", b"filler %d" % i + b"x" * 40)
+        for i in range(3):
+            writer.store("2026-08-19T15:00:00.000+00:00", "requests", bodies(1, seed=100 + i)[0])
+    finally:
+        writer.close()
+
+    reader = CorpusReader(tmp_path / "2026-08-19")
+    blobs = reader.blobs("requests")
+    assert len(blobs) > RESCAN_EVERY
+    for blob in blobs:
+        assert reader.read(blob), f"{blob.name} did not open from the day folder alone"
+
+
+def test_the_same_holds_across_a_day_rollover(tmp_path: Path) -> None:
+    """**The case a mid-day test cannot reach.** One worker can be writing into two day folders
+    while holding one compressor — a body stamped 23:59:59 and written at 00:00:02 belongs to
+    yesterday — so the dictionary copy is a **per-write precondition**, not a per-swap step."""
+    writer = plain_writer(tmp_path)
+    try:
+        writer.store("2026-08-19T09:00:00.000+00:00", "requests", bodies(1)[0])
+        first = install_one(tmp_path, bodies())
+        writer.store("2026-08-20T00:00:02.000+00:00", "requests", bodies(1, seed=20)[0])
+
+        second = install_one(tmp_path, bodies(40, seed=60))
+        assert second != first
+        writer.store("2026-08-21T00:00:01.000+00:00", "requests", bodies(1, seed=30)[0])
+        # A late body, still filed under the 20th, while the compressor holds the newer dictionary.
+        writer.store("2026-08-20T23:59:59.000+00:00", "requests", bodies(1, seed=40)[0])
+    finally:
+        writer.close()
+
+    for day in ("2026-08-19", "2026-08-20", "2026-08-21"):
+        reader = CorpusReader(tmp_path / day)
+        for blob in reader.blobs("requests"):
+            assert reader.read(blob), f"{day}/{blob.name} did not open from its own folder"
+
+    held = sorted(p.name for p in (tmp_path / "2026-08-20" / "dicts").glob("*.dict"))
+    assert held == sorted({first, second}), "the day that used two dictionaries keeps both"
+
+
+def test_every_frame_written_carries_a_dictionary_id(tmp_path: Path) -> None:
+    """**The field the reader and the whole no-recompression rule depend on.** A frame that does not
+    name its dictionary is unreadable the moment the dictionary in hand is not the right one."""
+    writer = plain_writer(tmp_path)
+    try:
+        install_one(tmp_path, bodies())
+        writer._rescan()
+        for i in range(4):
+            writer.store("2026-08-19T09:00:00.000+00:00", "requests", bodies(1, seed=i)[0])
+    finally:
+        writer.close()
+
+    reader = CorpusReader(tmp_path / "2026-08-19")
+    for blob in reader.blobs("requests"):
+        assert zstandard.get_frame_parameters(blob.read_bytes()).dict_id != 0
+
+
+def test_a_dictionary_that_will_not_load_leaves_the_current_one_in_place(tmp_path: Path) -> None:
+    """**It never raises.** This runs in the worker between two bodies, and telemetry does not get
+    to break a call — construction is the one place a bad dictionary stops something."""
+    writer = plain_writer(tmp_path)
+    try:
+        name = install_one(tmp_path, bodies())
+        writer._rescan()
+        assert writer.dictionary_name == name
+
+        junk = tmp_path / "dicts" / "req-2099-01-01T000000Z-deadbeef.dict"
+        junk.write_bytes(b"this is not a dictionary")
+        writer._rescan()
+
+        assert writer.dictionary_name == name, "the good dictionary is kept"
+        stored = writer.store("2026-08-19T09:00:00.000+00:00", "requests", bodies(1)[0])
+        assert stored.dict_id != NO_DICTIONARY
+    finally:
+        writer.close()
+
+
+def test_a_content_only_dictionary_is_refused_because_its_id_is_zero(tmp_path: Path) -> None:
+    """**The defect this test was written from, and it is worth stating in full.**
+
+    `ZstdCompressionDict` accepts *arbitrary bytes* and treats them as a content-only dictionary
+    whose `dict_id()` is **0**. Nothing about that call fails. A frame compressed against one then
+    reports dictID **0** — which is precisely how *"stored with no dictionary"* is spelled — while
+    genuinely needing those bytes back. Measured: reading such a blob without them raises
+    `Data corruption detected`, and `CorpusReader` never tries a dictionary at all, because a frame
+    reporting 0 tells it not to. **Every blob written in that window is permanently unreadable**,
+    with a day folder that looks complete.
+
+    So a dictionary reporting 0 is refused before a single body is written against it.
+    """
+    junk = tmp_path / "dicts" / "req-2026-08-19T000000Z-00000000.dict"
+    junk.parent.mkdir(parents=True)
+    junk.write_bytes(b'{"model":"claude-opus-5","system":"You are helpful."}' * 40)
+
+    assert zstandard.ZstdCompressionDict(junk.read_bytes()).dict_id() == 0, "zstd accepts it"
+
+    with pytest.raises(CorpusError, match="reports ID 0"):
+        plain_writer(tmp_path)
+
+
+def test_the_frame_such_a_dictionary_would_have_written_is_unreadable(tmp_path: Path) -> None:
+    """Pins *why* the refusal above exists, so nobody relaxes it as an over-cautious check."""
+    shared = b'{"model":"claude-opus-5","system":"You are a helpful assistant."}'
+    content_only = zstandard.ZstdCompressionDict(shared * 40)
+    frame = zstandard.ZstdCompressor(level=9, dict_data=content_only).compress(shared + b" more")
+
+    assert zstandard.get_frame_parameters(frame).dict_id == 0, "the frame claims to be undicted"
+    with pytest.raises(zstandard.ZstdError):
+        zstandard.ZstdDecompressor().decompress(frame)
+
+
+def test_a_rescan_that_finds_nothing_new_keeps_the_compressor_it_has(tmp_path: Path) -> None:
+    """**The name check is what makes the rescan cheap**, and nothing else would notice it going.
+
+    Rebuilding produces an identical compressor, so behaviour is unchanged and no other test can
+    see the difference — what changes is that every rescan pays for a fresh `_build_compressor`,
+    probe compression included, and every one of them announces a switch that did not happen. The
+    identity of the object is the only observable, so that is what this asserts.
+    """
+    writer = plain_writer(tmp_path)
+    try:
+        install_one(tmp_path, bodies())
+        writer._rescan()
+        loaded = writer._dictionary
+
+        writer._rescan()
+
+        assert writer._dictionary is loaded, "an unchanged dicts/ must not rebuild anything"
+    finally:
+        writer.close()

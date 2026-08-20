@@ -10,6 +10,58 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-20, later still — Task 14c has run and a running router picks up a new dictionary.** The
+worker relists `<dir>/dicts/` every `RESCAN_EVERY` (500) bodies **and** on opening a day folder, and
+swaps when the newest name differs. **`make test` went 282 → 293.** **14e and 14f remain**, then
+Task 15. *(14f's three named cases were built with 14c, because they prove the pickup rather than
+check it afterwards.)*
+
+**The task's real output is a defect that would have made blobs permanently unreadable.**
+`ZstdCompressionDict` **accepts arbitrary bytes**, returning a valid *content-only* dictionary whose
+`dict_id()` is **0** — so a stray `*.dict` file in `<dir>/dicts/` was adopted silently, which the
+pickup is what made reachable. Frames written against it report dictID **0**, which is exactly how
+*"stored with no dictionary"* is spelled, so **`CorpusReader` never tries a dictionary at all** and
+the blob raises `Data corruption detected`. **A day folder that looks complete and cannot be opened
+— failure mode 2 in the one form nothing else here catches.**
+
+**Fixed where the guarantee already lives.** `_build_compressor` exists to prove the compressor
+writes a dictID into every frame; one reporting 0 proves it does not. It now refuses, which lands
+correctly on both paths with no second rule: **construction raises and the router refuses to start**
+(the owner's 2026-08-19 decision, unchanged), and **rescan catches it, keeps the current dictionary
+and warns**. Recorded in the settled table as an **extension of that row**, not a new decision.
+
+**It was found by a test written from driving intent, and nearly closed as a non-issue.** The first
+measurement was *benign*: junk bytes sharing nothing with the body give a self-contained frame that
+decompresses fine. Only a content-only dictionary the body actually matches against shows the loss.
+**The reassuring measurement was the wrong one.**
+
+**Driven mid-day and across a rollover** on real corpus-gate bodies: undicted, install, not swapped on
+the next body (by design), swapped after 500, a second dictionary picked up at the rollover.
+**504/504 blobs verified** from folders mixing undicted and two-dictionary material, and the day that
+used two dictionaries **keeps both copies**.
+
+**The instrument was wrong a third time, in the same shape.** A swap looked failed — `dict_id=none`
+after the threshold — while the writer plainly held the new dictionary. **The body was a duplicate**,
+so `store()` correctly read the dictID off the blob already on disk: Group C's rule working as
+decided, caught by an instrument testing a swap with a repeat body. **Three instrument errors this
+phase, every one producing a plausible number.**
+
+**Six mutations; five caught immediately.** The surviving one — dropping the "did the name actually
+change?" check — is invisible behaviourally, since rebuilding yields an identical compressor. What it
+costs is a probe compression per rescan and a log line announcing a switch that did not happen, so
+the new test asserts **object identity**, the only observable there is.
+
+**Three open questions were also settled by the owner and applied:** the sample floor **gets no
+constant** (libzstd's refusal is caught and recorded instead — its limit is total bytes, not a count);
+`--from <dir>` will treat **each subdirectory as a session** so leave-one-session-out runs on
+`logs/corpus-gate/`; and **`CorpusWriter` keeps plain values** — which required correcting the
+register, since it described the writer as *"built from its config block"* when it is not. Group C's
+open item 2 is closed. **Task 15 will install into `logs/corpus/dicts/`**, the live directory, as its
+row says.
+
+**Baselines, run not predicted: `make test` 293, `make lint` clean, `make check` valid,
+`link-check.py` 82 files, 79 broken, 2 roundabout — unchanged.**
+
 **2026-08-20, later — Tasks 14a and 14b have run and the router retrains itself.**
 `DictionaryTrainer` now carries the training thread, both triggers, the cross-process lock, the
 today-guard, the window, the leave-one-session-out split and `retrain.log`. **`make test` went
@@ -365,8 +417,8 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 10 — the body store, from Task 14c (Group D).** **Planned and reviewed 2026-08-18, re-scoped
-   and reviewed a second time 2026-08-19; Groups A, B and C are done, and Tasks 14, 14a and 14b built the trainer and its automatic path on 2026-08-20.**
+1. **Execute Phase 10 — the body store, from Task 14e (Group D).** **Planned and reviewed 2026-08-18, re-scoped
+   and reviewed a second time 2026-08-19; Groups A, B and C are done, and Tasks 14, 14a, 14b and 14c built the trainer, its automatic path and the pickup on 2026-08-20.**
    The branch is in the table below and the task list is in
    `milestone-2-corpus/phase-10-body-store/plan.md`. **Do not re-plan or re-review it** — its
    re-derivation and **two** forward reviews have run, and **all findings from both are applied**
@@ -393,7 +445,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread. `make test` 282.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 14c** — the pickup. **Groups A, B and C are done, and Tasks 14, 14a and 14b have run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread. `make test` 293.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 14e** — `--train-dict`, `--tune-dict` and `--from`. **Groups A, B and C are done, and Tasks 14, 14a, 14b and 14c have run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*

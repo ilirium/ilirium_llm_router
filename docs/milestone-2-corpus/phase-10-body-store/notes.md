@@ -2562,6 +2562,84 @@ which is Task 18's observation 1 still holding.
 **82 files, 79 broken, 2 roundabout — unchanged**, which is correct: this task cited nothing unbuilt
 and added no `*.md`.
 
+## Task 14c — the pickup, and a defect that would have made blobs unreadable — 2026-08-20
+
+**A running router now picks up a dictionary another process installed.** The worker relists
+`<dir>/dicts/` every `RESCAN_EVERY` (500) bodies **and** whenever it opens a day folder, and swaps
+when the newest name differs from what it holds. **`make test` went 282 → 293.**
+
+**14f's three named cases were built here rather than after**, because they are what proves the
+pickup rather than what checks it later: a mid-day swap leaving every blob readable from the day
+folder alone, the same across a rollover, and an assertion that every frame carries a dictID.
+
+### The defect, which is the real output of this task
+
+**`ZstdCompressionDict` accepts arbitrary bytes.** Hand it anything and it returns a valid
+*content-only* dictionary whose `dict_id()` is **0**. Nothing about the call fails. So **a stray
+`*.dict` file in `<dir>/dicts/` was adopted silently** — and the pickup is what made that reachable,
+since before this task a dictionary was only ever loaded once, at construction.
+
+**What it costs is total, and the arithmetic is worth following.** A frame compressed against a
+content-only dictionary reports dictID **0** — which is exactly how *"stored with no dictionary"* is
+spelled. `CorpusReader._candidates(0)` therefore returns `[None]` and **never tries a dictionary at
+all**, because the frame told it not to. Measured rather than argued: such a blob raises
+**`Data corruption detected`**. **Every body written in that window is permanently unreadable**, in a
+day folder that looks complete and passes every structural check.
+
+**That is failure mode 2 — *archiving cannot stay opaque* — in the one form nothing else here
+catches.** The manifest is right, the index is right, the dictionary copy is in the day folder, and
+the blobs cannot be opened.
+
+**The fix goes where the guarantee already lives.** `_build_compressor` exists to prove *"the
+compressor writes the dictionary ID into every frame"*; a dictionary reporting 0 proves it does not.
+It now refuses one, which lands correctly on both paths without a second rule: **at construction it
+raises and the router refuses to start** — the owner's 2026-08-19 decision, unchanged — and **at
+rescan it is caught, the current dictionary is kept, and a warning is logged**, because that runs in
+the worker between two bodies and telemetry does not get to break a call.
+
+**Recorded as an extension of that settled row, not a new decision.** Same function, same failure,
+same answer.
+
+### How it was found, which was not by reading
+
+**A test written from driving intent**, not from the code: *a dictionary that will not load should
+leave the current one in place*. It failed — the junk **was** adopted — and the first instinct was
+that the test was wrong. **Two measurements said otherwise**, and the first of them was misleading:
+junk bytes sharing nothing with the body produce a self-contained frame that decompresses fine, which
+reads as *harmless*. Only a content-only dictionary the body **actually matches against** shows the
+blob becoming unreadable. **The benign-looking first measurement is the one that would have closed
+this as a non-issue.**
+
+### Driven, mid-day and across a rollover
+
+Against real `logs/corpus-gate/` bodies, in a scratchpad: undicted first, another process installs,
+**not** swapped on the next body (by design), swapped after 500, then a second dictionary installed
+and picked up **at the rollover**. **504/504 blobs verified** from day folders holding a mix of
+undicted and two-dictionary material, and **the day that used two dictionaries keeps both copies.**
+
+**The instrument was wrong a third time, and in the same shape as before.** The swap looked like it
+had failed — `dict_id=none` on the body after the threshold — while `dictionary_name` showed the new
+dictionary. **The body was a duplicate**: `real[3]` is a repeat of `real[1]`, stored undicted before
+the swap, and `store()` correctly took the dedup path and read the dictID **off the blob on disk**.
+That is Group C's rule working exactly as decided, caught mid-flight by an instrument testing a swap
+with a repeat body. **Three instrument errors this phase, every one producing a plausible number.**
+
+### Six mutations, and the one that survived was worth the test it earned
+
+Rescan never fires; a new day does not rescan; the swap ignores whether the name changed; an
+unloadable dictionary propagates; the dictID-0 guard removed; the day-folder copy removed. **Five
+failed a targeted test immediately.**
+
+**The name check survived**, and correctly so: rebuilding produces an identical compressor, so
+behaviour is unchanged and no test *could* see it. What it costs is a fresh `_build_compressor` —
+probe compression included — on every rescan, and a log line announcing a switch that did not happen.
+**The identity of the object is the only observable**, so that is what the new test asserts.
+
+### Baselines, re-derived by running them
+
+**`make test` 293** (282 before), **`make lint` clean**, **`make check` valid**, `link-check.py`
+**82 files, 79 broken, 2 roundabout — unchanged.**
+
 ## Open at the end of Group C — 2026-08-19
 
 **Three things are open and none of them blocks Task 14.** Written down because the owner clears
@@ -2575,10 +2653,15 @@ sessions deliberately and context keeps nothing.
    overrides become one `model_copy(update=…)` of the block rather than six threaded parameters.
    **The asymmetry with `CorpusWriter` is deliberate and is written into the class's docstring**, so
    it does not read as an accident to whoever sees the two side by side.
-2. **Whether `CorpusWriter` should now take `Corpus`.** The owner ruled that Task 8's plain-values
-   shape stands, with the `StatsWriter` mirror completed "in one line at Task 11 or 12". **Task 11
-   has since built the block and the change was still not made**, deliberately — nothing needed it,
-   and a signature churn mid-group buys nothing. It is a one-line change whenever somebody wants it.
+2. ~~**Whether `CorpusWriter` should now take `Corpus`.**~~ **Closed 2026-08-20: it does not, and
+   the register was corrected rather than the code.** Put to the owner with the fact that
+   `StatsWriter` — the class this one was built to mirror — *does* take its block, and that
+   `plan.md`'s register described `CorpusWriter` as *"built from its config block"* when it is not.
+   **The owner declined the alignment**, and the reason is a real difference rather than inertia: the
+   writer reads **four** keys and never sees `retrain`, while `DictionaryTrainer` reads **six of
+   nine** and needs Task 14e's per-run overrides applied to the block at once. **So the register row
+   now carries the correction**, because a row describing code that does not exist is exactly the
+   drift Task 24 exists to catch.
 3. **`_days` grows one entry per day** in a long-running router: a `_Day` holds a path, a small set
    of filenames and an open file handle. A few hundred small objects a year. **Named so nobody
    rediscovers it as a leak** — and because the open handles are the part that would actually matter

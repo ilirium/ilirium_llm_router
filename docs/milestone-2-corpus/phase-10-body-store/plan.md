@@ -82,6 +82,7 @@ the row on retraining below.)*
 | **Extraction** — *2026-08-19* | **The reader ships in this phase; the tool built on it is Phase 11's.** Not optional here — training cannot assemble a sample list without decompressing blobs, which is extraction's core path. Deferring all of it was the earlier plan and the owner corrected it |
 | **The training level, and the scoring level** — *2026-08-19* | **They are two different things and get two different sources.** Training uses **`TRAIN_LEVEL`, now 3**; scoring uses **`corpus.compress_level_zstd`**, read from config. This **narrows** the training-parameters row above: that decision was right that *scoring* belongs at the level bodies are stored at, and **overreached in binding training to it too**. Measured the same day on `gate.py`'s held-out split — training levels 3, 6, 9, 12 and 19 land within **0.03%** of each other, so the training level is **not a parameter**, while 19 costs 8x the wall clock. **Two alternatives were rejected.** *Keeping 9* — once the two are split, the only argument 9 ever had ("it matches the write path") belongs to scoring, leaving training at a value with nothing behind it, where 3 is the library's own default. *Making both follow `compress_level_zstd`* — simpler-looking, and **refused on a hazard**: all five training levels produce **one dictID**, so a key change would alter dictionary bytes without altering the ID the reader looks them up by. A fixed `TRAIN_LEVEL` keeps that latent |
 | **A repeat body's `request_dict_id`** — *2026-08-19* | **Read it off the stored blob's own header, never from the compressor.** A dictionary can be installed mid-day, so a body first stored at 10:00 against dictionary A and seen again at 15:00 under B would otherwise get a row claiming **B** for a file that names **A** — and *which bodies used which dictionary* is the entire reason column 26 exists. **This was a real defect in Task 8's first cut, measured rather than reasoned about**, and the first test missed it because the two dictionaries in it shared a dictID. Cost is one ~18-byte read on repeat bodies only. **Three alternatives were rejected.** *A digest→dictID map in memory* — empty after a restart, and growing with every distinct body. *Redefining the column* to mean "the dictionary loaded at record time" — that is the case it was added for. *An empty cell on repeats* — the corpus is mostly repeats, so it would answer for first sightings only |
+| **A dictionary reporting ID 0** — *2026-08-20* | **Refused, by the same check and for the same reason.** Found at Task 14c: `ZstdCompressionDict` accepts **arbitrary bytes** as a content-only dictionary whose `dict_id()` is **0**, so a stray `*.dict` file in `<dir>/dicts/` is adopted silently. Frames written against it report dictID **0** — which is exactly how *"stored with no dictionary"* is spelled — while genuinely needing those bytes, so **the reader never tries a dictionary at all** and every blob in that window is permanently unreadable. Measured, not reasoned: such a blob raises `Data corruption detected`. This is the row below extended rather than a new decision — same function, same failure, same answer |
 | **When the `write_dict_id` check fails** — *2026-08-19* | **The router refuses to start.** `CorpusWriter.__init__` raises `CorpusError`, naming both IDs and the likely cause. **The non-negotiable does not reach this:** *"telemetry must never break a call"* governs the request path, and construction is not a call — while a store quietly writing blobs nobody can ever read is worse than one that stops. **Two alternatives were rejected:** *starting and writing undicted* (readable but ~3.2x instead of ~12.9x, reported only in the log, so it could run that way unnoticed for a long time) and *starting and archiving nothing* (louder, but it loses bodies rather than storing them larger) |
 | **Task 8's two scope stretches** — *2026-08-19* | **Both stand.** The index's **column names** are declared in `corpus.py` so the `manifest` writes `len(INDEX_COLUMNS)` rather than a hand-typed 26 that could drift from Task 10's tuple — the manifest exists to detect exactly that. And **`CorpusWriter` takes a directory and a level**, not a config block, because **Task 11 is the only task that builds that block** and it runs later; completing the `StatsWriter` mirror is a one-line change there. **No register value moved by either** |
 | **The dictID the router stamps** — *2026-08-19* | **We assign it ourselves, derived from the dictionary's content.** sha256 of the dictionary **with its own ID field zeroed**, first four bytes, big-endian, `or 1`. **Not libzstd's**, which Task 7 measured does *not* cover the entropy tables: the same samples at levels 3, 9 and 19 give **one ID and three different files**, while the content-derived one gives **three**. **Three alternatives were rejected.** *Leaving libzstd's default* — it leaves that collision live and manageable only by policy. *Folding the hash into zstd's non-reserved range `32768 … 2**31-1`* — offered, and declined on the ground that this corpus is private, libzstd accepted **every** `uint32` tested, and the reserved-range claim is documented rather than measured. *A timestamp-based ID* — unique per run but it identifies the **run**, not the bytes, so retraining on identical material would yield a different ID for an identical file |
@@ -908,7 +909,9 @@ inside a running day, it is an ordinary analysis question and the index should a
 *Marker moved from `*(not started)*` when Task 14 ran on 2026-08-20, per "Placeholders in this
 file". The parenthesis stays exactly greppable; the prose carries the state.*
 
-**Tasks 14, 14a and 14b have run; 14c, 14e and 14f have not.** `src/ilirium_llm_router/
+**Tasks 14, 14a, 14b and 14c have run; 14e and 14f have not** — though 14f's three named cases
+(a mid-day swap, the same across a rollover, and every frame carrying a dictID) were built with 14c,
+because they are what proves the pickup rather than checks it afterwards.** `src/ilirium_llm_router/
 dictionary.py` holds `content_dict_id()`, `stamp()`, and `DictionaryTrainer` — the trainer, the
 training thread, the window, the split, the margin, the guard, the cross-process lock and
 `retrain.log`. **Every constant this group needs is now in the code**: `TRAIN_LEVEL` (3),
@@ -1079,10 +1082,29 @@ be empty from here on**, and Task 24 checks that it still is.
 | `src/ilirium_llm_router/corpus.py` | **`CorpusWriter`** — the blob store, the byte-bounded queue and its worker, the day index — and **`CorpusReader`** | 8, 9, 10, 13a |
 | `src/ilirium_llm_router/dictionary.py` | **`DictionaryTrainer`** — the trainer, the training thread, the split, the margin — and **`content_dict_id()`**, the dictID derivation *(added 2026-08-19)*. Beside them, built at Task 14: **`stamp()`**, which writes an ID into a dictionary's bytes `[4:8]`, and the two result values **`Candidate`** and **`Verdict`** *(named 2026-08-20)* | 14, 14a, 14b |
 
-**`CorpusWriter` mirrors `StatsWriter` deliberately** *(named 2026-08-19)*: same shape — built from its
-config block, `close()`d by the app, owned rather than reached for globally *"so a test can point one
-at a temporary path"*, which is `stats.py`'s own words and exactly what Task 12 asks for. **The parallel
-is the point**, since `create_app` takes the two the same way.
+**`CorpusWriter` mirrors `StatsWriter` deliberately** *(named 2026-08-19)*: ~~same shape — built from its
+config block~~ **— corrected 2026-08-20, see below —** `close()`d by the app, owned rather than reached
+for globally *"so a test can point one at a temporary path"*, which is `stats.py`'s own words and
+exactly what Task 12 asks for. **The parallel is the point**, since `create_app` takes the two the same
+way.
+
+> **The mirror is deliberately incomplete, and this row said otherwise until 2026-08-20.**
+> `StatsWriter` takes `config.stats`; **`CorpusWriter` takes four plain values and keeps them.** The
+> 2026-08-19 ruling kept plain values because Task 11 had not built the block yet and called
+> completing the mirror *"a one-line change at Task 11 or 12"* — **Task 11 ran, the change was not
+> made, and the owner confirmed on 2026-08-20 that it should not be.**
+>
+> **The reason is a real difference, not inertia.** `CorpusWriter` reads **four** keys and never sees
+> `retrain`; `DictionaryTrainer` reads **six of the nine**, including all four offline ones, and needs
+> Task 14e's per-run CLI overrides applied to the block in one `model_copy(update=…)`. Handing the
+> writer the whole block would give it authority over five keys it does not read. **So the two new
+> classes are constructed differently in the same twenty lines of `app.py`, on purpose**, and
+> `CorpusWriter`'s own docstring carries the reason.
+>
+> *The alternative — aligning the writer to the block — was offered with the observation that this
+> register described it as already done, and was declined. **This paragraph is the correction that
+> declining requires**, since a register row that describes code which does not exist is the drift
+> Task 24 checks for.*
 
 **Two modules, not one or three.** The store and the trainer share only the reader, which is why the
 reader lives with the store and the trainer imports it.

@@ -98,6 +98,23 @@ a corpus missing its last few bodies** -- and whatever is abandoned is counted a
 final summary, so the hole is recorded here exactly as it is anywhere else.
 """
 
+RESCAN_EVERY = 500
+"""How often the worker relists `<dir>/dicts/` looking for a newly installed dictionary, in
+**bodies**.
+
+**A separate constant from `SUMMARY_EVERY`, which happens to share its value.** They count different
+things -- one call can produce two bodies, so 500 bodies is ~250 calls -- and they are emitted from
+different places, `submit()` on the event loop and this in the worker. They agree at 500 and are two
+decisions, either of which can move without dragging the other.
+
+**Polling rather than a hand-off, and that is what makes the manual command work.** `--train-dict`
+runs in a **separate process**, so an in-process slot published by the training thread could never
+reach a router that is already running. The trainer writes a file and publishes nothing else; the
+worker watching the directory serves the automatic and the manual path with one mechanism.
+
+One `listdir` per 500 bodies, in the worker, off the request path.
+"""
+
 SUMMARY_EVERY = 500
 """How often `submit()` emits the INFO summary, in **calls**.
 
@@ -261,6 +278,7 @@ class CorpusWriter:
         self._totals = _Totals()
         self._warned = False
         self._abandoned = 0
+        self._since_rescan = 0
         self._worker = threading.Thread(target=self._run, name="corpus-worker", daemon=True)
         self._worker.start()
 
@@ -284,6 +302,7 @@ class CorpusWriter:
         This may raise: a full disk is a real thing. Task 9's worker is what catches it and writes
         `error` into the row, because one body failing must not stop the next.
         """
+        self._maybe_rescan()
         day = self._open_day(self._day_of(timestamp))
         digest = hashlib.sha256(plaintext).hexdigest()
 
@@ -550,6 +569,10 @@ class CorpusWriter:
         if known is not None:
             return known
 
+        # A day folder opening is the other rescan trigger. Without it, a dictionary installed
+        # overnight would not be seen until 500 more bodies had gone past.
+        self._rescan()
+
         root = self._dir / day
         for child in ("requests", "responses", "dicts", "incoming"):
             (root / child).mkdir(parents=True, exist_ok=True)
@@ -596,6 +619,68 @@ class CorpusWriter:
             "Corpus: compressing against dictionary %s (dictID %s)", name, loaded.hex_id
         )
         return loaded
+
+    def _maybe_rescan(self) -> None:
+        """Relist `<dir>/dicts/` every `RESCAN_EVERY` bodies, and swap if a newer one has appeared.
+
+        Counted in the worker, so the cost is one `listdir` per 500 bodies **off the request path**.
+        """
+        self._since_rescan += 1
+        if self._since_rescan < RESCAN_EVERY:
+            return
+        self._since_rescan = 0
+        self._rescan()
+
+    def _rescan(self) -> None:
+        """Pick up a dictionary another process installed while this router was running.
+
+        **The trainer publishes nothing but a file**, which is the entire interface between the two
+        — and it is what lets `--train-dict`, deliberately a *separate process*, reach a router that
+        is already up. An in-process hand-off cannot do that.
+
+        **Newest is by filename, never mtime**, through the same `newest_dictionary` the trainer
+        uses to decide what a candidate must beat. One rule, one function: two copies that disagreed
+        would have the trainer scoring against one file while this compressed against another.
+
+        **It never raises.** A dictionary that will not load leaves the current one in place and
+        writes a warning — this runs in the worker, between two bodies, and telemetry does not get
+        to break a call. Construction is the one place a bad dictionary stops something, because
+        that is not a call.
+
+        The ordering invariant — *the dictionary is in the day folder before any blob referencing it
+        is written there* — is **not** enforced here. It is a per-write precondition in `store()`,
+        which is stricter: one worker can be writing into two day folders across a rollover while
+        holding one compressor, so the check has to be per blob rather than per swap.
+        """
+        newest = newest_dictionary(self._dir / "dicts")
+        if newest is None:
+            return
+        current = self._dictionary.name if self._dictionary else None
+        if newest.name == current:
+            return
+
+        try:
+            data = zstandard.ZstdCompressionDict(newest.read_bytes())
+            swapped = _Dictionary(
+                name=newest.name, data=data, compressor=_build_compressor(data, self._level)
+            )
+        except (OSError, ValueError, zstandard.ZstdError, CorpusError) as exc:
+            self._logger.warning(
+                "Corpus: could not load newly installed dictionary %s, keeping %s: %s: %s",
+                newest.name,
+                current or "no dictionary",
+                type(exc).__name__,
+                exc,
+            )
+            return
+
+        self._dictionary = swapped
+        self._logger.info(
+            "Corpus: switched to dictionary %s (dictID %s), was %s",
+            swapped.name,
+            swapped.hex_id,
+            current or "no dictionary",
+        )
 
     def _ensure_dictionary_in(self, day: _Day) -> None:
         """Put a plain copy of the dictionary in the day folder, if it is not there already."""
@@ -784,6 +869,23 @@ def _build_compressor(
     which is not a call, so "telemetry must never break a call" does not reach it — and a store
     quietly writing blobs nobody can read is worse than one that refuses to start.
     """
+    # **A dictionary that claims no ID is refused before anything is written against it.**
+    # `ZstdCompressionDict` accepts *arbitrary bytes* -- a stray file in `dicts/` is silently taken
+    # as a "content-only" dictionary, whose `dict_id()` is **0**. Frames compressed against one then
+    # claim to be undicted while genuinely needing those bytes to decompress: measured 2026-08-20,
+    # such a blob raises `Data corruption detected` and the reader never tries a dictionary at all,
+    # because a frame reporting 0 is exactly how "stored with no dictionary" is spelled. Every blob
+    # written in that window would be permanently unreadable, which is failure mode 2 in the one
+    # form nothing else here can catch.
+    if data.dict_id() == 0:
+        raise CorpusError(
+            "This dictionary reports ID 0, which zstd reads as 'no dictionary'. Bodies compressed "
+            "against it would be written as frames claiming to need no dictionary while genuinely "
+            "needing this file, and nothing could ever read them back. Arbitrary bytes are accepted "
+            "by zstd as a content-only dictionary, so this is what a stray file in dicts/ looks "
+            "like."
+        )
+
     compressor = zstandard.ZstdCompressor(level=level, dict_data=data)
     written = zstandard.get_frame_parameters(compressor.compress(b"dictID probe")).dict_id
     if written != data.dict_id():
