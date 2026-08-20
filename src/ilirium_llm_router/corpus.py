@@ -767,6 +767,15 @@ class CorpusReader:
 
         A list per ID rather than one dictionary, because IDs are not unique — that is the whole
         reason `read` loops.
+
+        **This glob deliberately takes more than `_is_dictionary` would, and the asymmetry is
+        correct rather than an oversight.** `pathlib`'s `*` matches dotfiles, so a
+        `.half-written.dict` is a candidate here while the writer's `newest_dictionary` excludes it.
+        The two have opposite jobs: the **writer picks exactly one** and must never pick a partial
+        file, so it is strict; the **reader tries every candidate and keeps the one that verifies
+        against the digest in the blob's filename**, so an extra candidate costs a failed attempt
+        and nothing else. Being permissive here is what lets a day folder be read after somebody has
+        copied files into it by hand.
         """
         if self._by_id is None:
             found: dict[int, list[zstandard.ZstdCompressionDict]] = {}

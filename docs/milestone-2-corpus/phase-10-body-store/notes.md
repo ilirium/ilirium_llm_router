@@ -2640,6 +2640,62 @@ probe compression included — on every rescan, and a log line announcing a swit
 **`make test` 293** (282 before), **`make lint` clean**, **`make check` valid**, `link-check.py`
 **82 files, 79 broken, 2 roundabout — unchanged.**
 
+## An audit for more of the same class — 2026-08-20
+
+**Prompted by the owner after Task 14c: *are there similar problems we have not found?*** The class
+being hunted is narrow and worth naming: **a step that succeeds, produces plausible output, and
+destroys the ability to read a body back.** Not crashes — those announce themselves.
+
+**Six checks. Five clean, one finding, and the finding is benign.**
+
+| # | Checked | Result |
+|---|---|---|
+| 1 | A malformed `*.dict` dropped into a day's `dicts/` | **Tolerated.** It indexes under ID 0, which `_candidates` never consults, and every real blob still opens |
+| 2 | Can `ZstdCompressionDict` **raise**? | **No — it accepts everything**, including empty bytes and a bare magic number. So one bad file can never break a whole day's reads. *This also confirms Task 14c's defect was the only way that behaviour bites* |
+| 3 | A dictionary whose **filename lies** about its dictID | **Harmless.** The reader indexes by the ID the file actually reports, never by its name |
+| 4 | A dicted blob whose dictionary is **missing** from the day folder | **Loud**, naming the ID needed and the candidate count |
+| 5 | Writer and reader disagree about **dotfiles** | **Real, and correct** — see below |
+| 6 | **Soak**: 2,400 bodies, four days, repeats, out-of-order timestamps, dictionary installs interleaved | **0 failures, 0 byte mismatches**, with **two dictionaries in every day folder** |
+
+### The soak is the one that carries weight, and its first run was too weak to
+
+**2,400 bodies across four days**, 30% of them repeats, timestamps out of order, and a new dictionary
+installed by a separate `DictionaryTrainer` mid-run — then every blob read back from its own day
+folder and checked against the digest in its filename. **0 failures; every body byte-identical.**
+
+**The first run proved less than it appeared to.** Installs were random at p=0.0015 and all three
+landed before the first rescan, so the worker only ever saw the newest and **every day folder ended
+with exactly one dictionary** — the multi-dictionary case, which is the one where the invariant could
+actually break, went untested while the summary line said "0 failures". Forcing an install every 700
+bodies against a 500-body rescan put **two dictionaries in every day folder**, and it still passes.
+
+**That is the fourth time this phase a green result has meant less than it looked like.** The pattern
+is consistent enough to state: *a passing check whose setup was randomised deserves a look at what the
+randomisation actually produced.*
+
+### The one finding: the writer excludes dotfiles and the reader does not
+
+`newest_dictionary` filters through `_is_dictionary`, which refuses a leading dot. `CorpusReader`
+globs `*.dict` — and **`pathlib`'s `*` matches dotfiles**, unlike the shell's. So `.half-written.dict`
+is invisible to the writer and a candidate to the reader.
+
+**It is correct, and it is now written down**, because it reads as an oversight and the obvious "fix"
+would make the reader worse. The two have opposite jobs. **The writer picks exactly one** dictionary
+to compress against, so a partial file must never win — strictness is the whole point. **The reader
+tries every candidate and keeps whichever verifies** against the digest in the blob's filename, so an
+extra candidate costs one failed decompression and nothing else. Being permissive is what lets a day
+folder still open after somebody has copied files into it by hand.
+
+**Nothing this project writes puts a dotfile in a day's `dicts/`** — staging is `<day>/incoming/*.tmp`
+— so the case is reachable only by hand today. The note is in `CorpusReader._dictionaries`.
+
+### What this audit does not cover, stated so it is not read as broader than it is
+
+The **write path under concurrency** (one worker by design), the **arrived/recorded counter pair**
+(Task 9's, and the thing that exists to catch a body with no row at all), **Milestone 1's proxy and
+scanner**, and **Tasks 14e and 15**, which are not built. This looked at the dictionary and reader
+path, because that is where Task 14c's defect lived and where the same shape would recur.
+
 ## Open at the end of Group C — 2026-08-19
 
 **Three things are open and none of them blocks Task 14.** Written down because the owner clears
