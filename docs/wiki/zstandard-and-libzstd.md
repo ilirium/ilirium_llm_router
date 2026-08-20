@@ -5,7 +5,8 @@ interpreter, which backend is actually running, what its dictionary trainer does
 parameter out, or how a compressed frame finds its dictionary again. **Three of those four have an
 answer that the documentation does not give and one that it gets misleading.**
 
-**Established 2026-08-18 and 2026-08-19**, against `zstandard 0.25.0` on CPython 3.13, macOS arm64.
+**Established 2026-08-18, 2026-08-19 and 2026-08-20**, against `zstandard 0.25.0` on CPython 3.13,
+macOS arm64.
 **Numbers are cited, never owned** — this page points at where they live, per `../README.md`'s rule
 that a measurement has one canonical row.
 
@@ -103,7 +104,8 @@ record the pairing.
 - `ZstdCompressionDict.dict_id()` — the ID of a dictionary you hold
 - `zstandard.get_frame_parameters(blob)` → `FrameParameters` with `.dict_id`, plus `content_size`, `window_size`, `has_checksum`
 - A frame compressed with no dictionary reports **`dict_id == 0`**
-- A "content-only" dictionary built from raw bytes has `k == d == 0`, unlike a trained one
+- A "content-only" dictionary built from raw bytes has `k == d == 0`, unlike a trained one — **and
+  `dict_id() == 0`, which is the dangerous half; see below**
 
 **Three consequences worth stating, because designs rest on them:**
 
@@ -118,6 +120,39 @@ record the pairing.
 **An ID identifies a dictionary but does not describe it** — it does not say when it was trained or
 from what. Putting the ID in the **filename** costs nothing and makes the pairing discoverable without
 opening every candidate file.
+
+### `ZstdCompressionDict` accepts *any* bytes, and the result silently destroys data
+
+**Measured 2026-08-20.** This is the sharpest edge on this page, because every step of it succeeds.
+
+**`ZstdCompressionDict(b"...anything...")` does not validate.** Hand it a log file, a truncated
+download, an editor backup — it returns a usable *content-only* dictionary. No exception, no warning.
+**Its `dict_id()` is `0`.**
+
+Now follow what that costs, because the ending is not "worse compression":
+
+| Step | What happens |
+|---|---|
+| Compress a body against it | **It genuinely works**, and the bytes are genuinely used — a matching 80-byte body went to 31 |
+| The frame header records | **`dict_id = 0`** |
+| A reader keying on dictID sees `0` | **"stored with no dictionary"** — because that is exactly what 0 means |
+| It decompresses with no dictionary | **`Data corruption detected`** |
+
+**The blob needs those bytes and its own header swears it needs nothing.** A reader has no other
+candidate to try, and is not wrong to try none. **The data is unrecoverable** unless something outside
+the frame happened to record which file was used — and the whole point of a self-describing frame is
+that nothing does.
+
+**So: never let a dictionary with `dict_id() == 0` reach a compressor.** It is a one-line check, and
+it is the only thing standing between a directory anyone can drop a file into and a set of archives
+that cannot be opened. **Do not rely on the file being well-formed** — validation is what this
+constructor does not do.
+
+*Two traps inside the trap.* A trained dictionary carries the magic `0xEC30A437` in its first four
+bytes, so **checking the magic is not sufficient** on its own — the ID field behind it can still be 0.
+And **the harmless-looking test is the misleading one**: bytes sharing nothing with the body produce a
+self-contained frame that decompresses perfectly, so a probe with unrelated junk reports *no problem*.
+The loss only appears when the content-only dictionary is one the body actually matches against.
 
 ### But a dictID is not a unique key, and two ways of getting one collide
 
@@ -196,13 +231,15 @@ fixed point, and re-stamping an already-stamped dictionary is idempotent.
 | `backend_c` on CPython; the env var can override | Read `zstandard/__init__.py` in this venv |
 | The GIL is released, in 21 balanced functions | Disassembled the shipped `backend_c…so`; stubs resolved through the Mach-O indirect symbol table with `otool -Iv`. Full record in `../milestone-2-corpus/phase-10-body-store/notes.md`, Task 4 |
 | `train_dictionary`'s signature and parameter semantics | Read `zstandard/__init__.pyi` and `zstandard/backend_cffi.py` in this venv |
+| **`ZstdCompressionDict` accepts arbitrary bytes; the result has `dict_id() == 0` and its frames are unreadable** | **Measured on `cext` 2026-08-20**, at Phase 10's Task 14c — construct from plain text, compress a matching body, read the frame's `dict_id`, then decompress without the dictionary. Full record in `../milestone-2-corpus/phase-10-body-store/notes.md`, Task 14c |
 | `dict_id=0` means libzstd assigns one, **deterministically in the training input** | The docstring calls it *random*, and that is the **CFFI** backend's docstring. **Measured on `cext`** at Phase 10's Task 7 — three runs, identical input, identical ID; and one ID across levels 3 / 9 / 19 with three different files |
 | The trainers disagree at their defaults; training is non-monotonic | Measured — `../milestone-2-corpus/phase-10-body-store/evidence/`, Task 6. **The numbers live there and, after Phase 10's Task 21, in `../reference/measurements.md`** |
 
 **What expires:** everything version-shaped — the symbol layout, the parameter list, which backend
 ships. **What does not:** that a frame names its own dictionary, that `dict_id=0` is a real value
-rather than an absence, that an ID is **not** a unique key, and that training defaults are where two
-tools quietly disagree.
+rather than an absence, that an ID is **not** a unique key, that **a dictionary constructed from
+unvalidated bytes reports 0 and takes its blobs down with it**, and that training defaults are where
+two tools quietly disagree.
 
 **And one method note, since this page has now been wrong once in exactly this way:** every claim here
 that came from `backend_cffi.py` is evidence about the backend we do not run. The `dict_id` row was
