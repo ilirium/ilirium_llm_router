@@ -123,6 +123,13 @@ so sort before analysing, and nothing body-shaped goes in **the CSV**. *(That la
 2026-08-17: `EPD-003` was decided, so bodies are archived — but to a separate store, opaque, never as a
 CSV column. The recorder's rule is unchanged.)*
 
+→ `docs/reference/corpus.md` — **read it before storing, reading or retraining against the corpus**:
+before adding an index column, before changing where a blob or a dictionary lives, before assuming a
+day folder needs anything outside itself, and **before quoting a compression ratio**. Three things a
+session gets wrong from the name alone: the store is **off by default**, so no `logs/corpus/` is
+correct behaviour; **there are three compression levels, not one**; and **there is deliberately no
+headline ratio** — every figure is a small-sample confirmation that the mechanism works.
+
 ## Anthropic models
 
 → `docs/reference/backend-anthropic.md` — **read it before naming an Anthropic model ID or adding a
