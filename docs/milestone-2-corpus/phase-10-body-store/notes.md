@@ -2640,6 +2640,101 @@ probe compression included — on every rescan, and a log line announcing a swit
 **`make test` 293** (282 before), **`make lint` clean**, **`make check` valid**, `link-check.py`
 **82 files, 79 broken, 2 roundabout — unchanged.**
 
+## Task 15 — the first real dictionary, installed — 2026-08-20
+
+**Group D is complete.** `logs/corpus/dicts/req-2026-08-20T110338Z-0e4d84d1.dict` exists: 262,144
+bytes, trained from the surviving Phase 9 corpus, installed by the router's own `--train-dict` rather
+than by hand. **The first durable state this phase has created outside a scratchpad.**
+
+**Two files were written and no others** — the dictionary and `retrain.log`. No day folder, no
+staging left behind, and `logs/corpus/` did not exist before the command ran.
+
+### The number, and the three ways of getting it wrong
+
+| | Bytes | Ratio |
+|---|---|---|
+| **Held out, dicted, on disk** | 2,102,371 → **162,738** | **12.919x** |
+| Held out, undicted, on disk | 2,102,371 → 701,416 | 2.997x |
+| *Scored in memory by the trainer* | → 162,725 | 12.920x |
+| ~~All 73 bodies, dicted~~ | ~~4,723,304 → 175,786~~ | ~~26.870x~~ **— not a figure** |
+
+**The recorded figure is `12.919x`, and it is the one measured by writing bodies through the store
+and reading them back with `--extract`** — not by scoring in memory. That it agrees with the
+trainer's own `12.920x` to four significant figures, by two independent paths, is the cross-check
+worth having: 13 bytes apart across 21 blobs is frame overhead.
+
+**`2.997x` undicted reproduces Task 6's frozen `701,407` bytes to within 9.** Three instruments
+written on three different days now agree on that baseline.
+
+**`26.870x` is what you get by storing all 73 bodies and reading the folder back, and it is
+meaningless.** 48 of those 73 are the material the dictionary trained on, so it is scoring on its own
+training set — *"train on a day and score on that same day, and the candidate always wins"*, which
+this plan states and which is the entire reason the held-out slice exists. **It is the second
+26-point-something of this phase**, after Task 14e's `26.210x` leakage, by a different mechanism and
+to a suspiciously similar number. **Anything near 26x on this corpus should now be read as a
+self-scoring accident until proven otherwise.**
+
+### Which `maxdict`, and why — and the cell that was deliberately not taken
+
+**`maxdict = 262,144` at `k = 8,000`: the shipped defaults**, unchanged. The surface was re-derived
+against the real config before choosing, rather than cited from Task 6:
+
+```
+   maxdict        k   dict bytes     ratio
+    (none)                          2.997x
+   112,640    8,000      112,640   10.051x
+   112,640   16,000      112,640    8.657x     <- non-monotonic in k, on this run
+   262,144    8,000      262,144   12.920x
+   262,144   16,000      262,144   12.964x     <- the best cell
+   524,288   16,000      478,604   12.964x     <- same ratio, 1.8x the file
+ 1,048,576   16,000      478,604   12.964x
+```
+
+**`maxdict`: the plateau starts at 262,144.** Above it the ratio does not improve and the file grows
+— 478,604 bytes for the same 12.964x. **That size is a recurring cost, not a one-off**: a copy goes
+into every day folder that uses the dictionary, which is what the ~150 MB/year figure is made of. So
+the smallest cap on the plateau wins.
+
+**`k`: the best cell is 16,000 at 12.964x, and it was not taken.** Deliberately, for three reasons.
+The margin over 8,000 is **0.34%** — an eighth of `INSTALL_MARGIN` and far inside the ±15% that
+`measurements.md` records neighbouring parameter choices differing by. **This corpus has no usable
+validation split**, so taking the argmax of a surface is selecting on the slice being reported, which
+is the exact failure the whole leave-one-session-out design exists to avoid. And at `maxdict=112,640`
+that same `k=16,000` is the **worst** cell on the board at 8.657x, which is what non-monotonic means
+in practice — an apparent winner that inverts one row up.
+
+**So the choice is the shipped default, and it is provisional rather than optimal.** *(Task 6 at
+write level 19 found the same ordering — 13.70x at k=16,000 against 13.65x at 8,000 — so the ranking
+is stable across two levels while the gap stays inside noise. Stable ranking is not evidence of an
+optimum.)*
+
+### What the number carries with it, for Task 21
+
+**The training set was 48 bodies of which 26 are distinct — 46% `overloaded_error` retries**, and
+`gate.py` did not deduplicate. **The held-out slice is run-03: 21 bodies, all distinct, none of them
+retries.** The split is `gate.py`'s own — train on run-01 + run-02, score on run-03 — reproduced by
+`--from`'s subdirectory-as-session rule so the figure stays comparable with what is already frozen.
+
+**Phase 9's `12.10x` remains the milestone's figure and remains optimistic**; this does not supersede
+it. **`13.65x` is still not reproducible**, being a *write* level 19 measurement.
+
+### Where the verification wrote, and why not into the live corpus
+
+**The round trip was verified in a scratchpad holding a copy of the installed file**, not by writing
+a day folder into `logs/corpus/`. The bodies are Phase 9 captures; filing them under today's date in
+the live corpus would leave a day folder of traffic that never went through the router today —
+**misleading data in the one place that is supposed to be a faithful record.** The dictionary is what
+Task 15 is meant to leave behind, and it is the exact bytes that were verified: copied out of
+`logs/corpus/dicts/`, not retrained.
+
+**`--extract` is what did the reading**, which is what Task 13a built it for — a check somebody can
+repeat rather than a snippet written once.
+
+### Baselines, re-derived by running them
+
+**`make test` 308, `make lint` clean, `make check` valid**, `link-check.py` **82 files, 79 broken, 2
+roundabout — unchanged.**
+
 ## Task 14f — the tests the rest of Group D did not already have — 2026-08-20
 
 **Every lettered task in Group D has now run. Only Task 15 remains.** **`make test` went 301 → 308.**

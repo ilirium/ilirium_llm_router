@@ -10,6 +10,46 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-20, later — Task 15 has run and Group D is complete.** A real dictionary is installed:
+`logs/corpus/dicts/req-2026-08-20T110338Z-0e4d84d1.dict`, 262,144 bytes, put there by the router's
+own `--train-dict` rather than by hand. **The first durable state this phase has created outside a
+scratchpad**, and only two files were written — the dictionary and `retrain.log`. **Group E (the
+telemetry move) is next.**
+
+**The figure is `12.919x` on held-out material, measured on disk** — bodies written through the store
+and read back with `--extract` — against **`2.997x`** undicted. It agrees with the trainer's own
+in-memory `12.920x` to four significant figures by two independent paths, and the undicted baseline
+reproduces Task 6's frozen 701,407 bytes to within 9.
+
+**A third 26x nearly went into the record.** Storing all 73 corpus bodies and reading the folder back
+gives **26.870x** — meaningless, because 48 of the 73 are the dictionary's own training material.
+That is *"train on a day and score on that same day, and the candidate always wins"*, which this plan
+states and which the held-out slice exists to prevent. **It is the second 26-point-something of the
+phase**, after Task 14e's `26.210x` leakage, by a different mechanism and to a suspiciously similar
+number — **anything near 26x on this corpus should now be read as a self-scoring accident until
+proven otherwise.**
+
+**The parameter choice was re-derived rather than cited, and the best cell was deliberately not
+taken.** `maxdict=262,144` because the **plateau starts there** — bigger caps give the same ratio in
+a 478,604-byte file, and that size recurs in every day folder that uses it. `k=8,000` although the
+surface's best is **k=16,000 at 12.964x**: the margin is **0.34%**, an eighth of `INSTALL_MARGIN`;
+this corpus has **no usable validation split**, so taking a surface's argmax is selecting on the
+slice being reported; and at `maxdict=112,640` that same `k=16,000` is the **worst** cell on the
+board at 8.657x. **Provisional, not optimal**, and the shipped defaults are unchanged.
+
+**What travels with the number, for Task 21:** the training set was **48 bodies, 26 distinct — 46%
+`overloaded_error` retries**; the held-out slice is run-03, **21 bodies, all distinct, no retries**.
+Phase 9's `12.10x` remains the milestone's figure and remains optimistic; `13.65x` is still not
+reproducible, being a *write* level 19 measurement.
+
+**The round trip was verified in a scratchpad holding a copy of the installed file, not by writing a
+day folder into `logs/corpus/`** — the bodies are Phase 9 captures, and filing them under today's
+date would leave a day of traffic that never went through the router in the one place meant to be a
+faithful record.
+
+**Baselines, run not predicted: `make test` 308, `make lint` clean, `make check` valid,
+`link-check.py` 82 files, 79 broken, 2 roundabout — unchanged.**
+
 **2026-08-20, later — Task 14f has run. Every lettered task in Group D is done; only Task 15
 remains.** **`make test` went 301 → 308.**
 
@@ -479,8 +519,8 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 10 — the body store, from Task 15 (the last of Group D).** **Planned and reviewed 2026-08-18, re-scoped
-   and reviewed a second time 2026-08-19; Groups A, B and C are done, and every lettered task of Group D ran on 2026-08-20, building the trainer, its automatic path, the pickup, the manual commands and their tests.**
+1. **Execute Phase 10 — the body store, from Task 16 (Group E).** **Planned and reviewed 2026-08-18, re-scoped
+   and reviewed a second time 2026-08-19; Groups A, B and C are done, and **Group D is complete** — the trainer, its automatic path, the pickup, the manual commands and their tests all landed on 2026-08-20, and a real dictionary is installed in `logs/corpus/dicts/`.**
    The branch is in the table below and the task list is in
    `milestone-2-corpus/phase-10-body-store/plan.md`. **Do not re-plan or re-review it** — its
    re-derivation and **two** forward reviews have run, and **all findings from both are applied**
@@ -507,7 +547,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread, and `cli.py` carrying `--train-dict` / `--tune-dict` / `--from`. `make test` 308.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 15** — train and install the first real dictionary into `logs/corpus/dicts/`, then Groups E and F. **Groups A, B and C are done, and every lettered task of Group D has run**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread, and `cli.py` carrying `--train-dict` / `--tune-dict` / `--from`. `make test` 308.** `plan.md` now carries **"The register"**, and every value in it is settled | **Task 16** — the telemetry move, opening Group E. **Groups A, B, C and D are all done**, the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*
