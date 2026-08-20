@@ -476,8 +476,10 @@ input before specifying anything**, spike what the architecture depends on, fork
 expensive-to-reverse questions as EPDs, mark every spec statement measured / inferred / assumed, plan
 at decreasing resolution, then open the folder and the branch.
 
-*The playbook was written into this file on 2026-08-16 and moved out on 2026-08-20, unchanged.
-`EPD-004` decision 12 put it here; the addendum at that decision says why it left.*
+*The playbook was written into this file on 2026-08-16 and moved out on 2026-08-20. The eight steps
+are unchanged; the document was reshaped into two zones on the way, so a session opening a milestone
+reads the steps and stops before the evidence. `EPD-004` decision 12 put it here; the addendum at that
+decision says why it left.*
 
 ### Closing a milestone
 
