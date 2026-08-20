@@ -33,3 +33,23 @@ stats:
   file: runs/calls.csv
   max_bytes: 5242880
   backup_count: 10
+
+# The body store, added 2026-08-20 for Phase 10's Task 18 — the driving check that gates the
+# harvest. On here, and off in `../../../config.yaml`, which is the right way round: this file is a
+# failure-testing instrument whose whole purpose is to be run, and its output already goes to
+# `runs/`, which is gitignored.
+#
+# `dir` is under `runs/` for the same reason the log and the CSV are. `logs/corpus/` is the record
+# of REAL traffic and nothing synthetic belongs in it — Task 15 declined to file Phase 9's captured
+# bodies there for exactly this reason, and stub traffic has even less claim.
+corpus:
+  enabled: true
+  dir: runs/corpus
+  compress_level_zstd: 9
+  body_max_bytes: 1048576
+  queue_max_bytes: 67108864
+  retrain:
+    window_days: 1
+    sample_min_bytes: 1024
+    maxdict: 262144
+    k: 8000

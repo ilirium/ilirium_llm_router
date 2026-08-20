@@ -224,6 +224,23 @@ guarantee it cannot write a row twice, which is worse than missing one. *Weaker 
 justifies watching. Phase 10's arrived-against-recorded counters are what would first show it
 happening.
 
+> **Observed 2026-08-20, at Phase 10's Task 18a. The "never been observed" clause above is spent.**
+> Driven on the ASGI app directly, because the window is too narrow to hit reliably over a socket: a
+> caller already gone when the response starts makes `send` raise on `http.response.start`, the
+> streaming generator never takes its first step, `watch`'s `finally` never runs, and **`record()` is
+> never called** — `1 arrived, 0 recorded, 1 lost`, no CSV row, no log line, no corpus entry. An
+> ordinary *queued* disconnect still records, exactly as the 2026-08-18 correction says.
+>
+> **`proxy.py:256` already named the case**, in the comment justifying `BackgroundTask(reply.aclose)`
+> — *"a generator that never runs at all, and so never reaches its own `finally`"*. `record()` is
+> inside that `finally`. The case was covered for the connection and not for the row.
+>
+> **Still parked, and deliberately.** The owner's decision of 2026-08-20 is *report it, do not close
+> it*: the duplicate-row guarantee named above is unchanged and is the whole difficulty. What changed
+> is that the loss is now **visible** — `app.py`'s `_report_counters` emits the pair at shutdown on
+> every configuration, and `tests/test_integration.py` pins the losing case, so closing the hole
+> later will announce itself by failing that test.
+
 > **Recorded rather than quietly rewritten.** The wrong version was written into this file, into
 > `milestone-2-corpus/phase-10-body-store/plan.md` and twice into its `notes.md`, and it was found by
 > a fresh-context review that read `proxy.py` instead of the plan's account of it. It was labelled

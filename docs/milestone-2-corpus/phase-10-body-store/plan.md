@@ -976,11 +976,12 @@ opens is line 48, `CALLS_CSV = ROOT / "logs" / "calls.csv"`, built from segments
 a grep for the path. Both lines are repointed. A sweep list compiled by grepping a path finds prose,
 not construction.
 
-### Group F — verify, harvest and close *(not started)*
+### Group F — verify, harvest and close *(Tasks 18 and 18a executed)*
 
 | # | Task |
 |---|---|
 | **18** | **The configuration check** — every key, old and new, against "The configuration, and how it is verified" below. It gates the harvest: nothing is written into the durable tier from a build nobody exercised |
+| **18a** | **Report the arrived/recorded pair at shutdown.** *Inserted 2026-08-20, because Task 18's observation 5 could not be performed:* the pair was counted and **emitted nowhere**, readable only by a test reaching into `app.state.proxy`. One INFO line from the lifespan, on its own rather than folded into the corpus summary, because `corpus.enabled` is false by default and that summary is not written at all then. **It reports the hole and does not close it** — owner's decision the same day. Plus the test that pins the losing case, driven on the ASGI app |
 | **19** | `docs/reference/corpus.md` — the durable spec, with a nameable trigger; its row in `../../reference/README.md`; a `CLAUDE.md` pointer that says **when** to open it |
 | **20** | Close `EPD-003`'s open questions **3–6** in place and dated; graduate what changes a decision into `../../reference/design-decisions.md` |
 | **21** | The numbers into `../../reference/measurements.md` — **all four columns or they do not go in** |

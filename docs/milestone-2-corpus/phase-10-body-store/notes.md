@@ -3023,6 +3023,153 @@ rather than against a `NAME = …` line, which is what every other row in that s
 And it names the boundary that matters: **`logs/corpus/` is a sibling, by design, and must never be
 swept into `logs/telemetry/`.**
 
+## Task 18 — the configuration check, and the counter that reported nothing — 2026-08-20
+
+**Nine of the ten observations passed on the first run. The tenth could not be performed, and the
+reason was a defect.** Task 18a fixed it and the tenth then passed. This is the third time this phase
+found something by driving that the suite could not have caught.
+
+### How it was run
+
+**Layer 1** — `make check` against `../../procedures/dying-backend/router.yaml`: every key, old and
+new, printed and resolved absolute under the repository.
+
+**Layer 2** — `make test`, 308 before, 310 after Task 18a.
+
+**Layer 3** — the stub on **1299** and the router on **8799**, as `IDM`-era practice and the plan
+both require, never a real backend and never a real session.
+
+**The corpus was pointed at `runs/corpus`, inside the instrument's own gitignored folder** — owner's
+decision when asked. `logs/corpus/` is the record of *real* traffic and stub traffic has even less
+claim on it than Phase 9's captures, which Task 15 already declined to file there. **A copy of the
+installed dictionary was placed in the run's `dicts/`**; the original in `logs/corpus/dicts/` was
+never moved, modified or deleted.
+
+**Variant configurations for four of the observations live in the scratchpad, not in the repository**
+— corpus off, `queue_max_bytes: 1`, `window_days: 0`, and a separate `dir` for the swap run. Each is
+`router.yaml` with **one line changed**, and the line is named beside each result below, so any of
+them can be rebuilt from the tracked file.
+
+### The ten, as seen
+
+| | Observation | What was actually seen |
+|---|---|---|
+| 1 | corpus off leaves no trace | Only `router.log` and `calls.csv`. **No `corpus/` directory at all**, and zero corpus lines in the log |
+| 2 | a body round-trips | 5/5 opened with the day's own dictionary copy and nothing else, sha256 matching the filename — **and the stored bytes are literally what `curl` sent**, compared against the request string |
+| 3 | a day folder is self-contained | `tar`red, unpacked under `/private/tmp`, all 5 opened from there |
+| 4 | a dropped body is a row | `queue_max_bytes: 1`. Three calls: `dropped,dropped` in both ref cells, **exactly one** `WARNING`, `dropped 3` in the summary, **0 blobs on disk** |
+| **5** | **`arrived` == `recorded`** | **Could not be performed. See below.** After Task 18a: `calls: 5 arrived, 5 recorded, 0 lost` |
+| 6 | a dictionary is picked up without a restart | 250 rows against the old dictID, then **12 against the new one**. See the note on cadence below |
+| 7 | a day with two dictionaries still opens | **263 blobs**, referencing both, every one opened from an unpacked copy elsewhere |
+| 8 | `window_days: 0` trains nothing | Its own distinct log line, **no** new dictionary, **no** `retrain.log`, and the index still naming the installed dictID |
+| 9 | corpus off starts no trainer | The stronger form of 1, and the same result: nothing |
+| 10 | a rollover **with a swap in it** | **Yesterday's folder gained the second dictionary**, its two blobs name one dictID each, and both open from that folder alone |
+
+**Observation 10 is the one worth keeping.** It is the case observation 7 cannot reach, and the
+plan says why: *the swap ordering fails silently.* A body was stored into **yesterday's** folder
+*after* the writer had swapped dictionaries, and yesterday's folder correctly gained the new
+dictionary too — so the invariant at `corpus.py:308` held under the one ordering that would not
+announce a mistake. Driven against `CorpusWriter` directly rather than through the router, because
+**the day comes from the call's own timestamp** and `curl` cannot set that.
+
+**Observation 6 costs 250 calls, not one.** *"See the next bodies compress against it"* understates
+it: the pickup is `RESCAN_EVERY = 500` **bodies**, and a call stores two, so the swap is invisible
+until the 250th call after the install — or until a day folder opens, which is the other trigger.
+The code comment is accurate; the observation's wording is not, and **the wording is what a later
+session would test against.**
+
+**Two numbers reproduced rather than being taken on trust.** Retraining with the same parameters
+from the same source gave **12.920x**, against Task 15's `12.919x` — and produced a dictionary with
+the **identical dictID `0e4d84d1`**, which is the content-derived ID doing exactly what it was
+designed to do. A weak dictionary deliberately trained first (`maxdict 4096`, `k 2000`) scored
+**3.087x**, and the real one beat it by **+76.11%** against a 2% margin, which is what made the
+mid-run swap observable at all.
+
+### The defect: a counter pair that reported nothing
+
+**`Counters.arrived` and `.recorded` were counted correctly and emitted nowhere.** They increment at
+`proxy.py:161` and `:337`. The only reader in the tree was `tests/test_integration.py`, reaching into
+`app.state.proxy.counters` — **a path no running router has.**
+
+**The corpus summary is not a substitute, and this is the part that is easy to get wrong.** Its
+`calls` total is incremented at `corpus.py:376`, inside `submit()`, which `record()` calls **one line
+after** `recorded` increments. So a call lost *before* `record()` is missing from **both** — the
+summary cannot reveal the loss the pair exists to reveal. And `corpus.enabled` is false by default,
+so on the shipped configuration there was no summary line at all.
+
+**The plan's observation 5 was therefore unperformable as written**, and no test would ever have said
+so: the suite reads the value through a door only the suite has.
+
+### The loss is real, and the repository had already predicted where
+
+`../../backlog.md` parked this as a race that **"has never been observed"** and named *"Phase 10's
+arrived-against-recorded counters"* as what would first show it happening. It was observed:
+
+| case | the app | `arrived` | `recorded` | |
+|---|---|---|---|---|
+| baseline: caller stays | returned normally | 1 | 1 | ok |
+| **caller gone at response-start** | raised `OSError` | **1** | **0** | **LOST** |
+| disconnect queued, send survives | returned normally | 1 | 1 | ok |
+
+**One request in, and no trace of any kind** — no CSV row, no log line, no corpus entry. The third
+row matters as much as the second: it confirms the correction of 2026-08-18, that an ordinary
+*queued* disconnect **is** recorded through `GeneratorExit`. Only the response-start failure loses.
+
+**`proxy.py:256` already named the case.** The comment justifying `BackgroundTask(reply.aclose)`
+reads *"a generator that never runs at all, and so never reaches its own `finally`"* — and
+`record()` sits at `proxy.py:325`, **inside that `finally`**. The same case was covered for the
+connection and left uncovered for the row, by the author's own reasoning.
+
+**What was forced, stated plainly.** `send` was made to raise on `http.response.start`. That is
+faithful rather than contrived — it is what uvicorn does when the socket is already gone, and the
+ASGI spec permits it — but **it is a simulation of that condition, not a captured incident.**
+
+### Why the network experiment could not answer it, which is the finding underneath the finding
+
+Before the in-process probe, **360 raw-socket requests were fired with `SO_LINGER 0`, sweeping the
+RST across a 0–29.5 ms window.** 352 rows landed. **The 8 missing could not be classified** — losses,
+or requests the router never read — **because the number that would say is the one that is never
+printed.** The instrument needed to measure the defect was the defect.
+
+*A second reason that run could not settle it, worth recording because it nearly became the answer:*
+the stub is **single-threaded and sleeps ~0.35 s per request**, so 199 of the 352 rows were
+`transport_error` from a backend that could not keep up. **"The stub saw it" is not the denominator
+it looks like.**
+
+### What Task 18a changed, and what it deliberately did not
+
+**One INFO line at shutdown**, on its own rather than folded into the corpus summary, registered last
+on the exit stack so LIFO puts it **before** the corpus line. Driven both ways:
+
+```
+corpus ON    calls: 5 arrived, 5 recorded, 0 lost
+             corpus: 5 calls | stored 10 (7515 → 1675 bytes), ...
+corpus OFF   calls: 2 arrived, 2 recorded, 0 lost
+             (zero corpus lines — which is the whole reason it is a separate line)
+```
+
+**It reports the hole and does not close it.** Owner's decision, 2026-08-20, and the reason is the
+one `backlog.md` already gave: writing the row from elsewhere must guarantee it can never write one
+**twice**, and a duplicated row is worse than a missing one. The test that pins the losing case
+**will fail the day somebody closes the hole**, which is the right moment to be told.
+
+**No new register value.** 18a adds no constant, no configuration key and no column — a log line and
+a test. That is stated here because Task 24 checks the register row by row, and a task that touched
+`src/` and added nothing to it should say so rather than leave the question open.
+
+### Two checks interrogated rather than accepted
+
+1. **Both `config.py` mutations failed the same test**, which is what a short circuit looks like. The
+   second run was read for *which* assertion fired: the `logging` one passed, the `stats` one failed.
+   Pinned separately.
+2. **One assertion in the new test was wrong, and the code was right.** It asserted `calls.csv` would
+   not **exist** after a lost call. `StatsWriter` writes its header at startup, so the file is always
+   there. Corrected to *carries no data row*, which is the actual hole. **The first version would
+   have failed for a true reason and a wrong one at the same time.**
+
+**Two mutations on 18a itself, both caught:** dropping the registration fails both new tests, and
+hardcoding `lost` to `0` fails the losing test while the healthy one **correctly still passes**.
+
 ## Open at the end of Group C — 2026-08-19
 
 **Three things are open and none of them blocks Task 14.** Written down because the owner clears

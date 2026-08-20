@@ -10,6 +10,51 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-20, later — Task 18 has run and Task 18a was inserted to make it finishable. Nine of ten
+observations passed first time; the tenth exposed a defect.** `make test` went **308 → 310**. The
+harvest — Tasks 19 to 22 — is next and is now gated by a check that actually completed.
+
+**The defect: a counter pair that reported nothing.** `Counters.arrived` and `.recorded` were counted
+correctly at `proxy.py:161` and `:337` and **emitted nowhere**. The only reader in the tree was a
+test reaching into `app.state.proxy.counters`, a path no running router has. **The corpus summary is
+not a substitute** — its `calls` total sits inside `submit()`, called from `record()` one line after
+`recorded` increments, so a call lost *before* `record()` is missing from both; and `corpus.enabled`
+is false by default, so on the shipped configuration there was no summary line at all.
+
+**The loss it exists for is real, and the repository had already predicted where.** `backlog.md`
+parked it as a race that *"has never been observed"* and named this very pair as what would first
+show it. **Observed 2026-08-20:** a caller already gone when the response starts makes `send` raise
+on `http.response.start`, the streaming generator never takes its first step, `watch`'s `finally`
+never runs, and `record()` is never called — **`1 arrived, 0 recorded, 1 lost`, no CSV row, no log
+line, no corpus entry.** An ordinary *queued* disconnect still records, which confirms the 2026-08-18
+correction rather than overturning it. **`proxy.py:256` already named the case** in the comment
+justifying `BackgroundTask(reply.aclose)`; `record()` is inside the `finally` that comment says never
+runs.
+
+**Task 18a reports the hole and does not close it** — owner's decision, on the ground `backlog.md`
+already gave: writing the row from elsewhere must guarantee it can never write one **twice**. One
+INFO line at shutdown, on its own rather than folded into the corpus summary, driven with the corpus
+both on and off.
+
+**The finding underneath the finding: the instrument needed to measure the defect was the defect.**
+360 raw-socket requests sweeping the disconnect window gave 352 rows, and **the missing 8 could not
+be classified** — losses, or requests never read — because the number that would say is the one never
+printed. That is what forced the in-process probe. *(And the stub is single-threaded, so 199 of those
+352 rows were `transport_error` from a backend that could not keep up: "the stub saw it" is not the
+denominator it looks like.)*
+
+**Two smaller things worth carrying.** Observation 6 costs **250 calls, not one** — the pickup is
+`RESCAN_EVERY = 500` **bodies** and a call stores two, so *"the next bodies"* in the plan understates
+it. And retraining **reproduced**: `12.920x` against Task 15's `12.919x`, with the **identical
+dictID**, which is the content-derived ID doing its job.
+
+**Layer 3 wrote into `docs/procedures/dying-backend/runs/`, never `logs/corpus/`** — owner's decision.
+The installed dictionary was **copied**, never moved. `logs/` is untouched, and `logs/telemetry/`
+still does not exist, exactly as decided at Task 16.
+
+**Baselines, run not predicted: `make test` 310, `make lint` clean, `make check` valid on both
+configs, `link-check.py` 85 files, 79 broken, 2 roundabout.**
+
 **2026-08-20, later — Group E is done. Tasks 16 and 17 have run, and Group F is next.** `calls.csv`
 and `router.log` are now `logs/telemetry/calls.csv` and `logs/telemetry/router.log` in `config.yaml`
 and in `config.py`'s two defaults, and **eleven live sites** across four repository files, four
@@ -578,7 +623,7 @@ The permanent record of a phase's branch, fork point and merge commit belongs in
 
 | Branch | Purpose | Tree | Next |
 |---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread, and `cli.py` carrying `--train-dict` / `--tune-dict` / `--from`. `make test` 308.** `plan.md` now carries **"The register"**, and every value in it is settled, and the telemetry paths now read `logs/telemetry/` | **Task 18** — the configuration check, opening Group F. **Groups A, B, C, D and E are all done** — **E moved nothing on disk**, on the owner's decision, so `logs/telemetry/` does not exist until the router next starts; the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread, and `cli.py` carrying `--train-dict` / `--tune-dict` / `--from`. `make test` 308.** `plan.md` now carries **"The register"**, and every value in it is settled, and the telemetry paths now read `logs/telemetry/` | **Tasks 19-22** — the harvest. **Groups A to E are done and Task 18 has run**, nine of ten observations first time and the tenth after **Task 18a** made it performable at all; `make test` 310 — **E moved nothing on disk**, on the owner's decision, so `logs/telemetry/` does not exist until the router next starts; the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
 
 *`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
 10 opened.*
