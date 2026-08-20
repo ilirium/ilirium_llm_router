@@ -170,8 +170,8 @@ fine-tuning is dropped. Its open questions 3–6 are Phase 10 design detail, not
 
 **Do not read `docs/method/`'s `IDM-NNN` documents with that reflex.** The two schemes sit adjacent and
 look alike; an **IDM is in force now and you are expected to act on it**, which is the exact opposite of
-an EPD. `docs/method/IDM-000-about-these-documents.md` is the index. `IDM-001` and `IDM-003` are pointed
-at below; `IDM-002` holds the permission allowlist policy **and what else may go in the tracked settings file**; **`IDM-004` is the protocol for reviewing a
+an EPD. `docs/method/IDM-000-about-these-documents.md` is the index. `IDM-001`, `IDM-003`, `IDM-005` and
+`IDM-006` are pointed at below; `IDM-002` holds the permission allowlist policy **and what else may go in the tracked settings file**; **`IDM-004` is the protocol for reviewing a
 plan before it runs — read it before reviewing one, because its first rule is that the charter decides
 what the review finds.**
 
@@ -213,9 +213,16 @@ Use absolute paths, and prefer the Read/Grep/Glob tools over shelling out to `ca
 
 ## Opening and closing a milestone
 
-**Both playbooks are in `docs/README.md`. Read the relevant one and work from it rather than
+**The two playbooks are `docs/method/IDM-005-opening-a-milestone.md` and
+`docs/method/IDM-006-closing-a-milestone.md`. Read the relevant one and work from it rather than
 improvising** — this is the one pointer whose omission costs a whole milestone's worth of harvest,
 which is why it is called out separately from the pointers above.
+
+*Both were in `docs/README.md` until 2026-08-20, which is where a session that has read this file
+before will look. The closing one was **repaired** as it moved: the version there was the narrative of
+the restructure that wrote it, and five of the seven decided steps were missing from it — including the
+harvest into `reference/lessons.md` and `reference/measurements.md`, which is the thing this pointer
+exists to protect.*
 
 ## Stack
 
