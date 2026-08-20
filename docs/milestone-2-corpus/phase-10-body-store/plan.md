@@ -1264,6 +1264,7 @@ empty cell, never a zero.*
 | `<day>/index.csv`, `<day>/manifest`, `<day>/dicts/`, `<day>/incoming/` | — | `incoming/` here has **no** dot |
 | `<day>/manifest`'s contents | `index_schema_version: 1`<br>`index_columns: 26` | **two lines, and the format was as unset as the version** *(settled 2026-08-19)*. Key-and-colon because that is what `config.yaml` already reads like, and it greps |
 | a blob | `<day>/{requests,responses}/<2 hex>/<64 hex>.zst` | **2-character fan-out**, sha256 of the **plaintext**, `.zst` |
+| `logs/telemetry/` | — | **Added 2026-08-20 at Task 16.** `calls.csv` and `router.log` live here, and they are **not** the corpus: `logs/corpus/` is a sibling directory by design and must never be swept into this one. The value is a **config default** in both `config.py` and `config.yaml`, not a module constant, so Task 24 checks it against those two rather than against a `NAME = …` line. The directory is created by the handlers themselves — `logging_setup.py:74` and `stats.py:155` both `mkdir(parents=True)` — so nothing creates it until the router runs |
 
 **The `.incoming/` versus `incoming/` asymmetry is real and unexplained in the plan.** The defensible
 reason is that `<dir>/dicts/` is *listed* by the pickup and a dot-prefix keeps staging out of that

@@ -3010,6 +3010,19 @@ green for the wrong reason.
    *which* assertion fired: the `logging` assertion passed and the `stats` assertion failed. **Both
    defaults are pinned separately.**
 
+### One row into the register
+
+**`logs/telemetry/` is section 7's fourteenth row, added 2026-08-20 on the owner's decision.** The
+register holds *"every name and number this phase introduces"*, and this is one; without a row,
+**Task 24 would audit the corpus paths and silently skip these two**. Group D set the precedent by
+adding three rows during execution.
+
+**The row says one thing the corpus rows do not have to:** the value is a **config default**, in
+`config.py` and `config.yaml`, not a module constant — so Task 24 checks it against those two files
+rather than against a `NAME = …` line, which is what every other row in that section resolves to.
+And it names the boundary that matters: **`logs/corpus/` is a sibling, by design, and must never be
+swept into `logs/telemetry/`.**
+
 ## Open at the end of Group C — 2026-08-19
 
 **Three things are open and none of them blocks Task 14.** Written down because the owner clears
