@@ -100,7 +100,7 @@ in `milestone-2-corpus/phase-10-body-store/notes.md`.
 reviewed the documentation Phase 7 produced — 23 files, ~5400 lines — and returned a work list:
 **five findings verified independently**, roughly 25 more reported but not re-checked, and **six
 questions for the owner (Q1–Q6)**. Its Part 5 orders the work by consequence and that order still
-stands. **Nothing in it has been acted on.**
+stands for what is left. **One of its findings has been acted on; see below. The rest has not.**
 
 *Parked because* the owner parked it whole on 2026-08-17, in favour of opening Milestone 2 and
 building router features. It is not blocked on anything and it is not scheduled; picking it up is a
@@ -117,6 +117,20 @@ confidently and wrongly, and it is cheap. Everything else in the file can wait.
 > scope discipline. See `milestone-2-corpus/phase-8-method-and-guardrails/notes.md`. *This paragraph
 > said "two items" and named both until then; silently deleting one would leave the next reader unable
 > to tell whether it was fixed or forgotten.*
+
+> **G1 — the highest-consequence finding — was fixed on 2026-08-20, and is recorded here rather than
+> dropped.** *"The closing playbook is a log of this restructure, not a closing procedure"*: five of
+> `EPD-004` decision 12's seven steps were absent from it, the harvest among them. The playbook was
+> extracted to `method/IDM-006-closing-a-milestone.md` and repaired on the way — decision 12's seven
+> steps restored as its spine, the two landed steps that generalise lifted, the six warnings attached
+> to the steps they warn about, and the 2026-08-16 narrative kept in full as evidence. The review's own
+> Part 5 said this one is *"bigger than the rest and it wants its own task"*, which is what it got, and
+> prescribed *"the generic procedure from decision 12 restored, with the restructure narrative kept
+> alongside rather than instead of it"* — which is what `IDM-006` is.
+>
+> **One thing the finding got wrong, kept because it changes what the repair is.** It read the absent
+> steps as work that never happened. All seven *were run*, in Phase 7's own commits, and `IDM-006`
+> names the commit for each. They were performed and not written down.
 
 **This entry points and does not restate, deliberately.** The findings, their evidence and the six
 questions stay in that one file; copying any of it here would create the second copy this structure
