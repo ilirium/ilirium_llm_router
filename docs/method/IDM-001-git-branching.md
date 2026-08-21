@@ -1,7 +1,9 @@
 # IDM-001 — Git branches, and where a branch is recorded
 
-**In force 2026-08-17, amended 2026-08-21** — "Where a branch is recorded" gained its third row. This
-is the one home for the branching rules. `CLAUDE.md` restates a small part of it — see "The one
+**In force 2026-08-17, amended twice on 2026-08-21** — "Where a branch is recorded" gained its third
+row, and then a fourth: `../reference/branches.md`, which reverses this document's refusal of a list
+of merged branches on the ground that made the refusal right. This is the one home for the branching
+rules. `CLAUDE.md` restates a small part of it — see "The one
 accepted duplication" — and `../README.md` points here.
 
 ---
@@ -26,6 +28,11 @@ log, and a fast-forward erases it. Stated without exception on purpose: a rule t
 and feature branch" makes merging a `fix/` branch a judgement call at the moment somebody is trying to
 finish, and the judgement is worth nothing. Phases 0 and 1 were fast-forwarded because they predate
 the convention; `../milestone-1-core/README.md` says why they are left that way.
+
+**Three branches predate it, not two.** `docs/add-claude-md` is the third and it belongs to no phase,
+which is why every sentence in this repository about fast-forwarding counts two — each is counting
+*phases*. `../reference/branches.md` carries all three; the section below on that file explains how a
+branch stayed unrecorded for twenty-five days without any rule being broken.
 
 **`git merge` cannot read its message from stdin.** `-F -` works for `git commit` and fails for
 `git merge`, so write the message to a temporary file. This is here because it is a branching fact and
@@ -134,9 +141,14 @@ the same job and add no exception to the folder⇄branch rule.
 
 | | |
 |---|---|
-| `../status.md` | **In-flight branches only** — name, purpose, tree state, next action. Merged branches are not listed: git already holds that, and a hand-maintained list would drift. **This row covers every branch**, phase-numbered or not |
+| `../status.md` | **In-flight branches only** — name, purpose, tree state, next action. **This row covers every branch**, phase-numbered or not. Merged branches leave it when they merge; the row below is where they go |
+| `../reference/branches.md` | **Every merged branch, one row, newest first** — opened date, fork point, merge date, merge commit, milestone, phase, and one line on what it was for. **Generated from git** by `../procedures/branch-index.py`; only the last column is written by a person. *Fourth row, added 2026-08-21* |
 | The phase note | **The permanent record of a phase** — branch, fork point, and merge commit |
 | The **merge commit message** | **The permanent record of a branch carrying no phase number.** There is no phase note to put it in, and inventing one is not the answer |
+
+**The four are not four copies.** `status.md` holds *live state*; `branches.md` holds *the index*; the
+phase note holds *the work*; the merge message holds *the provenance of a branch that has no phase
+note*. Only the second is new, and it is the only one that is generated.
 
 **A branch with no phase number is recorded by its merge, and that is enough.** *Third row added
 2026-08-21.* Git already holds the branch name, the fork point and the merge commit; what git cannot
@@ -174,6 +186,65 @@ closed out — and `../backlog.md` still carries the repair as a review-phase it
 **A `Merge commit` row still reading "not yet merged" after the branch is gone is the defect, not the
 placeholder.** Writing "not yet merged" while it is true is correct; leaving it there afterwards is
 what four phase notes did.
+
+## A derived index is not the hand-maintained list this document refused
+
+**Added 2026-08-21.** Until this amendment, row 1 of the table above ended: *"Merged branches are not
+listed: git already holds that, and a hand-maintained list would drift."* `../reference/branches.md`
+is a list of merged branches, so this is a reversal and is written as one.
+
+**The refusal was right, and it is not being overturned — it is being satisfied.** Both halves of it
+survive intact:
+
+| The objection | What answers it |
+|---|---|
+| *"git already holds that"* | It does, and the file is **read out of git** every time it is regenerated. Nothing is transcribed |
+| *"a hand-maintained list would drift"* | It would, and this project has that failure four times over in Milestone 1's phase notes. A **generated** list cannot: `branch-index.py --check` exits 1 when the table no longer matches git |
+
+**The one column git cannot hold is the one worth having.** A branch's name, dates and hashes are
+already addressable — `git log --merges` gets them in a line. What no command answers is *what the
+branch was for*, and that is the column a person writes and the reason the file exists at all. So the
+amended rule is narrow: **an index of merged branches is admitted when its factual columns are
+derived and its interpretive column is not.**
+
+**What is still refused, unchanged.** A second hand-typed table of merge hashes anywhere. If the next
+one cannot be generated, the objection above applies to it in full and it does not get made.
+
+### Regenerating is part of the merge, exactly like closing out a placeholder
+
+**This rule is an instance of the next section, and is written here rather than there on purpose** —
+the next section's own lesson is that *a rule stated as an instance gets obeyed as an instance*, so
+naming this one where a person is deciding how to merge is the correction that section asks for.
+
+Before writing the merge message:
+
+```
+python3 docs/procedures/branch-index.py --write
+```
+
+and commit the result **with the merge**, not after it. The new row cannot be written before the
+merge commit exists, which is the one respect in which this differs from the placeholder sweep: it is
+the last thing done rather than a check run over what is already there.
+
+**The failure it is designed against is silence.** A missing row is invisible — it is the "prose that
+undercounts" defect `../status.md` records twice about itself, in a new place. `--check` is what makes
+it loud, and it is worth running even when you are sure.
+
+### Two things the index found on the day it was written, which is its case
+
+**There were three fast-forwarded branches and every document said two.** `../status.md`,
+`../milestone-1-core/README.md` and this file all say *"Phases 0 and 1 were fast-forwarded"* — each
+correct, because each is talking about phases. `docs/add-claude-md` is the third: five commits on
+2026-07-27 carrying the README, `CLAUDE.md`, the design decisions and the first implementation plan.
+**It is the repository's first branch and it appeared in no document for twenty-five days.** It has no
+phase note, it predates the milestone scheme, and it was fast-forwarded, so before the third row above
+existed there was no place it could have been recorded. It was found by enumerating refs, which is
+the thing a person does not do and a script does every run.
+
+**Seven of eighteen branches carry no phase number.** Better than one in three of this repository's
+merged work sits outside the phase sequence — which is the "orthogonal" rule above, measured. A
+records scheme built only on phase notes would be missing seven rows, and that is the size of the gap
+the third and fourth rows were added to close.
 
 ## Closing out a status placeholder is part of the merge
 
@@ -235,7 +306,8 @@ the record.**
 ## The one accepted duplication
 
 `CLAUDE.md` keeps the prefix table, the `<prefix>/phase-N-<slug>` line, `--no-ff`, the
-`git merge -F -` gotcha, and "the plan opens the phase branch". **That is a fact with two homes, which
+`git merge -F -` gotcha, "the plan opens the phase branch", and — **since 2026-08-21** — *regenerate
+the branch index before writing the merge message*. **That is a fact with two homes, which
 is the thing this tier exists to stop.**
 
 It is accepted because the auto-load admission test demands it. `CLAUDE.md` is the only file loaded
@@ -248,6 +320,21 @@ block says it is restated from this file, that this file is canonical, and that 
 first. Compare `CLAUDE.md`'s design-decisions index, which dodges the problem by listing titles only —
 *"a one-line restatement would drift, a title cannot."* Here a title cannot carry the rule, so the
 restatement is accepted with its risk labelled rather than denied.
+
+**The sixth was admitted on the argument that refused a different sixth four days earlier, and the
+two are worth reading together.** The paragraph below refuses "closing out a status placeholder"
+partly on the ground that six restated facts is too many. Regenerating the index was admitted anyway,
+because the two fail differently and the admission test is about *how* a session gets it wrong:
+
+| | How a session gets it wrong | Where the repair belongs |
+|---|---|---|
+| Closing out a placeholder | It **has read the rule** — Phase 9 read this document during the phase — and applied it to the wrong scope | **Scope.** Fixed above by restating the rule about any statement of unfinished state |
+| Regenerating the index | It **does not know the file exists.** Nothing a merging session opens would name `../reference/branches.md`, and a generated file that is never regenerated is silently wrong | **Location.** No amount of rewriting *this* document reaches a session that never opens it |
+
+**The second is the case `CLAUDE.md` is for and the first is not**, which is why the count argument
+does not settle it. The restatement is one sentence and a command; a command cannot drift in meaning
+the way a rule can, which is the same defence `../README.md`'s design-decisions index uses when it
+lists titles only.
 
 **"Closing out a status placeholder" was considered for `CLAUDE.md` on 2026-08-17 and refused.**
 Recorded because the argument for adding it looks strong and is wrong. `../README.md`'s admission test
@@ -268,6 +355,10 @@ defect that a sixth copy would not have prevented. The existing pointer already 
   one-way check, generalised here from `feat/phase-N-*` to `*/phase-N-*`.
 - **Replaces** `../README.md`'s "Branches" section whole, and the two slug paragraphs that were in its
   "Naming and numbering". Both are now pointers here.
+- **Amended 2026-08-21 on `docs/branch-index`**, which added the fourth row and the section arguing
+  it. The refusal it reverses was this document's own, written 2026-08-17; the wording that was
+  dropped from row 1 is quoted in full in that section rather than deleted, since the objection it
+  made is the standard the new file has to keep meeting.
 - **Unified from two disagreeing homes.** `CLAUDE.md` and `../README.md` both claimed to state this
   convention and differed in seven places. The disagreements and how each was resolved are tabulated in
   `../milestone-2-corpus/phase-8-method-and-guardrails/plan.md`; this file is the outcome.

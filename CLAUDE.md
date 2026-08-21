@@ -206,12 +206,23 @@ documentation.
 fast-forward erases it. And **`git merge` cannot read its message from stdin** — `-F -` works for
 `git commit` and fails for `git merge`, so write the message to a temp file.
 
+**Regenerating the branch index is part of the merge.** Before writing the merge message, run
+`python3 docs/procedures/branch-index.py --write` and commit the result with the merge. The table in
+`docs/reference/branches.md` is generated from git, so a landed branch with no row is a defect the
+script's `--check` will find and a reader will not.
+
 → `docs/method/IDM-001-git-branching.md` — **read it before naming a phase folder, before rejecting a
 plan, or before recording where a branch went.** It holds the folder⇄branch slug rule and its one-way
 check, what happens to a rejected plan (merged and marked, not deleted — the phase number is spent),
-and where a branch is recorded — `docs/status.md` while it is in flight, the phase note permanently,
-and **the merge commit message for a branch carrying no phase number**, which has no phase note to put
-it in.
+and the **four** homes where a branch is recorded — `docs/status.md` while it is in flight,
+`docs/reference/branches.md` once it lands, the phase note permanently, and **the merge commit message
+for a branch carrying no phase number**, which has no phase note to put it in.
+
+→ `docs/reference/branches.md` — **read it to find out what a branch or a merge hash was**, and before
+hand-typing any table of merge hashes: `IDM-001` refused one, and this file is the derived answer that
+refusal earns. Two things it holds that no other document does — there are **three** fast-forwarded
+branches, not the two every other sentence in this repository counts, and **seven of eighteen branches
+carry no phase number**, which is the size of the gap a phase-notes-only scheme leaves.
 
 ## Shell
 

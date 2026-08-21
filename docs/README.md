@@ -319,13 +319,23 @@ branch, before creating a phase folder, before rejecting a plan, or before recor
 went.** In one line each, so you know whether you need it: four prefixes by kind of work, with
 `<prefix>/phase-N-<slug>` as an orthogonal form any of them may take; `--no-ff` **always**; the plan
 opens the phase branch; a phase folder takes its branch's slug and the check runs one way only; a
-rejected plan is **merged and marked, not deleted**; and `status.md` carries in-flight branches while
-the phase note carries the permanent record.
+rejected plan is **merged and marked, not deleted**; and a branch is recorded in **four** places —
+`status.md` while it is in flight, `reference/branches.md` once it lands, the phase note permanently,
+and the merge commit message for a branch carrying no phase number.
+
+**`reference/branches.md` is generated, and regenerating it is part of the merge.** Run
+`python3 procedures/branch-index.py --write` before writing the merge message and commit the result
+with it; `--check` exits 1 when a landed branch has no row. *Added 2026-08-21, amending `IDM-001`'s
+own refusal of a list of merged branches — the objection was that a hand-maintained list drifts, which
+a derived one cannot.*
 
 *This section held the rules until 2026-08-17, and `CLAUDE.md` held them too — the two disagreed in
 **seven** places, which is the failure this whole structure exists to prevent surviving inside the
-structure built to prevent it. `CLAUDE.md` keeps a labelled restatement of the five facts a session
-acts on without looking anything up; everything else has exactly one home now.*
+structure built to prevent it. `CLAUDE.md` keeps a labelled restatement of the **six** facts a session
+acts on without looking anything up; everything else has exactly one home now.* *(Five until
+2026-08-21; the sixth is regenerating the branch index, admitted because a session merging a branch
+has no reason to know that file exists — `IDM-001` records why that argument works here and did not
+for the placeholder rule.)*
 
 ## The phase template
 
