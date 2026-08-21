@@ -31,10 +31,37 @@ The most-quoted pair in the project, and the one that has already misled a reade
 |---|---|---|---|---|
 | **Median time to first byte: 1426 ms Anthropic, 37136 ms LM Studio — 26.1×** | 2026-07-31, recomputed 2026-08-07 and again 2026-08-16 | `../milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv` | **Successful streamed `/v1/messages` calls only** — 32 Anthropic rows, 21 LM Studio | The felt difference between backends, and the reason `ttfb_ms` is a column at all. It is what put the per-backend `read_timeout` where it is |
 | Same medians over **every row**: 1252 / 4904 — **3.9×** | 2026-08-07, confirmed 2026-08-16 | as above | All 42 Anthropic and 97 LM Studio rows with a `ttfb_ms`, including `count_tokens` and warmup probes | **Kept deliberately as the counter-example.** It is the number a reader gets by recomputing the obvious way, and without it the 26× claim reads as a mistake |
-| The intermediate slices: 13.5× (`/v1/messages` only), 26.6× (no warmup probes) | 2026-08-07 | as above | named in each cell | Shows the gap is not an artefact of one filter — it is `count_tokens` that does the damage, not streaming |
+| The intermediate slices: 13.5× (`/v1/messages` only), 26.6× (`/v1/messages` **and** no warmup probes) | 2026-08-07, slice corrected 2026-08-21 | as above | named in each cell — 41 Anthropic / 65 LM Studio rows for the first, 41 / 25 for the second | Shows the gap is not an artefact of one filter — it is `count_tokens` that does the damage, not streaming |
 
 **Anthropic's `read_timeout` of 600 s rests on the first row**: ten minutes of silence against a
 backend whose median first byte is 1.4 s means something is wrong rather than slow.
+
+**Corrected 2026-08-21 — the third row's slice, not its number.** It read *"26.6× (no warmup
+probes)"* and silently inherited the filter from the row above it; the slice is `/v1/messages` **and**
+no warmup probes. Read as written — warmup probes excluded and nothing else — the same CSV gives
+1251.5 ms against 307.0 ms, which is **0.245×**, LM Studio four times *faster* than Anthropic. The
+sign reverses. Found by the fresh-context review frozen at
+`../milestone-1-core/documentation-review-2026-08-16.md`, finding V1, which calls it the severest of
+its five and says why it is worse than the episode it descends from: **this is the same failure
+inside the register built to prevent it**, in the row whose whole job is to prove the gap survives
+re-slicing. **0.245× is kept here rather than deleted**, on the reasoning the 3.9× row above already
+states — the number a reader gets by recomputing the obvious way has to be visible, or the correct
+one reads as a mistake.
+
+**All four slices were re-derived independently on 2026-08-21 before this correction was written**,
+and all four land on the review's figures to the digit. **What made that possible is one predicate
+neither document had ever written down**, and it is recorded here because it is the whole difficulty:
+
+> A **warmup probe** is a `/v1/messages` row that is **not streamed** (`stream` empty), returned
+> `error_status` **`ok`** with **zero `output_tokens`** and `stop_reason` **`max_tokens`**. There are
+> **exactly 40**, and **every one is LM Studio** — which is why excluding them moves no Anthropic
+> count and takes LM Studio from 97 rows to 57, and from 65 `/v1/messages` rows to 25.
+
+**Two plausible wrong answers came first, and that is why this is a note rather than a footnote.**
+Taking *zero output tokens* alone sweeps in the 33 `count_tokens` calls and gives 23.4×; adding the
+`/v1/messages` filter but not the rest still catches **two `client_disconnect` rows** — real calls
+that produced no output — and gives **0.216×** instead of 0.245×. Both look like the answer. The
+review says the number "took four attempts" and does not say what the fourth was; this is it.
 
 ## LM Studio: context, prefill and capability
 

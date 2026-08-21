@@ -4,7 +4,8 @@ Written 2026-07-31, **while building**, unlike `phase-2-notes.md`, which was wri
 phase started. The reason for the difference is the phase's central finding, below: there was much
 less to build than the plan expected, so there was no plan worth writing in advance.
 
-Branch: `feat/phase-3-failure-handling`, off `main` at `acb399f`. Merge back with `--no-ff`.
+Branch: `feat/phase-3-failure-handling`, off `main` at `acb399f`, **merged 2026-07-31 with `--no-ff`
+as `cc65aed`**.
 
 ## The finding that shaped the phase: four of the five items were already built
 
