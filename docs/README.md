@@ -25,13 +25,16 @@ Start here. Almost every filing question is answered by one of these eight rows.
 | How the work was sequenced, and what was known at the time | `milestone-N-*/` | Is it a plan, a phase note, a record of a decision's ordering? |
 | A question written down before it is answered | `epd/` | Is the decision genuinely open? |
 
-And two files at the root of `docs/` that are neither durable nor archived:
+And the files at the root of `docs/` that are neither durable nor archived. *No count here on
+purpose: this sentence read "two files" over three rows from 2026-08-17 until 2026-08-21, which is
+`reference/lessons.md` lesson 6 happening in the manual that warns about it.*
 
 | | |
 |---|---|
 | `status.md` | **State.** Where we stopped, where the project is, what is next. No work items live here |
 | `backlog.md` | **Inventory.** Unscheduled work, each item with why it is parked and why the question may be weaker than it looks. No state lives here |
 | `prompt.md` | **The next session's opening instruction, and nothing else.** Added 2026-08-17. It names what to read and what to distrust; it must never summarise what those documents say. **It expires when the phase it opens is merged** — check `status.md` before trusting it |
+| `prompt-<branch-slug>.md`, `merge-<branch-slug>.md` | **`prompt.md`'s class, for a branch that cannot have `prompt.md`.** Added 2026-08-21. When `prompt.md` is occupied by another branch, a second branch names its own: `prompt-` to open a session on it, `merge-` to say what the merge leaves for a follow-up session to integrate. Same rules as `prompt.md` — pointers, never a summary; paths from the repository root, so `procedures/link-check.py` does not check them. **Deleted by the merge that retires it**, which is part of the merge and not tidying afterwards (→ `method/IDM-001-git-branching.md`) |
 
 **`prompt.md` is the one file here that is allowed to go stale**, which is why it carries its own
 expiry rule. It exists because sessions are cleared deliberately and a fresh one starts cold; it is
@@ -470,16 +473,17 @@ check you re-run against a new release; a playbook is a rule about how the work 
 
 → **`method/IDM-005-opening-a-milestone.md`** holds all of it, and is canonical. **Open it before
 naming a milestone's central claim, before writing `implementation-plan.md`, or before opening the
-folder and the branch.** In one line, so you know whether you need it: eight steps mined from
-Milestone 1 — name the falsifiable claim and the non-goals, refute it cheaply, **capture the real
-input before specifying anything**, spike what the architecture depends on, fork the
+folder and the branch.** In one line, so you know whether you need it: seven steps mined from
+Milestone 1 — name the falsifiable claim, the non-goals and the experiment that would refute it,
+**capture the real input before specifying anything**, spike what the architecture depends on, fork the
 expensive-to-reverse questions as EPDs, mark every spec statement measured / inferred / assumed, plan
 at decreasing resolution, then open the folder and the branch.
 
-*The playbook was written into this file on 2026-08-16 and moved out on 2026-08-20. The eight steps
-are unchanged; the document was reshaped into two zones on the way, so a session opening a milestone
-reads the steps and stops before the evidence. `EPD-004` decision 12 put it here; the addendum at that
-decision says why it left.*
+*The playbook was written into this file on 2026-08-16 and moved out on 2026-08-20. The move left the
+eight steps unchanged and reshaped the document into two zones, so a session opening a milestone reads
+the steps and stops before the evidence. **A later amendment on 2026-08-21 did change them** — the old
+step 2 folded into step 1, leaving seven — and `IDM-005`'s `E2` says why. `EPD-004` decision 12 put the
+playbook here; the addendum at that decision says why it left.*
 
 ### Closing a milestone
 
