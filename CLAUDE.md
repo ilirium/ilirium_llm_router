@@ -32,6 +32,14 @@ directory* (identical inode), not two checkouts. Editing either edits both.
 - **Check prior evidence before planning a rerun.** Earlier phases keep answering later ones; mine
   the frozen artefacts first. Phases 3, 4 and 5 each found a third or more of their work already
   done, measured, or misdescribed.
+- **Raise it, do not bury it.** A question, a concern, or something found wrong goes in its own
+  sentence where it will be read first — never inside a long description, where it reads as commentary
+  and gets skimmed. **If something is wrong, say it is wrong rather than working around it.** A
+  question carries the detail needed to answer it and the options visible from here, each stated
+  plainly enough to choose between without reconstructing the problem first. **A concern raised where
+  it will not be read has not been raised.** *Restated from `docs/method/IDM-007-raising-a-concern.md`,
+  which is canonical and holds the three prior instances — all three about documents rather than
+  people, and all three found by the owner rather than by a check.*
 
 ## Layout and commands
 
@@ -177,10 +185,10 @@ fine-tuning is dropped. Its open questions 3–6 are Phase 10 design detail, not
 
 **Do not read `docs/method/`'s `IDM-NNN` documents with that reflex.** The two schemes sit adjacent and
 look alike; an **IDM is in force now and you are expected to act on it**, which is the exact opposite of
-an EPD. `docs/method/IDM-000-about-these-documents.md` is the index. `IDM-001`, `IDM-003`, `IDM-005` and
-`IDM-006` are pointed at below; `IDM-002` holds the permission allowlist policy **and what else may go in the tracked settings file**; **`IDM-004` is the protocol for reviewing a
+an EPD. `docs/method/IDM-000-about-these-documents.md` is the index. `IDM-001`, `IDM-003`, `IDM-005`, `IDM-006`
+and `IDM-008` are pointed at below; `IDM-002` holds the permission allowlist policy **and what else may go in the tracked settings file**; **`IDM-004` is the protocol for reviewing a
 plan before it runs — read it before reviewing one, because its first rule is that the charter decides
-what the review finds.**
+what the review finds**; `IDM-007` is the Working agreement's fourth bullet, canonical.
 
 ## Git and branches
 
@@ -224,6 +232,30 @@ hand-typing any table of merge hashes: `IDM-001` refused one, and this file is t
 refusal earns. Two things it holds that no other document does — there are **three** fast-forwarded
 branches, not the two every other sentence in this repository counts, and **seven of eighteen branches
 carry no phase number**, which is the size of the gap a phase-notes-only scheme leaves.
+
+## Reading
+
+**Read long documents by section.** Grep the headings first — `grep -n '^## ' <file>` — then read
+only the sections the task needs. This matters most for a phase's `plan.md` and `notes.md`: they are
+the largest documents here and they grow every session. A `cat` over a whole source file, or a
+200-line `sed` sweep over a plan, spends the session's room before any work starts.
+
+→ `docs/wiki/claude-code-context-budget.md` — **read it before concluding a session is short of room,
+and before deciding that reading less is the fix.** It ranks the levers by measured size, with the
+figures dated, which is why no line counts are quoted here. Reading by section is **lever 2**; lever 1
+is larger, is about how files are *edited* rather than read, and is a configuration question rather
+than a habit. And item 3 is what stops the over-correction: orientation reading in this repository is
+**mostly not waste** — the fix is reading it by section, not reading less of it.
+
+## Planning a phase
+
+→ `docs/method/IDM-008-the-register.md` — **read it before writing a phase plan, and before the
+phase's closing task.** The plan carries one reachable section listing every name and number the phase
+will introduce — modules, config keys, constants, on-disk names, flags, magic numbers — with `❓` on
+anything named and never valued, and the closing task checks it against the code. It is not
+bookkeeping: on its one run it found eight unvalued names, contradicted a number that had survived two
+reviews, and exposed a defect **two forward-review passes had read past**, because a constant and a
+config key only look wrong when they sit in adjacent rows.
 
 ## Shell
 

@@ -10,6 +10,31 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-21 — four method items added on the owner's instruction: `IDM-007`, `IDM-008`, a reading
+rule and a `notes.md` split.** Two of the four were **already in the repository and neither was a new
+rule.** `IDM-008` generalises Phase 10's register, which the owner instructed on 2026-08-19 in almost
+the same words; the reading rule is `wiki/claude-code-context-budget.md`'s lever 2, which needed a
+**trigger** in `CLAUDE.md` rather than a home. **Checking before writing is what found both**, and it
+changed what got written: `IDM-008` carries Phase 10's four findings as its argument instead of an
+assertion.
+
+**`IDM-007` is the one that is genuinely new**, and its evidence is three prior instances *about
+documents rather than people* — `IDM-005`'s step 2 caveat sitting below the stop line where a
+compliant reader never reaches it, and this file's own two records of prose that undercounts going
+stale invisibly. Same mechanism each time: something true, written down, in a place that does not
+reach the reader.
+
+**Two of the four were argued down from what was proposed, and both are recorded where the argument
+is.** `IDM-008` was proposed for `CLAUDE.md` and is a **pointer** instead — writing a plan is a
+look-it-up moment, which is why `IDM-005` and `IDM-006` are pointers too; `IDM-000` now states that
+neither shortness nor importance earns a restatement. The `notes.md` split is **forward-only**:
+Phase 10's 3,284-line `notes.md` stays whole, because `notes.md:2143`-style citations break
+**silently** when a section moves — `link-check.py` checks paths, not line numbers.
+
+**`CLAUDE.md` is 292 lines, up from 260**, and the growth was accepted deliberately against upstream's
+~200 guidance. The measurement of what it could lose is in `backlog.md` as a review-phase item, which
+is the condition it was accepted under.
+
 **2026-08-21 — the branch index exists, on `docs/branch-index`, and it is generated rather than
 written.** `reference/branches.md` carries all eighteen merged branches — opened date and fork point,
 merge date and merge commit, milestone, phase, and one line on what each was for. Five of its six
@@ -169,7 +194,7 @@ permanent record of a phase's branch, fork point and merge commit is still its p
 
 | Branch | For | Tree state | Next |
 |---|---|---|---|
-| `docs/branch-index` | The branch index — `reference/branches.md` and the script that generates it, plus the `IDM-001` amendment that admits it | Documentation only; no `src/` change | The owner's remaining items, then merge `--no-ff` |
+| `docs/branch-index` | Two things: the branch index — `reference/branches.md`, its generator, and the `IDM-001` amendment that admits it — and four method items on the owner's instruction: `IDM-007`, `IDM-008`, the reading rule and the `notes.md` split | Documentation only; no `src/` change | The owner's remaining items, then merge `--no-ff` |
 
 **Opened 2026-08-21, forked from `5352d0d`.** Merge commit: *not yet merged.*
 

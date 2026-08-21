@@ -342,6 +342,46 @@ for the placeholder rule.)*
 
 `phase-N-<slug>/` holds `plan.md`, `notes.md` and `evidence/` with its README.
 
+### The plan carries a register
+
+→ **`method/IDM-008-the-register.md`** holds it, and is canonical. **Open it before writing a
+`plan.md`, and before the phase's closing task.** In one line: the plan gains **one reachable section
+listing every name and number the phase will introduce** — modules, classes, config keys, module
+constants, on-disk names, record shapes, magic numbers, CLI flags — with `❓` against anything the plan
+names and never gives a value, and a numbered closing task that checks the section against the code.
+
+*Not bookkeeping, and the IDM carries the measurement: on its one run it found eight unvalued names,
+contradicted a figure that was ~70× out and had survived two reviews, exposed a name collision on an
+existing object, and produced a defect two forward-review passes had read past — because a constant
+and a config key only look wrong when they sit in adjacent rows.*
+
+### `notes.md` splits by group once a phase has groups
+
+**Adopted 2026-08-21.** Each task group's notes go to **`notes-group-<letter>.md`** —
+`notes-group-a.md`, `notes-group-b.md` — matching the group letters the plan already publishes.
+
+**`notes.md` keeps everything that belongs to no group, and stays the entry point.** The
+re-derivation before task 1, the interviews, the review passes, cross-cutting findings, what was open
+at the end of a group, and the "Verified by" line all stay in it. **It carries an index of the group
+files in the order they were written**, which is what preserves the chronology the split otherwise
+breaks — a phase's notes are a narrative, and a set of files sorted by letter is not one.
+
+**Expect `notes.md` to stay the larger file, and that is not a failure of the rule.** Of Phase 10's
+33 sections, roughly fifteen map to a task or group; the rest are interviews, reviews and findings
+that belong to the phase rather than to any group. The split moves the fifteen out. What it buys is
+that the group files can be read whole, and that grepping headings — see `CLAUDE.md`'s "Reading" —
+returns a list a reader can act on.
+
+***Forward-only.*** Phase 10's `notes.md` reached **3,284 lines** in one file and is **left whole**.
+Two reasons, and the second is the one that would bite: archived prose is not restructured, and any
+citation of the form `notes.md:2143` breaks **silently** when a section moves — `procedures/link-check.py`
+checks paths, not line numbers, so nothing would catch it.
+
+*This rule is `wiki/claude-code-context-budget.md`'s lever 4, whose stated condition is that a file is
+**read in full every session and most of it is never needed.** Once reading by section is the practice,
+that condition is weaker than it looks — which is why the rule is scoped to phases that have groups
+rather than applied to every long document.*
+
 ### The unit of work inside a plan is a **task**
 
 **Milestone → phase → task.** `milestone-N-<slug>/implementation-plan.md` sequences the phases;

@@ -96,6 +96,26 @@ in `milestone-2-corpus/phase-10-body-store/notes.md`.
 
 ## Documentation defects found and not fixed
 
+**`CLAUDE.md` is 292 lines against upstream's ~200-line guidance, and nobody has measured what it
+could lose.** It was 260 before 2026-08-21 and grew by 32 that day — the branch-index rule and its two
+pointers, then `IDM-007`'s Working-agreement bullet, the "Reading" section and the `IDM-008` pointer.
+**The owner accepted the growth deliberately**, on the ground that the 200 figure is guidance about
+*adherence* rather than a limit, and that this file is the project's method rather than boilerplate.
+
+*Recorded so a later review can act on it*, which is the condition the growth was accepted under.
+`wiki/claude-code-context-budget.md` holds both relevant facts: `CLAUDE.md` of any length **loads
+whole**, where `MEMORY.md` caps at 200 lines or 25 KB; and orientation reading here is **mostly not
+waste**, so the fix — if there is one — is not simply "cut lines".
+
+*Weaker than it looks?* **Probably, and in a specific way.** The review-phase framing that fits is
+`README.md`'s: *a phase chartered to find bloat cannot comfortably return "there was none".* So this
+is a measurement, not a cut — each candidate section written as a claim, paired with what would refute
+it. **Two of the six restated `IDM-001` facts and both new pointers were argued into place on the
+record**, in `IDM-000` and `IDM-001`, so a review that wants them out has to beat those arguments
+rather than count lines.
+
+
+
 **The whole of `milestone-1-core/documentation-review-2026-08-16.md`.** A fresh-context agent
 reviewed the documentation Phase 7 produced — 23 files, ~5400 lines — and returned a work list:
 **five findings verified independently**, roughly 25 more reported but not re-checked, and **six
