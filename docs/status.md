@@ -10,6 +10,32 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-21 — the branch index exists, on `docs/branch-index`, and it is generated rather than
+written.** `reference/branches.md` carries all eighteen merged branches — opened date and fork point,
+merge date and merge commit, milestone, phase, and one line on what each was for. Five of its six
+columns come out of git via `procedures/branch-index.py`; only the description is typed.
+**`IDM-001` refused exactly this list on 2026-08-17** — *"a hand-maintained list would drift"* — so
+the amendment is narrow and keeps the objection: derived factual columns, hand-written interpretive
+one, and `--check` exits 1 when a branch has landed without a row. **Regenerating is part of the
+merge**, which is `CLAUDE.md`'s sixth restated fact and the reason it earned a place there:
+a merging session does not know the file exists.
+
+**Enumerating refs found a branch nobody had written down.** `docs/add-claude-md` — five commits on
+2026-07-27, the README, `CLAUDE.md`, the design decisions and the first implementation plan. **It is
+the repository's first branch and appeared in no document for twenty-five days.** No rule was broken:
+it belongs to no phase and was fast-forwarded, so until `IDM-001` gained its third row there was
+nowhere to record it. Two counts move with it — there are **three** fast-forwarded branches where every
+sentence says two (each correct, each counting *phases*), and **seven of eighteen** branches carry no
+phase number.
+
+**Baselines, run 2026-08-21: `make test` 310, `make lint` clean.** `link-check.py` is quoted as a
+**delta** on purpose — this branch adds **one file and no broken path**, measured by running it on
+`main` and on the branch in the same checkout. The absolute count depends on files git does not
+carry, which is why the figure above and the one in `procedures/link-check.py`'s docstring disagree
+without either being wrong. **Both refusal paths of the new script were driven, not assumed**: a
+deleted row makes `--check` exit 1, and a missing description makes `--write` refuse rather than
+splice a blank column.
+
 **2026-08-21 — Phase 10 is merged as `32c26bb`, and the next thing is the owner driving the corpus.**
 All thirty-three tasks done, `make test` **310**, `feat/phase-10-body-store` forked at `d885b2f` and
 merged `--no-ff`. **Both placeholders closed with it** — the Record table at the foot of `plan.md`
