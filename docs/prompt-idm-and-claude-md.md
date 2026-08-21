@@ -47,20 +47,28 @@ this order:
   both cite the playbook rule and were deliberately left stale; that branch is being written
   concurrently and editing those files here would conflict. Same reasoning for `docs/status.md` and for
   `implementation-plan.md` beyond the one line already changed.
-- **`link-check.py`'s counts depend on an untracked file.** 13 of its hits name
-  `.claude/settings.local.json`, which a worktree does not have. A run here reports 99 broken; the main
-  checkout reports 86. The docstring says so — read it before concluding anything broke.
+- **`link-check.py`'s counts depend on an untracked file.** **15** of its hits name
+  `.claude/settings.local.json`, which a worktree does not have. A run here reports **104** broken,
+  measured 2026-08-21; the main checkout works out at **89**, which nobody has run. The docstring says
+  so — read it before concluding anything broke. *(This said 13, 99 and 86 until 2026-08-21, when the
+  numbers were re-run rather than inherited, and every one of the three was wrong. A further **6** hits
+  name `.claude/agents/local-helper.md`, which exists in neither checkout — those are broken everywhere
+  and are not a worktree artefact.)*
 - **`CLAUDE.md` differs between this branch and Phase 10's.** Both edited it; different sections, so
   the merge should be clean, but check rather than assume.
 
-## Open decisions, none of them started
+## Open decisions — **all four were decided on 2026-08-21**
+
+*The table below is kept as written, with each outcome added, because deleting a question leaves the
+next reader unable to tell whether it was answered or forgotten.* **What the decisions leave for the
+merge is `merge-idm-and-claude-md.md`, and that file is the work list.**
 
 | | |
 |---|---|
-| The two-zone shape is undocumented | `IDM-000` records nothing about it. The recommendation put to the owner was that it is **the shape a playbook takes** — `IDM-001`–`IDM-004` are consulted, not executed — against the alternatives of blessing it for any IDM, or leaving it a per-document choice. **Undecided** |
-| A stale count in a live document | `milestone-2-corpus/implementation-plan.md:9` says *"four of Milestone 1's six phases"*. `reference/lessons.md` lesson 1 is canonical at **five of seven** and says the count grew on 2026-08-16. Left alone as Milestone 2's document. The owner was asked whether to fix it and **has not answered** |
-| This branch is not in `status.md` | `IDM-001` says in-flight branches are recorded there. It is not, because that table's only other row is Phase 10's and is being actively rewritten. The owner was asked now-or-at-merge and **has not answered** |
-| `IDM-005` step 2 has no evidence | *"Run the cheapest experiment that could refute it"* is the one step of the eight with nothing behind it — Milestone 1 went from the claim to Phase 0's skeleton, and the claim was settled by Phase 1's first relay, after the spec. `E2` says so. Whether the step survives on those terms is the owner's call and **was not asked** |
+| The two-zone shape is undocumented | **Decided: blessed for any IDM**, not restricted to playbooks. `IDM-000` now carries *"Two zones, when the evidence is bulky"* — the form, and the hazard that a caveat living only below the line is invisible to a reader obeying the stop instruction |
+| A stale count in a live document | **Decided: replace the count with a pointer** to `reference/lessons.md` lesson 1 — **and defer the edit to the merge**, so this branch touches Milestone 2's document exactly once. In `merge-idm-and-claude-md.md` |
+| This branch is not in `status.md` | **Decided: neither now nor by this session** — the merge instructions carry it instead. Doing so surfaced a real gap: `IDM-001` has **no home for a non-phase branch's permanent record**. Named, not amended, in `merge-idm-and-claude-md.md` |
+| `IDM-005` step 2 has no evidence | **Decided: folded into step 1**, leaving seven steps renumbered. Naming the refuting experiment is evidenced; prescribing that it run *before* the specification was not. `E2` is kept as the record of the fold rather than deleted. The consequences in Milestone 2's documents are deferred to `merge-idm-and-claude-md.md` |
 
 ## What the owner expects of a session here
 

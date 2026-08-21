@@ -92,6 +92,29 @@ named plan section.
 is the worked example either way**, since its register and the defects it caught are already recorded
 in `milestone-2-corpus/phase-10-body-store/notes.md`.
 
+**`IDM-001` has no home for a non-phase branch's permanent record.** Found 2026-08-21, on the
+`docs/idm-and-claude-md` branch, which is one.
+
+*What happened:* `IDM-001` names two homes for where a branch is recorded — `status.md` while it is
+in flight, the phase note permanently. A `docs/` branch carrying no phase number has no phase note, so
+once it merges its fork point and merge commit have nowhere to live. **The rule was followed and the
+record still went missing**, which is the same shape as the `Merge commit` defect that rule was
+generalised from.
+
+*Why it is parked:* amending a method document is the owner's call and was not asked. **Named, not
+fixed**, in `merge-idm-and-claude-md.md`, which also carries the two candidate answers.
+
+**The merge of `docs/idm-and-claude-md` leaves a work list.** Written 2026-08-21.
+
+*What it is:* `merge-idm-and-claude-md.md` at the root of `docs/`, naming what that merge into
+`feat/phase-10-body-store` deliberately does not do — three edits to
+`milestone-2-corpus/implementation-plan.md` and two stale playbook citations inside
+`phase-10-body-store/`, all of them left because that branch was being written concurrently.
+
+*Why it is parked:* it is not parked, it is **scheduled for the merge**. This row exists only so the
+work is reachable from a file that is read routinely, since **`link-check.py` cannot find any of it** —
+every stale citation still resolves. Delete this row when the merge file is deleted.
+
 ---
 
 ## Documentation defects found and not fixed
