@@ -1,7 +1,8 @@
 # IDM-001 — Git branches, and where a branch is recorded
 
-**In force 2026-08-17.** This is the one home for the branching rules. `CLAUDE.md` restates a small
-part of it — see "The one accepted duplication" — and `../README.md` points here.
+**In force 2026-08-17, amended 2026-08-21** — "Where a branch is recorded" gained its third row. This
+is the one home for the branching rules. `CLAUDE.md` restates a small part of it — see "The one
+accepted duplication" — and `../README.md` points here.
 
 ---
 
@@ -133,8 +134,37 @@ the same job and add no exception to the folder⇄branch rule.
 
 | | |
 |---|---|
-| `../status.md` | **In-flight branches only** — name, purpose, tree state, next action. Merged branches are not listed: git already holds that, and a hand-maintained list would drift |
-| The phase note | **The permanent record** — branch, fork point, and merge commit |
+| `../status.md` | **In-flight branches only** — name, purpose, tree state, next action. Merged branches are not listed: git already holds that, and a hand-maintained list would drift. **This row covers every branch**, phase-numbered or not |
+| The phase note | **The permanent record of a phase** — branch, fork point, and merge commit |
+| The **merge commit message** | **The permanent record of a branch carrying no phase number.** There is no phase note to put it in, and inventing one is not the answer |
+
+**A branch with no phase number is recorded by its merge, and that is enough.** *Third row added
+2026-08-21.* Git already holds the branch name, the fork point and the merge commit; what git cannot
+hold is **why the branch existed and what it decided**, and that is what the merge message is for.
+Write it as though the phase note it does not have were being written into it.
+
+**Do not give it a phase number to solve this.** A phase number is an identity that is spent when it is
+allocated — the rejected-plan rule above turns on exactly that — and manufacturing one so a branch has
+somewhere to file its fork point buys a record at the price of a hole in the phase sequence.
+
+**Two records, not one, and they do not compete.** The record of *the branch* is its merge. The record
+of *the work* is the documents the branch changed, which are canonical wherever they live. A `docs/`
+branch that writes a rule has already recorded the rule; what was missing was only the provenance of
+the branch that carried it.
+
+*The episode.* `docs/idm-and-claude-md`, 2026-08-21, forked from `feat/phase-10-body-store` rather than
+from `main` so it could see `IDM-004`. It produced `IDM-005` and `IDM-006` and had **nowhere to record
+its own fork point and merge commit** — it is documentation work belonging to no phase, which the
+"orthogonal" rule above explicitly allows and this table had not caught up with. **The rule was
+followed and the record still went missing**, which is the same shape as the `Merge commit` defect the
+next paragraph was generalised from. It was found by a session asking where the record went, not by
+any check.
+
+*One thing that branch did which this rule does not license.* It was never listed in `../status.md`
+while in flight, on the owner's instruction, because another session was concurrently rewriting the
+only other row of that table. **That was a deliberate suspension for one branch, recorded so it is not
+read as an exemption.** Row 1 above covers every branch, and a concurrent edit is a merge problem
+rather than a reason not to record state.
 
 **Write the merge commit in when the merge happens.** Four of Milestone 1's six phase notes said
 "merge back with `--no-ff`" and never recorded what happened; only `phase-4-notes.md:7` carried the

@@ -763,6 +763,39 @@ session opening or closing a milestone is to read the playbook and work from it 
 improvise. This is called out separately from the ordinary pointers because it is the one case where
 a missed pointer costs a whole milestone's worth of harvest.
 
+**Addendum 2026-08-20 — both playbooks left `docs/README.md` for `docs/method/`, and the closing one
+was repaired on the way.** Nothing above is edited away; it records what was decided then, and the
+instruction in the last paragraph is the part that survives unchanged.
+
+**Where they went.** `../method/IDM-005-opening-a-milestone.md` and
+`../method/IDM-006-closing-a-milestone.md`. `docs/README.md` keeps a pointer to each, naming the
+trigger.
+
+**Why not the escape hatch this document named.** The growth rule at `EPD-004:626` sends an overgrown
+playbook to `docs/procedures/closing-a-milestone.md`, and the trigger had genuinely fired — the closing
+playbook reached **51 lines** against a 40-line threshold. That hatch was written on 2026-08-16, when
+**decision 18 had declined a `docs/method/` tier**; `procedures/` was the only tier left that could
+take it. `IDM-000` answered decision 18 on 2026-08-17 and the tier exists, so the manual's own "Where
+does it go?" table now settles it: `procedures/` is *a check you re-run against a new model, a new
+release, a new backend*; a playbook is *a rule about how the work is done*. **The hatch is therefore
+named and not taken, permanently** — `link-check.py`'s deliberate-absence list says so at the entry for
+that path, rather than dropping it.
+
+**What was repaired.** The closing playbook that landed was the narrative of the restructure that
+produced it, and **five of the seven steps decided above were absent from it**, the harvest into
+`lessons.md` and `measurements.md` among them — the thing `CLAUDE.md` says the pointer exists to
+protect. That is `../milestone-1-core/documentation-review-2026-08-16.md`'s highest-consequence finding
+(G1), parked in `../backlog.md` since 2026-08-17 and unactioned until now. `IDM-006` restores the seven
+steps as its spine and keeps the 2026-08-16 narrative in full, demoted to evidence.
+
+**One correction to the finding, which is why the repair is a record rather than an invention.** All
+seven steps *were run* during Phase 7 — `IDM-006` names the commit for each. They were performed and
+then not written down, which is a different defect and a smaller one than the review took it for.
+
+**What this addendum does not touch.** The two-playbooks decision itself, the three load-bearing things
+in it, the deliberate difference in when each was written, and the instruction `CLAUDE.md` carries.
+Only the address changed, and one of the two documents was wrong at that address.
+
 ### 13 — the phase template
 
 `phase-N-<slug>/` holds `plan.md`, `notes.md` and `evidence/`.

@@ -3,7 +3,8 @@
 **IDM stands for Ilirium Development Method.**
 
 A method document states **how the work is done** — how a branch is named, how the harness is
-configured, which tools are pinned and why. Not how the router works: that is `../reference/`.
+configured, which tools are pinned and why, how a milestone is opened and closed. Not how the router
+works: that is `../reference/`.
 
 ## An IDM is the opposite of an EPD in status
 
@@ -84,6 +85,29 @@ numeric prefixes: reference documents are cited by name from `src/` docstrings, 
 mean inserting one file renumbers the rest and churns citations in code. Nothing in `src/` cites a
 method document, so the identity is worth more here than the churn costs.
 
+## Two zones, when the evidence is bulky
+
+**Settled 2026-08-21. Any method document may split itself into two zones**, and one whose evidence
+outweighs its rules is recommended to. `IDM-006` worked the shape out and `IDM-005` adopted it — both
+are playbooks, but the option is not restricted to playbooks, and nothing here makes it a duty.
+
+The form, so that the shape is recognisable across documents rather than reinvented per file:
+
+- The rules first; then a line reading exactly **`End of procedure`**; then the evidence — one row per
+  rule, saying what it cost and where the frozen record is.
+- A **stop instruction in the header**, naming that line: *read to `End of procedure` and stop.*
+- Markers in the rules pointing into the evidence table. They are **not sequential** — a marker stays
+  with its rule when the rules renumber — and **nothing above the line may depend on them**, because
+  the reader who obeys the stop instruction never sees them.
+
+**What the split buys, and the hazard it carries.** It buys a document that can be acted on without
+reading its argument, and argued with without re-deriving its rules. It costs a standing hazard, found
+the first time it was used: **a caveat that qualifies a rule is invisible if it lives only in that
+rule's evidence row.** `IDM-005`'s step 2 was exactly that — the one step with nothing behind it, and
+its disclaimer sat below the line where a session following the stop instruction would never reach it.
+It was folded into step 1 on 2026-08-21 rather than left standing with a hidden caveat. **A rule that
+needs a caveat gets it above the line, or it stops being a rule.**
+
 ## Status
 
 Every IDM opens with a status line: the status, and the date it came into force.
@@ -127,7 +151,9 @@ exist yet.
 | IDM | Title | In force | What it is about |
 |---|---|---|---|
 | **000** | About these documents | 2026-08-17 | This file: what a method document is, how they are numbered, and the index |
-| **001** | [Git branches, and where a branch is recorded](IDM-001-git-branching.md) | 2026-08-17 | The four prefixes by kind of work, `phase-N-` as an orthogonal form any of them may take, `--no-ff` always, the folder⇄branch slug rule, what happens to a rejected plan, and **closing out status placeholders as part of the merge** — generalised from the `Merge commit` row after the narrow wording was followed and the defect happened anyway |
+| **001** | [Git branches, and where a branch is recorded](IDM-001-git-branching.md) | 2026-08-17 | The four prefixes by kind of work, `phase-N-` as an orthogonal form any of them may take, `--no-ff` always, the folder⇄branch slug rule, what happens to a rejected plan, and **closing out status placeholders as part of the merge** — generalised from the `Merge commit` row after the narrow wording was followed and the defect happened anyway. **Amended 2026-08-21**: a branch carrying no phase number has no phase note, so its permanent record is its merge commit message |
 | **002** | [Harness configuration: the permission allowlist](IDM-002-harness-configuration.md) | 2026-08-17 | The tracked/local split and its admission test, the exact-match `.env` deny and why it does not reopen `EPD-004` decision 19, and what an allowlist entry does to a rule nobody re-read |
 | **003** | [Development tooling](IDM-003-development-tooling.md) | 2026-08-17 | The ruff pin, both halves, why `make lint` cannot catch a column-width change, and how to try a version. And `ty`: tried and refused, recorded rather than deleted |
 | **004** | [Reviewing work that has not happened yet](IDM-004-reviewing-unexecuted-work.md) | 2026-08-18 | The **forward** review, and the line between it and `../README.md`'s closing one. Derive the charter before reviewing; run the author and a cold reader **in parallel** on different questions; six rules including read-only and *nothing found is a complete answer*. Written from one run that returned 22 findings at 18% overlap, and refuted a claim the author had already written into four documents |
+| **005** | [Opening a milestone](IDM-005-opening-a-milestone.md) | 2026-08-20 | Seven steps mined from Milestone 1's opening: name the falsifiable central claim, the non-goals **and the experiment that would refute it**, **capture the real input before specifying anything**, spike, fork the expensive questions as EPDs, mark the spec measured / inferred / assumed, plan at decreasing resolution, open the folder and the branch. Two zones. Moved from `../README.md` with the steps unchanged and the shape not — and then **amended 2026-08-21**: the old step 2 was folded into step 1, because it was the one step of the eight with no evidence behind it |
+| **006** | [Closing a milestone](IDM-006-closing-a-milestone.md) | 2026-08-20 | Nine steps: freeze, write the milestone README, harvest into `../reference/`, `lessons.md`, `measurements.md`, `../backlog.md`, reset `../status.md`, repoint and re-check, rewrite the playbook. **Two zones, and the line between them is load-bearing**: the nine steps, then `End of procedure`, then one evidence row per rule saying what it cost and where the frozen record is. To run a close, read to the line and stop. Moved from `../README.md` **and repaired** — the version written there was the narrative of the restructure that produced it, with five of the seven decided steps missing |

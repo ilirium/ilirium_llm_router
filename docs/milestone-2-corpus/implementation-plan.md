@@ -2,10 +2,16 @@
 
 **Opened 2026-08-17 on `docs/phase-8-method-and-guardrails`, forked from `main` at `6253cbc`.**
 
-Written at **decreasing resolution**, per the opening playbook's step 7 in `../README.md`: the next
+Written at **decreasing resolution**, per the opening playbook's step 6: the next
 phase in full, the one after in outline, the rest as a title and the question it exists to close.
-Plans here are wrong on contact often enough that detail beyond the next phase is waste — four of
-Milestone 1's six phases found their own plan wrong on contact.
+Plans here are wrong on contact often enough that detail beyond the next phase is waste. **How
+often is `../reference/lessons.md` lesson 1's to say, and that file is canonical** — this sentence
+carried its own count until 2026-08-21, and both halves of it were wrong.
+
+*The opening playbook moved from `../README.md` to `../method/IDM-005-opening-a-milestone.md` on
+2026-08-20 with its steps unchanged, and was then **amended on 2026-08-21**: the old step 2 folded
+into step 1, leaving seven, renumbered. Every reference to it in this file is to the seven-step
+form.*
 
 ---
 
@@ -190,23 +196,27 @@ is not known.
 
 ## What is deliberately not done yet
 
-The opening playbook has eight steps. **Steps 1–7 are not run**, and this section exists so that a
+The opening playbook has seven steps. **Steps 1–6 are not run**, and this section exists so that a
 later session does not read their absence as an oversight.
 
 | Step | State |
 |---|---|
-| 1. Name the falsifiable central claim, and the non-goals | **deferred to Phase 9** — see above |
-| 2. Run the cheapest experiment that could refute it | deferred; it *is* Phase 9's gate |
-| 3. Capture the real input | **NOT discharged** — settled 2026-08-17 by Phase 9's re-derivation. `docs/captures/` holds **one** body, and one body cannot exercise a cross-body dictionary. Phase 9's Group B spends it |
-| 4. Spike whatever the architecture depends on | not started |
-| 5. Settle the expensive-to-reverse questions as EPD forks | **EPD-003 already is one.** Whether it needs a sibling is unknown |
-| 6. Write the spec, marking every statement measured / inferred / assumed | not started |
-| 7. Write `implementation-plan.md` at decreasing resolution | **this file, partially** — Phase 8 in full, Phase 9 in outline, the rest as titles |
-| 8. Open the folder and the branch | **done** — this folder, and `docs/phase-8-method-and-guardrails` |
+| 1. Name the falsifiable central claim, the non-goals, and what would refute it | **deferred to Phase 9** — see above. The refuting experiment *is* Phase 9's gate |
+| 2. Capture the real input | **NOT discharged** — settled 2026-08-17 by Phase 9's re-derivation. `docs/captures/` holds **one** body, and one body cannot exercise a cross-body dictionary. Phase 9's Group B spends it |
+| 3. Spike whatever the architecture depends on | not started |
+| 4. Settle the expensive-to-reverse questions as EPD forks | **EPD-003 already is one.** Whether it needs a sibling is unknown |
+| 5. Write the spec, marking every statement measured / inferred / assumed | not started |
+| 6. Write `implementation-plan.md` at decreasing resolution | **this file, partially** — Phase 8 in full, Phase 9 in outline, the rest as titles |
+| 7. Open the folder and the branch | **done** — this folder, and `docs/phase-8-method-and-guardrails` |
 
-**Step 3 was the one worth re-reading before Phase 9**, and re-reading it paid. The playbook calls it
-the highest-leverage step and the easiest to skip, and Milestone 1's capture *changed* the
-architecture rather than informing it.
+*Renumbered 2026-08-21 when the playbook lost a step. This table read eight rows, with a separate
+step 2 — "Run the cheapest experiment that could refute it — deferred; it is Phase 9's gate" — until
+that step was folded into step 1. Nothing about what Milestone 2 did or skipped changed; only the
+numbering did.*
+
+**The capture step, now step 2, was the one worth re-reading before Phase 9**, and re-reading it
+paid. The playbook calls it the highest-leverage step and the easiest to skip, and Milestone 1's
+capture *changed* the architecture rather than informing it.
 
 *Settled 2026-08-17. It is **not** discharged, and the hedge above was right to exist. `docs/captures/`
 holds one 119 KB request; the frozen CSV holds body lengths and no bodies; the probe bodies are

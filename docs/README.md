@@ -25,13 +25,16 @@ Start here. Almost every filing question is answered by one of these eight rows.
 | How the work was sequenced, and what was known at the time | `milestone-N-*/` | Is it a plan, a phase note, a record of a decision's ordering? |
 | A question written down before it is answered | `epd/` | Is the decision genuinely open? |
 
-And two files at the root of `docs/` that are neither durable nor archived:
+And the files at the root of `docs/` that are neither durable nor archived. *No count here on
+purpose: this sentence read "two files" over three rows from 2026-08-17 until 2026-08-21, which is
+`reference/lessons.md` lesson 6 happening in the manual that warns about it.*
 
 | | |
 |---|---|
 | `status.md` | **State.** Where we stopped, where the project is, what is next. No work items live here |
 | `backlog.md` | **Inventory.** Unscheduled work, each item with why it is parked and why the question may be weaker than it looks. No state lives here |
 | `prompt.md` | **The next session's opening instruction, and nothing else.** Added 2026-08-17. It names what to read and what to distrust; it must never summarise what those documents say. **It expires when the phase it opens is merged** — check `status.md` before trusting it |
+| `prompt-<branch-slug>.md`, `merge-<branch-slug>.md` | **`prompt.md`'s class, for a branch that cannot have `prompt.md`.** Added 2026-08-21. When `prompt.md` is occupied by another branch, a second branch names its own: `prompt-` to open a session on it, `merge-` to say what the merge leaves for a follow-up session to integrate. Same rules as `prompt.md` — pointers, never a summary; paths from the repository root, so `procedures/link-check.py` does not check them. **Deleted by the merge that retires it**, which is part of the merge and not tidying afterwards (→ `method/IDM-001-git-branching.md`) |
 
 **`prompt.md` is the one file here that is allowed to go stale**, which is why it carries its own
 expiry rule. It exists because sessions are cleared deliberately and a fresh one starts cold; it is
@@ -112,7 +115,7 @@ has a trigger.
 ### `method/` — how the work is done
 
 Rules about the process rather than about the router: branch naming, harness configuration, which tools
-are pinned and why. **The conventions, the status vocabulary and the index are in
+are pinned and why, and both milestone playbooks. **The conventions, the status vocabulary and the index are in
 `method/IDM-000-about-these-documents.md`** — read it before writing one. Numbered `IDM-NNN-<slug>.md`,
 and there is deliberately no `README.md` in the tier: `IDM-000` *is* the index, matching `epd/`.
 
@@ -456,83 +459,44 @@ claim; that sweep is part of the job.
 
 ## Playbooks
 
-Read the relevant one and work from it. These are last in this file because they are used twice a year
-while the filing rules above are used every week.
+Read the relevant one and work from it. **Both left this file on 2026-08-20** for `method/`, where a
+rule about how the work is done belongs — and `EPD-004:625`'s own growth rule had already fired for the
+closing one, at 51 lines against a 40-line trigger. What stays here is a pointer each, naming the
+trigger.
+
+*That growth rule named `procedures/closing-a-milestone.md` as the destination, and the addendum at
+`EPD-004` decision 12 records why that is not where they went: the rule was written on 2026-08-16, when
+decision 18 had declined a `method/` tier. "Where does it go?" above settles it — `procedures/` is a
+check you re-run against a new release; a playbook is a rule about how the work is done.*
 
 ### Opening a milestone
 
-Mined from Milestone 1's opening rather than invented. In order:
+→ **`method/IDM-005-opening-a-milestone.md`** holds all of it, and is canonical. **Open it before
+naming a milestone's central claim, before writing `implementation-plan.md`, or before opening the
+folder and the branch.** In one line, so you know whether you need it: seven steps mined from
+Milestone 1 — name the falsifiable claim, the non-goals and the experiment that would refute it,
+**capture the real input before specifying anything**, spike what the architecture depends on, fork the
+expensive-to-reverse questions as EPDs, mark every spec statement measured / inferred / assumed, plan
+at decreasing resolution, then open the folder and the branch.
 
-1. **Name the falsifiable central claim, and the non-goals.** Milestone 1's was "no protocol
-   translation is needed, and a local model can drive a real coding session" — a sentence that could
-   have come out false.
-2. **Run the cheapest experiment that could refute it**, before specifying anything.
-3. **Capture the real input.** This is the highest-leverage step and it is easy to skip. Milestone 1
-   captured 118 KB of actual request bytes on day one; it turned up three body fields nobody had
-   anticipated, and a full-body parse would have silently dropped all three. The capture did not
-   inform the architecture, it **changed** it. Everything else at that stage was reasoning; this was
-   the only step able to contradict the reasoning.
-4. **Spike whatever the architecture depends on**, filing each spike straight into `procedures/` or
-   `captures/` so it is re-runnable rather than a memory.
-5. **Settle the expensive-to-reverse questions as EPD forks**, and answer them explicitly.
-6. **Write the spec, marking every statement measured / inferred / assumed**, and give each assumption
-   the cheap check that would settle it. Milestone 1's spec was reliable where it recorded measurements
-   and unreliable where it recorded predictions, with both in the same prose — several predictions
-   were an hour's work to test and stood for five phases.
-7. **Write `implementation-plan.md` at decreasing resolution** — the next phase in full, the one after
-   in outline, the rest as a title and the question it exists to close. Plans here are wrong on
-   contact often enough that detail beyond the next phase is waste. The phase written in full gets a
-   numbered **task list** in its own `plan.md`; see "The unit of work inside a plan is a task".
-8. **Open the folder and the branch.**
+*The playbook was written into this file on 2026-08-16 and moved out on 2026-08-20. The move left the
+eight steps unchanged and reshaped the document into two zones, so a session opening a milestone reads
+the steps and stops before the evidence. **A later amendment on 2026-08-21 did change them** — the old
+step 2 folded into step 1, leaving seven — and `IDM-005`'s `E2` says why. `EPD-004` decision 12 put the
+playbook here; the addendum at that decision says why it left.*
 
 ### Closing a milestone
 
-**Written 2026-08-16, from running it once.** Milestone 1's close is
-`milestone-1-core/phase-7-docs-restructure/` — fifteen commits, and its `notes.md` records what each
-one actually cost. The order below is the order that worked; the warnings are things that went wrong.
+→ **`method/IDM-006-closing-a-milestone.md`** holds all of it, and is canonical. **Open it before
+freezing a phase note, before harvesting anything into `reference/`, and before resetting `status.md`.**
+In one line, so you know whether you need it: nine steps — freeze the plan and the phase notes, write
+`milestone-N-<slug>/README.md`, harvest the durable facts into `reference/`, the lessons into
+`lessons.md`, the numbers into `measurements.md`, the live items into `backlog.md`, reset `status.md`,
+repoint everything and re-check, then rewrite the playbook itself from what the close cost.
 
-1. **Write this file's rules first, before anything moves.** Every later step is then checkable
-   against something. Doing it fourth in a fifteen-commit plan was right and would have been wrong
-   anywhere later.
-2. **Run one extraction as a gate before planning the rest.** Take the single hardest document and
-   pull its durable half into `reference/`. If the durable half does not separate from the process
-   half, the whole split is wrong and you have spent an hour instead of a week. Milestone 1's gate
-   passed and the plan survived.
-3. **Write the tier indexes for the finished shape, not the current one.** An index listing three of
-   its eventual seven files is worse than one written slightly early.
-4. **Assemble the reference tier.** The work is deciding what each file does *not* take. Expect a
-   first draft to pull in material that already has a home; cut it, and leave a table naming where
-   each cut thing lives **and the trigger that sends you there**.
-5. **Move the files, repairing each tier's links in the same commit as the move that breaks them.**
-   Only the archive waits. A reference document that is wrong for four commits is one nobody can
-   trust while the work runs.
-6. **Then cut `CLAUDE.md`**, once every destination exists. Not before.
-7. **Split state from inventory** — `status.md` and `backlog.md` — and keep the column that says
-   *why each backlog item is parked*.
-8. **Repoint everything the link checker reports**, then the citations in `src/`, `tests/` and config,
-   which the checker cannot see.
-9. **Write this playbook**, last, from what it cost.
-
-**Six things that will bite, all of which did:**
-
-- **Searching for what moves will not find what gets cut.** A grep for moving paths structurally
-  cannot find a citation that names a *section title*. Six of those were stale and were found by
-  reading, not grepping.
-- **A path can be simultaneously valid and wrong.** A file inside the archive addressing its own
-  sibling by going out and back resolves perfectly. `procedures/link-check.py` now reports this class;
-  it did not when it happened.
-- **A name-based rewrite cannot fix a link that broke by depth**, and will confidently make it worse.
-  Repoint by depth, and read the diff.
-- **Longer paths break the wrap**, and a mechanical reflow will corrupt a list if it is not written to
-  respect one. Check the reflow against a list before trusting it.
-- **A path inside a code fence may be relative to the repository root**, not to the citing file.
-  Rewriting it "correctly" makes the command wrong.
-- **Check the claim you are planning against, including when it is your own.** The plan asserted that
-  one code citation needed no edit, four times across three documents. It was wrong, and it survived a
-  fresh-context review that verified all eleven citations line for line — because that review checked
-  the citations existed, not what they would need.
-
-**And one thing that will feel like a rule and is not.** The plan predicted the narrative drag of
-phase notes would be the hard part of extraction. It was not; the hard part was **destination
-collision** — durable facts belonging to files that did not exist yet. Plan the reference tier before
-the extraction, not during it.
+**It was repaired on the way out, not merely moved** — the one asymmetry between the two pointers on
+this page. The version written into this file on 2026-08-16 was the narrative of the restructure that
+produced it, and five of `EPD-004` decision 12's seven steps were absent from it, the harvest among
+them. That is `milestone-1-core/documentation-review-2026-08-16.md`'s highest-consequence finding (G1),
+parked unactioned in `backlog.md` since 2026-08-17. `IDM-006` restores the spine, names the Phase 7
+commit that ran each step, and keeps the 2026-08-16 narrative in full as evidence.

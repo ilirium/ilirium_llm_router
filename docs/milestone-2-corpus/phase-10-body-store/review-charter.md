@@ -183,6 +183,7 @@ Both runs have returned; their disagreements are named rather than silently reso
 separated from questions; every finding carries a verdict, evidence and a cost; and the work list is
 in `notes.md` under Task 3a with what was accepted, what was refused, and why.
 
-**Then, and only then, `IDM-004` is written from what this cost** — per `../../README.md`'s own
-playbook rule, *write this playbook last*, and `IDM-000`'s requirement that a method document be
-evidenced from this repository rather than guessed.
+**Then, and only then, `IDM-004` is written from what this cost** — per the closing playbook's own
+rule, *write this playbook last* (`../../README.md` when this was written;
+`../../method/IDM-006-closing-a-milestone.md` step 9 from 2026-08-20), and `IDM-000`'s requirement
+that a method document be evidenced from this repository rather than guessed.
