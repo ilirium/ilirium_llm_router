@@ -8,7 +8,8 @@ because they could not be: the 8192 reload is not reachable from the CLI, and th
 so there was nothing to bisect. Both are recorded rather than quietly dropped. **Read
 `phase-4-notes.md` for the results** — this file is the plan, kept as written plus its outcomes.
 
-Branch: `feat/phase-4-lmstudio-parity`, off `main` at `cc65aed`. Merge back with `--no-ff`.
+Branch: `feat/phase-4-lmstudio-parity`, off `main` at `cc65aed`, **merged 2026-08-06 with `--no-ff`
+as `50444c5`**.
 
 This is a **measurement phase**. Almost nothing here is code. The output is an honest list of what a
 local backend does and does not support, and the plan's own instruction is to fix nothing unless

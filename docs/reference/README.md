@@ -18,13 +18,15 @@ is at each end of it, and how confident to be about any of it.
 | 1 | `architecture.md` | Why this exists at all, and why it dispatches rather than translates. Includes the observed shape of a real request |
 | 2 | `design-decisions.md` | Every decision taken deliberately, with the reasoning that produced it. **Read this before reversing anything** |
 | 3 | `observability.md` | The CSV's twenty columns, what each is for, and the constraints on the recorder |
-| 4 | `backend-anthropic.md` | Model IDs, the two request-shape rejections, OAuth forwarding, the rate-limit shape |
-| 5 | `backend-lmstudio.md` | What the local backend accepts, honours and ignores; context, prefill and timeouts |
-| 6 | `measurements.md` | Every number quoted anywhere, with its date, instrument, slice, and what it is for |
-| 7 | `lessons.md` | How this project has been wrong, and what caught it |
+| 4 | `corpus.md` | The body store: what lands on disk, in what shape, and the dictionary lifecycle. **Off by default** |
+| 5 | `backend-anthropic.md` | Model IDs, the two request-shape rejections, OAuth forwarding, the rate-limit shape |
+| 6 | `backend-lmstudio.md` | What the local backend accepts, honours and ignores; context, prefill and timeouts |
+| 7 | `measurements.md` | Every number quoted anywhere, with its date, instrument, slice, and what it is for |
+| 8 | `lessons.md` | How this project has been wrong, and what caught it |
 
 **If you are here to look one thing up**, the shortcuts: a number → `measurements.md`; a decision you
-want to change → `design-decisions.md`; whether a backend supports something → its own file.
+want to change → `design-decisions.md`; whether a backend supports something → its own file;
+what is on disk under `logs/corpus/` → `corpus.md`.
 
 ## What belongs here
 

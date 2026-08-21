@@ -41,8 +41,8 @@ def test_minimal_config_loads_with_defaults(tmp_path: Path) -> None:
 def test_relative_paths_resolve_against_the_config_file(tmp_path: Path) -> None:
     config = load_config(write(tmp_path, MINIMAL))
 
-    assert config.logging.file == tmp_path / "logs/router.log"
-    assert config.stats.file == tmp_path / "logs/calls.csv"
+    assert config.logging.file == tmp_path / "logs/telemetry/router.log"
+    assert config.stats.file == tmp_path / "logs/telemetry/calls.csv"
 
 
 def test_absolute_paths_are_left_alone(tmp_path: Path) -> None:

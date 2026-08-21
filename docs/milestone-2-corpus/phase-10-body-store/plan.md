@@ -1,7 +1,9 @@
 # Phase 10 — the body store: plan
 
 **Written 2026-08-18 on `feat/phase-10-body-store`, forked from `main` at `d885b2f`. Execution is
-under way; the group markers under "The tasks" say how far, and are the only place that says so.**
+complete through Task 24; the group markers under "The tasks" say so task by task, and are the only
+place that says so. The branch is **not merged — that is the owner's to do**, and the Record table
+below carries the placeholder until it is.**
 
 *This line read "Group A has executed; Tasks 4 to 24 have not" until 2026-08-18, when Task 4
 executed and made it false. **It was a second copy of what the group markers already carry**, and a
@@ -55,6 +57,10 @@ the rejected alternatives. *(The rows are marked with their date. This section i
 decision's authority is recorded, which is exactly why the 2026-08-19 interview happened at all — see
 the row on retraining below.)*
 
+**A third row was added 2026-08-20, during execution rather than in an interview.** Task 16 was
+written to ask before it touched the live files, so it did; the answer is an owner decision and
+belongs here rather than in a commit message nobody greps.
+
 | | Decision |
 |---|---|
 | **Capture default** — `EPD-003` open question 4 | **Opt-in, one switch, off by default.** `corpus.enabled: false`. The CSV is always on because it is cheap and holds nothing sensitive, and **neither is true here** — bodies hold source code, file contents and anything typed. **The named cost:** the durable day-partitioned index exists only when the corpus does, so `calls.csv`'s expiry stays unfixed on a machine that never turns the corpus on. A two-switch shape — index always-on, bodies opt-in — was offered and declined, on one config knob rather than two |
@@ -87,6 +93,7 @@ the row on retraining below.)*
 | **Task 8's two scope stretches** — *2026-08-19* | **Both stand.** The index's **column names** are declared in `corpus.py` so the `manifest` writes `len(INDEX_COLUMNS)` rather than a hand-typed 26 that could drift from Task 10's tuple — the manifest exists to detect exactly that. And **`CorpusWriter` takes a directory and a level**, not a config block, because **Task 11 is the only task that builds that block** and it runs later; completing the `StatsWriter` mirror is a one-line change there. **No register value moved by either** |
 | **The dictID the router stamps** — *2026-08-19* | **We assign it ourselves, derived from the dictionary's content.** sha256 of the dictionary **with its own ID field zeroed**, first four bytes, big-endian, `or 1`. **Not libzstd's**, which Task 7 measured does *not* cover the entropy tables: the same samples at levels 3, 9 and 19 give **one ID and three different files**, while the content-derived one gives **three**. **Three alternatives were rejected.** *Leaving libzstd's default* — it leaves that collision live and manageable only by policy. *Folding the hash into zstd's non-reserved range `32768 … 2**31-1`* — offered, and declined on the ground that this corpus is private, libzstd accepted **every** `uint32` tested, and the reserved-range claim is documented rather than measured. *A timestamp-based ID* — unique per run but it identifies the **run**, not the bytes, so retraining on identical material would yield a different ID for an identical file |
 | **The retry finding** — *2026-08-19* | **No rerun.** `gate.py` trained on **48 bodies, 26 distinct** — 46% repeats, being `overloaded_error` retries — and the owner declined a measurement of the effect, on the ground that these sessions are too short for the numbers to be more than approximate and that they carry enough accuracy to execute against. **Task 21 states the training-set composition in the slice column** instead |
+| **Task 16's live files** — *2026-08-20* | **They are not moved; `logs/telemetry/` starts empty.** The task row below ends *"and the live files on disk"*, and this session asked before touching them. The owner chose to leave `logs/calls.csv` (42,479 bytes, last written 2026-08-17) and `logs/router.log` (60,244 bytes, written by Task 15's install) where they are and let the router create the new pair on its next start. **Two alternatives were rejected:** *moving both*, which keeps one growing history but relocates the only record of Milestone 1's traffic, and *copying them*, which leaves two copies of which only one grows and nothing to tell a later session which is real. **The consequence is named rather than left to be discovered:** Task 18's layer-3 check now starts from an empty location, so *"a real call produces a row"* cannot be confused with a row that was already there. The two files stay on disk, unread; `logs/` is gitignored either way |
 
 ### And two questions the owner did not have to answer
 
@@ -956,18 +963,27 @@ one exception this phase holds was spent before anything executed, and Group B's
 sits in Group C because **Group C ships before Group D** and the reader is what Group D's trainer
 depends on — a dependency cannot be scheduled after the thing that needs it.
 
-### Group E — the telemetry move *(not started)*
+### Group E — the telemetry move *(executed)*
 
 | # | Task |
 |---|---|
 | **16** | Move `calls.csv` and `router.log` into `logs/telemetry/` — `config.yaml`, `config.py`'s two defaults, `tests/test_config.py`, `tests/test_logging_setup.py`, and the live files on disk |
 | **17** | The sweep `../../procedures/link-check.py` **cannot see** — `CLAUDE.md`, `README.md`, `../../reference/observability.md`, `../../procedures/testing-against-claude-code.md`, `../../procedures/lmstudio-capability-probes/probe.py`, **and `../../procedures/link-check.py:45`**, whose docstring uses `logs/calls.csv` as its worked example — a stale path *inside the instrument Task 24 runs*, and one it cannot catch itself because it globs `*.md`. Stating which archive and EPD hits were **left** and why |
 
-### Group F — verify, harvest and close *(not started)*
+**Two things happened in execution that these two rows do not say**, both recorded in `notes.md`
+under *"Tasks 16 and 17"*. **Task 16's live files were not moved** — the owner decided that when
+asked, and the row is in "What is settled, and by whom" above. **Task 17's sweep list was one
+citation short:** it names `probe.py` for the *message* at line 290, but the path the probe actually
+opens is line 48, `CALLS_CSV = ROOT / "logs" / "calls.csv"`, built from segments and so invisible to
+a grep for the path. Both lines are repointed. A sweep list compiled by grepping a path finds prose,
+not construction.
+
+### Group F — verify, harvest and close *(executed, except the merge — the owner's)*
 
 | # | Task |
 |---|---|
 | **18** | **The configuration check** — every key, old and new, against "The configuration, and how it is verified" below. It gates the harvest: nothing is written into the durable tier from a build nobody exercised |
+| **18a** | **Report the arrived/recorded pair at shutdown.** *Inserted 2026-08-20, because Task 18's observation 5 could not be performed:* the pair was counted and **emitted nowhere**, readable only by a test reaching into `app.state.proxy`. One INFO line from the lifespan, on its own rather than folded into the corpus summary, because `corpus.enabled` is false by default and that summary is not written at all then. **It reports the hole and does not close it** — owner's decision the same day. Plus the test that pins the losing case, driven on the ASGI app |
 | **19** | `docs/reference/corpus.md` — the durable spec, with a nameable trigger; its row in `../../reference/README.md`; a `CLAUDE.md` pointer that says **when** to open it |
 | **20** | Close `EPD-003`'s open questions **3–6** in place and dated; graduate what changes a decision into `../../reference/design-decisions.md` |
 | **21** | The numbers into `../../reference/measurements.md` — **all four columns or they do not go in** |
@@ -1051,7 +1067,7 @@ to replace:
 3. **A day folder is self-contained** — `tar` it, unpack it elsewhere, and every blob in it opens.
 4. **A dropped body is a row, not an absence** — force the queue bound low, and see `dropped` in the cell, the `WARNING` once, and the counter afterwards.
 5. **`arrived` equals `recorded`** in the summary after a clean shutdown, which is the counter pair doing its one job.
-6. **A dictionary installed while the router is running is picked up without a restart** — write one into `<dir>/dicts/` with `--train-dict` from a second terminal, and see the next bodies compressed against it. *Added 2026-08-19, and **runnable only because the manual command bypasses the once-a-day guard** — the second review found this check asking for something the trainer was designed to refuse.*
+6. **A dictionary installed while the router is running is picked up without a restart** — write one into `<dir>/dicts/` with `--train-dict` from a second terminal, and see the following bodies compressed against it. **Corrected 2026-08-20 at Task 18: not the *next* bodies.** The pickup is `RESCAN_EVERY` = **500 bodies**, and one call stores two, so the swap is invisible until the **250th call** after the install — or until a day folder opens, which is the other trigger. It took 260 calls to see. The code comment was right; this line was not, and this line is what a later session tests against. *Added 2026-08-19, and **runnable only because the manual command bypasses the once-a-day guard** — the second review found this check asking for something the trainer was designed to refuse.*
 7. **A day folder that saw a mid-day swap still opens from itself alone** — two dictionaries in its `dicts/`, blobs referencing both, and `tar`-and-unpack-elsewhere still reads every one. This is what the copy-before-swap ordering exists for, and it is the only observation that can catch that ordering being wrong.
 8. **`retrain.window_days: 0` trains nothing** — no thread, no retrain-log line, no new dictionary, and the router still using the newest one already installed.
 9. **`corpus.enabled: false` starts no trainer either** — the stronger form of observation 1, and a separate switch from the one above. No `<dir>/`, no `dicts/`, no `.incoming/`, nothing.
@@ -1251,6 +1267,7 @@ empty cell, never a zero.*
 | `<day>/index.csv`, `<day>/manifest`, `<day>/dicts/`, `<day>/incoming/` | — | `incoming/` here has **no** dot |
 | `<day>/manifest`'s contents | `index_schema_version: 1`<br>`index_columns: 26` | **two lines, and the format was as unset as the version** *(settled 2026-08-19)*. Key-and-colon because that is what `config.yaml` already reads like, and it greps |
 | a blob | `<day>/{requests,responses}/<2 hex>/<64 hex>.zst` | **2-character fan-out**, sha256 of the **plaintext**, `.zst` |
+| `logs/telemetry/` | — | **Added 2026-08-20 at Task 16.** `calls.csv` and `router.log` live here, and they are **not** the corpus: `logs/corpus/` is a sibling directory by design and must never be swept into this one. The value is a **config default** in both `config.py` and `config.yaml`, not a module constant, so Task 24 checks it against those two rather than against a `NAME = …` line. The directory is created by the handlers themselves — `logging_setup.py:74` and `stats.py:155` both `mkdir(parents=True)` — so nothing creates it until the router runs |
 
 **The `.incoming/` versus `incoming/` asymmetry is real and unexplained in the plan.** The defensible
 reason is that `<dir>/dicts/` is *listed* by the pickup and a dot-prefix keeps staging out of that
@@ -1410,10 +1427,10 @@ as an instance gets obeyed as an instance**, so this section names the instances
 
 | Where | Placeholder | Closed out at |
 |---|---|---|
-| The header, first line | *"Execution is under way; the group markers … say how far"* | Task 24. *Reworded 2026-08-18: it enumerated tasks, went stale the moment Task 4 ran, and was a second copy of the group markers. It now points at them instead, so there is one place to close out rather than two* |
-| ~~**Five**~~ ~~**Four**~~ **Three** group headings — ~~B,~~ ~~C,~~ D, E, F | `*(not started)*`, and `*(in progress)*` once a group's first task runs. Both are matched by the grep below, which is why those two are the only permitted spellings — **a third form would be invisible to it**, which is the defect finding 13 caught. **Group B closed out 2026-08-18** when Task 6 finished and **Group C on 2026-08-19** when Task 13a did; the count moved with each, because a count that does not move is how this table went wrong before | Task 24, each group as it completes |
+| The header, first line | *"Execution is under way; the group markers … say how far"* | **Closed out 2026-08-20 at Task 24** — it now says execution is complete through Task 24 and that the merge is the owner's. *Reworded 2026-08-18: it enumerated tasks, went stale the moment Task 4 ran, and was a second copy of the group markers. It now points at them instead, so there is one place to close out rather than two* |
+| ~~**Five**~~ ~~**Four**~~ ~~**Three**~~ **No** group headings — ~~B,~~ ~~C,~~ ~~D,~~ ~~E,~~ ~~F~~ | ~~`*(not started)*`~~ | **All closed out by 2026-08-20.** D at Task 15, E at Task 17, F at Task 18a — F reads *(Tasks 18 and 18a executed)* rather than a bare *executed*, because Tasks 19–24 are the harvest and the marker should not claim them before they run |
 | ~~Group **A**'s heading~~ | ~~`*(executed, except 3a)*`~~ | **Closed out 2026-08-18** when Task 3a finished, which is what this row said would close it. *Added earlier the same day: the table said "six" group headings and only five carried the marker, so the uncatalogued sixth was the one form the sweep could not see. Kept struck rather than deleted — a row that vanishes cannot show that the mechanism worked* |
-| The Record table below | `Merge commit \| not yet merged` | The merge itself |
+| ~~The Record table below~~ | ~~`Merge commit \| not yet merged`~~ | **Closed out 2026-08-21 at the merge**, which landed as `32c26bb`. `notes.md`'s first line closed with it, and those were the only two placeholders this phase left standing |
 | "What is settled" | *"still open questions until Task 20"* | Task 20 |
 | ~~"What this phase does not settle"~~ | ~~*"Raised 2026-08-19 and not ratified"* — the dictionary storage figure~~ | **Closed out 2026-08-19**, the same day it opened: the owner accepted it as too small to act on and not judgeable without real usage data. Kept struck rather than deleted — a row that vanishes cannot show the mechanism worked |
 | "The retraining path" and Task 14a | *"which of the two is decided by Task 14a's measurement"* — the trigger is startup-only **or** startup-plus-rollover, and this file deliberately does not say which | **Task 14a**, by measuring the training wall clock. **If it is never closed out, the phase ships a design with a hole in it** and the group marker will not show that, because the hole is inside a task rather than in front of one |
@@ -1477,6 +1494,19 @@ backends**, and the frozen CSV has one with 10,027 response bytes already stream
 **What remains is a race, not a class of calls**: only if the generator is closed *before its first
 `__anext__`* is there no frame to throw into, so nothing runs. **It has never been observed here.**
 Named, not fixed, and the counter pair is what would first show it happening.
+
+> **Observed 2026-08-20 at Task 18a. The sentence above is spent, and it was right to hedge.** The
+> race is real and reproducible: a caller already gone when the response starts makes `send` raise on
+> `http.response.start`, the generator never takes its first step, `watch`'s `finally` never runs, and
+> **`record()` is never called** — `1 arrived, 0 recorded, 1 lost`, no row of any kind. An ordinary
+> *queued* disconnect still records, so the 2026-08-18 correction stands.
+>
+> **`proxy.py:256` had already named the case** — *"a generator that never runs at all, and so never
+> reaches its own `finally`"* — in the comment justifying `BackgroundTask(reply.aclose)`. `record()`
+> is inside that `finally`. Covered for the connection, uncovered for the row.
+>
+> **Still named rather than fixed**, and now *visible*: Task 18a emits the pair at shutdown on every
+> configuration. Closing the hole still needs the duplicate-row guarantee, which is unchanged.
 
 **Whether the router could run as several processes.** Recorded in `../../backlog.md` rather than
 built. The idea's session-distinguishing half is **already solved and measured** — `session_id` and
@@ -1587,7 +1617,7 @@ is wired**, not after.
 |---|---|
 | Branch | `feat/phase-10-body-store` |
 | Fork point | `d885b2f` |
-| Merge commit | *not yet merged* |
+| Merge commit | `32c26bb`, merged 2026-08-21 with `--no-ff` |
 
 *Writing "not yet merged" while it is true is correct; leaving it there after the branch is gone is
 this repository's signature failure, and `../../method/IDM-001-git-branching.md` names it. Closed out

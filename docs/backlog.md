@@ -117,17 +117,32 @@ stands for what is left. **One of its findings has been acted on; see below. The
 building router features. It is not blocked on anything and it is not scheduled; picking it up is a
 decision to spend a session on documentation instead of on the router.
 
-*Weaker than it looks?* **One item is not.** `reference/measurements.md:34` states a slice that
-recomputes to **0.245×** rather than 26.6× — the sign reversed. It makes a future session act
-confidently and wrongly, and it is cheap. Everything else in the file can wait.
+*Weaker than it looks?* **Two items were not, and both have now been fixed.** Everything else in the
+file can wait. Both are recorded below rather than deleted — a finding that vanishes cannot show the
+next reader whether it was fixed or forgotten, which is the same reasoning the entries themselves
+carry.
 
-> **The second of the two was fixed on 2026-08-17 by Phase 8, and is recorded here rather than
+> **`reference/measurements.md:34` was fixed on 2026-08-21, on the owner's instruction and outside
+> any review phase.** It stated its slice as *"26.6× (no warmup probes)"* while silently inheriting
+> the `/v1/messages` filter from the row above it; read as written it recomputes to **0.245×**, LM
+> Studio four times *faster* than Anthropic, the sign reversed. **The number was always right and the
+> slice label was not** — `measurements.md` now states the filter in full, and keeps 0.245× beside it
+> as the trap, on the same reasoning that keeps the 3.9× counter-example. Finding **V1** in the
+> review file is untouched and stays the primary record.
+>
+> This does **not** unpark the review. It was the one item the entry singled out as making a session
+> act confidently and wrongly, and it was cheap; the other ~30 findings and the six owner questions
+> are exactly where they were.
+
+> **The `README.md` worked example was fixed on 2026-08-17 by Phase 8, and is recorded here rather than
 > dropped.** `README.md`'s closing worked example told a filer to create a **second Phase 7**,
 > contradicting "Naming and numbering" in the same file. Phase 8's Task 4 was already rewriting that
 > sentence for two unrelated reasons of its own, so leaving a known bug inside it would not have been
-> scope discipline. See `milestone-2-corpus/phase-8-method-and-guardrails/notes.md`. *This paragraph
-> said "two items" and named both until then; silently deleting one would leave the next reader unable
-> to tell whether it was fixed or forgotten.*
+> scope discipline. See `milestone-2-corpus/phase-8-method-and-guardrails/notes.md`. *The "Weaker
+> than it looks?" paragraph above named both items until then, and this note was added when the first
+> was fixed: silently deleting one would leave the next reader unable to tell whether it was fixed or
+> forgotten. That paragraph was rewritten again on 2026-08-21 when the second was fixed too, on the
+> same reasoning — which is why there are now two notes under it rather than none.*
 
 > **G1 — the highest-consequence finding — was fixed on 2026-08-20, and is recorded here rather than
 > dropped.** *"The closing playbook is a log of this restructure, not a closing procedure"*: five of
@@ -204,6 +219,20 @@ inherited from what Phase 9's gate happened to measure, and its own `evidence/RE
 answers nothing about responses. **Under automatic retraining it would otherwise become permanent by
 default rather than by decision.** Responses may well be the larger volume; nobody has looked.
 
+**Whether archiving slows a call — failure mode 3 of Milestone 2's central claim.** *Added
+2026-08-21, from what Phase 10 deliberately did not settle; until then it lived only in `prompt.md`,
+which is the one file allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s
+table.* The claim reads *"…without parsing a payload, **without slowing a call**, and without special
+storage infrastructure."* Phase 10 discharged the *break* half by driving it and left the *slow* half
+untouched. Settling it needs **one driven session with capture on against one with it off**, comparing
+`ttfb_ms` and `duration_ms`. *Parked because* it needs somebody to drive two comparable sessions, which
+is not a thing a session arranges for itself. *Weaker than it looks?* **No — it is the only open item
+in this file holding a published claim open.** Everything else here is improvement; this one decides
+whether a sentence the project already asserts is true. **One trap, from this repository's own
+numbers:** the local backend's variance is large — `reference/measurements.md` has the same request
+size differing by ≥30% on two days — so a two-session comparison against LM Studio can be swamped by
+noise, and the Anthropic rows are the tighter instrument.
+
 **Before planning any of these, grep the frozen artefacts first.** Phases 3, 4 and 5 each found a
 third or more of their work already done, measured, or misdescribed. The limit is worth knowing too:
 the router logs metadata and never bodies, so old rows prove *a request succeeded* and can never
@@ -248,6 +277,23 @@ guarantee it cannot write a row twice, which is worse than missing one. *Weaker 
 **Yes, and that is the correction:** the original claim would have justified real work; the true one
 justifies watching. Phase 10's arrived-against-recorded counters are what would first show it
 happening.
+
+> **Observed 2026-08-20, at Phase 10's Task 18a. The "never been observed" clause above is spent.**
+> Driven on the ASGI app directly, because the window is too narrow to hit reliably over a socket: a
+> caller already gone when the response starts makes `send` raise on `http.response.start`, the
+> streaming generator never takes its first step, `watch`'s `finally` never runs, and **`record()` is
+> never called** — `1 arrived, 0 recorded, 1 lost`, no CSV row, no log line, no corpus entry. An
+> ordinary *queued* disconnect still records, exactly as the 2026-08-18 correction says.
+>
+> **`proxy.py:256` already named the case**, in the comment justifying `BackgroundTask(reply.aclose)`
+> — *"a generator that never runs at all, and so never reaches its own `finally`"*. `record()` is
+> inside that `finally`. The case was covered for the connection and not for the row.
+>
+> **Still parked, and deliberately.** The owner's decision of 2026-08-20 is *report it, do not close
+> it*: the duplicate-row guarantee named above is unchanged and is the whole difficulty. What changed
+> is that the loss is now **visible** — `app.py`'s `_report_counters` emits the pair at shutdown on
+> every configuration, and `tests/test_integration.py` pins the losing case, so closing the hole
+> later will announce itself by failing that test.
 
 > **Recorded rather than quietly rewritten.** The wrong version was written into this file, into
 > `milestone-2-corpus/phase-10-body-store/plan.md` and twice into its `notes.md`, and it was found by
@@ -364,11 +410,27 @@ to avoid pre-empting this decision, and that prose went stale invisibly — it s
 done" after Phase 9 merged. The per-phase table beside it never went stale. **So the axis that decided
 it was not duplication but what goes stale visibly**, which the item had not considered.
 
-**Close out the four `Branch:` lines that record intent instead of outcome.** Five exist across four
-of the six phases, in inconsistent places, and only `phase-4-notes.md:7` records the merge commit.
-The other four say "Merge back with `--no-ff`" — written before the merge and never updated. *Parked
-because* it is a review-phase checklist item under `EPD-004` decision 14, not standalone work. It is
-this repository's signature failure in miniature: a document recording intent and never closed out.
+~~**Close out the four `Branch:` lines that record intent instead of outcome.**~~ **Done 2026-08-21,
+on the owner's instruction.** Five lines existed across four of the six phases, in inconsistent
+places, and only `milestone-1-core/phase-4-lmstudio-parity/notes.md` recorded the merge commit; the
+other four said "Merge back with `--no-ff`" — written before the merge and never updated. All four
+now carry their merge commit in the form Phases 4, 8 and 9 already used:
+`milestone-1-core/phase-2-observability/notes.md` → `4d7d7f6`,
+`milestone-1-core/phase-3-failure-handling/notes.md` → `cc65aed`,
+`milestone-1-core/phase-4-lmstudio-parity/plan.md` → `50444c5`,
+`milestone-1-core/phase-5-config-and-timeouts/plan.md` → `c8401e9`. Every hash was read from
+`git log --merges` and cross-checked against `milestone-1-core/README.md`'s table.
+
+*It was parked as a review-phase checklist item under `EPD-004` decision 14, and the owner took it
+out of that ordering rather than waiting for the review.* **Two things are deliberately not done.**
+Phases 1 and 6 still carry no `Branch:` line at all — owner's decision, on the ground that the rule
+did not exist when they were written, and `milestone-1-core/README.md` holds both records anyway.
+And `EPD-004:703`'s *"four of six left open"* is **untouched**: that row records what Phase 6's review
+found, not what is outstanding now.
+
+*Kept struck rather than deleted, like the two entries above it.* This was this repository's
+signature failure in miniature — a document recording intent and never closed out — and an item that
+vanishes cannot show that the mechanism caught it.
 
 ---
 

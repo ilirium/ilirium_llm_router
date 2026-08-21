@@ -4,7 +4,8 @@ Written 2026-08-07, before the phase starts. `implementation-plan.md` says what 
 says how it will be run and in what order. `outstanding-work.md` says why these two items and not the
 others. Findings go in `phase-5-notes.md` as they are made.
 
-Branch: `feat/phase-5-config-and-timeouts`, off `main` at `74f38d6`. Merge back with `--no-ff`.
+Branch: `feat/phase-5-config-and-timeouts`, off `main` at `74f38d6`, **merged 2026-08-07 with
+`--no-ff` as `c8401e9`**.
 
 This is a **configuration phase**, and the first one since Phase 0 whose output is mostly code. Both
 items are small, both change how the router is configured, and both are the kind of change that is

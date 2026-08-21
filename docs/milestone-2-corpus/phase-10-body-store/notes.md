@@ -1,6 +1,11 @@
 # Phase 10 — the body store: notes
 
-Branch: `feat/phase-10-body-store`, off `main` at `d885b2f`. **Not yet merged.**
+Branch: `feat/phase-10-body-store`, off `main` at `d885b2f`, **merged 2026-08-21 with `--no-ff` as
+`32c26bb`.** The sentence this replaces read "Not yet merged", which was correct while it was true;
+leaving it after the branch is gone is the defect, and `../../method/IDM-001-git-branching.md` says
+so. **Filling this hash in is the one edit this note takes after being written**, and it is the same
+edit Phase 8's note records making. *The four Milestone 1 `Branch:` lines that never took it were
+closed out on the same day, immediately before this merge — see `../../backlog.md`.*
 
 Written **while the work is happening**, task by task. Everything below the re-derivation is added as
 it is found; nothing here is assembled afterwards.
@@ -2915,6 +2920,261 @@ The **write path under concurrency** (one worker by design), the **arrived/recor
 scanner**, and **Tasks 14e and 15**, which are not built. This looked at the dictionary and reader
 path, because that is where Task 14c's defect lived and where the same shape would recur.
 
+## Tasks 16 and 17 — the telemetry move, and a citation the sweep list missed — 2026-08-20
+
+**Group E is done in two commits and moved nothing on disk.** `logs/telemetry/` is now what
+`config.yaml` and `config.py` name, and every live document and instrument that cited the old paths
+was repointed. **`make test` stayed at 308** — this group adds no tests, because it changes no
+behaviour, only where two files are written.
+
+### The owner decided the live files stay where they are
+
+`plan.md`'s Task 16 row ends *"and the live files on disk"*, and this session asked before touching
+them, as `CLAUDE.md` requires. **The owner chose to leave them and let the router start fresh.**
+`logs/calls.csv` (42,479 bytes, last written 2026-08-17) and `logs/router.log` (60,244 bytes, last
+written 2026-08-20 at 14:03 by Task 15's dictionary install) are **still at `logs/`**, and nothing
+now reads them.
+
+**This is recorded because it will otherwise read as an oversight** — which is the same reason
+Task 17 states what it left. The consequences, written down rather than discovered later:
+
+- **`logs/telemetry/` does not exist yet.** Nothing creates it until the router runs; both handlers
+  `mkdir(parents=True)` at `logging_setup.py:74` and `stats.py:155`, so it needs no task of its own.
+  `make check` prints the new absolute paths and creates nothing — confirmed by listing `logs/`
+  after running it.
+- **Task 18's layer-3 check therefore starts from an empty location**, which makes its observations
+  *stronger*, not weaker: "a real call produces a row" cannot be confused with a row that was
+  already there.
+- **The two orphaned files are still the only record of Milestone 1's traffic** and of Task 15's
+  install. They are not deleted, and `logs/` is gitignored either way.
+
+### Task 17 found a citation the sweep list did not have
+
+`notes.md` finding 9 above names **`probe.py:290`** — the message *"is the router writing
+logs/calls.csv?"*. That is the printed string. **The path the probe actually opens is
+`probe.py:48`**, `CALLS_CSV = ROOT / "logs" / "calls.csv"`, built from segments, which is why a grep
+for the literal string missed it when finding 9 was written.
+
+**Repointing only line 290 would have left the probe reading a file that no longer exists while
+printing a message naming the new one** — a check that reports *"csv row not found"* for the wrong
+reason. Both lines are repointed. **This is the same shape as Group D's register correction**: the
+finding described the code less than completely, so the finding is corrected here rather than the
+code being bent to it.
+
+**The general lesson, and it is not about this one line:** a sweep list compiled by grepping for a
+path finds prose, not construction. Anything assembled from `/`-joined segments is invisible to it.
+The audit that caught this was `grep -rn '"logs"' --include='*.py'` — the segment, not the path.
+
+### The eleven live sites
+
+| File | Sites |
+|---|---|
+| `config.yaml` | 2 — `logging.file`, `stats.file` |
+| `../../../src/ilirium_llm_router/config.py` | 2 — the `Logging` and `Stats` defaults |
+| `../../../tests/test_config.py` | 2 — the resolve-against-the-config-file assertions |
+| `../../../tests/test_logging_setup.py` | 1 — a docstring naming the default |
+| `../../../CLAUDE.md` | 1 |
+| `../../../README.md` | 1 |
+| `../../reference/observability.md` | 2 — the config-shape block |
+| `../../procedures/testing-against-claude-code.md` | 3 |
+| `../../procedures/lmstudio-capability-probes/probe.py` | **2** — the constant *and* the message |
+| `../../procedures/link-check.py` | 1 — the docstring's worked example, inside the instrument Task 24 runs |
+
+**Four markdown paragraphs were rewrapped**, because `logs/telemetry/` is ten characters wider than
+`logs/` and the repository wraps prose at 100.
+
+### What was left in the archive and the EPDs, and why
+
+**Q9 option A, decided: live documents only.** `../../README.md` licenses repointing a *path* in
+archived prose because a path is navigation; it does not license repointing a *claim*. Seven hits
+were left, and they fall into two kinds:
+
+| Left | Why |
+|---|---|
+| `../../epd/EPD-002-token-counting-for-local-backends.md:5, :57` | Claims about a session recorded on 2026-07-31. Repointing would say a file recorded it that did not exist that day |
+| `../phase-9-corpus-gate/notes.md:147` | *"`logs/calls.csv` before the capture — 177 lines, 29,831 bytes"* is a **measurement**, not an address |
+| `../../milestone-1-core/phase-5-config-and-timeouts/evidence/needle-completes-at-1800.txt:11, :19` and `needle-dies-at-30.txt:25` | Frozen probe output. Evidence is not edited |
+| `../../epd/EPD-004-documentation-structure.md:65` and `../../milestone-1-core/phase-7-docs-restructure/plan.md:78` | Both quote **`probe.py:40`** and `ROOT = HERE.parent.parent` — already two migrations stale, because Phase 7 moved the probe a level deeper and it is now `probe.py:44` with three `.parent`s. **They are records of what was measured then, and reading correctly is exactly what makes them evidence** |
+
+**None of the seven is unfollowable, before or after.** `link-check.py` skips anything whose first
+segment is `logs/` — verified at `../../procedures/link-check.py:174`, not assumed.
+
+### Interrogating the two checks that passed
+
+*"What would make this positive anyway?"*, applied to the two results that could each have been
+green for the wrong reason.
+
+1. **`link-check.py` reported `85 files, 79 broken, 2 roundabout` before and after.** Unchanged is
+   what a tool that never looked also reports. The mechanism was read rather than trusted:
+   `resolves()` at line 174 returns `True` for any candidate whose first segment is in
+   `RUNTIME = {"logs"}`, so `logs/telemetry/calls.csv` **is** reached and **is** deliberately
+   skipped. The count was never going to move, and now that is a finding rather than a hope.
+2. **Two mutations, both caught — but both by the same test.** Reverting either default in
+   `config.py` fails `test_relative_paths_resolve_against_the_config_file`, which asserts twice. One
+   failing test for two mutations is what a short-circuit looks like, so the second run was read for
+   *which* assertion fired: the `logging` assertion passed and the `stats` assertion failed. **Both
+   defaults are pinned separately.**
+
+### One row into the register
+
+**`logs/telemetry/` is section 7's fourteenth row, added 2026-08-20 on the owner's decision.** The
+register holds *"every name and number this phase introduces"*, and this is one; without a row,
+**Task 24 would audit the corpus paths and silently skip these two**. Group D set the precedent by
+adding three rows during execution.
+
+**The row says one thing the corpus rows do not have to:** the value is a **config default**, in
+`config.py` and `config.yaml`, not a module constant — so Task 24 checks it against those two files
+rather than against a `NAME = …` line, which is what every other row in that section resolves to.
+And it names the boundary that matters: **`logs/corpus/` is a sibling, by design, and must never be
+swept into `logs/telemetry/`.**
+
+## Task 18 — the configuration check, and the counter that reported nothing — 2026-08-20
+
+**Nine of the ten observations passed on the first run. The tenth could not be performed, and the
+reason was a defect.** Task 18a fixed it and the tenth then passed. This is the third time this phase
+found something by driving that the suite could not have caught.
+
+### How it was run
+
+**Layer 1** — `make check` against `../../procedures/dying-backend/router.yaml`: every key, old and
+new, printed and resolved absolute under the repository.
+
+**Layer 2** — `make test`, 308 before, 310 after Task 18a.
+
+**Layer 3** — the stub on **1299** and the router on **8799**, as `IDM`-era practice and the plan
+both require, never a real backend and never a real session.
+
+**The corpus was pointed at `runs/corpus`, inside the instrument's own gitignored folder** — owner's
+decision when asked. `logs/corpus/` is the record of *real* traffic and stub traffic has even less
+claim on it than Phase 9's captures, which Task 15 already declined to file there. **A copy of the
+installed dictionary was placed in the run's `dicts/`**; the original in `logs/corpus/dicts/` was
+never moved, modified or deleted.
+
+**Variant configurations for four of the observations live in the scratchpad, not in the repository**
+— corpus off, `queue_max_bytes: 1`, `window_days: 0`, and a separate `dir` for the swap run. Each is
+`router.yaml` with **one line changed**, and the line is named beside each result below, so any of
+them can be rebuilt from the tracked file.
+
+### The ten, as seen
+
+| | Observation | What was actually seen |
+|---|---|---|
+| 1 | corpus off leaves no trace | Only `router.log` and `calls.csv`. **No `corpus/` directory at all**, and zero corpus lines in the log |
+| 2 | a body round-trips | 5/5 opened with the day's own dictionary copy and nothing else, sha256 matching the filename — **and the stored bytes are literally what `curl` sent**, compared against the request string |
+| 3 | a day folder is self-contained | `tar`red, unpacked under `/private/tmp`, all 5 opened from there |
+| 4 | a dropped body is a row | `queue_max_bytes: 1`. Three calls: `dropped,dropped` in both ref cells, **exactly one** `WARNING`, `dropped 3` in the summary, **0 blobs on disk** |
+| **5** | **`arrived` == `recorded`** | **Could not be performed. See below.** After Task 18a: `calls: 5 arrived, 5 recorded, 0 lost` |
+| 6 | a dictionary is picked up without a restart | 250 rows against the old dictID, then **12 against the new one**. See the note on cadence below |
+| 7 | a day with two dictionaries still opens | **263 blobs**, referencing both, every one opened from an unpacked copy elsewhere |
+| 8 | `window_days: 0` trains nothing | Its own distinct log line, **no** new dictionary, **no** `retrain.log`, and the index still naming the installed dictID |
+| 9 | corpus off starts no trainer | The stronger form of 1, and the same result: nothing |
+| 10 | a rollover **with a swap in it** | **Yesterday's folder gained the second dictionary**, its two blobs name one dictID each, and both open from that folder alone |
+
+**Observation 10 is the one worth keeping.** It is the case observation 7 cannot reach, and the
+plan says why: *the swap ordering fails silently.* A body was stored into **yesterday's** folder
+*after* the writer had swapped dictionaries, and yesterday's folder correctly gained the new
+dictionary too — so the invariant at `corpus.py:308` held under the one ordering that would not
+announce a mistake. Driven against `CorpusWriter` directly rather than through the router, because
+**the day comes from the call's own timestamp** and `curl` cannot set that.
+
+**Observation 6 costs 250 calls, not one.** *"See the next bodies compress against it"* understates
+it: the pickup is `RESCAN_EVERY = 500` **bodies**, and a call stores two, so the swap is invisible
+until the 250th call after the install — or until a day folder opens, which is the other trigger.
+The code comment is accurate; the observation's wording is not, and **the wording is what a later
+session would test against.**
+
+**Two numbers reproduced rather than being taken on trust.** Retraining with the same parameters
+from the same source gave **12.920x**, against Task 15's `12.919x` — and produced a dictionary with
+the **identical dictID `0e4d84d1`**, which is the content-derived ID doing exactly what it was
+designed to do. A weak dictionary deliberately trained first (`maxdict 4096`, `k 2000`) scored
+**3.087x**, and the real one beat it by **+76.11%** against a 2% margin, which is what made the
+mid-run swap observable at all.
+
+### The defect: a counter pair that reported nothing
+
+**`Counters.arrived` and `.recorded` were counted correctly and emitted nowhere.** They increment at
+`proxy.py:161` and `:337`. The only reader in the tree was `tests/test_integration.py`, reaching into
+`app.state.proxy.counters` — **a path no running router has.**
+
+**The corpus summary is not a substitute, and this is the part that is easy to get wrong.** Its
+`calls` total is incremented at `corpus.py:376`, inside `submit()`, which `record()` calls **one line
+after** `recorded` increments. So a call lost *before* `record()` is missing from **both** — the
+summary cannot reveal the loss the pair exists to reveal. And `corpus.enabled` is false by default,
+so on the shipped configuration there was no summary line at all.
+
+**The plan's observation 5 was therefore unperformable as written**, and no test would ever have said
+so: the suite reads the value through a door only the suite has.
+
+### The loss is real, and the repository had already predicted where
+
+`../../backlog.md` parked this as a race that **"has never been observed"** and named *"Phase 10's
+arrived-against-recorded counters"* as what would first show it happening. It was observed:
+
+| case | the app | `arrived` | `recorded` | |
+|---|---|---|---|---|
+| baseline: caller stays | returned normally | 1 | 1 | ok |
+| **caller gone at response-start** | raised `OSError` | **1** | **0** | **LOST** |
+| disconnect queued, send survives | returned normally | 1 | 1 | ok |
+
+**One request in, and no trace of any kind** — no CSV row, no log line, no corpus entry. The third
+row matters as much as the second: it confirms the correction of 2026-08-18, that an ordinary
+*queued* disconnect **is** recorded through `GeneratorExit`. Only the response-start failure loses.
+
+**`proxy.py:256` already named the case.** The comment justifying `BackgroundTask(reply.aclose)`
+reads *"a generator that never runs at all, and so never reaches its own `finally`"* — and
+`record()` sits at `proxy.py:325`, **inside that `finally`**. The same case was covered for the
+connection and left uncovered for the row, by the author's own reasoning.
+
+**What was forced, stated plainly.** `send` was made to raise on `http.response.start`. That is
+faithful rather than contrived — it is what uvicorn does when the socket is already gone, and the
+ASGI spec permits it — but **it is a simulation of that condition, not a captured incident.**
+
+### Why the network experiment could not answer it, which is the finding underneath the finding
+
+Before the in-process probe, **360 raw-socket requests were fired with `SO_LINGER 0`, sweeping the
+RST across a 0–29.5 ms window.** 352 rows landed. **The 8 missing could not be classified** — losses,
+or requests the router never read — **because the number that would say is the one that is never
+printed.** The instrument needed to measure the defect was the defect.
+
+*A second reason that run could not settle it, worth recording because it nearly became the answer:*
+the stub is **single-threaded and sleeps ~0.35 s per request**, so 199 of the 352 rows were
+`transport_error` from a backend that could not keep up. **"The stub saw it" is not the denominator
+it looks like.**
+
+### What Task 18a changed, and what it deliberately did not
+
+**One INFO line at shutdown**, on its own rather than folded into the corpus summary, registered last
+on the exit stack so LIFO puts it **before** the corpus line. Driven both ways:
+
+```
+corpus ON    calls: 5 arrived, 5 recorded, 0 lost
+             corpus: 5 calls | stored 10 (7515 → 1675 bytes), ...
+corpus OFF   calls: 2 arrived, 2 recorded, 0 lost
+             (zero corpus lines — which is the whole reason it is a separate line)
+```
+
+**It reports the hole and does not close it.** Owner's decision, 2026-08-20, and the reason is the
+one `backlog.md` already gave: writing the row from elsewhere must guarantee it can never write one
+**twice**, and a duplicated row is worse than a missing one. The test that pins the losing case
+**will fail the day somebody closes the hole**, which is the right moment to be told.
+
+**No new register value.** 18a adds no constant, no configuration key and no column — a log line and
+a test. That is stated here because Task 24 checks the register row by row, and a task that touched
+`src/` and added nothing to it should say so rather than leave the question open.
+
+### Two checks interrogated rather than accepted
+
+1. **Both `config.py` mutations failed the same test**, which is what a short circuit looks like. The
+   second run was read for *which* assertion fired: the `logging` one passed, the `stats` one failed.
+   Pinned separately.
+2. **One assertion in the new test was wrong, and the code was right.** It asserted `calls.csv` would
+   not **exist** after a lost call. `StatsWriter` writes its header at startup, so the file is always
+   there. Corrected to *carries no data row*, which is the actual hole. **The first version would
+   have failed for a true reason and a wrong one at the same time.**
+
+**Two mutations on 18a itself, both caught:** dropping the registration fails both new tests, and
+hardcoding `lost` to `0` fails the losing test while the healthy one **correctly still passes**.
+
 ## Open at the end of Group C — 2026-08-19
 
 **Three things are open and none of them blocks Task 14.** Written down because the owner clears
@@ -2949,4 +3209,74 @@ passed.**
 
 ## Verified by
 
-*Not yet — this section is written at Task 24, and states what was run, when, and what it produced.*
+*Written at Task 24, 2026-08-20. **Run, not predicted** — every number below came from executing the
+command on the closing tree.*
+
+| Check | Result |
+|---|---|
+| `make test` | **310 passed.** 158 at the start of the phase |
+| `make lint` | clean, `ruff@0.16.1` |
+| `make check` | valid on `../../../config.yaml` **and** on `../../procedures/dying-backend/router.yaml` |
+| `../../procedures/link-check.py` | **86 files, 75 broken, 2 roundabout** |
+| Task 18's ten observations | nine first time; the tenth after Task 18a made it performable |
+| The register, row by row | **every row matches the code** — below |
+| The widened placeholder sweep | run, and it caught a stale claim — below |
+
+**The link-check figure moved, and the movement was verified rather than explained away.** It was
+**85 files, 79 broken** for most of this phase and closes at **86 / 75**: `../../reference/corpus.md`
+added one file and resolved **exactly four** forward citations of itself — two in `plan.md`, one in
+each review charter. **The first attempt to verify that was wrong, and is worth recording:** `git
+stash` does not remove an **untracked** file, so the before-and-after runs were identical and both
+reported zero, which reads as a clean result. Redone by moving the file aside. **It never reports
+zero**; the remaining 75 are `../../backlog.md`'s known false-positive class and citations of files
+later phases create.
+
+### The register, checked row by row
+
+**All fourteen module constants match**, each name grepped against `src/`: `TRAIN_LEVEL` 3, `TRAIN_D`
+8, `INSTALL_MARGIN` 0.02, `RESCAN_EVERY` 500, `TRAIN_BUDGET_S` 60, `WINDOW_MAX_DAYS` 30,
+`MIN_SESSIONS` 2, `DRAIN_TIMEOUT_S` 5.0, `SUMMARY_EVERY` 500, `LOCK_STALE_S` 3600,
+`INDEX_SCHEMA_VERSION` 1, `DICT_MAGIC` `0xEC30A437`, and `TUNE_MAXDICT` / `TUNE_K` as their tuples.
+*(`DRAIN_TIMEOUT_S` is `5.0` against a row reading **5**; the row says "5 s" and means the duration,
+so that is a float literal rather than a discrepancy.)*
+
+**All nine configuration keys match**, names and defaults: `enabled` False, `dir` `logs/corpus`,
+`compress_level_zstd` 9 bounded 1–22, `body_max_bytes` 1_048_576, `queue_max_bytes` 67_108_864,
+`window_days` 1 with `ge=0`, `sample_min_bytes` 1024, `maxdict` 262_144, `k` 8000.
+
+**The index matches, checked by importing rather than by reading:** **26 columns**, the first twenty
+**identical to `stats.COLUMNS`** compared as tuples, the six new ones in the register's order, and
+`INDEX_SCHEMA_VERSION` 1. **All four sentinel words match** — `dropped`, `too_large`, `absent`, and
+`STORE_ERROR = "error"`.
+
+**Two things happened to the register during Groups E and F rather than being found wrong:**
+`logs/telemetry/` was added to section 7, and **Task 18a added nothing at all** — a log line and a
+test, so no constant, no key, no column. That is stated because a task that touched `src/` and added
+no register row should say so rather than leave the question open.
+
+### The placeholder sweep, and what it caught
+
+The widened grep from "Placeholders in this file" was run over the phase folder **and `../../status.md`**,
+and it earned its keep: **`status.md` still said `EPD-003`'s open questions 3–6 were "not yet written
+back into `EPD-003` itself"**, which Task 20 had just made false. Corrected. The plan's own header and
+its group-marker row were closed out at the same time.
+
+**Two placeholders are left standing and both are correct:** the Record table's *"not yet merged"* and
+this file's first line. **The merge is the owner's**, so no session can close them — and
+`../../prompt.md` names both, so the session that merges does.
+
+### One thing that went wrong in the writing of this section
+
+**This file was truncated to zero bytes and restored from the last commit.** A compound command
+stripped the stub line into a scratch file, and the `cp` that copied it back sat on a new line after a
+heredoc terminator rather than behind the `&&` — so when the first step failed, the copy ran anyway
+against an empty file. **Nothing was lost, because the Task 18 record had already been committed**,
+which is the whole argument for committing a long record before continuing to write. Recorded rather
+than quietly fixed: the near-miss is the finding, and the habit that saved it is worth naming.
+
+### What this phase does not claim
+
+**Failure mode 3 is not discharged**, and `../implementation-plan.md` says so in its table rather than
+implying otherwise. **A call can still vanish**, and Task 18a made that visible rather than
+impossible. **There is no headline compression ratio**, deliberately, on the owner's instruction: the
+figures are small-sample confirmations that the mechanism works.

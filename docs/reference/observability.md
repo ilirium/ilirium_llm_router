@@ -117,17 +117,38 @@ route*: the reply to an endpoint nobody has enumerated could be anything, and th
 decided by an unknown endpoint" into a known ceiling. At the cap, the row is written with empty token
 columns; the relay is never affected, so the cap can cost observation and never fidelity.
 
+## The line that says whether a call went missing
+
+**On shutdown the router logs one line: `calls: N arrived, N recorded, N lost`.** It is emitted on
+every configuration, including the default one where the corpus is off, and it is separate from the
+corpus summary for exactly that reason.
+
+**`lost` is `arrived` minus `recorded`, and it is the only trace a vanished call leaves.** A row that
+fails to write already logs a warning, and a body that is not stored already has a reason word in its
+index cell — but **a call that never reaches `record()` at all leaves nothing whatever**: no row, no
+log line, no corpus entry.
+
+**Normally `lost` is 0. A non-zero count is real rather than theoretical.** A caller already gone when
+the response starts makes `send` raise before the streaming generator's first step, so `watch`'s
+`finally` — and the `record()` inside it — never runs. Observed and reproduced on 2026-08-20; an
+ordinary *queued* disconnect is unaffected and still gets its row through `GeneratorExit`.
+
+**The line reports the hole; it does not close it.** Writing the missing row from elsewhere has to
+guarantee it can never write one **twice**, and a duplicated row is worse than a missing one. That
+remains open in `../backlog.md`, and `../milestone-2-corpus/phase-10-body-store/notes.md` has the
+reproduction.
+
 ## Config shape
 
 ```yaml
 logging:
   level: INFO
-  file: logs/router.log
+  file: logs/telemetry/router.log
   max_bytes: 10485760   # 10 MiB
   backup_count: 5
 
 stats:
-  file: logs/calls.csv
+  file: logs/telemetry/calls.csv
   max_bytes: 5242880    # 5 MiB
   backup_count: 10
 ```

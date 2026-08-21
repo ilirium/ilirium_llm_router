@@ -113,13 +113,13 @@ class Server(Strict):
 
 class Logging(Strict):
     level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
-    file: Path = Path("logs/router.log")
+    file: Path = Path("logs/telemetry/router.log")
     max_bytes: int = Field(default=10_485_760, gt=0)
     backup_count: int = Field(default=5, ge=0)
 
 
 class Stats(Strict):
-    file: Path = Path("logs/calls.csv")
+    file: Path = Path("logs/telemetry/calls.csv")
     max_bytes: int = Field(default=5_242_880, gt=0)
     backup_count: int = Field(default=10, ge=0)
 
