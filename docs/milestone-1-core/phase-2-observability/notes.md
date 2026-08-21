@@ -6,8 +6,8 @@ conversation that produced the plan. The design is agreed; the implementation is
 Companion to `phase-1-notes.md`, which records decisions taken *while* writing the proxy. Add to
 this file as Phase 2 is built, especially where reality disagrees with what is written below.
 
-Branch: `feat/phase-2-observability`, off `main` at `8d335ab`. Merge back with `--no-ff` — phase
-boundaries stay visible in the log.
+Branch: `feat/phase-2-observability`, off `main` at `8d335ab`, **merged 2026-07-31 with `--no-ff` as
+`4d7d7f6`** — phase boundaries stay visible in the log.
 
 ## What Phase 2 must produce
 

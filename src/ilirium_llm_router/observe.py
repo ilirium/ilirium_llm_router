@@ -329,6 +329,20 @@ class Call:
         self.error_code = ""
         self.error_message = ""
 
+        # The bodies, held for the corpus and for nothing else. `None` means the router authored
+        # this side of the call -- the 400 for a missing model, the 502 for an unreachable backend,
+        # the injected SSE error event -- which the index records as `absent`.
+        #
+        # Deliberately NOT `request_bytes` / `response_bytes`: those are the integer counts two
+        # attributes above, and they become CSV columns. Two attributes on one object cannot share
+        # a name because one holds a length and the other holds the thing it is the length of.
+        self.request_body: bytes | None = None
+        self.response_body: bytes | None = None
+        # Set when the response outgrew `body_max_bytes` and the copy was discarded. It is what
+        # separates "no response body" from "there was one and we refused to hold it", which the
+        # index has to report as `too_large` rather than as `absent`.
+        self.response_over_cap = False
+
     def saw_bytes(self, count: int) -> None:
         """One chunk went downstream. The first one is what `ttfb_ms` measures.
 

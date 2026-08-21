@@ -31,10 +31,37 @@ The most-quoted pair in the project, and the one that has already misled a reade
 |---|---|---|---|---|
 | **Median time to first byte: 1426 ms Anthropic, 37136 ms LM Studio — 26.1×** | 2026-07-31, recomputed 2026-08-07 and again 2026-08-16 | `../milestone-1-core/phase-2-observability/evidence/step-6-session/calls.csv` | **Successful streamed `/v1/messages` calls only** — 32 Anthropic rows, 21 LM Studio | The felt difference between backends, and the reason `ttfb_ms` is a column at all. It is what put the per-backend `read_timeout` where it is |
 | Same medians over **every row**: 1252 / 4904 — **3.9×** | 2026-08-07, confirmed 2026-08-16 | as above | All 42 Anthropic and 97 LM Studio rows with a `ttfb_ms`, including `count_tokens` and warmup probes | **Kept deliberately as the counter-example.** It is the number a reader gets by recomputing the obvious way, and without it the 26× claim reads as a mistake |
-| The intermediate slices: 13.5× (`/v1/messages` only), 26.6× (no warmup probes) | 2026-08-07 | as above | named in each cell | Shows the gap is not an artefact of one filter — it is `count_tokens` that does the damage, not streaming |
+| The intermediate slices: 13.5× (`/v1/messages` only), 26.6× (`/v1/messages` **and** no warmup probes) | 2026-08-07, slice corrected 2026-08-21 | as above | named in each cell — 41 Anthropic / 65 LM Studio rows for the first, 41 / 25 for the second | Shows the gap is not an artefact of one filter — it is `count_tokens` that does the damage, not streaming |
 
 **Anthropic's `read_timeout` of 600 s rests on the first row**: ten minutes of silence against a
 backend whose median first byte is 1.4 s means something is wrong rather than slow.
+
+**Corrected 2026-08-21 — the third row's slice, not its number.** It read *"26.6× (no warmup
+probes)"* and silently inherited the filter from the row above it; the slice is `/v1/messages` **and**
+no warmup probes. Read as written — warmup probes excluded and nothing else — the same CSV gives
+1251.5 ms against 307.0 ms, which is **0.245×**, LM Studio four times *faster* than Anthropic. The
+sign reverses. Found by the fresh-context review frozen at
+`../milestone-1-core/documentation-review-2026-08-16.md`, finding V1, which calls it the severest of
+its five and says why it is worse than the episode it descends from: **this is the same failure
+inside the register built to prevent it**, in the row whose whole job is to prove the gap survives
+re-slicing. **0.245× is kept here rather than deleted**, on the reasoning the 3.9× row above already
+states — the number a reader gets by recomputing the obvious way has to be visible, or the correct
+one reads as a mistake.
+
+**All four slices were re-derived independently on 2026-08-21 before this correction was written**,
+and all four land on the review's figures to the digit. **What made that possible is one predicate
+neither document had ever written down**, and it is recorded here because it is the whole difficulty:
+
+> A **warmup probe** is a `/v1/messages` row that is **not streamed** (`stream` empty), returned
+> `error_status` **`ok`** with **zero `output_tokens`** and `stop_reason` **`max_tokens`**. There are
+> **exactly 40**, and **every one is LM Studio** — which is why excluding them moves no Anthropic
+> count and takes LM Studio from 97 rows to 57, and from 65 `/v1/messages` rows to 25.
+
+**Two plausible wrong answers came first, and that is why this is a note rather than a footnote.**
+Taking *zero output tokens* alone sweeps in the 33 `count_tokens` calls and gives 23.4×; adding the
+`/v1/messages` filter but not the rest still catches **two `client_disconnect` rows** — real calls
+that produced no output — and gives **0.216×** instead of 0.245×. Both look like the answer. The
+review says the number "took four attempts" and does not say what the fourth was; this is it.
 
 ## LM Studio: context, prefill and capability
 
@@ -124,6 +151,8 @@ and **nothing has been accepted** — see `../epd/`.
 | **A second preamble family costs ~20%: main conversation 13.39× against subagent 10.75×** | 2026-08-17 | same | 10 main and 10 subagent bodies, one dictionary trained on traffic containing **no** subagent bodies | Whether concurrency and subagents dilute a shared dictionary. They do, boundedly — it generalises to an unseen preamble family rather than collapsing |
 | **`zstd --train` is non-monotonic at 68 samples: 12.08× → 21.76× → 16.44× as `--maxdict` rises** | 2026-08-17 | same | self-trained dictionaries at 112,640 / 262,144 / 524,288 B caps | Why a retraining policy must **measure** a new dictionary before adopting it. More budget produced a worse dictionary |
 | **The static preamble is 111,028 B interactive and 82,611 B headless; `--maxdict` defaults to 112,640** | 2026-08-17 | `jq` over the frozen capture and a captured body | One interactive request (2026-07-28) against one headless request | Why the gate swept `--maxdict`, and why headless figures flatter a dictionary. Corroborates `stats.py`'s "~110 KB" |
+| **Through the shipping store, on disk: 12.919× dicted against 2.997× undicted** | 2026-08-20 | the router's own `--train-dict` and `--extract`, `zstandard` at store level **9**, trained at level 3 | 21 held-out request bodies (run-03, all distinct, no retries); dictionary trained on **48 bodies, 26 distinct — 46% `overloaded_error` retries** | **Confirms the mechanism works end to end**, which is all it is for. First figure measured through the code that ships rather than an offline script: bodies written by `CorpusWriter` and read back by `CorpusReader`. Agrees with the trainer's in-memory `12.920×` by two independent paths, and the undicted baseline reproduces Phase 9's 701,407 B to within 9 |
+| **The same parameters on the same corpus reproduce the same dictionary, byte for byte** | 2026-08-20 | two `--train-dict` runs, `maxdict` 262,144 and `k` 8,000 | `logs/corpus-gate/`, three session directories | The **content-derived dictID** doing its one job: identical bytes give the identical `0e4d84d1`, so a dictionary's name identifies its content rather than its run. `zstd --train` stamps **1** on everything, which is why the router assigns its own |
 
 > **The slice on the 12.10× row is doing real work.** That corpus is headless, so its static preamble
 > is ~28 KB smaller than an interactive one; 70 of its 73 bodies are Anthropic; and its sessions are
@@ -131,6 +160,20 @@ and **nothing has been accepted** — see `../epd/`.
 > three flatter the dictionary.** The verdict it supports survives because the margin is large (12.10×
 > against a 3.12× failure threshold), not because the biases are small. A number quoted from this row
 > without that slice would overstate what a real corpus achieves.
+
+> **Read every compression figure above as a small-sample confirmation that the mechanism works, not
+> as a performance claim.** *Added 2026-08-20, on the owner's instruction at Phase 10's Task 21.*
+> **There is deliberately no headline ratio.** Phase 9's number comes from 73 bodies and Phase 10's
+> from 21 held out; the two were measured with different tools at different levels on different
+> slices, and neither is a specification. They exist to show that compression functions and that the
+> gate was passed. **A ratio quoted from here without its slice is being misused** — and quoted as a
+> capability rather than as evidence, it is being misused even *with* its slice.
+>
+> **Two numbers this phase deliberately kept out.** `26.210×` and `26.870×` both appeared on
+> 2026-08-20, by two different mechanisms, and both were **self-scoring accidents** — training and
+> scoring on overlapping material. And the stub-traffic ratios from Task 18's driving check
+> (`1.4×`–`5.1×`) measure synthetic bodies a few hundred bytes long; they say the plumbing works and
+> nothing whatever about compression.
 
 ---
 

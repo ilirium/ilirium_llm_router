@@ -113,15 +113,102 @@ class Server(Strict):
 
 class Logging(Strict):
     level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
-    file: Path = Path("logs/router.log")
+    file: Path = Path("logs/telemetry/router.log")
     max_bytes: int = Field(default=10_485_760, gt=0)
     backup_count: int = Field(default=5, ge=0)
 
 
 class Stats(Strict):
-    file: Path = Path("logs/calls.csv")
+    file: Path = Path("logs/telemetry/calls.csv")
     max_bytes: int = Field(default=5_242_880, gt=0)
     backup_count: int = Field(default=10, ge=0)
+
+
+class Retrain(Strict):
+    """When and how the router retrains its own dictionary.
+
+    **Everything here runs offline, in its own thread, and never in the path of a call.** That is
+    what the nesting says, and it is why these four are grouped rather than sitting flat beside the
+    write-path keys — a reader tuning a live call never has to look in here.
+
+    All four take a CLI flag on the trainer, and the flag wins for that one run: the config is what
+    automatic retraining uses, the flags are for experiments, which are run by hand.
+    """
+
+    window_days: int = Field(default=1, ge=0)
+    """Complete days of material to train from, as a **minimum** rather than a fixed count — the
+    window widens until it holds two sessions, because one harness on one laptop produces
+    single-session days as the ordinary case.
+
+    **`0` disables automatic retraining** and is the one "off" value in the block; the router keeps
+    using the newest dictionary already installed. A separate `enabled` boolean would be redundant
+    beside it.
+    """
+
+    sample_min_bytes: int = Field(default=1024, ge=1)
+    """A body smaller than this is not a training sample.
+
+    **No path filter beside it, and that costs nothing**: measured 2026-08-19, every request body at
+    or above this size in the whole corpus is already `/v1/messages`, the only other path having
+    0-byte request bodies. A path filter would also have excluded `count_tokens` requests, which
+    carry the same preamble and are ideal material.
+    """
+
+    maxdict: int = Field(default=262_144, gt=0)
+    """The dictionary size cap. **Provisional, not measured-optimal** — the corpus has no usable
+    validation split, so this was chosen with knowledge of the slice it was scored on. Training is
+    **non-monotonic** in this parameter on both trainers, so a bigger cap is not a better
+    dictionary."""
+
+    k: int = Field(default=8000, gt=0)
+    """COVER's segment size. **Provisional**, and the one parameter that must never be left to the
+    library's own optimiser: at this sample count that is up to 15% *worse* than `zstd --train`'s
+    default, while this value is 13% *better*. The tool is not the variable — `k` is."""
+
+
+class Corpus(Strict):
+    """The body store. Opt-in, and nothing under `dir` is created until `enabled` is true.
+
+    Off by default because `calls.csv` is always on for reasons that do not transfer: it is cheap
+    and holds nothing sensitive, and **neither is true here** — bodies hold source code, file
+    contents and anything typed.
+    """
+
+    enabled: bool = False
+    dir: Path = Path("logs/corpus")
+    compress_level_zstd: int = Field(default=9, ge=1, le=22)
+    """The level the write path stores at — **and the level the trainer scores a candidate
+    dictionary against the incumbent at**, so the comparison cannot drift from what is actually
+    stored. It does **not** set the level a dictionary is *trained* at; that is `TRAIN_LEVEL`,
+    measured to move the ratio by 0.03%.
+
+    Bounds are hardcoded rather than read from libzstd: 1–19 are the ordinary levels and 20–22 the
+    ultra ones, so a number outside that is a typo rather than a preference. This is a sanity check,
+    not a contract with the library.
+
+    Named `compress_level_zstd` rather than `level` because `logging.level` two blocks away is a
+    severity, and a key read in isolation should say what it sets and whose scale it is on.
+    """
+
+    body_max_bytes: int = Field(default=1_048_576, gt=0)
+    """One body larger than this is not stored, and the ref cell reads `too_large`. **Bounds peak
+    memory for one body**, checked on every chunk while the call runs.
+
+    **Not disableable.** An "unlimited" setting reads as *capture everything* and means *let an
+    unknown endpoint decide how much memory this process uses* — and the catch-all route forwards
+    any path, so the reply to an unanticipated endpoint could be any size at all.
+    """
+
+    queue_max_bytes: int = Field(default=67_108_864, gt=0)
+    """Total bytes waiting to be written; over it, the body is dropped and the row says so.
+    **Bounds memory for all waiting bodies**, checked once at submit.
+
+    **The two limits cannot cover for each other**, which is why both exist: by the time submit runs
+    the memory for one huge body has already been spent, and a thousand ordinary 100 KB bodies are
+    each far under the ceiling and together are 100 MB in the queue. Also not disableable.
+    """
+
+    retrain: Retrain = Field(default_factory=Retrain)
 
 
 class Config(Strict):
@@ -129,11 +216,13 @@ class Config(Strict):
     server: Server = Field(default_factory=Server)
     logging: Logging = Field(default_factory=Logging)
     stats: Stats = Field(default_factory=Stats)
+    corpus: Corpus = Field(default_factory=Corpus)
 
     def resolve_paths(self, base_dir: Path) -> None:
-        """Make the log and stats paths absolute, relative to the config file's directory."""
+        """Make log, stats and corpus paths absolute, against the config file's directory."""
         self.logging.file = _resolve(self.logging.file, base_dir)
         self.stats.file = _resolve(self.stats.file, base_dir)
+        self.corpus.dir = _resolve(self.corpus.dir, base_dir)
 
     def api_keys(self) -> dict[str, str]:
         """Read the API key for every backend that asks for one.

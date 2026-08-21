@@ -12,11 +12,12 @@ this file rather than remember the answer.
 
 ## Where does it go?
 
-Start here. Almost every filing question is answered by one of these seven rows.
+Start here. Almost every filing question is answered by one of these eight rows.
 
 | What you have | Where it goes | The test |
 |---|---|---|
 | A fact that stays true regardless of which phase found it | `reference/` | Would it still be true if the phase that found it had never happened? |
+| What we researched about **somebody else's software** — a library, protocol or tool we are built on | `wiki/` | Would this page be just as useful to a different project using the same library? |
 | A rule about **how the work is done** rather than about the router | `method/` | Would it still be true if the subject of the project changed? |
 | A check somebody should be able to run again | `procedures/` | Would you re-run this against a new model, a new release, a new backend? |
 | The output of a run, frozen so a claim has something to rest on | `milestone-N-*/phase-N-*/evidence/` | Is it a transcript, a CSV, a captured reply? |
@@ -49,7 +50,9 @@ That is the expensive case, because two sessions will answer differently and the
 places, one of which later gets updated. Resolve it in this order:
 
 1. **Does it name a backend?** Then it is `reference/backend-<name>.md`, even if it is also about
-   configuration or timeouts.
+   configuration or timeouts. **A backend is something the router dispatches *to*; a dependency is
+   something it is *built from*, and that one is `wiki/`** — the distinction is the subject of the
+   page, not whose software it is. *(Added 2026-08-19 with the `wiki/` tier.)*
 2. **Is it a number?** The number's canonical row is `reference/measurements.md`, whatever prose also
    quotes it. See "Numbers" below.
 3. **Is it a rule about how the work is done, rather than about the router?** Then it is `method/` if
@@ -83,6 +86,28 @@ expected versus found means the fact has not finished being extracted.
 roughly 40 lines. Until then it lives as a section in the nearest file that already has a trigger. The
 40 is a judgement, not a measurement — it is roughly where a section stops being findable by grepping
 a file you already have open.
+
+### `wiki/` — what we researched about somebody else's software
+
+**Added 2026-08-19.** Behaviour of the libraries, protocols and tools this project is built on,
+established by **reading them** — the installed package, the shipped binary, the format
+specification — so that nobody re-derives it. Each page carries its **sources as links**, **version
+pins** for anything version-shaped, and a section saying **what expires**.
+
+`wiki/README.md` holds the test that separates it from `reference/`, what a page owes, and the index.
+**The boundary is the whole risk of this tier**, so that test is the first thing in the file.
+
+**The short form:** `reference/` is about **this router and the backends it dispatches to**; `wiki/` is
+about **what it is built from**. `reference/backend-lmstudio.md` is third-party software and belongs
+in `reference/` anyway, because it is full of *our* probes and *our* router's interaction with it.
+
+**What does not belong here:** a tutorial upstream already writes better, a second copy of a phase
+note, or a number. **Numbers keep their canonical row in `reference/measurements.md`** and a wiki page
+cites rather than restates them — the rule under "Numbers" is unchanged by this tier.
+
+**The growth rule applies as in `reference/`:** a subject becomes its own page when its trigger is
+nameable and it passes roughly 40 lines. Until then it is a section of the nearest page that already
+has a trigger.
 
 ### `method/` — how the work is done
 
@@ -271,8 +296,10 @@ is the whole test. A rule you would look up before acting belongs here instead.
 ## Where the harness configuration lives
 
 **`method/IDM-002-harness-configuration.md`** holds all of it, and is canonical. **Open it before adding
-a permission, before reaching for `/fewer-permission-prompts`, or before deciding that an entry looks
-like a fossil.** The allowlist is split the way the documents are — a tracked `.claude/settings.json`
+a permission, before reaching for `/fewer-permission-prompts`, before deciding that an entry looks
+like a fossil, or before putting anything in the tracked file that is *not* a permission** — the last
+of those is new on 2026-08-19, when an `attribution` block joined it and the admission test turned out
+not to govern it. The allowlist is split the way the documents are — a tracked `.claude/settings.json`
 for durable project policy, an untracked `.claude/settings.local.json` for machine accretion, pruned
 periodically — and `IDM-002` carries the admission test that decides which is which, the exact-match
 `.env` deny and its `.env.example` trap, and why none of it reopens `epd/EPD-004`'s decision 19.

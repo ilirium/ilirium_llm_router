@@ -402,17 +402,35 @@ session EPD-002's step 1 asks for — worth running once and using for both.
    12.10x is four times the failure threshold. **The trade named in this question stands and was
    taken**: per-session remains better on size, and per-call keeps random access, partial writes, and
    a process that stops mid-session.
-3. **What is captured by default?** Everything, or `/v1/messages` only? The 32 `count_tokens`
-   non-answers are pure noise, but excluding by path means the catch-all's genuinely unexpected
-   traffic — the thing the `path` column exists to surface — gets excluded too.
-4. **Is capture on by default, or opt-in?** The CSV is always on because it is cheap and holds
-   nothing sensitive. Neither is true here.
-5. **Retention.** `llm.log` grew a prune command for a reason. Size-based like the existing rotation,
-   age-based, or never — and if never, does that survive the first 10 GB?
-6. **Does the corpus store request *headers*?** They carry `anthropic-beta`, the session and agent
-   IDs, and the credential. Interesting for analysis, and the credential makes it the single most
-   sensitive thing the router touches. Currently the router tees bodies only, which is also why the
-   `anthropic-ratelimit-*` question in `../milestone-1-core/closing-notes.md` is still open.
+3. ~~**What is captured by default?**~~ **Decided 2026-08-20 at Phase 10's Task 20: everything, with
+   no path filter.** All four routes reach `Proxy.record()`, which calls `CorpusWriter.submit()`, so
+   the catch-all's unanticipated traffic is captured on the same terms as `/v1/messages`. **The trade
+   this question names was taken the way it feared least:** the `count_tokens` noise is admitted
+   rather than excluded, because the `path` column makes it filterable at *analysis* time, while a
+   capture-time filter would silently drop the unexpected traffic that column exists to surface.
+   Consistent with `../reference/design-decisions.md`'s *"no special case for background or auxiliary
+   traffic"*. The training filter follows the same principle and is by **size**, not path —
+   `corpus.retrain.sample_min_bytes`.
+4. ~~**Is capture on by default, or opt-in?**~~ **Decided 2026-08-18: opt-in, and off.**
+   `corpus.enabled: false` ships. One switch rather than two — an always-on index with opt-in bodies
+   was offered and declined. **The named cost:** the durable day-partitioned index exists only when
+   the corpus does, so `calls.csv`'s expiry stays unfixed on a machine that never turns capture on.
+   Recorded with its rejected alternative in
+   `../milestone-2-corpus/phase-10-body-store/plan.md`, "What is settled, and by whom".
+5. **Retention — out of scope for Milestone 2. Owner's decision, 2026-08-20.** Nothing deletes
+   anything today, and **no policy was decided, designed, or deferred to a date or a size.** It may
+   become a feature in a later milestone, or it may not. **Deliberately not filed in
+   `../backlog.md`**, which holds unscheduled *work*: this is not work waiting to be scheduled, it is
+   a question this milestone declines to answer. `../milestone-2-corpus/implementation-plan.md`'s
+   non-goals carry it, which is where a scope boundary belongs. **Left unstruck**, because it is
+   still open — it is out of scope, not resolved.
+6. ~~**Does the corpus store request *headers*?**~~ **Decided 2026-08-20 at Phase 10's Task 20: no.
+   Bodies only.** The store is fed from the same tee the recorder reads and never sees a header, so
+   **the credential never reaches disk** — the part that made this question sharp. The two
+   header-derived values worth having were already columns before this phase: `session_id` and
+   `agent_id`, copied from `calls.csv` into the index, so the analysis value was kept without the
+   sensitive material. `anthropic-beta` is not stored. The `anthropic-ratelimit-*` question in
+   `../milestone-1-core/closing-notes.md` stays open and is untouched by this.
 7. ~~**Does this land before or after Phase 3?**~~ **Stale, struck 2026-08-17.** Phase 3 shipped on
    2026-08-05 (`cc65aed`); `stream_error` and `client_disconnect` both exist, and this document's own
    "Constraints this inherits" section already reasons from them. The question answered itself by

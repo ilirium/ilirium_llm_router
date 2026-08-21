@@ -21,6 +21,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import httpx
+import pytest
 from conftest import CLAUDE_BODY, CLAUDE_CODE_HEADERS, make_config
 from fastapi.testclient import TestClient
 
@@ -224,3 +225,221 @@ def _capturing() -> Iterator[list[logging.LogRecord]]:
         logger.removeHandler(handler)
         logger.setLevel(previous_level)
         logger.propagate = previous_propagate
+
+
+# --- the corpus, wired the way the app wires it, Task 12 -----------------------------------------
+
+
+def config_with_corpus(path: Path, directory: Path, **corpus: object) -> Config:
+    from ilirium_llm_router.config import Corpus
+
+    config = config_writing_to(path)
+    config.corpus = Corpus(enabled=True, dir=directory, **corpus)  # type: ignore[arg-type]
+    return config
+
+
+def index_rows(day: Path) -> list[dict[str, str]]:
+    with (day / "index.csv").open(newline="", encoding="utf-8") as handle:
+        return list(csv.DictReader(handle))
+
+
+def test_a_call_becomes_a_blob_and_an_index_row(tmp_path: Path) -> None:
+    """The wiring Task 12 adds: config → app → CorpusWriter → day folder on disk.
+
+    The store is built by the app from the config, exactly as `StatsWriter` already is, and drained
+    when the lifespan exits — so leaving the `with` block is what guarantees the worker finished.
+    """
+    corpus = tmp_path / "corpus"
+    with router(config_with_corpus(tmp_path / "calls.csv", corpus)) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    days = [p for p in corpus.iterdir() if p.is_dir() and p.name[0].isdigit()]
+    assert len(days) == 1
+    day = days[0]
+
+    written = index_rows(day)
+    assert len(written) == 1
+    assert len(written[0]["request_ref"]) == 64
+    assert len(written[0]["response_ref"]) == 64
+    assert written[0]["model"] == "claude-sonnet-5"
+    assert len(list(day.rglob("*.zst"))) == 2
+
+
+def test_the_stored_request_body_is_byte_identical_to_what_arrived(tmp_path: Path) -> None:
+    """The relay is byte-for-byte and so is the archive. Read back through the reader, from the day
+    folder alone, and checked against the bytes the test sent."""
+    from ilirium_llm_router.corpus import CorpusReader
+
+    corpus = tmp_path / "corpus"
+    with router(config_with_corpus(tmp_path / "calls.csv", corpus)) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    day = next(p for p in corpus.iterdir() if p.is_dir() and p.name[0].isdigit())
+    reader = CorpusReader(day)
+    stored = [reader.read(b) for b in reader.blobs("requests")]
+    assert stored == [CLAUDE_BODY]
+
+    replies = [reader.read(b) for b in reader.blobs("responses")]
+    assert replies == [REPLY]
+
+
+def test_the_corpus_disabled_leaves_no_trace(tmp_path: Path) -> None:
+    """Task 18's observation 1, through the app rather than through the writer: no directory, no
+    file, and the call still served."""
+    corpus = tmp_path / "corpus"
+    config = config_writing_to(tmp_path / "calls.csv")
+
+    with router(config) as client:
+        reply = client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert reply.status_code == 200
+    assert not corpus.exists()
+    assert len(rows(tmp_path / "calls.csv")) == 1
+
+
+def test_a_router_authored_400_records_absent_and_still_stores_the_request(tmp_path: Path) -> None:
+    """A body with no `model` is refused by the router, so the *reply* is ours. The request is not
+    — it arrived over the wire and is stored."""
+    from ilirium_llm_router.corpus import ABSENT
+
+    corpus = tmp_path / "corpus"
+    with router(config_with_corpus(tmp_path / "calls.csv", corpus)) as client:
+        reply = client.post(
+            "/v1/messages", content=b'{"messages":[]}', headers=CLAUDE_CODE_HEADERS
+        )
+
+    assert reply.status_code == 400
+    day = next(p for p in corpus.iterdir() if p.is_dir() and p.name[0].isdigit())
+    row = index_rows(day)[0]
+    assert row["response_ref"] == ABSENT
+    assert len(row["request_ref"]) == 64
+
+
+def test_arrived_equals_recorded_after_a_clean_run(tmp_path: Path) -> None:
+    """The counter pair doing its one job. It is always on, independent of `corpus.enabled`,
+    because it answers a `calls.csv` question and that file is always on."""
+    with router(config_writing_to(tmp_path / "calls.csv")) as client:
+        for _ in range(4):
+            client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+        counters = client.app.state.proxy.counters  # type: ignore[attr-defined]
+
+    assert counters.arrived == 4
+    assert counters.recorded == 4
+    assert counters.lost == 0
+
+
+def test_a_reply_over_the_ceiling_is_too_large_and_the_relay_is_untouched(tmp_path: Path) -> None:
+    """The ceiling discards the copy and stops accumulating. Every byte still reaches the caller,
+    because the copy was never in the path."""
+    from ilirium_llm_router.corpus import TOO_LARGE
+
+    corpus = tmp_path / "corpus"
+    config = config_with_corpus(tmp_path / "calls.csv", corpus, body_max_bytes=8)
+    with router(config) as client:
+        reply = client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert reply.content == REPLY
+    day = next(p for p in corpus.iterdir() if p.is_dir() and p.name[0].isdigit())
+    row = index_rows(day)[0]
+    assert row["response_ref"] == TOO_LARGE
+    assert row["request_ref"] == TOO_LARGE
+
+
+def asgi_scope() -> dict[str, object]:
+    """A minimal HTTP scope for `POST /v1/messages`, so the app can be called without a server."""
+    return {
+        "type": "http",
+        "asgi": {"version": "3.0"},
+        "http_version": "1.1",
+        "method": "POST",
+        "scheme": "http",
+        "path": "/v1/messages",
+        "raw_path": b"/v1/messages",
+        "query_string": b"",
+        "root_path": "",
+        "headers": [(k.encode(), v.encode()) for k, v in CLAUDE_CODE_HEADERS.items()],
+        "client": ("127.0.0.1", 50000),
+        "server": ("127.0.0.1", 8787),
+    }
+
+
+async def call_with_caller_gone(app: object) -> None:
+    """One call straight into the ASGI app, with the caller already gone when the response starts.
+
+    **`TestClient` cannot express this.** It consumes the whole response, so the streaming generator
+    always takes its first step and `watch`'s `finally` always runs. Here `send` is ours, and *a
+    caller that is already gone* is a `send` that raises on `http.response.start` -- which is what
+    uvicorn does when the socket has closed underneath it.
+    """
+    messages: list[dict[str, object]] = [
+        {"type": "http.request", "body": CLAUDE_BODY, "more_body": False}
+    ]
+
+    async def receive() -> dict[str, object]:
+        return messages.pop(0) if messages else {"type": "http.disconnect"}
+
+    async def send(message: dict[str, object]) -> None:
+        if message["type"] == "http.response.start":
+            raise OSError("the caller is gone")
+
+    await app(asgi_scope(), receive, send)  # type: ignore[operator]
+
+
+def test_the_counter_pair_is_reported_at_shutdown(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Observation 5 of Task 18, and it could not be performed before this line existed.
+
+    **The pair is useless if nothing emits it.** It was counted correctly and read only by the test
+    above, which reaches into `app.state.proxy` -- a path no running router has. Asserting on the
+    log is the only way to check the thing that actually ships.
+    """
+    with (
+        caplog.at_level(logging.INFO, logger="ilirium_llm_router.app"),
+        router(config_writing_to(tmp_path / "calls.csv")) as client,
+    ):
+        for _ in range(3):
+            client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert "calls: 3 arrived, 3 recorded, 0 lost" in caplog.text
+
+
+def test_a_caller_gone_at_response_start_is_counted_as_lost(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    """The hole the counter pair exists for, driven rather than argued.
+
+    `record()` lives in `watch`'s `finally`. When the caller is already gone at response-start the
+    generator never takes its first step, so that `finally` never runs: **no CSV row, no log line,
+    no corpus entry -- no trace at all except this counter.** `proxy.py` names the same case in the
+    comment justifying its `BackgroundTask(reply.aclose)`, which covers the connection but not the
+    row.
+
+    **The row is deliberately not written here.** Owner's decision, 2026-08-20: report the hole, do
+    not close it, because writing the row from elsewhere must guarantee it can never write one
+    twice. This test pins the reporting, and would start failing the day somebody closes the hole
+    -- which is the right moment to be told.
+    """
+    path = tmp_path / "calls.csv"
+    app = create_app(config_writing_to(path), httpx.AsyncClient(transport=httpx.MockTransport(
+        lambda request: httpx.Response(200, headers=JSON_HEADERS, content=REPLY)
+    )))
+
+    async def run() -> None:
+        async with app.router.lifespan_context(app):
+            try:
+                await call_with_caller_gone(app)
+            except OSError:
+                pass  # it propagates to the server, which has nobody to answer
+            counters = app.state.proxy.counters
+            assert counters.arrived == 1
+            assert counters.recorded == 0, "a row was written; the hole may have been closed"
+            assert counters.lost == 1
+
+    with caplog.at_level(logging.INFO, logger="ilirium_llm_router.app"):
+        asyncio.run(run())
+
+    assert "calls: 1 arrived, 0 recorded, 1 lost" in caplog.text
+    # The file exists -- `StatsWriter` writes its header at startup -- but carries no data row,
+    # which is precisely the hole: the call happened and the CSV cannot show it.
+    assert rows(path) == [], "the lost call must leave no row -- that is what makes it lost"

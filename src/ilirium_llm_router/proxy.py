@@ -24,7 +24,7 @@ import asyncio
 import json
 import logging
 from collections.abc import AsyncIterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import httpx
 from starlette.background import BackgroundTask
@@ -32,6 +32,7 @@ from starlette.requests import ClientDisconnect, Request
 from starlette.responses import JSONResponse, Response, StreamingResponse
 
 from .config import Backend, Config
+from .corpus import CorpusWriter
 from .observe import (
     Call,
     Scanner,
@@ -106,6 +107,28 @@ def backend_timeout(backend: Backend) -> httpx.Timeout:
     )
 
 
+@dataclass
+class Counters:
+    """Calls that arrived against rows that were written.
+
+    **The difference is calls in flight plus calls silently lost.** A gap that persists, or a
+    non-zero gap after shutdown, is the one blind spot nothing else reports: a row that fails to
+    write already logs a warning, and a body that is not stored already has a word in its ref cell,
+    but a call that never reaches `record()` at all leaves no trace whatsoever.
+
+    Deliberately two integers and nothing else. A metrics endpoint and a sequence column in
+    `calls.csv` were both considered and reserved to `docs/backlog.md`; the second is forbidden
+    outright, since that file not changing is a milestone non-goal.
+    """
+
+    arrived: int = 0
+    recorded: int = 0
+
+    @property
+    def lost(self) -> int:
+        return self.arrived - self.recorded
+
+
 @dataclass(frozen=True)
 class Proxy:
     """Sends requests onward to a backend and streams the reply back untouched."""
@@ -114,6 +137,12 @@ class Proxy:
     client: httpx.AsyncClient
     api_keys: dict[str, str]
     stats: StatsWriter
+    corpus: CorpusWriter | None = None
+    counters: Counters = field(default_factory=Counters)
+    """**Always on, independent of `corpus.enabled`**, and that is why it lives here rather than in
+    `corpus.py`. It answers a `calls.csv` question — *was a row never written at all?* — and
+    `calls.csv` is always on while the corpus is opt-in. Built inside the corpus it would be absent
+    on the default machine, which is the only machine the question is about."""
 
     async def begin(self, request: Request) -> tuple[Call, bytes, Peeked]:
         """What both entry points do before routing: start the clocks, read the body, peek at it.
@@ -129,6 +158,7 @@ class Proxy:
         delivered to a caller that has already gone.
         """
         call = Call(request)
+        self.counters.arrived += 1
         try:
             body = await request.body()
         except ClientDisconnect:
@@ -140,6 +170,12 @@ class Proxy:
             self.record(call)
             raise
         call.request_bytes = len(body)
+        if self.corpus is not None:
+            # Held until `record()`, which against a local model is minutes rather than the
+            # microseconds it lived for before. The corpus does not change *whether* the request
+            # body is held whole -- `await request.body()` above already does that -- only *how
+            # long*, and that is the cost this line adds.
+            call.request_body = body
         peeked = peek(body)
         call.model = peeked.model or ""
         call.stream = peeked.stream
@@ -241,10 +277,27 @@ class Proxy:
         """
         streamed = is_sse(reply.headers.get("content-type", ""))
         scanner = scanner_for(reply.headers.get("content-type", ""))
+        # The corpus's copy, accumulated only when there is somewhere for it to go. This is the one
+        # thing the router has never done -- hold a whole response -- so nothing bounds it unless
+        # something is made to, and `body_max_bytes` is that bound. Checked on every chunk, because
+        # the memory is spent while the call runs and the queue's bound is not checked until after.
+        copy: list[bytes] | None = [] if self.corpus is not None else None
+        copied = 0
+        cap = self.config.corpus.body_max_bytes
         try:
             async for chunk in reply.aiter_raw():
                 call.saw_bytes(len(chunk))
                 scanner.feed(chunk)
+                if copy is not None:
+                    copied += len(chunk)
+                    if copied > cap:
+                        # Discard what was accumulated and stop: a prefix labelled as a whole body
+                        # is worse than a hole. The relay is untouched -- every byte still streams
+                        # to the caller, because the copy was never in the path.
+                        copy = None
+                        call.response_over_cap = True
+                    else:
+                        copy.append(chunk)
                 yield chunk
         except (asyncio.CancelledError, GeneratorExit):
             # Neither a success nor a backend failure — the reply was fine and nobody was left to
@@ -267,6 +320,8 @@ class Proxy:
                 )
         finally:
             scanner.finish()
+            if copy is not None:
+                call.response_body = b"".join(copy)
             self.record(call, scanner)
             # Closing here rather than only in the `BackgroundTask` below: starlette skips that
             # task when the caller disconnects on ASGI spec 2.4, which is exactly the case that
@@ -279,6 +334,11 @@ class Proxy:
         try:
             row = call.record(scanner.observation if scanner else None)
             self.stats.write(row)
+            self.counters.recorded += 1
+            if self.corpus is not None:
+                self.corpus.submit(
+                    row, call.request_body, call.response_body, call.response_over_cap
+                )
             # The log line is read from the finished row rather than measured again, so the two
             # traces of one call can never disagree about how long it took.
             outcome = (

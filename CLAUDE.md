@@ -24,7 +24,9 @@ directory* (identical inode), not two checkouts. Editing either edits both.
 - **Propose before implementing.** A design answer is not a build order — present the recommendation
   and wait for an explicit go-ahead. Commits do *not* need a separate ask.
 - **Ask before touching the machine.** GUI settings, `.env`, long-running local servers: ask rather
-  than detect-and-proceed. Consent for one is not consent for the next.
+  than detect-and-proceed. Consent for one is not consent for the next. **Driving a session — headless
+  or interactive — is never done freely: ask, and say what it is for.** A request to run one that does
+  not state why is not a request the owner can answer.
 - **Exercise it before committing.** Green tests are not evidence. Drive the real thing — and when a
   check comes back negative, fix the instrument before believing the result.
 - **Check prior evidence before planning a rerun.** Earlier phases keep answering later ones; mine
@@ -112,14 +114,21 @@ these.** This is an index, not a summary — a one-line restatement would drift,
 ## Observability
 
 Every call leaves two traces: a line in a rotating log that uvicorn's own lines join, and a row in
-`logs/calls.csv` with 20 columns. Usage is read off a **tee** of the passing bytes, never by parsing
-and rebuilding them.
+`logs/telemetry/calls.csv` with 20 columns. Usage is read off a **tee** of the passing bytes, never
+by parsing and rebuilding them.
 
 → `docs/reference/observability.md` — read it before touching the recorder, adding a column, or
 interpreting a row. In particular: telemetry never breaks a call, the CSV is in **completion order**
 so sort before analysing, and nothing body-shaped goes in **the CSV**. *(That last rule was narrowed on
 2026-08-17: `EPD-003` was decided, so bodies are archived — but to a separate store, opaque, never as a
 CSV column. The recorder's rule is unchanged.)*
+
+→ `docs/reference/corpus.md` — **read it before storing, reading or retraining against the corpus**:
+before adding an index column, before changing where a blob or a dictionary lives, before assuming a
+day folder needs anything outside itself, and **before quoting a compression ratio**. Three things a
+session gets wrong from the name alone: the store is **off by default**, so no `logs/corpus/` is
+correct behaviour; **there are three compression levels, not one**; and **there is deliberately no
+headline ratio** — every figure is a small-sample confirmation that the mechanism works.
 
 ## Anthropic models
 
@@ -135,6 +144,21 @@ choosing a local model or a context size. LM Studio publishes no parity matrix, 
 measurement rather than documentation, and its answers expire with each release. Three things in it
 are easy to get wrong: nothing sent has ever been *rejected*, a large fixed preamble arrives before
 the user types anything, and prefill on a local model is measured in minutes.
+
+## What we learned about somebody else's software
+
+→ `docs/wiki/` — **read the relevant page before putting work in the background, and before assuming
+anything about `zstandard`.** It holds what was established by *reading* a dependency rather than by
+trusting its documentation, with the sources linked and the versions pinned.
+
+Two things a session would otherwise get confidently wrong. **`BackgroundTask` is not the mechanism
+for background work** — it is awaited inside a request's ASGI cycle — and **`asyncio.create_task` is
+the one that quietly stalls every concurrent request**, because CPU-bound work on the event loop
+blocks it. And **`zstandard`'s dictionary trainer needs `k` set explicitly**; left to its own
+optimiser it is materially worse on a small corpus, and the tool is not the variable.
+
+`docs/wiki/README.md` holds the test that separates this tier from `reference/`: **`reference/` is
+this router and the backends it dispatches to; `wiki/` is what it is built from.**
 
 ## Open proposals — the EPDs
 
@@ -154,7 +178,9 @@ fine-tuning is dropped. Its open questions 3–6 are Phase 10 design detail, not
 **Do not read `docs/method/`'s `IDM-NNN` documents with that reflex.** The two schemes sit adjacent and
 look alike; an **IDM is in force now and you are expected to act on it**, which is the exact opposite of
 an EPD. `docs/method/IDM-000-about-these-documents.md` is the index. `IDM-001` and `IDM-003` are pointed
-at below; `IDM-002` holds the permission allowlist policy.
+at below; `IDM-002` holds the permission allowlist policy **and what else may go in the tracked settings file**; **`IDM-004` is the protocol for reviewing a
+plan before it runs — read it before reviewing one, because its first rule is that the charter decides
+what the review finds.**
 
 ## Git and branches
 

@@ -105,9 +105,16 @@ reversal to one sentence of `observability.md` rather than to the whole rule.
   a larger budget produced a *worse* dictionary. A retraining policy that adopts a new dictionary
   without comparing it against the one it replaces will silently make the corpus bigger.
 
-**Not decided here, and left to Phase 10 as design detail:** what is captured by default, opt-in
-versus always-on, retention, and whether headers are stored — `EPD-003`'s open questions 3–6. None of
-them changes the storage unit.
+**Left to Phase 10 as design detail, and settled there — `EPD-003`'s open questions 3–6.** *Updated
+2026-08-20 at Phase 10's Task 20.* **Captured by default: everything, no path filter** — the `path`
+column makes the `count_tokens` noise filterable at *analysis* time, while a capture-time filter
+would have dropped the unanticipated traffic that column exists to surface. **Opt-in, and off** —
+`corpus.enabled: false` ships; one switch rather than two. **Headers: no, bodies only** — the store
+reads the same tee the recorder reads and never sees a header, so **the credential never reaches
+disk**, while `session_id` and `agent_id` were already columns. **Retention: out of scope for
+Milestone 2**, on the owner's decision of 2026-08-20 — nothing deletes an archived body, and no
+policy was decided or deferred to a trigger. **None of the four changed the storage unit**, which is
+what this section is about.
 
 **One correction this carries into Phase 10.** `EPD-003` proposed adding two ref columns to
 `calls.csv` so it becomes the corpus's join table. **It cannot be**: `config.yaml` sets

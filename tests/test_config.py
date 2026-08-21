@@ -41,8 +41,8 @@ def test_minimal_config_loads_with_defaults(tmp_path: Path) -> None:
 def test_relative_paths_resolve_against_the_config_file(tmp_path: Path) -> None:
     config = load_config(write(tmp_path, MINIMAL))
 
-    assert config.logging.file == tmp_path / "logs/router.log"
-    assert config.stats.file == tmp_path / "logs/calls.csv"
+    assert config.logging.file == tmp_path / "logs/telemetry/router.log"
+    assert config.stats.file == tmp_path / "logs/telemetry/calls.csv"
 
 
 def test_absolute_paths_are_left_alone(tmp_path: Path) -> None:
@@ -186,3 +186,114 @@ def test_a_forwarding_backend_contributes_no_key(
     config = load_config(write(tmp_path, MINIMAL))
 
     assert config.api_keys() == {}
+
+
+# --- the corpus block, Task 11 ------------------------------------------------------------------
+#
+# The store is opt-in, so the defaults matter more than usual: a machine that never turns it on
+# still parses this block, and every wrong value has to be a refusal rather than a silent default.
+
+
+def test_the_corpus_is_off_by_default_with_no_block_at_all(tmp_path: Path) -> None:
+    config = load_config(write(tmp_path, MINIMAL))
+
+    assert config.corpus.enabled is False
+    assert config.corpus.compress_level_zstd == 9
+    assert config.corpus.body_max_bytes == 1_048_576
+    assert config.corpus.queue_max_bytes == 67_108_864
+
+
+def test_the_retrain_block_defaults_without_being_named(tmp_path: Path) -> None:
+    config = load_config(write(tmp_path, MINIMAL))
+
+    assert config.corpus.retrain.window_days == 1
+    assert config.corpus.retrain.sample_min_bytes == 1024
+    assert config.corpus.retrain.maxdict == 262_144
+    assert config.corpus.retrain.k == 8000
+
+
+def test_the_corpus_dir_resolves_against_the_config_file(tmp_path: Path) -> None:
+    config = load_config(write(tmp_path, MINIMAL))
+
+    assert config.corpus.dir == tmp_path / "logs/corpus"
+
+
+def test_an_absolute_corpus_dir_is_left_alone(tmp_path: Path) -> None:
+    config = load_config(write(tmp_path, MINIMAL + "\ncorpus:\n  dir: /var/corpus\n"))
+
+    assert config.corpus.dir == Path("/var/corpus")
+
+
+def test_an_unknown_key_under_corpus_is_rejected(tmp_path: Path) -> None:
+    with pytest.raises(ConfigError) as caught:
+        load_config(write(tmp_path, MINIMAL + "\ncorpus:\n  enable: true\n"))
+
+    assert "enable" in str(caught.value)
+
+
+def test_an_unknown_key_under_retrain_is_rejected(tmp_path: Path) -> None:
+    """`extra="forbid"` has to be on the nested model too, or the whole block accepts typos."""
+    with pytest.raises(ConfigError) as caught:
+        load_config(write(tmp_path, MINIMAL + "\ncorpus:\n  retrain:\n    windowdays: 2\n"))
+
+    assert "windowdays" in str(caught.value)
+
+
+def test_a_non_boolean_enabled_is_rejected(tmp_path: Path) -> None:
+    with pytest.raises(ConfigError):
+        load_config(write(tmp_path, MINIMAL + "\ncorpus:\n  enabled: sometimes\n"))
+
+
+@pytest.mark.parametrize("level", [0, -1, 23, 100])
+def test_a_compression_level_outside_1_to_22_is_rejected(tmp_path: Path, level: int) -> None:
+    """1-19 are the ordinary levels and 20-22 the ultra ones. Hardcoded rather than read from
+    libzstd: this is a sanity check against a typo, not a contract with the library."""
+    with pytest.raises(ConfigError):
+        load_config(write(tmp_path, MINIMAL + f"\ncorpus:\n  compress_level_zstd: {level}\n"))
+
+
+@pytest.mark.parametrize("level", [1, 9, 19, 22])
+def test_the_ordinary_and_ultra_levels_are_accepted(tmp_path: Path, level: int) -> None:
+    config = load_config(write(tmp_path, MINIMAL + f"\ncorpus:\n  compress_level_zstd: {level}\n"))
+
+    assert config.corpus.compress_level_zstd == level
+
+
+@pytest.mark.parametrize("key", ["body_max_bytes", "queue_max_bytes"])
+@pytest.mark.parametrize("value", [0, -1])
+def test_neither_limit_can_be_disabled(tmp_path: Path, key: str, value: int) -> None:
+    """An "unlimited" setting reads as *capture everything* and means *let an unknown endpoint
+    decide how much memory this process uses*."""
+    with pytest.raises(ConfigError):
+        load_config(write(tmp_path, MINIMAL + f"\ncorpus:\n  {key}: {value}\n"))
+
+
+def test_window_days_zero_is_accepted_because_it_is_the_off_switch(tmp_path: Path) -> None:
+    """The one value in the block that must be *accepted* rather than refused: it is how automatic
+    retraining is switched off, and a separate `enabled` boolean would be redundant beside it."""
+    config = load_config(write(tmp_path, MINIMAL + "\ncorpus:\n  retrain:\n    window_days: 0\n"))
+
+    assert config.corpus.retrain.window_days == 0
+
+
+def test_a_negative_window_is_rejected(tmp_path: Path) -> None:
+    with pytest.raises(ConfigError):
+        load_config(write(tmp_path, MINIMAL + "\ncorpus:\n  retrain:\n    window_days: -1\n"))
+
+
+@pytest.mark.parametrize("key,value", [("sample_min_bytes", 0), ("maxdict", 0), ("k", 0)])
+def test_the_training_parameters_refuse_zero(tmp_path: Path, key: str, value: int) -> None:
+    with pytest.raises(ConfigError):
+        load_config(write(tmp_path, MINIMAL + f"\ncorpus:\n  retrain:\n    {key}: {value}\n"))
+
+
+def test_the_shipped_config_file_carries_every_corpus_key(tmp_path: Path) -> None:
+    """The block in `config.yaml` is documentation as much as configuration, so a key added to the
+    model and not to the file would ship undocumented."""
+    shipped = Path(__file__).resolve().parents[1] / "config.yaml"
+    text = shipped.read_text(encoding="utf-8")
+
+    for key in ("enabled", "dir", "compress_level_zstd", "body_max_bytes", "queue_max_bytes"):
+        assert f"  {key}:" in text
+    for key in ("window_days", "sample_min_bytes", "maxdict", "k"):
+        assert f"    {key}:" in text

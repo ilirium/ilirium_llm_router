@@ -13,6 +13,85 @@ archive as the survey it was. Where an item is fully argued elsewhere this file 
 restates** — three of the heaviest are EPDs, and copying their substance here would create the second
 copy the documentation structure exists to prevent.
 
+**Grouped by kind, method first.** *Section order set 2026-08-19, on the owner's instruction.* Method
+items come first because they change **how the next piece of work is done**, so a session that reads
+only the top of this file still reads the part that governs the rest of its behaviour. After that:
+documentation defects, decisions waiting on a person, measurements left open, work with an owner-shaped
+decision behind it, and instruments and housekeeping.
+
+---
+
+## Method — how work is planned, reviewed and recorded
+
+**These change the `docs/method/` tier, and an `IDM` is in force the moment it is written** — unlike an
+EPD, which is parked by definition. An item here is therefore a proposal to change what sessions are
+*required* to do.
+
+**A forward review must classify each position by *authority*, not only by correctness.** Proposed
+2026-08-19, from the defect that produced Phase 10's retraining interview.
+
+*What happened:* `phase-10-body-store/plan.md` stated, in its own prose, that dictionary training
+*"belongs to an offline procedure the router never calls"* — training run by hand, by a person. **The
+owner had assumed all along that the router retrained itself automatically**, and only found out by
+asking a direct question after Group B had closed. The position appeared **nowhere** in that plan's
+"What is settled, and by whom" table. `milestone-2-corpus/implementation-plan.md` names *"a dictionary
+bootstrap and retraining policy"* as something the phase must settle; the bootstrap was settled and the
+policy half was never written.
+
+*Why it is a method item and not an incident:* the plan was reviewed forward under
+`method/IDM-004-reviewing-unexecuted-work.md` by **two passes** — the authoring session and a
+fresh-context agent — which returned 22 findings between them. **Neither asked whose decision it
+was.** Both checked the plan against the code and against itself, which is what the protocol asks for,
+and self-consistency cannot detect a position that is consistently wrong.
+
+*The proposed rule, and it is mechanical rather than a matter of judgement:* a plan that carries an
+explicit settled-by-whom table makes the check trivial — **any load-bearing position not in that table
+is the plan's own assumption, and the review reports it as unratified rather than inheriting it.** The
+instrument already exists; nothing asked the reviewer to use it that way.
+
+*Where it should land:* **an amendment to `IDM-004` rather than a new IDM**, on the argument that it is
+a rule about what a review must *find*, and `IDM-004` is the review protocol — two review protocols
+would be the drift the method tier exists to prevent. **Left open deliberately**, because that is a
+judgement for whoever writes it and this item should not presume it.
+
+*Why it is parked rather than done:* it is a documentation change with no deadline, and Phase 10 is
+executing. Doing it mid-phase would put method work on a `feat/` branch, which
+`method/IDM-001-git-branching.md` is explicit about.
+
+---
+
+**A forward review must check the plan's numbers against the phase's own `evidence/`, and a value
+register is the instrument that does it.** Proposed 2026-08-19, from what compiling Phase 10's
+register found.
+
+*What happened:* `phase-10-body-store/plan.md` justified its shutdown drain with *"a full queue is
+~640 bodies, which at **tens of milliseconds each** is a **twenty-second** shutdown"*. That phase's
+**own** `evidence/results.txt` measures the whole store path at 0.433 ms per body, making the real
+figure **0.28 s** — the plan was out by roughly **70x**, against a number frozen in the same folder.
+Compiling the register also found **eight constants named and never valued** — one of them cited as
+*"the precedent the shutdown timeout already set"*, so the precedent had no value — and a **name
+collision** with fields already on `observe.Call`.
+
+*Why it is a method item:* **two `IDM-004` passes missed all of it**, and not by carelessness. A review
+reads a plan **as prose, task by task**, checking it against the code and against itself. That cannot
+see a stale arithmetic estimate sitting beside a measurement in a sibling file, and it cannot see an
+absent value at all — **a constant with no number reads perfectly well in a sentence.** Both defects
+are only visible when the values are pulled into a column.
+
+*The proposed rule:* a plan that introduces constants, keys or names carries **one register section
+listing every one with its value**, and the forward review checks that (a) no row is empty and (b)
+every number the plan asserts is reconciled against the phase's `evidence/` where one exists. **This is
+the same shape as the item above** — an instrument the plan already has, that nothing asked the
+reviewer to use.
+
+*Where it should land:* also an **amendment to `IDM-004`**, and probably the same amendment as the item
+above — both are rules about what a review must *find*. `../README.md` would gain the register as a
+named plan section.
+
+*Why it is parked:* same reason as above — method work does not belong on a `feat/` branch. **Phase 10
+is the worked example either way**, since its register and the defects it caught are already recorded
+in `milestone-2-corpus/phase-10-body-store/notes.md`.
+
 ---
 
 ## Documentation defects found and not fixed
@@ -27,17 +106,32 @@ stands. **Nothing in it has been acted on.**
 building router features. It is not blocked on anything and it is not scheduled; picking it up is a
 decision to spend a session on documentation instead of on the router.
 
-*Weaker than it looks?* **One item is not.** `reference/measurements.md:34` states a slice that
-recomputes to **0.245×** rather than 26.6× — the sign reversed. It makes a future session act
-confidently and wrongly, and it is cheap. Everything else in the file can wait.
+*Weaker than it looks?* **Two items were not, and both have now been fixed.** Everything else in the
+file can wait. Both are recorded below rather than deleted — a finding that vanishes cannot show the
+next reader whether it was fixed or forgotten, which is the same reasoning the entries themselves
+carry.
 
-> **The second of the two was fixed on 2026-08-17 by Phase 8, and is recorded here rather than
+> **`reference/measurements.md:34` was fixed on 2026-08-21, on the owner's instruction and outside
+> any review phase.** It stated its slice as *"26.6× (no warmup probes)"* while silently inheriting
+> the `/v1/messages` filter from the row above it; read as written it recomputes to **0.245×**, LM
+> Studio four times *faster* than Anthropic, the sign reversed. **The number was always right and the
+> slice label was not** — `measurements.md` now states the filter in full, and keeps 0.245× beside it
+> as the trap, on the same reasoning that keeps the 3.9× counter-example. Finding **V1** in the
+> review file is untouched and stays the primary record.
+>
+> This does **not** unpark the review. It was the one item the entry singled out as making a session
+> act confidently and wrongly, and it was cheap; the other ~30 findings and the six owner questions
+> are exactly where they were.
+
+> **The `README.md` worked example was fixed on 2026-08-17 by Phase 8, and is recorded here rather than
 > dropped.** `README.md`'s closing worked example told a filer to create a **second Phase 7**,
 > contradicting "Naming and numbering" in the same file. Phase 8's Task 4 was already rewriting that
 > sentence for two unrelated reasons of its own, so leaving a known bug inside it would not have been
-> scope discipline. See `milestone-2-corpus/phase-8-method-and-guardrails/notes.md`. *This paragraph
-> said "two items" and named both until then; silently deleting one would leave the next reader unable
-> to tell whether it was fixed or forgotten.*
+> scope discipline. See `milestone-2-corpus/phase-8-method-and-guardrails/notes.md`. *The "Weaker
+> than it looks?" paragraph above named both items until then, and this note was added when the first
+> was fixed: silently deleting one would leave the next reader unable to tell whether it was fixed or
+> forgotten. That paragraph was rewritten again on 2026-08-21 when the second was fixed too, on the
+> same reasoning — which is why there are now two notes under it rather than none.*
 
 **This entry points and does not restate, deliberately.** The findings, their evidence and the six
 questions stay in that one file; copying any of it here would create the second copy this structure
@@ -81,6 +175,39 @@ varies per model — several have no `vision`, several no `reasoning` — so not
 honoured/ignored table transfers without re-running the probes. *Parked because* it is re-running an
 existing instrument rather than building one, and expires with each LM Studio release anyway.
 
+**What one day of real use actually contains, and where the training floor is.** *Added 2026-08-19,
+from Phase 10's retraining interview; `EPD-003`'s corpus is the subject.* Phase 10 retrains from a
+rolling window whose **default is one day**, and nothing anywhere says whether one day holds enough
+material to train a dictionary from. *For scale, measured:* Phase 9's **entire** corpus — three runs,
+8.8 MB — yields **68 qualifying request bodies**, and its dictionaries were trained on **48**. A quiet
+day could plausibly be under ten. *Parked because* **no day-partitioned corpus has ever existed** —
+Phase 10's store is the first thing that will produce one, so the measurement cannot be taken until it
+has been running for a while. *Weaker than it looks?* No, and it has a consequence already built:
+until it is answered the sample floor is a guess, and **the refuse-a-worse-one rule is what stops a
+guess doing damage.**
+
+**Whether a response dictionary pays.** *Added 2026-08-19.* Responses are stored **undicted, forever,
+by default** — Phase 10 trains a request dictionary only. *Parked because* nothing has measured it.
+*Weaker than it looks?* **The opposite — it is stronger than its absence suggests**, and that is the
+reason it is written down. The asymmetry is not a finding that responses do not benefit; it is
+inherited from what Phase 9's gate happened to measure, and its own `evidence/README.md` says it
+answers nothing about responses. **Under automatic retraining it would otherwise become permanent by
+default rather than by decision.** Responses may well be the larger volume; nobody has looked.
+
+**Whether archiving slows a call — failure mode 3 of Milestone 2's central claim.** *Added
+2026-08-21, from what Phase 10 deliberately did not settle; until then it lived only in `prompt.md`,
+which is the one file allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s
+table.* The claim reads *"…without parsing a payload, **without slowing a call**, and without special
+storage infrastructure."* Phase 10 discharged the *break* half by driving it and left the *slow* half
+untouched. Settling it needs **one driven session with capture on against one with it off**, comparing
+`ttfb_ms` and `duration_ms`. *Parked because* it needs somebody to drive two comparable sessions, which
+is not a thing a session arranges for itself. *Weaker than it looks?* **No — it is the only open item
+in this file holding a published claim open.** Everything else here is improvement; this one decides
+whether a sentence the project already asserts is true. **One trap, from this repository's own
+numbers:** the local backend's variance is large — `reference/measurements.md` has the same request
+size differing by ≥30% on two days — so a two-session comparison against LM Studio can be swamped by
+noise, and the Anthropic rows are the tighter instrument.
+
 **Before planning any of these, grep the frozen artefacts first.** Phases 3, 4 and 5 each found a
 third or more of their work already done, measured, or misdescribed. The limit is worth knowing too:
 the router logs metadata and never bodies, so old rows prove *a request succeeded* and can never
@@ -96,6 +223,77 @@ auxiliary traffic" as an argument *against* that decision rather than a defect i
 back nearly half the local wall clock at the price of the first special case in the dispatch rule.
 *Weaker than it looks?* The opposite — this is the largest measured cost in the project, and the
 reason it is parked is that nobody has been willing to take the trade.
+
+**Three diagnostics reserved out of Phase 10, deliberately.** Named 2026-08-18 when the owner asked
+what else should be logged so that loss is diagnosable, and answered *KISS — this is a prototype meant
+to be finished and used*. **A live metrics or status endpoint**, for watching queue depth and drop
+counts while a session runs rather than reading them afterwards. **A sequence column in `calls.csv`**,
+which would make a missing row self-evident instead of inferable from a counter. **Per-failure detail
+beyond the counters**, such as an errors file listing every body that was not stored.
+
+*Parked because* the cheap versions of all three already ship in Phase 10: the corpus index says per
+call why a body was not stored, the recorder already logs a warning when a CSV write fails, and an
+arrived-against-recorded counter pair makes the one silent case visible. *Weaker than they look?*
+**The sequence column is refused rather than parked** — `milestone-2-corpus/implementation-plan.md`
+makes *"changing `calls.csv`, not its rotation, not its columns"* an explicit non-goal, so that one
+needs the non-goal overturned first, not merely scheduling.
+
+**A caller that disconnects before the response generator's first step leaves no `calls.csv` row.**
+*Narrowed 2026-08-18, and the original wording was wrong.* This item first said `record()` is never
+reached whenever a caller disconnects after the response headers. **It is reached, and a row is
+written**: `proxy.py:249` catches `GeneratorExit`, re-raises, and the `finally` calls `record()`.
+`reference/measurements.md` carries **six `client_disconnect` rows across both backends**, and the
+frozen step-6 CSV has one with 10,027 response bytes already streamed.
+
+**What remains is a race**: if Starlette closes the generator before its first step, there is no frame
+to throw into and nothing runs. *Parked because* **it has never been observed** — not in a 142-call
+session, not in a 158-call test run — it is a change to Milestone 1's recorder, and the fix must
+guarantee it cannot write a row twice, which is worse than missing one. *Weaker than it looks?*
+**Yes, and that is the correction:** the original claim would have justified real work; the true one
+justifies watching. Phase 10's arrived-against-recorded counters are what would first show it
+happening.
+
+> **Observed 2026-08-20, at Phase 10's Task 18a. The "never been observed" clause above is spent.**
+> Driven on the ASGI app directly, because the window is too narrow to hit reliably over a socket: a
+> caller already gone when the response starts makes `send` raise on `http.response.start`, the
+> streaming generator never takes its first step, `watch`'s `finally` never runs, and **`record()` is
+> never called** — `1 arrived, 0 recorded, 1 lost`, no CSV row, no log line, no corpus entry. An
+> ordinary *queued* disconnect still records, exactly as the 2026-08-18 correction says.
+>
+> **`proxy.py:256` already named the case**, in the comment justifying `BackgroundTask(reply.aclose)`
+> — *"a generator that never runs at all, and so never reaches its own `finally`"*. `record()` is
+> inside that `finally`. The case was covered for the connection and not for the row.
+>
+> **Still parked, and deliberately.** The owner's decision of 2026-08-20 is *report it, do not close
+> it*: the duplicate-row guarantee named above is unchanged and is the whole difficulty. What changed
+> is that the loss is now **visible** — `app.py`'s `_report_counters` emits the pair at shutdown on
+> every configuration, and `tests/test_integration.py` pins the losing case, so closing the hole
+> later will announce itself by failing that test.
+
+> **Recorded rather than quietly rewritten.** The wrong version was written into this file, into
+> `milestone-2-corpus/phase-10-body-store/plan.md` and twice into its `notes.md`, and it was found by
+> a fresh-context review that read `proxy.py` instead of the plan's account of it. It was labelled
+> *inferred* throughout, which was honest — **and inference from a correct premise to a wrong
+> conclusion is not repaired by labelling it.** The premise was a code comment about the narrow case;
+> the leap was to the general one, without checking the measured rows that name exactly this.
+
+**Running the router as several processes — instances behind a proxy, `uvicorn --workers N`, or a
+process pool.** Raised by the owner on 2026-08-18 while planning Phase 10, for two reasons: spreading
+compression load across cores, and distinguishing concurrent harnesses. *Parked because* **the second
+reason is already discharged and the first is not needed at the measured load.** `session_id` and
+`agent_id` are header-copied CSV columns, and `milestone-2-corpus/phase-9-corpus-gate/` captured five
+distinct sessions and ten subagent rows through one instance — telling harnesses apart is not a
+problem this router has. Two to five concurrent harnesses extrapolates to 1–3 calls/second, which is
+ten to thirty times inside what a single thread absorbs.
+
+*Weaker than it looks?* **The blocker is not where it appears to be.** Every multi-process form hits
+the same wall, and a reverse proxy does not touch it: **the recorder's writers are single-process
+designs.** `stats.py` rides `RotatingFileHandler`, whose lock is a thread lock, so two processes
+rotating one file corrupt it. Multi-process therefore means either a separate log, CSV and corpus per
+instance — fragmenting the telemetry the corpus exists to unify — or making the writers
+multi-process safe, which is a phase in itself. **The proxy is the cheap part; the writers are the
+expensive part.** Reconsider only if Phase 10's benchmark shows a single worker is actually the
+bottleneck.
 
 **The per-backend authentication header name.** `inject` means `Authorization: Bearer` today, which
 suits LM Studio and OpenAI; Anthropic's native key is `x-api-key` and Gemini's is `x-goog-api-key`.
@@ -187,11 +385,27 @@ to avoid pre-empting this decision, and that prose went stale invisibly — it s
 done" after Phase 9 merged. The per-phase table beside it never went stale. **So the axis that decided
 it was not duplication but what goes stale visibly**, which the item had not considered.
 
-**Close out the four `Branch:` lines that record intent instead of outcome.** Five exist across four
-of the six phases, in inconsistent places, and only `phase-4-notes.md:7` records the merge commit.
-The other four say "Merge back with `--no-ff`" — written before the merge and never updated. *Parked
-because* it is a review-phase checklist item under `EPD-004` decision 14, not standalone work. It is
-this repository's signature failure in miniature: a document recording intent and never closed out.
+~~**Close out the four `Branch:` lines that record intent instead of outcome.**~~ **Done 2026-08-21,
+on the owner's instruction.** Five lines existed across four of the six phases, in inconsistent
+places, and only `milestone-1-core/phase-4-lmstudio-parity/notes.md` recorded the merge commit; the
+other four said "Merge back with `--no-ff`" — written before the merge and never updated. All four
+now carry their merge commit in the form Phases 4, 8 and 9 already used:
+`milestone-1-core/phase-2-observability/notes.md` → `4d7d7f6`,
+`milestone-1-core/phase-3-failure-handling/notes.md` → `cc65aed`,
+`milestone-1-core/phase-4-lmstudio-parity/plan.md` → `50444c5`,
+`milestone-1-core/phase-5-config-and-timeouts/plan.md` → `c8401e9`. Every hash was read from
+`git log --merges` and cross-checked against `milestone-1-core/README.md`'s table.
+
+*It was parked as a review-phase checklist item under `EPD-004` decision 14, and the owner took it
+out of that ordering rather than waiting for the review.* **Two things are deliberately not done.**
+Phases 1 and 6 still carry no `Branch:` line at all — owner's decision, on the ground that the rule
+did not exist when they were written, and `milestone-1-core/README.md` holds both records anyway.
+And `EPD-004:703`'s *"four of six left open"* is **untouched**: that row records what Phase 6's review
+found, not what is outstanding now.
+
+*Kept struck rather than deleted, like the two entries above it.* This was this repository's
+signature failure in miniature — a document recording intent and never closed out — and an item that
+vanishes cannot show that the mechanism caught it.
 
 ---
 

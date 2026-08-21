@@ -1,0 +1,80 @@
+zstandard 0.25.0, backend cext
+python 3.13.3
+dictionary heldout-262144.dict, 185535 bytes, dictID 1 = 00000001
+corpus 40 bodies from run-03, both directions
+
+1 -- dicted round-trip at level 9, and the dictID in every frame
+  PASS  every body round-trips byte-identically  40 bodies, 0 mismatched
+  PASS  every frame carries a dictID  0 frames at 0
+  PASS  and it is this dictionary's  0 naming another
+        2346225 -> 218611 bytes, 10.732x  (both directions mixed -- NOT a comparable ratio)
+
+2 -- undicted round-trip, the ordinary first-run case
+  PASS  every body round-trips undicted  0 mismatched
+  PASS  and every undicted frame reports dictID 0  seen: [0]
+        2346225 -> 740997 bytes, 3.166x
+
+3 -- write_dict_id: the tuning path silently drops the dictID
+  PASS  compression_params WITHOUT write_dict_id loses it  frame dictID 0
+  PASS  write_dict_id=1 restores it  frame dictID 1
+  PASS  the plain ZstdCompressor(level=, dict_data=) path is safe  frame dictID 1
+
+4 -- a dicted frame without its dictionary
+  PASS  raises rather than returning wrong bytes  decompression error: Dictionary mismatch
+
+5 -- a dictID is NOT a unique key
+      a) Phase 9's eight frozen dictionaries, all from `zstd --train`:
+         heldout-1048576.dict      177812 bytes  dictID          1 = 00000001
+         heldout-112640.dict       112640 bytes  dictID          1 = 00000001
+         heldout-262144.dict       185535 bytes  dictID          1 = 00000001
+         heldout-524288.dict       177812 bytes  dictID          1 = 00000001
+         self-1048576.dict         197926 bytes  dictID          1 = 00000001
+         self-112640.dict          112640 bytes  dictID          1 = 00000001
+         self-262144.dict          212215 bytes  dictID          1 = 00000001
+         self-524288.dict          197926 bytes  dictID          1 = 00000001
+  PASS  `zstd --train` stamps ONE id on all of them  6 distinct files, ids [1]
+      b) the library's default dict_id=0, three runs on identical input:
+         run 0: dictID  297180423 = 11b69d07  sha 3d179884ecec
+         run 1: dictID  297180423 = 11b69d07  sha 3d179884ecec
+         run 2: dictID  297180423 = 11b69d07  sha 3d179884ecec
+  PASS  it is NOT random per call -- identical input, identical id  46 samples
+      c) the same samples at three levels:
+         level  3: dictID  297180423 = 11b69d07  sha 3d179884ecec
+         level  9: dictID  297180423 = 11b69d07  sha d2c8df734e39
+         level 19: dictID  297180423 = 11b69d07  sha 033c6967d083
+  PASS  one dictID, three DIFFERENT files  this is the hazard TRAIN_LEVEL is a fixed constant to keep latent
+      d) so what happens if the wrong file of a matching id is used?
+         blob trained at 19, frame dictID 297180423
+  PASS  the right file reads it  2817 bytes
+  PASS  the WRONG file of the same id fails loudly  decompression error: Data corruption detected
+
+6 -- we can assign the dictID ourselves, and it fixes what 5 found
+      a) train_dictionary(dict_id=N) takes any uint32 verbatim:
+         dict_id=0           -> dict 297180423   frame 297180423   round-trip True
+         dict_id=1           -> dict 1           frame 1           round-trip True
+         dict_id=32767       -> dict 32767       frame 32767       round-trip True
+         dict_id=32768       -> dict 32768       frame 32768       round-trip True
+         dict_id=2147483648  -> dict 2147483648  frame 2147483648  round-trip True
+         dict_id=4294967295  -> dict 4294967295  frame 4294967295  round-trip True
+         dict_id=4294967296  -> dict 297180423   frame 297180423   round-trip True
+  PASS  an OUT-OF-RANGE dict_id falls back silently, it does not raise  2**32 gave libzstd's own id, with no error
+      b) the id lives at bytes[4:8] of the dictionary file:
+         magic 0xEC30A437, bytes[4:8] LE = 297180423, dict_id() = 297180423
+  PASS  the field and the reported id agree
+      c) so a trained dictionary can be re-stamped in place:
+  PASS  the new id is reported and lands in the frame
+  PASS  it still round-trips
+  PASS  compressed size is unchanged -- the id is pure metadata
+  PASS  the original-id copy refuses the blob  decompression error: Dictionary mismatch
+      d) a CONTENT-derived id, which libzstd's is not:
+         level  3: libzstd  297180423   ours 2114556345 = 7e0991b9
+         level  9: libzstd  297180423   ours 3424163866 = cc18981a
+         level 19: libzstd  297180423   ours 1346912414 = 5048409e
+  PASS  one libzstd id across the three levels
+  PASS  THREE distinct ids from the content  which is the collision closed
+      e) and the derivation is a defined fixed point:
+  PASS  re-stamping a stamped dictionary is idempotent
+  PASS  its id survives re-derivation
+  PASS  a stamped dictionary still round-trips
+
+all checks passed

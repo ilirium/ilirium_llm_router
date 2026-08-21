@@ -14,6 +14,7 @@ shape it expects, and the shape Claude Code expects is Anthropic's error object 
 
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncIterator
 from contextlib import AsyncExitStack, asynccontextmanager
 
@@ -23,22 +24,53 @@ from fastapi.responses import Response
 from starlette.requests import ClientDisconnect
 
 from .config import Config
-from .proxy import Proxy, create_client, error_response
+from .corpus import CorpusWriter
+from .dictionary import DictionaryTrainer
+from .proxy import Counters, Proxy, create_client, error_response
 from .stats import StatsWriter
 
+logger = logging.getLogger(__name__)
+
 CATCH_ALL_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]
+
+
+def _report_counters(counters: Counters) -> None:
+    """The one line that answers *did every call that arrived become a row?*
+
+    **A call that never reaches `record()` leaves no other trace at all** -- no CSV row, no log
+    line, no corpus entry -- so this pair is the only place that hole is visible. Emitted at
+    shutdown whether or not the corpus is on, which is the whole point: `corpus.enabled` is false
+    by default, and the corpus summary carrying every other total is not written at all then.
+
+    `lost` is normally 0, and a non-zero count is a real case rather than a theoretical one. A
+    caller already gone when the response starts makes `send` raise before the streaming
+    generator's first step, so `watch`'s `finally` -- and the `record()` inside it -- never runs.
+    Driven and measured 2026-08-20 at Task 18a, on the ASGI app directly, because the window is
+    too narrow to hit reliably over a socket.
+
+    **This reports the hole; it does not close it.** Owner's decision, 2026-08-20: writing the
+    missing row from somewhere else has to guarantee it can never write one twice, and a duplicated
+    row is worse than a missing one. `docs/backlog.md` carries the item.
+    """
+    logger.info(
+        "calls: %d arrived, %d recorded, %d lost",
+        counters.arrived,
+        counters.recorded,
+        counters.lost,
+    )
 
 
 def create_app(
     config: Config,
     client: httpx.AsyncClient | None = None,
     stats: StatsWriter | None = None,
+    corpus: CorpusWriter | None = None,
 ) -> FastAPI:
     """Build the app.
 
-    `client` and `stats` exist for tests, which pass a client wired to a stand-in backend and a
-    writer pointed at a temporary path, and close both themselves. In normal use the app owns them
-    and closes them on shutdown.
+    `client`, `stats` and `corpus` exist for tests, which pass a client wired to a stand-in backend
+    and writers pointed at temporary paths, and close them themselves. In normal use the app owns
+    them and closes them on shutdown.
     """
 
     @asynccontextmanager
@@ -49,7 +81,35 @@ def create_app(
             if writer is None:
                 writer = StatsWriter(config.stats)
                 stack.callback(writer.close)
-            app.state.proxy = Proxy(config, http, config.api_keys(), writer)
+            # The store is opt-in, so a disabled corpus is not merely an unused object: it is no
+            # object at all, no worker thread, and nothing created under `corpus.dir`.
+            store = corpus
+            if store is None and config.corpus.enabled:
+                # The trainer is built first so the writer can call it on a day rollover. It starts
+                # no thread and creates no directory until `start()`.
+                trainer = DictionaryTrainer(config.corpus)
+                store = CorpusWriter(
+                    directory=config.corpus.dir,
+                    compress_level=config.corpus.compress_level_zstd,
+                    body_max_bytes=config.corpus.body_max_bytes,
+                    queue_max_bytes=config.corpus.queue_max_bytes,
+                    on_day_rollover=trainer.on_day_rollover,
+                )
+                # Registered on the stack so the drain happens on the way out of lifespan, before
+                # the process exits and takes the daemon thread with it.
+                stack.callback(store.close)
+                # **No matching callback for the trainer, and that is deliberate.** Its install is
+                # write -> fsync -> rename, so a run abandoned at shutdown publishes nothing; the
+                # worker drains because it holds bodies that exist nowhere else. Two threads, two
+                # shutdown rules, for reasons that differ.
+                trainer.start()
+            proxy = Proxy(config, http, config.api_keys(), writer, store)
+            # Registered last so it runs *first* on the way out -- the stack is LIFO and the
+            # corpus summary is registered above. On its own line rather than folded into that
+            # summary, because the corpus is off by default and this pair has to be readable on
+            # the configuration the router actually ships with.
+            stack.callback(_report_counters, proxy.counters)
+            app.state.proxy = proxy
             yield
 
     app = FastAPI(title="ilirium_llm_router", lifespan=lifespan)

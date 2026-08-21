@@ -20,6 +20,18 @@ dependencies = [
     "pyyaml>=6.0.3",
     "starlette>=1.3.1",
     "uvicorn[standard]>=0.51.0",
+    # The corpus write path compresses bodies, and Python 3.13 has no `compression.zstd` — that
+    # module arrived in 3.14. Every zstd figure this project owns came from the `zstd` CLI binary,
+    # which the router itself has never called. Shelling out per body and bumping to 3.14 were both
+    # offered and declined in Phase 10; this is the third option, and it is one tool for the router
+    # and the offline trainer alike.
+    #
+    # A runtime dependency rather than a dev one: `corpus.py` imports it at module scope. On CPython
+    # the package requires its C extension — `backend_cffi` is a PyPy fallback and is not the code
+    # path here. That extension releases the GIL around every call into libzstd, which is what makes
+    # the single worker thread a real thread rather than a rename; Phase 10 Task 4 verified it
+    # against the shipped binary rather than the documentation.
+    "zstandard>=0.25.0",
 ]
 
 [project.scripts]

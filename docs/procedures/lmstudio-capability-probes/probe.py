@@ -45,7 +45,7 @@ ROOT = HERE.parent.parent.parent
 BODIES = HERE / "bodies"
 RUNS = HERE / "runs"
 CAPTURE = ROOT / "docs" / "captures" / "log-the-whole-request.txt"
-CALLS_CSV = ROOT / "logs" / "calls.csv"
+CALLS_CSV = ROOT / "logs" / "telemetry" / "calls.csv"
 
 DEFAULT_ROUTER = "http://127.0.0.1:8787"
 DEFAULT_MODEL = "qwen/qwen3.5-9b"
@@ -287,7 +287,7 @@ def report(name: str, body: dict, result: dict, summary: dict, row: dict | None)
             )
         )
     else:
-        lines.append("csv row        not found — is the router writing logs/calls.csv?")
+        lines.append("csv row        not found — is the router writing logs/telemetry/calls.csv?")
     return "\n".join(lines)
 
 

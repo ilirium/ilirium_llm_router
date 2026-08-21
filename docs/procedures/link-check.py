@@ -42,8 +42,9 @@ classes are excluded, each because a real document has a good reason to contain 
 - **Rename notation** — any line containing `→`. A sentence explaining that `phase-4-probes/` became
   `lmstudio-capability-probes/` names a path that is *supposed* to be gone. Writing renames with an
   arrow is therefore a convention this script depends on: use `→`, and neither side is checked.
-- **Repository-root paths named in prose** — `src/`, `logs/calls.csv`. These are resolved from the
-  repository root as well as from the citing file, and only reported when both miss.
+- **Repository-root paths named in prose** — `src/`, `logs/telemetry/calls.csv`. These are
+  resolved from the repository root as well as from the citing file, and only reported when both
+  miss.
 - **Names that are not addresses** — a bare `runs/` or `evidence/`. The manual writes "an
   instrument's `runs/` follows the instrument"; that is the name of a kind of directory, not a path
   from the file saying it. A candidate is checked only when its first segment is `.`, `..`, or a

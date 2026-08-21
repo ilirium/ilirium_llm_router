@@ -10,40 +10,36 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-17 — Phase 9 is merged.** `docs/phase-9-corpus-gate` merged into `main` with `--no-ff` as
-**`b29d502`**, and the hash is in `milestone-2-corpus/phase-9-corpus-gate/notes.md`, which is the
-permanent record. **All sixteen tasks done**, no letters inserted. `git diff main -- src/` is empty —
-the capture patch was applied, used and restored — and `make test` reports **158**.
+**2026-08-21 — Phase 10 is complete and the merge is the next action.** All thirty-three tasks are
+done and `make test` is **310**. The branch is `feat/phase-10-body-store`, forked at `d885b2f`; the
+permanent record is `milestone-2-corpus/phase-10-body-store/`.
 
-**The corpus proposal survives its own cheapest test.** On a held-out session of 20 real bodies:
-**3.12×** per-file, **12.10×** per-file with a dictionary trained on *other* sessions, **29.91×**
-streamed. **Per-call files are the unit**; the decision and the test it had to beat are in
-`reference/design-decisions.md`.
+**Trimmed to the current state on 2026-08-21, on the owner's decision** — it had reached ~560 lines
+against the ~30 above, in fifteen entries back to 2026-08-18. **Nothing was lost:** each restated
+what `phase-10-body-store/notes.md` holds as frozen-primary, the case the rule names.
 
-**Read the 12.10× as optimistic** — three biases flatter it, and `reference/measurements.md` carries
-them in the slice beside the number. Do not quote it without them.
+**Three documentation defects were closed the same day**, on the owner's instruction and outside any
+review phase. `reference/measurements.md`'s intermediate-slices row stated its slice as *"26.6× (no
+warmup probes)"* while silently inheriting the `/v1/messages` filter from the row above it, so read
+as written it recomputed to **0.245×** with the sign reversed. **All four slices were re-derived from
+the frozen CSV rather than relayed**, and the warmup predicate — which produced two plausible wrong
+answers first, 23.4× and 0.216× — is now written down beside them, which no document had done. The
+four `Branch:` lines that still said *"Merge back with `--no-ff`"* now carry their merge commits, and
+the in-flight table below no longer reads `make test` **308** in one clause and **310** in the next.
+The first two are recorded in `backlog.md` rather than deleted; the wider review stays parked.
 
-**`IDM-001` gained a rule afterwards, from two defects the owner found in this session's own output:**
-status placeholders — `*(not started)*`, "fifteen of sixteen", "not yet merged" — are closed out **as
-part of the merge**, in every form and not just the `Merge commit` row. Both misses happened *after*
-reading `IDM-001`, because it named a row and so got obeyed as a row.
+**What Phase 10 does not claim, stated in the documents rather than only here.** **Failure mode 3 is
+not discharged** — archiving cannot *break* a call, which was driven, but whether it *slows* one is
+unmeasured and needs a driven session with capture on against off. **A call can still vanish**; Task
+18a made that visible rather than impossible, and closing it needs a guarantee that a row can never
+be written twice. **There is no headline compression ratio**, on the owner's instruction: every
+figure is a small-sample confirmation that the mechanism works.
 
-**Two findings against `EPD-003` are independent of the gate** and hold whatever the numbers said:
-**`calls.csv` expires** (`backup_count: 10`), so it cannot be the corpus's join table as the sketch
-proposed; and **the capture missed 9 of 158 calls in testing**, all error paths — the rows `EPD-003`
-calls the interesting ones. Both are marked in place and carried into Phase 10.
-
-`main` is ahead of `origin/main` and nothing has been pushed. Phases 7 and 8 are closed with nothing
-outstanding; their hashes are below and in their phase notes.
-
-**The documentation review is still parked whole** in `backlog.md`. One cheap finding that would make a
-session act wrongly remains — `reference/measurements.md:34`, a slice whose sign reverses on
-recomputation.
-
-**Before touching anything:** `procedures/link-check.py` before and after anything that moves, and
-`make test` must report **158**. The checker **does not report zero** — its docstring says which hits are
-correct and permanent, and the count it states was re-derived on 2026-08-17. **Do not predict that count
-by reading the docstring; run the tool.** Phase 8 proved twice that reading it gives the wrong answer.
+**Baselines, run not predicted 2026-08-21: `make test` 310, `make lint` clean, `make check` valid,
+`link-check.py` 86 files, 75 broken, 2 roundabout — unchanged, correctly: today's edits added no
+`*.md` file and cited nothing that does not already exist.** *(`make test` is ~2 s warm; a **first**
+run after the cloud folder evicts the virtualenv takes two to three minutes on hydration alone —
+slow, not stuck.)*
 
 ## Where the project is
 
@@ -103,33 +99,49 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Plan and execute Phase 10 — the body store.** The first `feat/` phase of this milestone and the
-   first to touch `src/`. `implementation-plan.md` has it in outline, and
-   `phase-9-corpus-gate/plan.md` carries a fenced design sketch written before the gate ran — **input
-   to be re-derived, not a specification.** It must settle the write path (a bounded off-thread queue
-   and a drop policy), `EPD-003`'s open questions 3–6, capture at the point of failure, a dictionary
-   bootstrap and retraining policy, and the `logs/telemetry/` move.
-2. **Decide `EPD-001` or `002`.** Both are blocked on a person rather than on work, and both are argued
+1. **Merge `feat/phase-10-body-store`, then exercise the corpus by hand.** The phase is finished and
+   the merge is the only action left in it. **It closes two placeholders** — the Record table at the
+   foot of `plan.md` and `notes.md`'s first line, which reads *"Not yet merged."* Both are named in
+   `plan.md`'s "Placeholders in this file", which is the section that exists so they are not
+   forgotten, and neither can be written until the merge commit has a hash. **The owner then drives
+   the corpus against a real session** before any new work opens — the store has been driven by
+   Phase 10's own checks, never by its owner in ordinary use.
+   *(This item read "Execute Phase 10 — the body store, from Task 16 (Group E)" until 2026-08-21,
+   eight tasks after it stopped being true. It is the defect this file's own milestone-table entry
+   describes: prose that undercounts goes stale invisibly, where a missing row would not.)*
+2. **Plan Phase 11 — and its subject is deliberately not chosen here.** The candidates are in
+   `backlog.md`, which is the full inventory; picking one is a planning decision, not something the
+   next session inherits from this file. **`EPD-003`'s open questions 3–6 are not among them** — they
+   were closed in `EPD-003` itself on 2026-08-20 at Task 20, three answered and retention marked out
+   of scope for Milestone 2 on the owner's decision rather than answered.
+3. **Decide `EPD-001` or `002`.** Both are blocked on a person rather than on work, and both are argued
    on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions waiting on a person". Deciding
-   one is cheaper than any measurement in the list. (`EPD-003` is no longer among them — decided
-   2026-08-17 by Phase 9.)
-3. **Measure whether Claude Code shows LM Studio's context error.** The strongest of the open
-   measurements: it decides whether the most actionable message the local backend produces is ever
-   seen. `backlog.md`, "Measurements left open".
+   one is cheaper than any measurement in the list, and neither decision waits on Phase 11.
+   (`EPD-003` is no longer among them — decided 2026-08-17 by Phase 9.)
+
+*The measurement items are both in `backlog.md` under "Measurements left open" and neither is listed
+here as next, because the owner has not chosen Phase 11's subject and this file is not the inventory.
+Whether Claude Code shows LM Studio's context error was already there. **Whether archiving slows a
+call was added there on 2026-08-21** — until then it lived only in `prompt.md`, which is the one file
+allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table.*
 
 ## In-flight branches
 
 *Merged branches are not listed — git already holds that, and a hand-maintained list would drift.
 The permanent record of a phase's branch, fork point and merge commit belongs in its phase note.*
 
-**None.** `docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and the table is empty until
-the next phase opens a branch.
+| Branch | Purpose | Tree | Next |
+|---|---|---|---|
+| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread, and `cli.py` carrying `--train-dict` / `--tune-dict` / `--from`. `make test` **310**.** `plan.md` now carries **"The register"**, and every value in it is settled, and the telemetry paths now read `logs/telemetry/` | **The merge, and it is the owner's.** **All thirty-three tasks are done**; Task 18 ran, nine of ten observations first time and the tenth after **Task 18a** made it performable at all; `make test` 310 — **E moved nothing on disk**, on the owner's decision, so `logs/telemetry/` does not exist until the router next starts; the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+
+*`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
+10 opened.*
 
 **It was a `docs/` branch although the phase was about the router**, because no `src/` change survived
 it: Task 6 patched `proxy.py` and restored it, and `git diff main -- src/` was empty at the merge.
 `method/IDM-001-git-branching.md` is what makes that the right prefix — the prefix says what kind of
-work it is, and `phase-N-` says it is numbered work. **Phase 10 will be the opposite case**: it builds
-the store, so it is `feat/`.
+work it is, and `phase-N-` says it is numbered work. **Phase 10 is the opposite case**, and it is: `feat/phase-10-body-store`,
+opened 2026-08-18. *(This sentence read "will be" until then.)*
 
 `docs/phase-8-method-and-guardrails` was the first branch to **carry a phase number on a `docs/`
 prefix** — the form it settled: the prefix says what kind of work it is, `phase-N-` says it is a phase.

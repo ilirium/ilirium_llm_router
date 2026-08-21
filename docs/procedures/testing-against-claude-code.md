@@ -83,9 +83,10 @@ The "done when" is three things, so exercise all three against both backends:
 is. That is a deliberate decision recorded in `CLAUDE.md`, not a bug — but do not be surprised by
 charges during a session you thought was entirely local.
 
-**Which backend a request took is now in `logs/calls.csv`.** Phase 2 landed on 2026-07-30, so the
-`backend` column answers directly what used to require reading LM Studio's own server log. That log
-is still a useful independent witness when the two disagree — but the CSV is the first place to look.
+**Which backend a request took is now in `logs/telemetry/calls.csv`.** Phase 2 landed on 2026-07-30,
+so the `backend` column answers directly what used to require reading LM Studio's own server log.
+That log is still a useful independent witness when the two disagree — but the CSV is the first
+place to look.
 
 ## 6. Phase 2's "done when" — the session that checks the CSV
 
@@ -115,7 +116,7 @@ An ordinary session exercises only the easy half. Do these four things deliberat
 ### Then read the file
 
 ```bash
-python3 - logs/calls.csv <<'PY'
+python3 - logs/telemetry/calls.csv <<'PY'
 import csv, sys
 from collections import Counter
 rows = list(csv.DictReader(open(sys.argv[1], newline="")))
@@ -149,9 +150,10 @@ What each answer means:
 | `path` | anything besides `/v1/messages` | not a fault — it is the answer to the standing "other endpoints" question. Write down whatever appears |
 | `stop_reason` | mostly `end_turn` | `max_tokens` on the local model is the silent truncation the 34304-token question predicted |
 
-Also confirm `logs/router.log` carries uvicorn's startup and access lines *interleaved with* the
-router's own per-call lines. That interleaving is the point of decision 5 in `phase-2-notes.md`; if
-uvicorn's lines are missing, `log_config=None` and the handler attachment have come apart.
+Also confirm `logs/telemetry/router.log` carries uvicorn's startup and access lines
+*interleaved with* the router's own per-call lines. That interleaving is the point of decision 5 in
+`phase-2-notes.md`; if uvicorn's lines are missing, `log_config=None` and the handler attachment
+have come apart.
 
 Finally, check rotation once with real data rather than fixtures: set `stats.max_bytes` to something
 small like `4096`, run a few turns, and confirm each `calls.csv.N` still starts with a header row.
