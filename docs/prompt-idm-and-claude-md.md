@@ -67,7 +67,7 @@ merge is `merge-idm-and-claude-md.md`, and that file is the work list.**
 |---|---|
 | The two-zone shape is undocumented | **Decided: blessed for any IDM**, not restricted to playbooks. `IDM-000` now carries *"Two zones, when the evidence is bulky"* — the form, and the hazard that a caveat living only below the line is invisible to a reader obeying the stop instruction |
 | A stale count in a live document | **Decided: replace the count with a pointer** to `reference/lessons.md` lesson 1 — **and defer the edit to the merge**, so this branch touches Milestone 2's document exactly once. In `merge-idm-and-claude-md.md` |
-| This branch is not in `status.md` | **Decided: neither now nor by this session** — the merge instructions carry it instead. Doing so surfaced a real gap: `IDM-001` has **no home for a non-phase branch's permanent record**. Named, not amended, in `merge-idm-and-claude-md.md` |
+| This branch is not in `status.md` | **Decided: neither now nor by this session** — the merge instructions carry it instead. Doing so surfaced a real gap, which was then **closed**: `IDM-001` had no home for a non-phase branch's permanent record, and now has a third row saying it is **the merge commit message**. So `status.md` never needs a row for this branch at all |
 | `IDM-005` step 2 has no evidence | **Decided: folded into step 1**, leaving seven steps renumbered. Naming the refuting experiment is evidenced; prescribing that it run *before* the specification was not. `E2` is kept as the record of the fold rather than deleted. The consequences in Milestone 2's documents are deferred to `merge-idm-and-claude-md.md` |
 
 ## What the owner expects of a session here

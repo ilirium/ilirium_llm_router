@@ -92,18 +92,6 @@ named plan section.
 is the worked example either way**, since its register and the defects it caught are already recorded
 in `milestone-2-corpus/phase-10-body-store/notes.md`.
 
-**`IDM-001` has no home for a non-phase branch's permanent record.** Found 2026-08-21, on the
-`docs/idm-and-claude-md` branch, which is one.
-
-*What happened:* `IDM-001` names two homes for where a branch is recorded — `status.md` while it is
-in flight, the phase note permanently. A `docs/` branch carrying no phase number has no phase note, so
-once it merges its fork point and merge commit have nowhere to live. **The rule was followed and the
-record still went missing**, which is the same shape as the `Merge commit` defect that rule was
-generalised from.
-
-*Why it is parked:* amending a method document is the owner's call and was not asked. **Named, not
-fixed**, in `merge-idm-and-claude-md.md`, which also carries the two candidate answers.
-
 **The merge of `docs/idm-and-claude-md` leaves a work list.** Written 2026-08-21.
 
 *What it is:* `merge-idm-and-claude-md.md` at the root of `docs/`, naming what that merge into

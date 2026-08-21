@@ -202,8 +202,9 @@ fast-forward erases it. And **`git merge` cannot read its message from stdin** �
 → `docs/method/IDM-001-git-branching.md` — **read it before naming a phase folder, before rejecting a
 plan, or before recording where a branch went.** It holds the folder⇄branch slug rule and its one-way
 check, what happens to a rejected plan (merged and marked, not deleted — the phase number is spent),
-and the split between `docs/status.md` for in-flight branches and the phase note for the permanent
-record.
+and where a branch is recorded — `docs/status.md` while it is in flight, the phase note permanently,
+and **the merge commit message for a branch carrying no phase number**, which has no phase note to put
+it in.
 
 ## Shell
 

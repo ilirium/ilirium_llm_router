@@ -63,17 +63,19 @@ exactly — *searching for what moves will not find what gets cut* — and both 
 ### 3. `docs/status.md`, and an open question underneath it
 
 This branch was never recorded there, on the owner's instruction, because Phase 10 is rewriting that
-table. **Once this merges, the branch is no longer in flight**, so `IDM-001`'s in-flight rule stops
-applying to it and the question becomes where its *permanent* record goes.
+table. **Once this merges, the branch is no longer in flight**, so `status.md` never needs a row for it
+and nothing on that list touches `status.md` at all.
 
-**`IDM-001` has no answer for that, and this is a gap rather than an oversight.** It names two homes —
-`status.md` for in-flight branches, the phase note for the permanent record — and this is a non-phase
-`docs/` branch with no phase note. **Not amended here: changing a method document is the owner's call
-and was not asked.** The two obvious candidates, for whoever asks:
+**`IDM-001` was amended on 2026-08-21 to answer this**, and the answer is the merge you are about to
+make. Its "Where a branch is recorded" table gained a third row: **a branch carrying no phase number is
+recorded by its merge commit message**, because it has no phase note and inventing a phase number to
+give it one would spend an identity to buy a filing slot.
 
-- Record it inside `phase-10-body-store/notes.md`, since this content arrives inside Phase 10's merge
-  to `main` anyway; or
-- amend `IDM-001` with a third row for a branch that carries no phase number.
+**So the merge message is the record. Write it as though the phase note this branch does not have were
+being written into it** — the fork point (`273057f` on `feat/phase-10-body-store`, not `main`, so the
+branch could see `IDM-004`), why the branch existed, and what it decided. The rules it produced are
+already recorded in `IDM-005`, `IDM-006` and `IDM-000`; what only the merge can carry is the
+provenance.
 
 ### 4. Checked, and deliberately left alone — do not "fix" these
 
