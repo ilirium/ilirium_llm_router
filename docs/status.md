@@ -185,6 +185,28 @@ Whether Claude Code shows LM Studio's context error was already there. **Whether
 call was added there on 2026-08-21** — until then it lived only in `prompt.md`, which is the one file
 allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table.*
 
+## What is on disk and not in git
+
+*Harvested here 2026-08-21 from `prompt.md`, which was the only place it was written down and which
+expires by design. **Verified by looking**, not relayed. This is working-copy state, so it belongs in
+this file and it goes stale — re-check before trusting a line of it.*
+
+`logs/` is gitignored whole (`.gitignore:228`), so none of this can be committed by accident.
+
+| Path | What it is |
+|---|---|
+| `logs/corpus/dicts/req-2026-08-20T110338Z-0e4d84d1.dict` | **The first real dictionary**, 262,144 bytes exactly. **Do not delete it.** `measurements.md` cites the `0e4d84d1` ID as evidence that the same parameters reproduce the same dictionary byte for byte |
+| `logs/corpus-gate/` | Phase 9's corpus, **8.8 MB**. Task 15 trained the dictionary above from it, and `measurements.md` names it as the slice behind four rows. It stays |
+| `logs/calls.csv`, `logs/router.log` | The router's history to 2026-08-20. **Deliberately left** where they are when the config moved to `logs/telemetry/` — owner's decision, in `milestone-2-corpus/phase-10-body-store/plan.md`'s settled table |
+| `logs/telemetry/` | **Does not exist yet.** The router creates it on its next start. Its absence is correct |
+| `docs/procedures/dying-backend/runs/` | Task 18's driving check. Disposable — an instrument's `runs/` is overwritten by the next run |
+
+**One warning was dropped rather than carried across.** `prompt.md` said *"stage with explicit paths,
+never `git add -A`."* The stated reason was that `logs/` holds uncommittable things — and `logs/` is
+gitignored, so `git add -A` cannot stage any of it. The advice may still be worth following for other
+reasons, but **the reason given for it was not a real hazard**, and repeating it would have preserved
+a rule whose justification does not hold.
+
 ## In-flight branches
 
 *Merged branches are not listed here — this section holds live state. **They are indexed in
