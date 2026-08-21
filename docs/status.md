@@ -10,9 +10,11 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-21 — Phase 10 is complete and the merge is the next action.** All thirty-three tasks are
-done and `make test` is **310**. The branch is `feat/phase-10-body-store`, forked at `d885b2f`; the
-permanent record is `milestone-2-corpus/phase-10-body-store/`.
+**2026-08-21 — Phase 10 is merged as `32c26bb`, and the next thing is the owner driving the corpus.**
+All thirty-three tasks done, `make test` **310**, `feat/phase-10-body-store` forked at `d885b2f` and
+merged `--no-ff`. **Both placeholders closed with it** — the Record table at the foot of `plan.md`
+and `notes.md`'s first line — which were the only two the phase left standing. The permanent record
+is `milestone-2-corpus/phase-10-body-store/`.
 
 **Trimmed to the current state on 2026-08-21, on the owner's decision** — it had reached ~560 lines
 against the ~30 above, in fifteen entries back to 2026-08-18. **Nothing was lost:** each restated
@@ -51,7 +53,7 @@ belong to the phase note, and each milestone's own index reads its phases in ord
 | | Subject | Phases | State | Read it in |
 |---|---|---|---|---|
 | **1** | The core router — dispatch, byte-relay, observability, failure handling | 1–7 | **complete** 2026-08-07 | `milestone-1-core/README.md`, which carries every branch and merge hash with what each phase settled |
-| **2** | The corpus — capturing bodies for analysis | 8– | **open**, two phases in | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
+| **2** | The corpus — capturing bodies for analysis | 8– | **open**, three phases in — 8, 9 and 10, the last merged 2026-08-21 | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
 
 *Changed 2026-08-17 from a per-phase table of Milestone 1's merge commits, per the `backlog.md` item
 that proposed it. **The hashes are not lost** — each one keeps two to six homes, the fewest being
@@ -76,12 +78,19 @@ both backends, and a local model handled tool use, file editing and multi-turn c
 > compressed against a shared dictionary — without parsing a payload, without slowing a call, and
 > without special storage infrastructure.*
 
-**One of its three failure modes is already discharged** by Phase 9's measurement; the other two —
-that archiving cannot stay opaque, and that it slows a call — are Phase 10's to test.
+**Two of its three failure modes are discharged**, and the third is not. Phase 9's measurement
+settled the storage-infrastructure half; **Phase 10 settled that archiving cannot stay opaque** — tar
+a day folder, unpack it elsewhere, and every blob opens and verifies against the digest in its own
+filename. **Whether archiving slows a call is untested**, and is parked in `backlog.md`.
 
-**Two phases done, neither touching `src/`** — Phase 8 built the method tier and the guardrails, Phase 9
-decided `EPD-003` and ran the gate that named the claim above. **Phase 10 is the first of this milestone
-to touch `src/`.** `milestone-2-corpus/implementation-plan.md` describes both phases; **their merge
+**Three phases done. The first two touched no `src/`** — Phase 8 built the method tier and the
+guardrails, Phase 9 decided `EPD-003` and ran the gate that named the claim above — **and Phase 10 is
+the first of this milestone that did**, merging 2026-08-21 as `32c26bb`.
+*(Both sentences above were stale between Phase 10's close and this edit: they said two phases and
+that Phase 10 had the opaque half still to test. **That is the paragraph below happening again, to
+the paragraph that describes it** — prose that undercounts goes stale where a missing table row would
+be visible. Recorded rather than quietly fixed, because it is now the second instance.)*
+`milestone-2-corpus/implementation-plan.md` describes all three; **their merge
 hashes are in their phase notes**, which is where `method/IDM-001-git-branching.md` puts the permanent
 record. *(This sentence first said the plan indexes both hashes. It carries Phase 8's and not Phase 9's
 — the plan's Record table records the branch **that file** was created on, which was Phase 8's.)*
@@ -99,16 +108,16 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Merge `feat/phase-10-body-store`, then exercise the corpus by hand.** The phase is finished and
-   the merge is the only action left in it. **It closes two placeholders** — the Record table at the
-   foot of `plan.md` and `notes.md`'s first line, which reads *"Not yet merged."* Both are named in
-   `plan.md`'s "Placeholders in this file", which is the section that exists so they are not
-   forgotten, and neither can be written until the merge commit has a hash. **The owner then drives
-   the corpus against a real session** before any new work opens — the store has been driven by
-   Phase 10's own checks, never by its owner in ordinary use.
+1. **Exercise the corpus by hand — the owner's, and it comes before Phase 11 opens.** The store has
+   been driven by Phase 10's own checks and never by its owner in ordinary use. **It is off by
+   default**, so turning it on is the first step and no `logs/corpus/` until then is correct
+   behaviour; `reference/corpus.md` is the spec and names what else a session gets wrong from the
+   name alone. **`logs/telemetry/` does not exist yet either** — the router creates it on its next
+   start, and the old `logs/calls.csv` and `logs/router.log` were deliberately left where they are.
    *(This item read "Execute Phase 10 — the body store, from Task 16 (Group E)" until 2026-08-21,
-   eight tasks after it stopped being true. It is the defect this file's own milestone-table entry
-   describes: prose that undercounts goes stale invisibly, where a missing row would not.)*
+   eight tasks after it stopped being true, and was then the merge until the merge happened. It is
+   the defect this file's own milestone-table entry describes: prose that undercounts goes stale
+   invisibly, where a missing row would not.)*
 2. **Plan Phase 11 — and its subject is deliberately not chosen here.** The candidates are in
    `backlog.md`, which is the full inventory; picking one is a planning decision, not something the
    next session inherits from this file. **`EPD-003`'s open questions 3–6 are not among them** — they
@@ -130,12 +139,14 @@ allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table.
 *Merged branches are not listed — git already holds that, and a hand-maintained list would drift.
 The permanent record of a phase's branch, fork point and merge commit belongs in its phase note.*
 
-| Branch | Purpose | Tree | Next |
-|---|---|---|---|
-| `feat/phase-10-body-store` | Phase 10 — the body store, forked at `d885b2f` | docs, the benchmark instrument, `pyproject.toml` / `uv.lock`, and **the whole store: `corpus.py` new, `config.py`, `proxy.py`, `observe.py`, `app.py`, `cli.py` and `config.yaml` all changed, `tests/test_corpus.py` new — and now **`dictionary.py` new, `tests/test_dictionary.py` new**, with `corpus.py` gaining the shared `newest_dictionary()` / `write_atomically()` and an `on_day_rollover` hook, and `app.py` starting the training thread, and `cli.py` carrying `--train-dict` / `--tune-dict` / `--from`. `make test` **310**.** `plan.md` now carries **"The register"**, and every value in it is settled, and the telemetry paths now read `logs/telemetry/` | **The merge, and it is the owner's.** **All thirty-three tasks are done**; Task 18 ran, nine of ten observations first time and the tenth after **Task 18a** made it performable at all; `make test` 310 — **E moved nothing on disk**, on the owner's decision, so `logs/telemetry/` does not exist until the router next starts; the benchmark is frozen in `evidence/`, and the executor was chosen from measurement rather than argued. The trainer measured **0.03 s**, so the `TRAIN_BUDGET_S` gate permits day-rollover triggering — **re-measure, do not inherit.** **Re-scoped and re-reviewed 2026-08-19** to thirty-two tasks — the router retrains itself, `13a`/`14a`–`14f` are lettered because execution has begun, and `14d` is **struck and absorbed into Task 11**. The tree also now carries `docs/wiki/`, `procedures/event-loop-lag/` and an `attribution` block in `.claude/settings.json` |
+**None. The table is empty as of 2026-08-21**, when `feat/phase-10-body-store` merged as **`32c26bb`**
+and its row went with it. **Phase 11 has no branch because its subject is not chosen** — the plan
+opens the phase branch, so there is nothing to list until one is.
 
-*`docs/phase-9-corpus-gate` merged as **`b29d502`** on 2026-08-17 and this table was empty until Phase
-10 opened.*
+*It was empty in exactly this way once before: `docs/phase-9-corpus-gate` merged as **`b29d502`** on
+2026-08-17 and nothing replaced it until Phase 10 opened. The permanent record of both — branch, fork
+point and merge commit — is in the phase notes, which is where `method/IDM-001-git-branching.md` puts
+it and why this section may go empty without losing anything.*
 
 **It was a `docs/` branch although the phase was about the router**, because no `src/` change survived
 it: Task 6 patched `proxy.py` and restored it, and `git diff main -- src/` was empty at the merge.

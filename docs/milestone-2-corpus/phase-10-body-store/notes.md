@@ -1,6 +1,11 @@
 # Phase 10 — the body store: notes
 
-Branch: `feat/phase-10-body-store`, off `main` at `d885b2f`. **Not yet merged.**
+Branch: `feat/phase-10-body-store`, off `main` at `d885b2f`, **merged 2026-08-21 with `--no-ff` as
+`32c26bb`.** The sentence this replaces read "Not yet merged", which was correct while it was true;
+leaving it after the branch is gone is the defect, and `../../method/IDM-001-git-branching.md` says
+so. **Filling this hash in is the one edit this note takes after being written**, and it is the same
+edit Phase 8's note records making. *The four Milestone 1 `Branch:` lines that never took it were
+closed out on the same day, immediately before this merge — see `../../backlog.md`.*
 
 Written **while the work is happening**, task by task. Everything below the re-derivation is added as
 it is found; nothing here is assembled afterwards.

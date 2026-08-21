@@ -1430,7 +1430,7 @@ as an instance gets obeyed as an instance**, so this section names the instances
 | The header, first line | *"Execution is under way; the group markers … say how far"* | **Closed out 2026-08-20 at Task 24** — it now says execution is complete through Task 24 and that the merge is the owner's. *Reworded 2026-08-18: it enumerated tasks, went stale the moment Task 4 ran, and was a second copy of the group markers. It now points at them instead, so there is one place to close out rather than two* |
 | ~~**Five**~~ ~~**Four**~~ ~~**Three**~~ **No** group headings — ~~B,~~ ~~C,~~ ~~D,~~ ~~E,~~ ~~F~~ | ~~`*(not started)*`~~ | **All closed out by 2026-08-20.** D at Task 15, E at Task 17, F at Task 18a — F reads *(Tasks 18 and 18a executed)* rather than a bare *executed*, because Tasks 19–24 are the harvest and the marker should not claim them before they run |
 | ~~Group **A**'s heading~~ | ~~`*(executed, except 3a)*`~~ | **Closed out 2026-08-18** when Task 3a finished, which is what this row said would close it. *Added earlier the same day: the table said "six" group headings and only five carried the marker, so the uncatalogued sixth was the one form the sweep could not see. Kept struck rather than deleted — a row that vanishes cannot show that the mechanism worked* |
-| The Record table below | `Merge commit \| not yet merged` | The merge itself |
+| ~~The Record table below~~ | ~~`Merge commit \| not yet merged`~~ | **Closed out 2026-08-21 at the merge**, which landed as `32c26bb`. `notes.md`'s first line closed with it, and those were the only two placeholders this phase left standing |
 | "What is settled" | *"still open questions until Task 20"* | Task 20 |
 | ~~"What this phase does not settle"~~ | ~~*"Raised 2026-08-19 and not ratified"* — the dictionary storage figure~~ | **Closed out 2026-08-19**, the same day it opened: the owner accepted it as too small to act on and not judgeable without real usage data. Kept struck rather than deleted — a row that vanishes cannot show the mechanism worked |
 | "The retraining path" and Task 14a | *"which of the two is decided by Task 14a's measurement"* — the trigger is startup-only **or** startup-plus-rollover, and this file deliberately does not say which | **Task 14a**, by measuring the training wall clock. **If it is never closed out, the phase ships a design with a hole in it** and the group marker will not show that, because the hole is inside a task rather than in front of one |
@@ -1617,7 +1617,7 @@ is wired**, not after.
 |---|---|
 | Branch | `feat/phase-10-body-store` |
 | Fork point | `d885b2f` |
-| Merge commit | *not yet merged* |
+| Merge commit | `32c26bb`, merged 2026-08-21 with `--no-ff` |
 
 *Writing "not yet merged" while it is true is correct; leaving it there after the branch is gone is
 this repository's signature failure, and `../../method/IDM-001-git-branching.md` names it. Closed out

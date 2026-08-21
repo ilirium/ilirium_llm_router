@@ -6,10 +6,18 @@ again.*
 
 ---
 
-**Phase 10 is complete and the branch is not merged. Merging it is the owner's, not a session's.**
-
-`feat/phase-10-body-store`, forked from `main` at `d885b2f`. Thirty-three tasks in six groups —
+**Phase 10 is complete and merged. `feat/phase-10-body-store` merged `--no-ff` into `main` as
+`32c26bb` on 2026-08-21**, forked from `main` at `d885b2f`. Thirty-three tasks in six groups —
 thirty-two planned plus **Task 18a**, inserted during execution. `make test` **158 → 310**.
+
+**Both placeholders closed with the merge** — the Record table at the foot of `plan.md` and
+`notes.md`'s first line. **Nothing in this file is waiting on anybody.** *(It said the merge was the
+one thing waiting, and that was true until 2026-08-21. The paragraphs below still describe what the
+phase left standing, which is unchanged; the section that named the merge command is gone.)*
+
+**The next thing is the owner exercising the corpus by hand** — the store has been driven by Phase
+10's own checks and never in ordinary use. It is **off by default**. Phase 11's subject is
+deliberately not chosen; `docs/backlog.md` is the inventory it gets picked from.
 
 **Do not re-open the phase.** Its plan, notes and record are in
 `docs/milestone-2-corpus/phase-10-body-store/`. Owner decisions live in `plan.md`'s "What is
@@ -26,17 +34,17 @@ the headings first (`grep -n '^## ' <file>`) and read what the task needs.
 `docs/wiki/claude-code-auto-mode.md` says why a whole-file `cat` costs more than it looks like under
 auto mode.
 
-## The one thing waiting on the owner
+## The merge, which has happened
 
-```
-git merge --no-ff feat/phase-10-body-store
-```
+*This section said the merge was the one thing waiting on the owner. It ran on 2026-08-21 as
+`32c26bb`, and both placeholders closed with it — the **Record table** at the foot of `plan.md`, and
+**`notes.md`'s first line**, which had read *"Not yet merged."* Both were listed in `plan.md`'s
+"Placeholders in this file", which is the section that exists so they are not forgotten, and it
+worked: they were closed out of that list rather than found by chance.*
 
-**`git merge` cannot read its message from stdin** — `-F -` works for `git commit` and fails here,
-so write the message to a temp file. After merging, two placeholders close: the **Record table** at
-the foot of `plan.md`, and **`notes.md`'s first line**, which reads *"Not yet merged."* Both are
-listed in `plan.md`'s "Placeholders in this file", which is the section that exists so they are not
-forgotten.
+**One fact from it is worth keeping, because a session gets it confidently wrong:** `git merge`
+cannot read its message from stdin. `-F -` works for `git commit` and fails here, so write the
+message to a temp file.
 
 ## What the phase left standing, deliberately
 
