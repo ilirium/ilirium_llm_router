@@ -891,9 +891,11 @@ found the false claim.
 ### `IDM-004`, written from what this cost
 
 **`../../method/IDM-004-reviewing-unexecuted-work.md`, in force 2026-08-18.** Written after the run
-rather than before it, on the owner's ordering and on `../../README.md`'s own playbook rule — *write
-this playbook last, from what it cost*. `review-charter.md` is the worked example it points at, and
-this section is its evidence.
+rather than before it, on the owner's ordering and on the closing playbook's own rule — *write this
+playbook last, from what it cost*. That rule was in `../../README.md` when this was written and is
+`../../method/IDM-006-closing-a-milestone.md` step 9 from 2026-08-20; **the path is repointed, the
+claim is not.** `review-charter.md` is the worked example it points at, and this section is its
+evidence.
 
 **What generalised**, and it is less than was expected: the boundary against the closing review, the
 charter-first iteration, the two questions, parallel-not-serial, and six rules. **What did not

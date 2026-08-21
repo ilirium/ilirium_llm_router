@@ -92,17 +92,6 @@ named plan section.
 is the worked example either way**, since its register and the defects it caught are already recorded
 in `milestone-2-corpus/phase-10-body-store/notes.md`.
 
-**The merge of `docs/idm-and-claude-md` leaves a work list.** Written 2026-08-21.
-
-*What it is:* `merge-idm-and-claude-md.md` at the root of `docs/`, naming what that merge into
-`feat/phase-10-body-store` deliberately does not do — three edits to
-`milestone-2-corpus/implementation-plan.md` and two stale playbook citations inside
-`phase-10-body-store/`, all of them left because that branch was being written concurrently.
-
-*Why it is parked:* it is not parked, it is **scheduled for the merge**. This row exists only so the
-work is reachable from a file that is read routinely, since **`link-check.py` cannot find any of it** —
-every stale citation still resolves. Delete this row when the merge file is deleted.
-
 ---
 
 ## Documentation defects found and not fixed
