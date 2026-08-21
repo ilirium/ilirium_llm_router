@@ -9,12 +9,16 @@ adding a document or moving one.
 
 ## Status
 
-**Milestone 1 is complete — seven phases, 158 tests.** The router dispatches,
-relays and records; the central claim is settled, that **no protocol translation is needed and a
-local model can drive a real coding session through the router.**
+**Milestone 1 is complete — seven phases, and 158 tests *at its close on 2026-08-07*.** The router
+dispatches, relays and records; the central claim is settled, that **no protocol translation is
+needed and a local model can drive a real coding session through the router.**
 
-Current state and what is next are in `docs/status.md`; how Milestone 1 got there is in
-`docs/milestone-1-core/`.
+**Milestone 2 is open — the corpus, three phases in, last merged 2026-08-21.** Do not read the 158
+above as the current count; it is Milestone 1's, and it is dated for that reason.
+
+**No number here is current by construction. `docs/status.md` is the only file that holds state** —
+read it first, every session, for where the project is, what is on disk and what is next.
+How Milestone 1 got there is in `docs/milestone-1-core/`.
 
 Note: `/Users/ilirium/Projects/code-2026/ilirium_llm_router` and the OneDrive path are the *same
 directory* (identical inode), not two checkouts. Editing either edits both.

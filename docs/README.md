@@ -357,8 +357,10 @@ and a config key only look wrong when they sit in adjacent rows.*
 
 ### `notes.md` splits by group once a phase has groups
 
-**Adopted 2026-08-21.** Each task group's notes go to **`notes-group-<letter>.md`** —
-`notes-group-a.md`, `notes-group-b.md` — matching the group letters the plan already publishes.
+**Adopted 2026-08-21 on the owner's instruction**, who also chose both of the decisions below — the
+filename shape and the forward-only scope — when the options were put. Each task group's notes go to
+**`notes-group-<letter>.md`** — `notes-group-a.md`, `notes-group-b.md` — matching the group letters
+the plan already publishes.
 
 **`notes.md` keeps everything that belongs to no group, and stays the entry point.** The
 re-derivation before task 1, the interviews, the review passes, cross-cutting findings, what was open

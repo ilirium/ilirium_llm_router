@@ -54,6 +54,10 @@ a rule about what a review must *find*, and `IDM-004` is the review protocol —
 would be the drift the method tier exists to prevent. **Left open deliberately**, because that is a
 judgement for whoever writes it and this item should not presume it.
 
+**Still fully open as of 2026-08-21, and `IDM-008` does not touch it.** The item below was partly
+discharged that day and the two look alike; this one is about *whose decision a position was*, which
+no register can answer — a value can be present, correct and still nobody's ratified choice.
+
 *Why it is parked rather than done:* it is a documentation change with no deadline, and Phase 10 is
 executing. Doing it mid-phase would put method work on a `feat/` branch, which
 `method/IDM-001-git-branching.md` is explicit about.
@@ -85,19 +89,32 @@ the same shape as the item above** — an instrument the plan already has, that 
 reviewer to use.
 
 *Where it should land:* also an **amendment to `IDM-004`**, and probably the same amendment as the item
-above — both are rules about what a review must *find*. `../README.md` would gain the register as a
-named plan section.
+above — both are rules about what a review must *find*.
 
-*Why it is parked:* same reason as above — method work does not belong on a `feat/` branch. **Phase 10
-is the worked example either way**, since its register and the defects it caught are already recorded
-in `milestone-2-corpus/phase-10-body-store/notes.md`.
+**PARTLY DISCHARGED 2026-08-21 by `method/IDM-008-the-register.md`. Read this before acting on the
+item above, or you will rebuild something that exists.** Two of the three halves are done:
+
+| | State |
+|---|---|
+| The plan carries a register listing every name and number, with `❓` on anything unvalued | **Done** — `IDM-008`, in force. The phase's **closing task** checks it against the code |
+| `README.md` gains the register as a named plan section | **Done** — `README.md`'s phase template points at `IDM-008` |
+| **The *forward review* checks it** — that no row is empty, and that every number the plan asserts is reconciled against the phase's own `evidence/` | **Still open**, and it is the half that catches the 70× error *before* the work runs |
+
+**What is left is an `IDM-004` amendment and nothing else.** `IDM-008` puts the register in the plan
+and checks it at the *close*; it deliberately does not say what a reviewer must do with it. The
+twenty-second-shutdown defect above was found by **compiling** the register mid-phase, not by a
+review — so the open half is real and its evidence is unchanged.
+
+*Why it is parked:* method work does not belong on a `feat/` branch, and this is one amendment to one
+document. **Phase 10 is the worked example either way**, since its register and the defects it caught
+are recorded in `milestone-2-corpus/phase-10-body-store/notes.md` and summarised in `IDM-008`.
 
 ---
 
 ## Documentation defects found and not fixed
 
-**`CLAUDE.md` is 292 lines against upstream's ~200-line guidance, and nobody has measured what it
-could lose.** It was 260 before 2026-08-21 and grew by 32 that day — the branch-index rule and its two
+**`CLAUDE.md` is 297 lines against upstream's ~200-line guidance, and nobody has measured what it
+could lose.** It was 260 before 2026-08-21 and grew by 37 that day — the branch-index rule and its two
 pointers, then `IDM-007`'s Working-agreement bullet, the "Reading" section and the `IDM-008` pointer.
 **The owner accepted the growth deliberately**, on the ground that the 200 figure is guidance about
 *adherence* rather than a limit, and that this file is the project's method rather than boilerplate.
@@ -113,8 +130,6 @@ is a measurement, not a cut — each candidate section written as a claim, paire
 it. **Two of the six restated `IDM-001` facts and both new pointers were argued into place on the
 record**, in `IDM-000` and `IDM-001`, so a review that wants them out has to beat those arguments
 rather than count lines.
-
-
 
 **The whole of `milestone-1-core/documentation-review-2026-08-16.md`.** A fresh-context agent
 reviewed the documentation Phase 7 produced — 23 files, ~5400 lines — and returned a work list:
@@ -351,6 +366,33 @@ methodology extracted from n=1 is a guess about what generalises. Do not create 
 > in place instead of edited away.*
 
 ## Instruments and housekeeping
+
+**Nothing runs `procedures/branch-index.py --check` automatically, so the branch index's whole
+guarantee rests on somebody remembering.** *Added 2026-08-21, the day the script was written.* The
+argument that admitted `reference/branches.md` into `reference/` — over `IDM-001`'s refusal of a
+hand-maintained list — is that **a derived table cannot drift**. That is true of the table and not
+yet true of the *practice*: `--check` exits 1 correctly when a branch has landed without a row, and
+nothing invokes it. It is not a `make` target, not a hook, and not in CI.
+
+**Four documents now instruct a human to run it at the merge** — `CLAUDE.md`, `IDM-001`,
+`README.md` and `branches.md` itself. **Four copies of an instruction is what this repository does
+instead of a check**, and `reference/lessons.md` §7 is the standing lesson about mistaking one for
+the other.
+
+*Weaker than it looks?* **Partly, and the honest version is worth stating.** The failure is loud once
+anyone runs `--check`, and the index is stale rather than wrong when it fires — no reader is misled
+about a branch that *is* listed. It is also cheap to fix: `make branch-index` beside `make lint`, or
+a line in an existing hook. **What makes it worth recording rather than doing now** is that
+`link-check.py` has the adjacent unresolved problem in the item below — its exit code carries no
+information and it cannot gate anything — so wiring one checker into a gate is a decision about both,
+and the two should be settled together rather than one at a time.
+
+*One measured caution against over-fixing it:* the index is regenerated **after** the merge commit,
+by construction, so a pre-commit hook would fire at the wrong moment and a pre-merge one cannot see
+the hash. Whatever gate is chosen has to run on the trunk after a merge lands — see `IDM-001`, "the
+order is fixed and it is not the obvious one".
+
+
 
 **`procedures/link-check.py`'s exit code carries no information.** `link-check.py:222` is
 `return 1 if check(...) else 0` and **there is no expected-failures mechanism in the code** — the
