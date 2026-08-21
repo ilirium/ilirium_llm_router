@@ -136,12 +136,21 @@ allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table.
 
 ## In-flight branches
 
-*Merged branches are not listed — git already holds that, and a hand-maintained list would drift.
-The permanent record of a phase's branch, fork point and merge commit belongs in its phase note.*
+*Merged branches are not listed here — this section holds live state. **They are indexed in
+`reference/branches.md`, generated from git**, which is the 2026-08-21 amendment to
+`method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
+permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-**None. The table is empty as of 2026-08-21**, when `feat/phase-10-body-store` merged as **`32c26bb`**
-and its row went with it. **Phase 11 has no branch because its subject is not chosen** — the plan
-opens the phase branch, so there is nothing to list until one is.
+| Branch | For | Tree state | Next |
+|---|---|---|---|
+| `docs/branch-index` | The branch index — `reference/branches.md` and the script that generates it, plus the `IDM-001` amendment that admits it | Documentation only; no `src/` change | The owner's remaining items, then merge `--no-ff` |
+
+**Opened 2026-08-21, forked from `5352d0d`.** Merge commit: *not yet merged.*
+
+*The table was empty from 2026-08-21, when `feat/phase-10-body-store` merged as **`32c26bb`** and its
+row went with it, until this branch opened the same day.* **Phase 11 still has no branch because its
+subject is not chosen** — the plan opens the phase branch, so there is nothing to list until one is,
+and this branch carries no phase number.
 
 *It was empty in exactly this way once before: `docs/phase-9-corpus-gate` merged as **`b29d502`** on
 2026-08-17 and nothing replaced it until Phase 10 opened. The permanent record of both — branch, fork

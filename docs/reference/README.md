@@ -23,10 +23,12 @@ is at each end of it, and how confident to be about any of it.
 | 6 | `backend-lmstudio.md` | What the local backend accepts, honours and ignores; context, prefill and timeouts |
 | 7 | `measurements.md` | Every number quoted anywhere, with its date, instrument, slice, and what it is for |
 | 8 | `lessons.md` | How this project has been wrong, and what caught it |
+| 9 | `branches.md` | Every branch the repository has had, with what each was for. **Generated from git** — five of its six columns cannot drift |
 
 **If you are here to look one thing up**, the shortcuts: a number → `measurements.md`; a decision you
 want to change → `design-decisions.md`; whether a backend supports something → its own file;
-what is on disk under `logs/corpus/` → `corpus.md`.
+what is on disk under `logs/corpus/` → `corpus.md`;
+a branch name or a merge hash → `branches.md`.
 
 ## What belongs here
 
@@ -37,6 +39,11 @@ or what it expected versus found means the fact has not finished being extracted
 **One file per subject, each with a nameable trigger** — a moment you would open *it* rather than its
 neighbour. A section becomes its own file when its trigger is nameable *and* it passes roughly 40
 lines. Until then it lives inside the nearest file that already has one.
+
+**`branches.md` is the one file whose admission was argued rather than obvious**, because a table
+made of phases reads at first like archive. The argument is in the file itself, under "Why this is in
+`reference/`", and it turns on the second half of the test above: a row does not need its phase's
+plan or expectations to be understood. Do not re-open it from the title alone.
 
 Two files are deliberately deferred, each with its reason:
 
@@ -54,3 +61,7 @@ Filing rules for the whole of `docs/` are in `../README.md`.
 *Written 2026-08-16 at commit 5 of `../milestone-1-core/phase-7-docs-restructure/plan.md` and completed at commit 6. All seven
 files exist, and since commit 11 none of them duplicates a `CLAUDE.md` section — the four that did
 were deliberate, so that no destination was missing when the cut happened.*
+
+*Seven was right when written and the tier is now **nine**: `corpus.md` arrived with Phase 10 and
+`branches.md` on 2026-08-21. The sentence above is left as the record of that day — the count that is
+current is the reading-order table, which is the one a reader should trust.*
