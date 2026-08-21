@@ -202,8 +202,11 @@ DESCRIPTIONS: dict[str, tuple[int | None, int | None, str]] = {
     "docs/branch-index": (
         2,
         None,
-        "This table and the script that generates it, and the `IDM-001` amendment that admits a "
-        "derived index where a hand-maintained list was refused.",
+        "Two things. **The branch index** — this table, the script that generates it, and the "
+        "`IDM-001` amendment that admits a derived index where a hand-maintained list was refused; "
+        "enumerating refs found `docs/add-claude-md`, unrecorded for twenty-five days. **And four "
+        "method items**: `IDM-007` on raising a concern where it will be read, `IDM-008` on the "
+        "register, the read-by-section rule, and the forward-only `notes.md` split.",
     ),
 }
 
