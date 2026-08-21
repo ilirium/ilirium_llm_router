@@ -36,7 +36,7 @@ Phase 10's 3,284-line `notes.md` stays whole, because `notes.md:2143`-style cita
 is the condition it was accepted under.
 
 **2026-08-21 — the branch index exists, on `docs/branch-index`, and it is generated rather than
-written.** `reference/branches.md` carries all eighteen merged branches — opened date and fork point,
+written.** `reference/branches.md` carries all nineteen merged branches — opened date and fork point,
 merge date and merge commit, milestone, phase, and one line on what each was for. Five of its six
 columns come out of git via `procedures/branch-index.py`; only the description is typed.
 **`IDM-001` refused exactly this list on 2026-08-17** — *"a hand-maintained list would drift"* — so
@@ -50,7 +50,7 @@ a merging session does not know the file exists.
 the repository's first branch and appeared in no document for twenty-five days.** No rule was broken:
 it belongs to no phase and was fast-forwarded, so until `IDM-001` gained its third row there was
 nowhere to record it. Two counts move with it — there are **three** fast-forwarded branches where every
-sentence says two (each correct, each counting *phases*), and **seven of eighteen** branches carry no
+sentence says two (each correct, each counting *phases*), and **eight of nineteen** branches carry no
 phase number.
 
 **Baselines, run 2026-08-21: `make test` 310, `make lint` clean.** `link-check.py` is quoted as a
@@ -192,16 +192,16 @@ allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table.
 `method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-| Branch | For | Tree state | Next |
-|---|---|---|---|
-| `docs/branch-index` | Two things: the branch index — `reference/branches.md`, its generator, and the `IDM-001` amendment that admits it — and four method items on the owner's instruction: `IDM-007`, `IDM-008`, the reading rule and the `notes.md` split | Documentation only; no `src/` change | The owner's remaining items, then merge `--no-ff` |
+**None. The table is empty as of 2026-08-21**, when `docs/branch-index` merged as **`3233fb7`** and
+its row went with it — forked at `5352d0d`, six commits, documentation only. **Phase 11 still has no
+branch because its subject is not chosen** — the plan opens the phase branch, so there is nothing to
+list until one is.
 
-**Opened 2026-08-21, forked from `5352d0d`.** Merge commit: *not yet merged.*
-
-*The table was empty from 2026-08-21, when `feat/phase-10-body-store` merged as **`32c26bb`** and its
-row went with it, until this branch opened the same day.* **Phase 11 still has no branch because its
-subject is not chosen** — the plan opens the phase branch, so there is nothing to list until one is,
-and this branch carries no phase number.
+*What that branch was is no longer this file's job to remember, and that is the point of it.* It
+carried no phase number, so it has no phase note; its permanent record is **its merge commit
+message**, which `IDM-001`'s third row added on the day it was needed, plus **its row in
+`reference/branches.md`**, which the fourth row added the same day. The branch that exposed both gaps
+is the first to be recorded by both.
 
 *It was empty in exactly this way once before: `docs/phase-9-corpus-gate` merged as **`b29d502`** on
 2026-08-17 and nothing replaced it until Phase 10 opened. The permanent record of both — branch, fork

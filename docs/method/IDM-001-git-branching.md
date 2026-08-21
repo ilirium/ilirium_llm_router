@@ -252,10 +252,15 @@ phase note, it predates the milestone scheme, and it was fast-forwarded, so befo
 existed there was no place it could have been recorded. It was found by enumerating refs, which is
 the thing a person does not do and a script does every run.
 
-**Seven of eighteen branches carry no phase number.** Better than one in three of this repository's
+**Eight of nineteen branches carry no phase number.** Better than two in five of this repository's
 merged work sits outside the phase sequence — which is the "orthogonal" rule above, measured. A
-records scheme built only on phase notes would be missing seven rows, and that is the size of the gap
+records scheme built only on phase notes would be missing eight rows, and that is the size of the gap
 the third and fourth rows were added to close.
+
+*It was seven of eighteen when this section was written on 2026-08-21, and became eight of nineteen
+when that same branch merged a few hours later — a `docs/` branch with no phase number, which is the
+ninth of its kind. **The ratio is not drifting toward the phase sequence; it is drifting away from
+it.** Re-derive from the table rather than quoting this sentence.*
 
 ## Closing out a status placeholder is part of the merge
 

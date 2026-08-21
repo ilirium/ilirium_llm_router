@@ -230,8 +230,9 @@ for a branch carrying no phase number**, which has no phase note to put it in.
 → `docs/reference/branches.md` — **read it to find out what a branch or a merge hash was**, and before
 hand-typing any table of merge hashes: `IDM-001` refused one, and this file is the derived answer that
 refusal earns. Two things it holds that no other document does — there are **three** fast-forwarded
-branches, not the two every other sentence in this repository counts, and **seven of eighteen branches
-carry no phase number**, which is the size of the gap a phase-notes-only scheme leaves.
+branches, not the two every other sentence in this repository counts, and **eight of nineteen branches
+carry no phase number**, which is the size of the gap a phase-notes-only scheme leaves. *(Counts move
+with the table — re-derive them from it rather than relaying them from here.)*
 
 ## Reading
 

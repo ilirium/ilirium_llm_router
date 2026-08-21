@@ -40,6 +40,7 @@ as a note under the table rather than tabling them.
 
 | Branch | Opened / forked at | Merged / commit | M | Phase | What it was for |
 |---|---|---|---|---|---|
+| `docs/branch-index` | 2026-08-21<br>from `5352d0d` | 2026-08-21<br>`3233fb7` | 2 | — | Two things. **The branch index** — this table, the script that generates it, and the `IDM-001` amendment that admits a derived index where a hand-maintained list was refused; enumerating refs found `docs/add-claude-md`, unrecorded for twenty-five days. **And four method items**: `IDM-007` on raising a concern where it will be read, `IDM-008` on the register, the read-by-section rule, and the forward-only `notes.md` split. |
 | `docs/idm-and-claude-md` | 2026-08-20<br>from `2a4e186` | 2026-08-21<br>`5352d0d` | 2 | — | The two milestone playbooks moved out to `IDM-005` and `IDM-006`, the closing one **repaired as it moved** — five of its seven decided steps were missing. Forked from `feat/phase-10-body-store` rather than `main`, and having nowhere to record that is what added `IDM-001`'s third row. |
 | `feat/phase-10-body-store` | 2026-08-18<br>from `d885b2f` | 2026-08-21<br>`32c26bb` | 2 | 10 | The body store built: content-addressed blobs, the byte-bounded queue and its worker thread, dictionary training and retraining, and `reference/corpus.md`. Thirty-three tasks, `make test` 310. The largest branch in the repository at 63 commits. |
 | `docs/prompt-refresh-after-idm-001` | 2026-08-17<br>from `b0d5ed6` | 2026-08-17<br>`d885b2f` | 2 | — | Refreshed `prompt.md` for `IDM-001`'s new rule, and for a gap it had carried from the start. |
@@ -71,10 +72,10 @@ and the first implementation plan into the repository. It appears in no document
 Nothing was lost and nothing was mishandled; it simply belonged to no phase, and until `IDM-001`
 gained its third row on 2026-08-21 a branch belonging to no phase had nowhere to be recorded.
 
-**Eighteen branches, and seven of them carry no phase number.** Better than one in three is work
+**Nineteen branches, and eight of them carry no phase number.** Better than two in five is work
 that is real, merged, and outside the phase sequence. That is the ratio behind `IDM-001`'s
 "orthogonal" rule, and it is the argument against the reflex that a phase note is where branch
-history lives: a scheme that only records phases would be missing seven of these rows.
+history lives: a scheme that only records phases would be missing eight of these rows.
 
 **The two ends of the size range are both instructive.** `chore/tracked-allowlist-make-sync-and-clean`
 is one commit; `feat/phase-10-body-store` is sixty-three across four days. Both were merged `--no-ff`,
