@@ -8,9 +8,11 @@ one is written by a person. That split is the whole design and it is argued in
 `../method/IDM-001-git-branching.md` — a hand-maintained list of merged branches was refused there,
 correctly, because it drifts. A derived one cannot.
 
-**Re-run the script at every merge.** `python3 docs/procedures/branch-index.py --write`, then commit
-the result with the merge. `--check` exits 1 when the table no longer matches git, which is the only
-thing standing between this file and the failure it was written to avoid.
+**Re-run the script at every merge — after the merge commit, never inside it.** Merge `--no-ff`,
+then `python3 docs/procedures/branch-index.py --write`, then commit the table on the trunk. The new
+row names the merge hash, so it cannot exist before the merge and amending the merge to hold it would
+change the hash the row just recorded. `--check` exits 1 when the table no longer matches git, which
+is the only thing standing between this file and the failure it was written to avoid.
 
 ## What this file is not
 

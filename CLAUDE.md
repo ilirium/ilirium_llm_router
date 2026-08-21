@@ -206,10 +206,11 @@ documentation.
 fast-forward erases it. And **`git merge` cannot read its message from stdin** — `-F -` works for
 `git commit` and fails for `git merge`, so write the message to a temp file.
 
-**Regenerating the branch index is part of the merge.** Before writing the merge message, run
-`python3 docs/procedures/branch-index.py --write` and commit the result with the merge. The table in
-`docs/reference/branches.md` is generated from git, so a landed branch with no row is a defect the
-script's `--check` will find and a reader will not.
+**Regenerating the branch index is the last step of a merge, and it comes *after* the merge commit.**
+Merge `--no-ff` first, then `python3 docs/procedures/branch-index.py --write`, then commit the
+regenerated table on the trunk. **It cannot go inside the merge commit** — the new row names the merge
+hash, so writing it first is impossible and amending afterwards changes the hash the row just recorded.
+A landed branch with no row is a defect `--check` will find and a reader will not.
 
 → `docs/method/IDM-001-git-branching.md` — **read it before naming a phase folder, before rejecting a
 plan, or before recording where a branch went.** It holds the folder⇄branch slug rule and its one-way

@@ -323,9 +323,10 @@ rejected plan is **merged and marked, not deleted**; and a branch is recorded in
 `status.md` while it is in flight, `reference/branches.md` once it lands, the phase note permanently,
 and the merge commit message for a branch carrying no phase number.
 
-**`reference/branches.md` is generated, and regenerating it is part of the merge.** Run
-`python3 procedures/branch-index.py --write` before writing the merge message and commit the result
-with it; `--check` exits 1 when a landed branch has no row. *Added 2026-08-21, amending `IDM-001`'s
+**`reference/branches.md` is generated, and regenerating it is the last step of a merge.** Merge
+`--no-ff` first, then `python3 procedures/branch-index.py --write`, then commit the table on the trunk
+— the new row names the merge hash, so it cannot go inside the merge commit. `--check` exits 1 when a
+landed branch has no row. *Added 2026-08-21, amending `IDM-001`'s
 own refusal of a list of merged branches — the objection was that a hand-maintained list drifts, which
 a derived one cannot.*
 

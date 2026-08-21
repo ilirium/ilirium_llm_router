@@ -210,25 +210,36 @@ derived and its interpretive column is not.**
 **What is still refused, unchanged.** A second hand-typed table of merge hashes anywhere. If the next
 one cannot be generated, the objection above applies to it in full and it does not get made.
 
-### Regenerating is part of the merge, exactly like closing out a placeholder
+### Regenerating is the last step of a merge, and it cannot be part of the merge commit
 
 **This rule is an instance of the next section, and is written here rather than there on purpose** —
 the next section's own lesson is that *a rule stated as an instance gets obeyed as an instance*, so
 naming this one where a person is deciding how to merge is the correction that section asks for.
 
-Before writing the merge message:
+**The order is fixed and it is not the obvious one:**
 
 ```
+git merge --no-ff <branch> -F <message-file>
 python3 docs/procedures/branch-index.py --write
+git commit -m "regenerated: the branch index for <branch>"
 ```
 
-and commit the result **with the merge**, not after it. The new row cannot be written before the
-merge commit exists, which is the one respect in which this differs from the placeholder sweep: it is
-the last thing done rather than a check run over what is already there.
+**The regenerated table cannot go inside the merge commit, and this is a property of the thing rather
+than a preference.** The new row records the merge hash. Writing it before the merge is impossible —
+the hash does not exist. Amending the merge to include it changes the hash, which falsifies the row
+that was just written; run it twice and it never converges. **So a merge that lands a branch is two
+commits on the trunk, and the second is not optional tidying.**
+
+*This was got wrong in the first draft of this section, on 2026-08-21, which said "commit the result
+with the merge" three sentences after correctly observing that the row cannot be written before the
+merge commit exists. Recorded rather than silently fixed: the two halves of the same paragraph
+contradicted each other and it read fine.*
 
 **The failure it is designed against is silence.** A missing row is invisible — it is the "prose that
 undercounts" defect `../status.md` records twice about itself, in a new place. `--check` is what makes
-it loud, and it is worth running even when you are sure.
+it loud, and it is worth running even when you are sure. **The second commit is where the sweep in the
+next section belongs too**, since by then every merge hash the phase's documents need is finally
+knowable.
 
 ### Two things the index found on the day it was written, which is its case
 
