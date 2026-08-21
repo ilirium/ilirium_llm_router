@@ -47,8 +47,22 @@ Where the neighbouring tiers draw the line:
 
 A rule may be **restated** in `CLAUDE.md` when a session would otherwise act confidently and wrongly.
 That restatement is a second copy of a fact and is accepted only with the direction of truth written
-into it: *this is restated from `IDM-NNN`, which is canonical; change it there first.* One such
-restatement exists today, in `CLAUDE.md`'s "Git and branches", and `IDM-001` names it.
+into it: *this is restated from `IDM-NNN`, which is canonical; change it there first.*
+
+**Two such restatements exist today** — `CLAUDE.md`'s "Git and branches", named by `IDM-001`, and its
+Working agreement's fourth bullet, named by `IDM-007`. *(One until 2026-08-21.)* Each earns it on a
+different reading of the same test, which is worth knowing before proposing a third:
+
+| | Why the session cannot look it up first |
+|---|---|
+| `IDM-001` | It would **not discover the file**. A session merging a branch has no reason to open `../reference/branches.md`, and no rewrite of `IDM-001` reaches a session that never opens it |
+| `IDM-007` | There is **no "first"**. The rule governs how a concern is written, so the moment it applies is the moment somebody is already writing |
+
+**`IDM-008` was considered for restatement on 2026-08-21 and settled as a pointer**, and it is the
+useful contrast: writing a phase plan is a deliberate, once-per-phase, look-it-up moment, which
+`../README.md` says belongs in `docs/` rather than `CLAUDE.md`. `IDM-005` and `IDM-006` are pointers
+for the same reason. **Neither shortness nor importance earns a restatement** — only the absence of a
+moment at which the rule could have been looked up.
 
 ## Whose method it is
 
@@ -157,3 +171,5 @@ exist yet.
 | **004** | [Reviewing work that has not happened yet](IDM-004-reviewing-unexecuted-work.md) | 2026-08-18 | The **forward** review, and the line between it and `../README.md`'s closing one. Derive the charter before reviewing; run the author and a cold reader **in parallel** on different questions; six rules including read-only and *nothing found is a complete answer*. Written from one run that returned 22 findings at 18% overlap, and refuted a claim the author had already written into four documents |
 | **005** | [Opening a milestone](IDM-005-opening-a-milestone.md) | 2026-08-20 | Seven steps mined from Milestone 1's opening: name the falsifiable central claim, the non-goals **and the experiment that would refute it**, **capture the real input before specifying anything**, spike, fork the expensive questions as EPDs, mark the spec measured / inferred / assumed, plan at decreasing resolution, open the folder and the branch. Two zones. Moved from `../README.md` with the steps unchanged and the shape not — and then **amended 2026-08-21**: the old step 2 was folded into step 1, because it was the one step of the eight with no evidence behind it |
 | **006** | [Closing a milestone](IDM-006-closing-a-milestone.md) | 2026-08-20 | Nine steps: freeze, write the milestone README, harvest into `../reference/`, `lessons.md`, `measurements.md`, `../backlog.md`, reset `../status.md`, repoint and re-check, rewrite the playbook. **Two zones, and the line between them is load-bearing**: the nine steps, then `End of procedure`, then one evidence row per rule saying what it cost and where the frozen record is. To run a close, read to the line and stop. Moved from `../README.md` **and repaired** — the version written there was the narrative of the restructure that produced it, with five of the seven decided steps missing |
+| **007** | [Raising a concern where it will be read](IDM-007-raising-a-concern.md) | 2026-08-21 | Placement, plainness, answerability — a concern goes in its own sentence where the reader arrives; if something is wrong, say so rather than working around it; a question carries its options. **Placement is the rule, not the polish**, and the evidence is three prior instances *about documents* — `IDM-005`'s step 2 caveat below the stop line, and `../status.md`'s two records of prose that undercounts going stale invisibly. Restated in `CLAUDE.md`'s Working agreement |
+| **008** | [The register](IDM-008-the-register.md) | 2026-08-21 | One reachable section in the plan holding every name and number the phase introduces, `❓` on anything named and never valued, checked against the code by the phase's closing task. **Not a tidying exercise**: on its one run it found eight unvalued names, contradicted a figure ~70× out that had survived two reviews, exposed a live name collision, and produced a finding two forward-review passes had read past — because a constant and a config key only look wrong in adjacent rows. `CLAUDE.md` points at it and does not restate it |

@@ -10,6 +10,57 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-21 — four method items added on the owner's instruction: `IDM-007`, `IDM-008`, a reading
+rule and a `notes.md` split.** Two of the four were **already in the repository and neither was a new
+rule.** `IDM-008` generalises Phase 10's register, which the owner instructed on 2026-08-19 in almost
+the same words; the reading rule is `wiki/claude-code-context-budget.md`'s lever 2, which needed a
+**trigger** in `CLAUDE.md` rather than a home. **Checking before writing is what found both**, and it
+changed what got written: `IDM-008` carries Phase 10's four findings as its argument instead of an
+assertion.
+
+**`IDM-007` is the one that is genuinely new**, and its evidence is three prior instances *about
+documents rather than people* — `IDM-005`'s step 2 caveat sitting below the stop line where a
+compliant reader never reaches it, and this file's own two records of prose that undercounts going
+stale invisibly. Same mechanism each time: something true, written down, in a place that does not
+reach the reader.
+
+**Two of the four were argued down from what was proposed, and both are recorded where the argument
+is.** `IDM-008` was proposed for `CLAUDE.md` and is a **pointer** instead — writing a plan is a
+look-it-up moment, which is why `IDM-005` and `IDM-006` are pointers too; `IDM-000` now states that
+neither shortness nor importance earns a restatement. The `notes.md` split is **forward-only**:
+Phase 10's 3,284-line `notes.md` stays whole, because `notes.md:2143`-style citations break
+**silently** when a section moves — `link-check.py` checks paths, not line numbers.
+
+**`CLAUDE.md` is 292 lines, up from 260**, and the growth was accepted deliberately against upstream's
+~200 guidance. The measurement of what it could lose is in `backlog.md` as a review-phase item, which
+is the condition it was accepted under.
+
+**2026-08-21 — the branch index exists, on `docs/branch-index`, and it is generated rather than
+written.** `reference/branches.md` carries all eighteen merged branches — opened date and fork point,
+merge date and merge commit, milestone, phase, and one line on what each was for. Five of its six
+columns come out of git via `procedures/branch-index.py`; only the description is typed.
+**`IDM-001` refused exactly this list on 2026-08-17** — *"a hand-maintained list would drift"* — so
+the amendment is narrow and keeps the objection: derived factual columns, hand-written interpretive
+one, and `--check` exits 1 when a branch has landed without a row. **Regenerating is part of the
+merge**, which is `CLAUDE.md`'s sixth restated fact and the reason it earned a place there:
+a merging session does not know the file exists.
+
+**Enumerating refs found a branch nobody had written down.** `docs/add-claude-md` — five commits on
+2026-07-27, the README, `CLAUDE.md`, the design decisions and the first implementation plan. **It is
+the repository's first branch and appeared in no document for twenty-five days.** No rule was broken:
+it belongs to no phase and was fast-forwarded, so until `IDM-001` gained its third row there was
+nowhere to record it. Two counts move with it — there are **three** fast-forwarded branches where every
+sentence says two (each correct, each counting *phases*), and **seven of eighteen** branches carry no
+phase number.
+
+**Baselines, run 2026-08-21: `make test` 310, `make lint` clean.** `link-check.py` is quoted as a
+**delta** on purpose — this branch adds **one file and no broken path**, measured by running it on
+`main` and on the branch in the same checkout. The absolute count depends on files git does not
+carry, which is why the figure above and the one in `procedures/link-check.py`'s docstring disagree
+without either being wrong. **Both refusal paths of the new script were driven, not assumed**: a
+deleted row makes `--check` exit 1, and a missing description makes `--write` refuse rather than
+splice a blank column.
+
 **2026-08-21 — Phase 10 is merged as `32c26bb`, and the next thing is the owner driving the corpus.**
 All thirty-three tasks done, `make test` **310**, `feat/phase-10-body-store` forked at `d885b2f` and
 merged `--no-ff`. **Both placeholders closed with it** — the Record table at the foot of `plan.md`
@@ -136,12 +187,21 @@ allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table.
 
 ## In-flight branches
 
-*Merged branches are not listed — git already holds that, and a hand-maintained list would drift.
-The permanent record of a phase's branch, fork point and merge commit belongs in its phase note.*
+*Merged branches are not listed here — this section holds live state. **They are indexed in
+`reference/branches.md`, generated from git**, which is the 2026-08-21 amendment to
+`method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
+permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-**None. The table is empty as of 2026-08-21**, when `feat/phase-10-body-store` merged as **`32c26bb`**
-and its row went with it. **Phase 11 has no branch because its subject is not chosen** — the plan
-opens the phase branch, so there is nothing to list until one is.
+| Branch | For | Tree state | Next |
+|---|---|---|---|
+| `docs/branch-index` | Two things: the branch index — `reference/branches.md`, its generator, and the `IDM-001` amendment that admits it — and four method items on the owner's instruction: `IDM-007`, `IDM-008`, the reading rule and the `notes.md` split | Documentation only; no `src/` change | The owner's remaining items, then merge `--no-ff` |
+
+**Opened 2026-08-21, forked from `5352d0d`.** Merge commit: *not yet merged.*
+
+*The table was empty from 2026-08-21, when `feat/phase-10-body-store` merged as **`32c26bb`** and its
+row went with it, until this branch opened the same day.* **Phase 11 still has no branch because its
+subject is not chosen** — the plan opens the phase branch, so there is nothing to list until one is,
+and this branch carries no phase number.
 
 *It was empty in exactly this way once before: `docs/phase-9-corpus-gate` merged as **`b29d502`** on
 2026-08-17 and nothing replaced it until Phase 10 opened. The permanent record of both — branch, fork
