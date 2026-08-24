@@ -443,13 +443,59 @@ vanishes cannot show that the mechanism caught it.
 
 ---
 
+**Record the Anthropic rate-limit response headers.** *Added 2026-08-24, and it is the reversal of an
+entry in "Not on this list, and why" below — read that first, because it holds why this was refused
+and what refuted it.*
+
+*What it needs:* `retry-after` and the `anthropic-ratelimit-*` family, read off the reply the same way
+everything else is — **on the way past, never by parsing and rebuilding.** They are already relayed
+to the client; `DROPPED_FROM_RESPONSE` in `../src/ilirium_llm_router/proxy.py` does not touch them.
+Nothing about the byte-relay premise changes; this is the recorder learning to look at a header for
+the first time.
+
+*Why it is not free, and this is the real cost:* `reference/observability.md` says the recorder reads
+**a tee of the passing bytes** and `reference/corpus.md` says the store sees **bodies only, never
+headers** — *"so the credential never reaches disk."* **A header-reading recorder walks up to that
+sentence.** Whatever is built must record a named allowlist of headers rather than a copy of them, or
+the next `authorization` header lands in `calls.csv`. That is the design question, and it is why this
+is an item rather than a patch.
+
+*What it buys, measured rather than argued:* on 2026-08-24 the router logged **66 rate-limited calls
+in one day** and could say only `rate_limit_error: Error` about all of them — which limit, and when
+it clears, were unavailable. **Two open upstream issues stall on exactly this measurement:**
+[`anthropics/claude-code#82653`](https://github.com/anthropics/claude-code/issues/82653) and
+[`BerriAI/litellm#30365`](https://github.com/BerriAI/litellm/issues/30365), the second of which says
+in as many words that nobody has distinguished an upstream 429 relayed through a proxy from one the
+proxy produced. **This router can answer that**, and did — but from timing and a streaming control,
+not from the headers, which is reconstruction rather than measurement.
+
+*Weaker than it looks?* **No, and it is stronger than when it was refused** — the refusal was
+reasonable and made a prediction, the prediction came true, and the prediction turned out not to be
+the thing that mattered.
+
+*Where it does **not** go:* `calls.csv`'s columns are a standing non-goal for Milestone 2 —
+`milestone-2-corpus/implementation-plan.md` names *"changing `calls.csv`, not its rotation, not its
+columns"*. **So this needs the non-goal overturned first, or a home that is not a CSV column**, the
+same gate the sequence column sits behind.
+
+---
+
 ## Not on this list, and why
 
-**The Anthropic 429 rate-limit headers.** `anthropic-ratelimit-*` and `retry-after` are never
-recorded, because the router tees bodies and not headers. Marked **do not go looking**: the recorder
-keeps the error body's symbolic type, so the next 429 through the router writes `rate_limit_error:
-Error` into the CSV by itself — measured rather than reconstructed. Listed here so it is not
-rediscovered and filed as an omission.
+**~~The Anthropic 429 rate-limit headers.~~ Overturned 2026-08-24 — it is now a live item**, under
+"Instruments and housekeeping" above. *Kept struck rather than deleted: an entry that vanishes cannot
+show that the mechanism caught it, and this one was caught by its own stated reasoning failing.*
+
+*What it said:* `anthropic-ratelimit-*` and `retry-after` are never recorded, because the router tees
+bodies and not headers. Marked **do not go looking**, on the argument that the recorder keeps the
+error body's symbolic type, so *"the next 429 through the router writes `rate_limit_error: Error`
+into the CSV by itself — measured rather than reconstructed."*
+
+*Why that is wrong, and it is the entry's own prediction that refuted it:* **66 of them arrived on
+2026-08-24 and wrote exactly that string.** It is measured, and it is not enough — `rate_limit_error:
+Error` does not say **which** limit was hit, requests-per-minute or input-tokens-per-minute, nor when
+it resets. The entry assumed the symbolic type was the fact worth having; the first real incident
+needed the bucket and the reset, and neither is in a body.
 
 **Everything struck through in `milestone-1-core/outstanding-work.md`.** The credential shape and the
 read timeout were built in Phase 5; silent trimming below the context boundary was measured and

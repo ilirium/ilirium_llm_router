@@ -114,6 +114,26 @@ headers rests on the recorder keeping the error body's symbolic type — and 66 
 [`anthropics/claude-code#82653`](https://github.com/anthropics/claude-code/issues/82653) and
 [`BerriAI/litellm#30365`](https://github.com/BerriAI/litellm/issues/30365).
 
+## The git allows are, for now, only on this branch — and that is a self-inflicted gap
+
+**`main` and `to-run-server` currently have no `git add`, `git commit`, `git checkout` or `git stash`
+approval at all.** Measured 2026-08-24: `grep -c git` returns **0** against both of `main`'s settings
+files.
+
+**How it happened, plainly:** the four mutating git rules were removed from the local half and added
+to the tracked half in the same pass. The tracked half is a **branch commit**, so the removal took
+effect everywhere and the replacement took effect nowhere except here.
+
+**Left as it is, deliberately.** Restoring them to the local files of the other two worktrees would
+put the same permission in both halves, which `../../method/IDM-002-harness-configuration.md` refuses
+in as many words — *"narrowing the tracked file later appears to do nothing, because the local copy
+still grants it."* Trading a permanent landmine for a temporary prompt is the wrong way round. The
+cost is one approval when committing in `main`, and it clears when this branch merges.
+
+**It is also the open question in miniature.** If tracked settings resolve through a worktree to the
+main checkout, then *this* worktree has no git allows either and the rules on this branch are inert
+everywhere — the same test settles both.
+
 ## What is open at the end of Group A
 
 *(Group A has not started. The items above are Task 5's, executed ahead of the plan.)*
