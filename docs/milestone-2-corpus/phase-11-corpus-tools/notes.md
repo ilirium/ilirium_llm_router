@@ -69,8 +69,14 @@ was available and wrong.*
 
 ## Where the opening session stopped — 2026-08-24
 
-**Read this first if you are the next session.** `../../prompt.md` is stale and predates this phase;
-`../../status.md` has no Phase 11 row yet. This section is the handoff until Task 6 fixes both.
+**The project-level handoff is `../../prompt.md`, rewritten for this phase on 2026-08-24, and
+`../../status.md` carries the in-flight row.** This section is the *phase's* record of its opening
+session and does not repeat them.
+
+*It briefly claimed both files were stale "until Task 6 fixes them", which was wrong twice over:
+Task 6 is about `../implementation-plan.md`, and `status.md`'s in-flight table is **live state** that
+`../../method/IDM-001-git-branching.md` requires a branch to appear in the moment it opens — not
+phase work to be scheduled. Both were updated the same day.*
 
 **Start in the `phase-11-corpus-tools` worktree.** The plan, these notes and the settings change are
 on the branch; a session started in `main` sees none of them.

@@ -10,6 +10,24 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-24 — Phase 11 opened, in a worktree, and its plan is written and unapproved.** Subject: the
+offline corpus tools. The layout changed under the project — a bare clone at
+`~/Projects/local/ilirium_llm_router` with `main`, `to-run-server` and the phase as **worktrees**, so
+`CLAUDE.md`'s note that two paths are *"the same directory"* is now false and is Task 2.
+
+**The corpus was exercised and the re-derivation moved three things.** It was read **while it was
+still growing** — 114 → 123 request blobs between two counts — so every figure from it carries a
+moment. Both day folders are **undicted** and read back clean: 2.815×, 0 failures, which is the
+number a dictionary must beat rather than a ratio to quote. Two index facts changed the design:
+**63 of 168 calls are non-streamed**, so the converter meets plain JSON as well as SSE, and
+**`agent_id` is empty on all 171 rows**, so `--agent` is struck rather than shipped.
+
+**A day was spent establishing that the auto-mode classifier's 429s are not this router's fault** —
+66 of 232 calls, **every one non-streaming**, against 138 of 145 streaming calls succeeding, with a
+streaming call to the same model succeeding five seconds after five consecutive 429s on it. Not a
+task and not in `backlog.md` as a defect; what it left is one item to overturn — the *"do not go
+looking"* note on the rate-limit headers, whose reasoning failed its first real test.
+
 **2026-08-21 — four method items added on the owner's instruction: `IDM-007`, `IDM-008`, a reading
 rule and a `notes.md` split.** Two of the four were **already in the repository and neither was a new
 rule.** `IDM-008` generalises Phase 10's register, which the owner instructed on 2026-08-19 in almost
@@ -159,21 +177,21 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Exercise the corpus by hand — the owner's, and it comes before Phase 11 opens.** The store has
-   been driven by Phase 10's own checks and never by its owner in ordinary use. **It is off by
-   default**, so turning it on is the first step and no `logs/corpus/` until then is correct
-   behaviour; `reference/corpus.md` is the spec and names what else a session gets wrong from the
-   name alone. **`logs/telemetry/` does not exist yet either** — the router creates it on its next
-   start, and the old `logs/calls.csv` and `logs/router.log` were deliberately left where they are.
-   *(This item read "Execute Phase 10 — the body store, from Task 16 (Group E)" until 2026-08-21,
-   eight tasks after it stopped being true, and was then the merge until the merge happened. It is
-   the defect this file's own milestone-table entry describes: prose that undercounts goes stale
-   invisibly, where a missing row would not.)*
-2. **Plan Phase 11 — and its subject is deliberately not chosen here.** The candidates are in
-   `backlog.md`, which is the full inventory; picking one is a planning decision, not something the
-   next session inherits from this file. **`EPD-003`'s open questions 3–6 are not among them** — they
-   were closed in `EPD-003` itself on 2026-08-20 at Task 20, three answered and retention marked out
-   of scope for Milestone 2 on the owner's decision rather than answered.
+1. **Review Phase 11's plan, and ratify position 3.** The plan is written and unapproved on
+   `feat/phase-11-corpus-tools`; `method/IDM-004-reviewing-unexecuted-work.md` is the protocol, and
+   its first rule is that the charter decides what the review finds. **Position 3 is the block** —
+   whether *"document the dictionary tooling"* also means build something. Every `❓` in the plan's
+   register is listed in its "Placeholders in this file".
+2. **Settle whether a tracked permission change on a phase branch takes effect before it merges.**
+   Costs one command in a fresh session — `git add -A` on a clean tree, against the deny rule added
+   2026-08-24. Blocked means settings are session-cached; not blocked means a phase cannot change
+   permissions for the phase that writes them, which constrains the worktree practice Task 3 records.
+   Written up in the phase's `notes.md`.
+   *(Items 1 and 2 replaced two that were done. **"Exercise the corpus by hand"** happened — the owner
+   drove sessions through the router on 2026-08-21 and 2026-08-24, and `logs/corpus/` in the
+   `to-run-server` worktree now holds two day folders, 171 index rows and 280-odd blobs, **undicted**,
+   which `--extract` reads back with zero failures. **"Plan Phase 11 — subject not chosen"** is spent:
+   the owner chose it on 2026-08-24.)*
 3. **Decide `EPD-001` or `002`.** Both are blocked on a person rather than on work, and both are argued
    on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions waiting on a person". Deciding
    one is cheaper than any measurement in the list, and neither decision waits on Phase 11.
@@ -192,10 +210,17 @@ allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table.
 `method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-**None. The table is empty as of 2026-08-21**, when `docs/branch-index` merged as **`3233fb7`** and
-its row went with it — forked at `5352d0d`, six commits, documentation only. **Phase 11 still has no
-branch because its subject is not chosen** — the plan opens the phase branch, so there is nothing to
-list until one is.
+| Branch | Purpose | Tree | Next action |
+|---|---|---|---|
+| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: extract with selection, dictionaries as a command, and a converter to Claude Code session `JSONL` | clean, five commits, forked at `f445d6f` | **the owner ratifies position 3** in `plan.md`'s settled table, and the plan is reviewed under `method/IDM-004-reviewing-unexecuted-work.md` before Task 2 |
+
+**Opened 2026-08-24, and it is the first branch worked in a git worktree** —
+`/Users/ilirium/Projects/local/ilirium_llm_router/phase-11-corpus-tools`, beside `main` and
+`to-run-server` under a bare clone. Recording the practice is Task 3 on the branch itself.
+
+*This section read **"None. The table is empty as of 2026-08-21"** until 2026-08-24, which was true
+when written and false the moment the branch opened. It is the defect this file's own milestone-table
+entry describes, in the section that exists to prevent it.*
 
 *What that branch was is no longer this file's job to remember, and that is the point of it.* It
 carried no phase number, so it has no phase note; its permanent record is **its merge commit

@@ -1,111 +1,121 @@
 # The next session's prompt
 
 *The one file in `docs/` allowed to go stale, per `README.md` — which is why it is rewritten at each
-handoff rather than left. **Phase 10 replaced it at Task 23**; whatever opens next replaces it
+handoff rather than left. **Phase 11 replaced it on 2026-08-24**; whatever comes next replaces it
 again.*
 
 ---
 
-**Phase 10 is complete and merged. `feat/phase-10-body-store` merged `--no-ff` into `main` as
-`32c26bb` on 2026-08-21**, forked from `main` at `d885b2f`. Thirty-three tasks in six groups —
-thirty-two planned plus **Task 18a**, inserted during execution. `make test` **158 → 310**.
+**Phase 11 is open, its plan is written, and the plan is not approved.** Branch
+`feat/phase-11-corpus-tools`, forked from `main` at `f445d6f`, five commits, tree clean. Subject: the
+offline tools over Phase 10's store — **extract** with selection, **dictionaries** as a first-class
+command, and a **converter** to Claude Code session `JSONL` for
+[`claude-code-history-viewer`](https://github.com/jhlee0409/claude-code-history-viewer). The CLI
+becomes subcommands to hold them.
 
-**Both placeholders closed with the merge** — the Record table at the foot of `plan.md` and
-`notes.md`'s first line. **Nothing in this file is waiting on anybody.** *(It said the merge was the
-one thing waiting, and that was true until 2026-08-21. The paragraphs below still describe what the
-phase left standing, which is unchanged; the section that named the merge command is gone.)*
+**Work in the worktree.** `/Users/ilirium/Projects/local/ilirium_llm_router/phase-11-corpus-tools`.
+The project is now a bare clone with `main`, `to-run-server` and this phase as sibling worktrees.
+**A session started in `main` sees none of Phase 11** — not the plan, not the notes, not the settings
+change.
 
-**The next thing is the owner exercising the corpus by hand** — the store has been driven by Phase
-10's own checks and never in ordinary use. It is **off by default**. Phase 11's subject is
-deliberately not chosen; `docs/backlog.md` is the inventory it gets picked from.
-
-**Do not re-open the phase.** Its plan, notes and record are in
-`docs/milestone-2-corpus/phase-10-body-store/`. Owner decisions live in `plan.md`'s "What is
-settled, and by whom" with their rejected alternatives. If one looks wrong, say so and wait.
+**`CLAUDE.md` is wrong about this machine and fixing it is Task 2.** It says the `code-2026` and
+OneDrive paths are *"the same directory (identical inode)… editing either edits both."* That is still
+true of those two, and there are now **genuinely two checkouts** because of the new local clone. A
+session that believes the old note can lose work.
 
 ## What a session should do first
 
-**Read `docs/status.md`.** It says where the project is, what is in flight, and what is next. Then
-whichever `docs/reference/` file the work touches — `README.md` there is the index and names the
-trigger for each.
+**Read `docs/status.md`**, then the phase's `plan.md` — its "What is settled, and by whom" and
+"The re-derivation before Task 1" are the two sections that carry the day's findings. Then whichever
+`docs/reference/` file the work touches.
 
-**Read those by section, not in wide sweeps.** `plan.md` is ~1,600 lines and `notes.md` ~3,200. Grep
-the headings first (`grep -n '^## ' <file>`) and read what the task needs.
-`docs/wiki/claude-code-auto-mode.md` says why a whole-file `cat` costs more than it looks like under
-auto mode.
+**Read by section.** `grep -n '^## ' <file>` first. `docs/wiki/claude-code-context-budget.md` says
+why.
 
-## The merge, which has happened
+## The two things waiting on the owner
 
-*This section said the merge was the one thing waiting on the owner. It ran on 2026-08-21 as
-`32c26bb`, and both placeholders closed with it — the **Record table** at the foot of `plan.md`, and
-**`notes.md`'s first line**, which had read *"Not yet merged."* Both were listed in `plan.md`'s
-"Placeholders in this file", which is the section that exists so they are not forgotten, and it
-worked: they were closed out of that list rather than found by chance.*
+1. **Position 3 in `plan.md`'s settled table**, and it blocks Group D's shape. The question asked
+   what was missing from the dictionary tooling; the answer named a user-facing `README.md` note,
+   temporary until Phase 12. Read as **no new dictionary code, document what ships** — *one word
+   settles whether that is right.*
+2. **Every `❓` in the plan's register**, listed in its "Placeholders in this file".
 
-**One fact from it is worth keeping, because a session gets it confidently wrong:** `git merge`
-cannot read its message from stdin. `-F -` works for `git commit` and fails here, so write the
-message to a temp file.
+## The one check to run first, because it costs nothing
 
-## What the phase left standing, deliberately
+**`git add -A` on a clean tree.** A deny rule for it was added to `.claude/settings.json` on
+2026-08-24 and **did not fire when driven**. Blocked now → settings are session-cached and the rule
+works. Still not blocked → **a tracked permission change on a phase branch has no effect until it
+merges**, which constrains the worktree practice Task 3 records.
 
-- **Failure mode 3 of the central claim is not discharged.** Archiving cannot *break* a call — that
-  was driven. Whether it *slows* one is **unmeasured**, and settling it needs one driven session
-  with capture on against one with it off, comparing `ttfb_ms` and `duration_ms`.
-  `docs/milestone-2-corpus/implementation-plan.md` says so in the table rather than implying
-  otherwise.
-- **A call can still vanish, and now says so.** A caller already gone when the response starts
-  leaves no CSV row, no log line and no corpus entry. Observed and reproduced 2026-08-20. The
-  shutdown line `calls: N arrived, N recorded, N lost` reports it; **closing** it is still open in
-  `docs/backlog.md` and needs a guarantee that a row can never be written twice.
-- **Retention is out of scope for Milestone 2** — owner's decision. Nothing deletes an archived
-  body and **no policy was decided**. Deliberately *not* in `backlog.md`: it is a scope boundary,
-  and it sits in the milestone's non-goals.
-- **The extraction tool is a later phase's subject.** The *reader* ships here and `--extract`
-  works; selection by day, session, call or model does not exist.
+**Neither deny rule may be described as working until this runs.** The phase's `notes.md` has the
+detail, including that the check came *after* the commit, which is the wrong order and is recorded
+as such.
+
+## What the corpus actually contains, measured 2026-08-24
+
+**The owner drove real sessions and `logs/corpus/` in `to-run-server` is no longer empty** — two day
+folders, 171 index rows, 280-odd blobs. Four things a session would otherwise get wrong:
+
+- **It was live while it was read.** 114 → 123 request blobs between two counts. **Freeze a slice
+  before measuring** — that is Task 7, and nothing goes to `reference/measurements.md` until it runs.
+- **It is undicted.** `request_dict_id` is `none` on every row, both day folders have an empty
+  `dicts/`, and `retrain.log` says why: `too-few-samples`. **This is not the corruption
+  `reference/corpus.md` warns about** — the blobs name no dictionary, so none is missing. `--extract`
+  returns 280 blobs, **0 failed**, 2.815×. That figure is the number a dictionary must beat, **not a
+  ratio to quote.**
+- **63 of 168 calls are non-streamed**, so the converter meets **plain JSON as well as SSE**.
+- **`agent_id` is empty on all 171 rows**, and **`backend` is `anthropic` on all of them.** No LM
+  Studio traffic was captured, so every tool this phase builds is exercised against Anthropic
+  material only.
+
+## What this phase left standing from Phase 10, unchanged
+
+- **Failure mode 3 is not discharged.** Whether archiving *slows* a call is unmeasured.
+- **A call can still vanish**, and closing it needs a guarantee a row can never be written twice.
+- **Retention is out of scope for Milestone 2** — owner's decision, a scope boundary rather than a
+  backlog item.
+
+## The classifier diagnosis, which is not this phase's work
+
+**Claude Code's auto-mode classifier gets HTTP 429 from Anthropic, and the router is not at fault.**
+66 of 232 calls, **every one non-streaming**, against 138 of 145 streaming calls succeeding — and a
+streaming call to the same model succeeded five seconds after five consecutive 429s on it. The
+classifier request is ~135 KB, `max_tokens: 1`, **zero `cache_control` breakpoints**. Two open
+upstream issues stall on exactly the measurement this router could take:
+[`anthropics/claude-code#82653`](https://github.com/anthropics/claude-code/issues/82653) and
+[`BerriAI/litellm#30365`](https://github.com/BerriAI/litellm/issues/30365).
+
+**What survives into this project is one `backlog.md` item to overturn:** the *"do not go looking"*
+note on `anthropic-ratelimit-*` and `retry-after` rests on the recorder keeping the error body's
+symbolic type — and **66 rows of `rate_limit_error: Error` do not say which limit was hit.** That
+reasoning failed its first real test.
 
 ## Things a session gets wrong about this code
 
 - **There is deliberately no headline compression ratio.** Every figure is a small-sample
-  confirmation that the mechanism works, not a capability. `docs/reference/measurements.md` carries
-  each with its slice and says this in a note. **Anything near 26× on this corpus is a self-scoring
-  accident until proven otherwise** — it happened twice in one day by two different mechanisms.
-- **Three compression levels, not one.** Storing and scoring a candidate use
-  `corpus.compress_level_zstd`; training uses its own, lower level.
-- **`python3` here is 3.14; the venv is 3.13.** Anything importing `zstandard` must run under `uv
-  run python` or it fails looking like a missing dependency.
-- **A dictID is not a unique key.** `zstd --train` stamps **1** on everything; the router derives
-  and stamps its own from the dictionary's content.
+  confirmation that the mechanism works.
+- **Three compression levels, not one.** Storing and scoring use `corpus.compress_level_zstd`;
+  training uses its own, lower level.
+- **`python3` here is 3.14; the venv is 3.13.** Anything importing `zstandard` must run under
+  `uv run python`.
+- **A dictID is not a unique key.** `zstd --train` stamps **1** on everything.
 - **The dictionary pickup is every 500 bodies or a day rollover**, not the next body.
-- **`logs/` is gitignored and holds uncommittable things** — a trained dictionary and a captured
-  body alike. **Stage with explicit paths, never `git add -A`.**
+- **`logs/` is gitignored and holds uncommittable things.** **Stage with explicit paths, never
+  `git add -A`** — which is now also a deny rule, pending the check above.
+- **Claude Code has a built-in read-only Bash set** — `ls`, `cat`, `grep`, `find`, `wc`, `du`, `cd`,
+  read-only `git` and more — that runs without a prompt in every mode and **is not configurable**.
+  Allow rules for those grant nothing. Task 5 records it in `IDM-002`.
 
-## What is on disk and not in git
+## How the opening session found what it found
 
-- `logs/corpus/dicts/req-2026-08-20T110338Z-0e4d84d1.dict` — the first real dictionary, 262,144
-  bytes. **Do not delete it and do not commit it.**
-- `logs/calls.csv` and `logs/router.log` — the router's history to 2026-08-20. **They were
-  deliberately left where they are** when the config moved to `logs/telemetry/`; the router creates
-  a fresh pair on its next start. Owner's decision, recorded in `plan.md`'s settled table.
-- `logs/corpus-gate/` — Phase 9's 8.8 MB corpus. Task 15 trained from it and it stays.
-- `docs/procedures/dying-backend/runs/` — Task 18's driving check. Disposable.
+**Twice in one day a plausible reading and the true one differed by one check, and both times the
+reasoning was available and wrong.** The empty `dicts/` looked exactly like the corruption
+`corpus.md` warns about; `--extract` settled it in seconds. A blob count and an index row count
+disagreed by four, and the sophisticated explanation — a CSV whose free-text column can hold
+newlines — was true, available, and not the answer; the corpus was simply still growing.
 
-## How this phase found what it found
-
-**Green tests are not a sign-off.** Every defect Phase 10 found was found by *driving the thing* or
-by *attacking the tests*, and none would have failed the suite as written. Two practices earned
-their place:
-
-1. **Mutation testing as a matter of course.** Introduce one deliberate fault into finished code
-   and check that a targeted test fails. **A mutation that survives is either a missing test or a
-   line doing nothing — find out which.**
-2. **Interrogating a passing check.** *"What would make this positive anyway?"* An unchanged
-   link-check count is also what a tool that never looked reports; two mutations failing the *same*
-   test is what a short circuit looks like. Both were read rather than accepted, and both times the
-   mechanism had to be checked before the result meant anything.
-
-**The instrument has lied repeatedly, always with a plausible number. Fix the instrument before
-believing the result** — and Task 18 added the sharpest case: the number needed to measure a defect
-*was* the defect.
+**`git merge` cannot read its message from stdin.** `-F -` works for `git commit` and fails here.
 
 Follow the working agreement in `CLAUDE.md`. **Propose before implementing, ask before touching the
-machine and say what it is for, and exercise the real thing before committing.**
+machine and say what it is for, and exercise the real thing before committing** — the last one was
+broken on 2026-08-24 and the phase notes say so.
