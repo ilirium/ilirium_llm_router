@@ -67,6 +67,47 @@ plausible reading and the true one differed by one check — the empty `dicts/` 
 were resolved by running the thing rather than reasoning about it, and in both cases the reasoning
 was available and wrong.*
 
+## Where the opening session stopped — 2026-08-24
+
+**Read this first if you are the next session.** `../../prompt.md` is stale and predates this phase;
+`../../status.md` has no Phase 11 row yet. This section is the handoff until Task 6 fixes both.
+
+**Start in the `phase-11-corpus-tools` worktree.** The plan, these notes and the settings change are
+on the branch; a session started in `main` sees none of them.
+
+**Three commits, tree clean:** `052ea3e` opened the phase, `12ada32` fixed a dead WebFetch domain,
+`3d8ae54` added the deny rules and folded the git allows, `9e0b59d` recorded that the denies did not
+fire.
+
+### The first thing to do, and it costs nothing
+
+**Run `git add -A` on a clean tree.** Blocked → settings are session-cached and the rules work.
+Not blocked → a tracked permission change on a phase branch has no effect until it merges, which is
+a constraint Task 3 must record. **Do not describe either deny rule as working until this runs.**
+
+### Two things waiting on the owner
+
+1. **Position 3** in `plan.md`'s settled table — whether *"document the dictionary tooling"* also
+   means build something. One word, and it changes whether Group D has another section.
+2. **Every `❓` in the register**, listed in "Placeholders in this file".
+
+### What is deliberately not in the plan
+
+**The auto-mode classifier diagnosis.** A day of telemetry was spent establishing that Claude Code's
+auto-mode classifier gets HTTP 429 from Anthropic — 66 of 232 calls, **every one of them
+non-streaming**, against 138 of 145 streaming calls succeeding. It is **not a router defect**: the
+router relays the upstream status with its headers, `retry-after` and `anthropic-ratelimit-*` are not
+in `DROPPED_FROM_RESPONSE`, and a streaming call to the same model succeeded five seconds after five
+consecutive 429s on it.
+
+**It is not Phase 11's subject and no task covers it.** What it left behind that *is* the project's:
+a `backlog.md` item to overturn, since `backlog.md`'s *"do not go looking"* note on the rate-limit
+headers rests on the recorder keeping the error body's symbolic type — and 66 rows of
+`rate_limit_error: Error` do not say **which** limit. That reasoning failed its first real test.
+**Two open upstream issues stall on exactly the measurement this router could take:**
+[`anthropics/claude-code#82653`](https://github.com/anthropics/claude-code/issues/82653) and
+[`BerriAI/litellm#30365`](https://github.com/BerriAI/litellm/issues/30365).
+
 ## What is open at the end of Group A
 
-*(Group A has not started. The two items above are Task 5's, executed ahead of the plan.)*
+*(Group A has not started. The items above are Task 5's, executed ahead of the plan.)*
