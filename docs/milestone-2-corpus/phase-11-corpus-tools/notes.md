@@ -37,6 +37,36 @@ exactly that. Reading it back is the check, `--extract` is the instrument, and i
 blobs, 0 failed**. `request_dict_id` is `none`, not a dictID: the blobs name no dictionary, so there
 is none to be missing. **The alarming reading and the true one differ by one column of the index.**
 
+## A tracked deny rule written on a phase branch did not take effect
+
+**Found 2026-08-24 by driving it, immediately after committing it — which is the wrong order and is
+the point.** `../../../CLAUDE.md` says *exercise it before committing*; this was committed first and
+the check came second. It would have been a defect in the phase record if the next session had
+inherited *"two deny rules added"* with nothing saying they were never seen to work.
+
+**What happened.** `Bash(git add -A)` was added to `.claude/settings.json`'s `deny` list and
+committed as `3d8ae54`. Running `git add -A` immediately afterwards **was not blocked**. The tree was
+clean, so nothing was staged and no harm followed — but the rule plainly did not fire.
+
+**What is established:** the rule is on disk and correct in *this* worktree, and **absent from
+`main`'s copy** — `main` is on the `main` branch, which does not carry the commit. Measured with
+`grep -c`, one file against the other.
+
+**Two explanations remain open, and they have very different consequences:**
+
+| | If it is this | Consequence |
+|---|---|---|
+| **a** | Claude Code resolves `.claude/settings.json` **through the worktree to the main checkout**, the way the permissions doc says saved rules resolve | **A tracked permission change on a phase branch does nothing until it merges.** Every phase that edits the tracked settings file is writing a rule that cannot take effect during the phase that writes it |
+| **b** | Settings are read once at session start and not reloaded | A restart fixes it, and the finding is ordinary |
+
+**A fresh session distinguishes them**, and costs nothing: if the deny fires after a restart it is
+**b**; if it still does not, it is **a**. Until then neither deny rule may be described as working.
+
+*Why this belongs in the notes rather than only in the plan: it is the second time today that a
+plausible reading and the true one differed by one check — the empty `dicts/` was the first. Both
+were resolved by running the thing rather than reasoning about it, and in both cases the reasoning
+was available and wrong.*
+
 ## What is open at the end of Group A
 
-*(Group A has not started.)*
+*(Group A has not started. The two items above are Task 5's, executed ahead of the plan.)*
