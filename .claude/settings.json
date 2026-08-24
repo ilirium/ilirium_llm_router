@@ -19,13 +19,22 @@
       "Bash(curl -s --max-time 5 http://localhost:1234/api/v1/models)",
       "Bash(lms --version)",
       "Bash(lms ps *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git checkout *)",
+      "Bash(git stash *)",
       "WebFetch(domain:code.claude.com)",
       "WebFetch(domain:lmstudio.ai)"
     ],
     "deny": [
       "Read(./.env)",
       "Bash(cat .env)",
-      "Bash(cat ./.env)"
+      "Bash(cat ./.env)",
+      "Bash(git add -A)",
+      "Bash(git add --all)",
+      "Bash(git add .)",
+      "Bash(git stash)",
+      "Bash(git stash pop)"
     ]
   }
 }

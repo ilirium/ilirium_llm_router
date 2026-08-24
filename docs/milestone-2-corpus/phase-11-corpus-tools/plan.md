@@ -196,49 +196,72 @@ record with lossy copies**, and that is not a reversible mistake.
    worktree's is not.
 3. **Record the worktree practice** — an `IDM-001` amendment covering the layout, and the
    `temp/to-run-server` branch, whose prefix `IDM-001` does not define and which never merges.
-4. Add Phase 11 to `milestone-2-corpus/implementation-plan.md`, which currently jumps 10 → closing
+   **Do not claim a new worktree starts with no allowlist** — the permissions doc says rules resolve
+   *"through worktrees to the main checkout"* and apply in worktrees, so state what was observed and
+   leave the mechanism to Task 3b.
+4. **Amend `CLAUDE.md`'s Shell section**, which today says only *"no `$(...)`"*. The general rule
+   behind it is the documented one: **a command Claude Code cannot fully parse falls through to
+   approval instead of being treated as read-only**, and commands over 10,000 characters always do.
+   One clause on the existing line, same reason, same place. *Compound commands are **not** the
+   trigger — `cd packages/api && ls` runs unprompted when each part qualifies. That claim came from a
+   user-filed issue, was repeated here on 2026-08-24 without checking, and is corrected rather than
+   quietly dropped.*
+5. **Amend `IDM-002` with the built-in read-only set** — `ls`, `cat`, `echo`, `pwd`, `head`, `tail`,
+   `grep`, `find`, `wc`, `which`, `diff`, `stat`, `du`, `cd`, and read-only forms of `git`, which run
+   without a prompt in **every** mode and are **not configurable**.
+
+   *Why documentation and not allow rules, which is the question that produced this task:* an allow
+   entry for a built-in read-only command grants nothing, so it is the fossil `IDM-002`'s pruning
+   exists to remove — and it is a second home for a fact **Anthropic owns and can change**, which
+   would then disagree with reality silently. Record it dated, with the source link, the way
+   `../../wiki/` records everything learned by reading somebody else's software.
+
+   **Executed ahead of the plan on 2026-08-24, on the owner's instruction**, and this task now
+   records what was done rather than proposing it: the four mutating git rules moved to the tracked
+   file, the six read-only ones were **deleted rather than moved**, and two deny rules were added.
+6. Add Phase 11 to `milestone-2-corpus/implementation-plan.md`, which currently jumps 10 → closing
    review.
-5. Freeze the evidence slice. **Index and derived metrics only, redacted to stable placeholders per
+7. Freeze the evidence slice. **Index and derived metrics only, redacted to stable placeholders per
    `../../README.md`; no blobs.** Bodies are real source and real prompts.
 
 ### Group B — the CLI restructure
 
-6. Subcommand skeleton, bare invocation still serving.
-7. Move `check`, `train-dict`, `tune-dict`, `extract` across; delete the old flags; update `Makefile`.
-8. Tests for the surface, including that bare invocation still resolves to serve.
+8. Subcommand skeleton, bare invocation still serving.
+9. Move `check`, `train-dict`, `tune-dict`, `extract` across; delete the old flags; update `Makefile`.
+10. Tests for the surface, including that bare invocation still resolves to serve.
 
 ### Group C — the converter, first because it is the risk
 
 *Deliberately ahead of the extractor.* It is the only part that can fail on something a plan cannot
 foresee, and Phase 10's lesson is that the expensive discovery should arrive early.
 
-9. SSE reassembly **and** the plain-JSON path — 63 of 168 real calls need the second.
-10. Delta reconstruction across a session's calls.
-11. `uuid`/`parentUuid` synthesis and the record types the viewer needs.
-12. **Drive it against the real corpus and open the result in the viewer.** Green tests are not
+11. SSE reassembly **and** the plain-JSON path — 63 of 168 real calls need the second.
+12. Delta reconstruction across a session's calls.
+13. `uuid`/`parentUuid` synthesis and the record types the viewer needs.
+14. **Drive it against the real corpus and open the result in the viewer.** Green tests are not
     evidence. This task is the one that says whether the phase works.
-13. Run it against `corpus-gate` too — the second-source check.
+15. Run it against `corpus-gate` too — the second-source check.
 
 ### Group D — the extractor
 
-14. Selection by day, session, model, path.
-15. Output layout and bulk verification.
-16. `--agent` struck, with the reason recorded rather than the row deleted.
+16. Selection by day, session, model, path.
+17. Output layout and bulk verification.
+18. `--agent` struck, with the reason recorded rather than the row deleted.
 
 ### Group E — documentation
 
-17. The temporary `README.md` note (position 3) — the dictionary commands and the new subcommands,
+19. The temporary `README.md` note (position 3) — the dictionary commands and the new subcommands,
     marked as superseded by Phase 12.
-18. `reference/corpus.md` and `reference/observability.md` updated for the tools.
+20. `reference/corpus.md` and `reference/observability.md` updated for the tools.
 
 ### Group F — verify, harvest and close
 
-19. **The register check** — `../../method/IDM-008-the-register.md`'s closing task. Every row below
+21. **The register check** — `../../method/IDM-008-the-register.md`'s closing task. Every row below
     against the code, `❓` column empty.
-20. **Mutation testing on the converter.** One deliberate fault, a targeted test must fail. A
+22. **Mutation testing on the converter.** One deliberate fault, a targeted test must fail. A
     mutation that survives is a missing test or a dead line — find out which.
-21. Harvest into `reference/lessons.md` and `reference/measurements.md`.
-22. Merge `--no-ff`, then regenerate the branch index **after** the merge commit.
+23. Harvest into `reference/lessons.md` and `reference/measurements.md`.
+24. Merge `--no-ff`, then regenerate the branch index **after** the merge commit.
 
 ## The register — every name and number this phase introduces
 
@@ -333,7 +356,10 @@ Phase 10's worked.*
 1. **Position 3 needs the owner's one word.** Documentation only, or dictionary work too.
 2. **Every `❓` in the register.**
 3. **The Record table** below.
-4. **Task 1 says "done" for branch and worktree and is the only task that may.**
+4. **Two tasks are already executed and say so — Task 1 and Task 5.** No other task may claim it.
+   Task 5 ran ahead of the plan on the owner's instruction, which is a deviation worth seeing rather
+   than smoothing over: the settings work was done while diagnosing an unrelated problem, and the
+   task now records it instead of proposing it.
 
 ## What this phase does not settle
 
