@@ -12,7 +12,7 @@ this file rather than remember the answer.
 
 ## Where does it go?
 
-Start here. Almost every filing question is answered by one of these eight rows.
+Start here. Almost every filing question is answered by one of these nine rows.
 
 | What you have | Where it goes | The test |
 |---|---|---|
@@ -24,6 +24,7 @@ Start here. Almost every filing question is answered by one of these eight rows.
 | A raw artefact several documents are derived from | `captures/` | Is it input rather than result? |
 | How the work was sequenced, and what was known at the time | `milestone-N-*/` | Is it a plan, a phase note, a record of a decision's ordering? |
 | A question written down before it is answered | `epd/` | Is the decision genuinely open? |
+| A defect in software we do not own, that no commit of ours can close | `bugs/` | Is it **wrong** rather than merely surprising, and outside our power to fix? |
 
 And the files at the root of `docs/` that are neither durable nor archived. *No count here on
 purpose: this sentence read "two files" over three rows from 2026-08-17 until 2026-08-21, which is
@@ -172,6 +173,21 @@ Two things about EPDs that belong here rather than there:
 - **A decided EPD graduates into `reference/`, per subject** — usually `design-decisions.md`. The EPD
   stays where it is and records that the decision was taken and where it went.
 
+### `bugs/` — defects we cannot fix
+
+*Added 2026-08-25.* A **BUG** records a defect in software this project dispatches to or is built on,
+with the evidence that establishes it and the check that would show it gone. **The conventions, the
+status vocabulary and the index are in `bugs/BUG-000-about-these-documents.md`** — read it before
+writing one. Pointer rather than summary, for the reason this file teaches.
+
+Two things about bugs that belong here rather than there:
+
+- **The `wiki/` boundary is the one that gets got wrong**, and both tiers are about somebody else's
+  software. The tiebreak is **lifetime**: a `wiki/` page is written to stay true, a bug document is
+  written hoping to stop being true. A bug filed as a wiki page becomes a lie the day it is fixed.
+- **Our own defects do not come here.** They end in a `fix/` branch and the phase note that records
+  them; the commit is the ending. This tier exists for defects where there is no such ending.
+
 ### `milestone-N-<slug>/` — the archive
 
 How the work was sequenced, and what was believed while it was happening. **A phase note is never
@@ -203,6 +219,7 @@ single phase.
 | Thing | Scheme |
 |---|---|
 | EPDs | `EPD-NNN-kebab-title.md`, allocated in order written, never reused, never renumbered |
+| Bugs | `BUG-NNN-kebab-slug.md`, same scheme. **Severity is not encoded in the number** — a number that means something has to be maintained when the meaning changes |
 | Milestones | `milestone-N-<slug>/` |
 | Phases | `phase-N-<slug>/`, the slug identical to the branch's |
 | Reference documents | no prefix; the order lives in `reference/README.md` |
