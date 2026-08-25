@@ -10,6 +10,16 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-25 — the permission model was measured, and it was backwards.** The handoff's one
+zero-cost check ran: `git add -A` **was blocked**, so settings are session-cached and a tracked
+permission change on a phase branch is inert until **restart**, not until merge. Chasing why
+`git status` still prompted found the larger thing — **git is not in Claude Code's built-in read-only
+set**, a deny entry matches **exactly** while an allow entry with `*` does not, and the allow list was
+therefore permissive where git destroys work (`git checkout -- .`, `git stash clear`) and absent where
+it is safe. `.claude/settings.json` was rewritten on *allow what cannot destroy work*, `settings.local.json`
+was merged into it and left **empty by decision** — every rule is now tracked — and the tracked file
+is **uncommitted on purpose** until a restart exercises it. No phase task started.
+
 **2026-08-24 — Phase 11 opened, in a worktree, and its plan is written and unapproved.** Subject: the
 offline corpus tools. The layout changed under the project — a bare clone at
 `~/Projects/local/ilirium_llm_router` with `main`, `to-run-server` and the phase as **worktrees**, so
@@ -212,7 +222,7 @@ permanent record of a phase's branch, fork point and merge commit is still its p
 
 | Branch | Purpose | Tree | Next action |
 |---|---|---|---|
-| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: extract with selection, dictionaries as a command, and a converter to Claude Code session `JSONL` | clean, five commits, forked at `f445d6f` | **the owner ratifies position 3** in `plan.md`'s settled table, and the plan is reviewed under `method/IDM-004-reviewing-unexecuted-work.md` before Task 2 |
+| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: extract with selection, dictionaries as a command, and a converter to Claude Code session `JSONL` | five commits, forked at `f445d6f`; **one uncommitted file on purpose** — `.claude/settings.json`, pending the restart that can exercise it | **run the three permission probes after a restart, then commit the settings file** — then the owner ratifies position 3 in `plan.md`'s settled table, and the plan is reviewed under `method/IDM-004-reviewing-unexecuted-work.md` before Task 2 |
 
 **Opened 2026-08-24, and it is the first branch worked in a git worktree** —
 `/Users/ilirium/Projects/local/ilirium_llm_router/phase-11-corpus-tools`, beside `main` and
