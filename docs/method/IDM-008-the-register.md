@@ -86,9 +86,10 @@ same names, scattered, plus the four findings above arriving during implementati
 
 ## Why this is a pointer and not a restatement
 
-**Considered for `CLAUDE.md` on 2026-08-21 and settled as a pointer**, against the initial proposal to
-restate it. Recorded because the argument for restating looks reasonable — the rule is short and it
-matters a lot when it applies.
+**Considered for `CLAUDE.md` on 2026-08-21 and settled as a pointer by the owner**, who had proposed
+restating it and chose the pointer when the argument below was put. Recorded with the decider named,
+because the reasoning that follows is a recommendation that was *accepted* — not a conclusion this
+document reached on its own, and a later session must not read it as one.
 
 `../README.md`'s admission test: *a rule belongs in `CLAUDE.md` when a session would act confidently
 and wrongly without it; **a rule you would look up before acting belongs here instead.*** Writing a

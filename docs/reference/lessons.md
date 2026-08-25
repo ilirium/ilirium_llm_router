@@ -205,6 +205,43 @@ executed on every commit, and it caught the first class within a minute of being
 alternative on the table was a new tool that would have run twice a year — see `EPD-004` decision
 21, which measured that trade and refused it.
 
+## 8. Two practices that turn lessons 3, 4 and 7 into something a session can run
+
+**Harvested 2026-08-21 from `docs/prompt.md`, which was the only place they were written down.** The
+three lessons above say *what goes wrong with a check*. Phase 10 arrived at two practices that make
+them actionable rather than cautionary, and neither had a home outside a file that expires.
+
+**1 — Mutation testing as a matter of course.** Introduce one deliberate fault into finished code and
+confirm that a targeted test fails. **A mutation that survives is either a missing test or a line
+doing nothing — find out which**, because the two look identical from the outside and have opposite
+remedies.
+
+This is lesson 4's rule pointed at the suite rather than at an instrument, and it generalises the
+Phase 6 case above: *a regression test that has never failed proves nothing.* That case checked one
+test against one stashed defect, by hand, because somebody thought to. The practice is doing it
+without being prompted.
+
+**2 — Interrogating a passing check: "what would make this positive anyway?"** Every green result has
+at least two explanations, and the second is usually that nothing looked.
+
+- **An unchanged link-check count is also what a tool that never looked reports.** Phase 10 read the
+  mechanism rather than the number.
+- **Two mutations failing the *same* test is what a short circuit looks like**, not what two
+  independent tests look like.
+
+Both were checked before the result was allowed to mean anything, and both times the mechanism had to
+be verified first. This is lesson 7's rule — *when a check passes, know which property it checked* —
+turned into a question that can be asked out loud.
+
+**The sharpest case, and the reason these are worth keeping.** Phase 10's Task 18 found that **the
+number needed to measure a defect *was* the defect.** The instrument has lied repeatedly in this
+project and always with a plausible number, which is what makes plausibility worthless as a signal.
+
+*One caution on scope: every defect Phase 10 found was found by driving the thing or by attacking the
+tests, and **none would have failed the suite as written.** That is a statement about Phase 10, not a
+measured claim about the practices — they were adopted mid-phase and nothing compared a phase with
+them against a phase without.*
+
 ---
 
 ## What this file does not claim

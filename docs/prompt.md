@@ -1,111 +1,74 @@
 # The next session's prompt
 
-*The one file in `docs/` allowed to go stale, per `README.md` — which is why it is rewritten at each
-handoff rather than left. **Phase 10 replaced it at Task 23**; whatever opens next replaces it
-again.*
+*The one file in `docs/` allowed to go stale, per `docs/README.md` — which is why it is rewritten at each
+handoff rather than left. **It names what to read and what to distrust; it never summarises what
+those documents say.** Check `docs/status.md` before trusting a word of it.*
+
+**Rewritten 2026-08-21, and shortened from 111 lines to this.** The version it replaces had expired:
+it opened Phase 10, which merged as `32c26bb`. It had also drifted into being a summary — five
+sections restating what `docs/reference/lessons.md`, `docs/status.md`, `docs/reference/corpus.md` and the phase notes already
+held, which is the one thing this file is not for. Two things in it existed nowhere else and were
+**harvested before it was cut**, named at the bottom.
 
 ---
 
-**Phase 10 is complete and merged. `feat/phase-10-body-store` merged `--no-ff` into `main` as
-`32c26bb` on 2026-08-21**, forked from `main` at `d885b2f`. Thirty-three tasks in six groups —
-thirty-two planned plus **Task 18a**, inserted during execution. `make test` **158 → 310**.
+## No phase is open
 
-**Both placeholders closed with the merge** — the Record table at the foot of `plan.md` and
-`notes.md`'s first line. **Nothing in this file is waiting on anybody.** *(It said the merge was the
-one thing waiting, and that was true until 2026-08-21. The paragraphs below still describe what the
-phase left standing, which is unchanged; the section that named the merge command is gone.)*
+**Phase 10 merged on 2026-08-21. Phase 11's subject is not chosen**, and choosing it is a planning
+decision that is not inherited from this file. **So there is nothing here to execute.** A session
+starting now is picking up work, not resuming it.
 
-**The next thing is the owner exercising the corpus by hand** — the store has been driven by Phase
-10's own checks and never in ordinary use. It is **off by default**. Phase 11's subject is
-deliberately not chosen; `docs/backlog.md` is the inventory it gets picked from.
+## Read these, in this order
 
-**Do not re-open the phase.** Its plan, notes and record are in
-`docs/milestone-2-corpus/phase-10-body-store/`. Owner decisions live in `plan.md`'s "What is
-settled, and by whom" with their rejected alternatives. If one looks wrong, say so and wait.
+1. **`docs/status.md`** — where the project is, what is on disk, what is next. It is the only file
+   here that is *state*, and everything below defers to it.
+2. **`docs/backlog.md`** — the inventory Phase 11's subject gets picked from. `docs/status.md`'s "What is
+   next" names three candidates and is deliberately not the full list.
+3. **Whichever `docs/reference/` file the work touches.** `docs/reference/README.md` is the index and
+   names the trigger for each — the moment you would open *that* file rather than its neighbour.
 
-## What a session should do first
+**Read them by section.** `CLAUDE.md`'s "Reading" section says how and why, and points at the wiki
+page that ranks the levers. This matters most for a phase's `plan.md` and `notes.md`.
 
-**Read `docs/status.md`.** It says where the project is, what is in flight, and what is next. Then
-whichever `docs/reference/` file the work touches — `README.md` there is the index and names the
-trigger for each.
+## What to distrust
 
-**Read those by section, not in wide sweeps.** `plan.md` is ~1,600 lines and `notes.md` ~3,200. Grep
-the headings first (`grep -n '^## ' <file>`) and read what the task needs.
-`docs/wiki/claude-code-auto-mode.md` says why a whole-file `cat` costs more than it looks like under
-auto mode.
+- **This file, first.** It is the one document allowed to be wrong. `docs/status.md` wins every
+  disagreement.
+- **Any count in prose.** This repository's signature failure is a sentence that undercounts going
+  stale where a missing table row would have been visible — `docs/status.md` records it happening twice to
+  itself, and once more on 2026-08-21 when regenerating `docs/reference/branches.md` made four sentences
+  stale at once. **Re-derive a number from its table or its instrument; never relay it.**
+- **An `EPD-NNN` document.** Nothing in one is implemented unless it names an acceptance date.
+  `IDM-NNN` documents are the opposite — in force, and to be acted on.
+- **A green check.** `docs/reference/lessons.md` §3, §4, §7 and §8 are four different ways this project has
+  been wrong about a passing result. §8 is the one that says what to *do* about it.
 
-## The merge, which has happened
+## Before opening a phase
 
-*This section said the merge was the one thing waiting on the owner. It ran on 2026-08-21 as
-`32c26bb`, and both placeholders closed with it — the **Record table** at the foot of `plan.md`, and
-**`notes.md`'s first line**, which had read *"Not yet merged."* Both were listed in `plan.md`'s
-"Placeholders in this file", which is the section that exists so they are not forgotten, and it
-worked: they were closed out of that list rather than found by chance.*
+→ **`docs/method/IDM-008-the-register.md`** before writing `plan.md`, and
+→ **`docs/method/IDM-005-opening-a-milestone.md`** only if a *milestone* is opening, which it is not.
 
-**One fact from it is worth keeping, because a session gets it confidently wrong:** `git merge`
-cannot read its message from stdin. `-F -` works for `git commit` and fails here, so write the
-message to a temp file.
+Milestone 2 is open with three phases done. `docs/milestone-2-corpus/implementation-plan.md` is its live
+plan until it closes.
 
-## What the phase left standing, deliberately
+## What the owner has not done yet
 
-- **Failure mode 3 of the central claim is not discharged.** Archiving cannot *break* a call — that
-  was driven. Whether it *slows* one is **unmeasured**, and settling it needs one driven session
-  with capture on against one with it off, comparing `ttfb_ms` and `duration_ms`.
-  `docs/milestone-2-corpus/implementation-plan.md` says so in the table rather than implying
-  otherwise.
-- **A call can still vanish, and now says so.** A caller already gone when the response starts
-  leaves no CSV row, no log line and no corpus entry. Observed and reproduced 2026-08-20. The
-  shutdown line `calls: N arrived, N recorded, N lost` reports it; **closing** it is still open in
-  `docs/backlog.md` and needs a guarantee that a row can never be written twice.
-- **Retention is out of scope for Milestone 2** — owner's decision. Nothing deletes an archived
-  body and **no policy was decided**. Deliberately *not* in `backlog.md`: it is a scope boundary,
-  and it sits in the milestone's non-goals.
-- **The extraction tool is a later phase's subject.** The *reader* ships here and `--extract`
-  works; selection by day, session, call or model does not exist.
+**Exercising the corpus by hand comes before Phase 11 opens** — `docs/status.md`'s first "What is next"
+item, and it is the owner's, not a session's. The store has been driven by Phase 10's own checks and
+never in ordinary use. **It is off by default**, so no `logs/corpus/` from a fresh start is correct
+behaviour rather than a fault.
 
-## Things a session gets wrong about this code
+---
 
-- **There is deliberately no headline compression ratio.** Every figure is a small-sample
-  confirmation that the mechanism works, not a capability. `docs/reference/measurements.md` carries
-  each with its slice and says this in a note. **Anything near 26× on this corpus is a self-scoring
-  accident until proven otherwise** — it happened twice in one day by two different mechanisms.
-- **Three compression levels, not one.** Storing and scoring a candidate use
-  `corpus.compress_level_zstd`; training uses its own, lower level.
-- **`python3` here is 3.14; the venv is 3.13.** Anything importing `zstandard` must run under `uv
-  run python` or it fails looking like a missing dependency.
-- **A dictID is not a unique key.** `zstd --train` stamps **1** on everything; the router derives
-  and stamps its own from the dictionary's content.
-- **The dictionary pickup is every 500 bodies or a day rollover**, not the next body.
-- **`logs/` is gitignored and holds uncommittable things** — a trained dictionary and a captured
-  body alike. **Stage with explicit paths, never `git add -A`.**
+*What was harvested out of the previous version, so nothing was lost in the cut:*
 
-## What is on disk and not in git
+- **Two testing practices** — mutation testing as a matter of course, and interrogating a passing
+  check — are now `docs/reference/lessons.md` **§8**, beside the three lessons they operationalise. They
+  had no home outside this file.
+- **The on-disk inventory** — the trained dictionary, Phase 9's corpus, the pre-move telemetry files
+  — is now `docs/status.md`'s "What is on disk and not in git", verified by looking rather than relayed.
+  **One warning in it was dropped rather than carried**, and `docs/status.md` says why.
 
-- `logs/corpus/dicts/req-2026-08-20T110338Z-0e4d84d1.dict` — the first real dictionary, 262,144
-  bytes. **Do not delete it and do not commit it.**
-- `logs/calls.csv` and `logs/router.log` — the router's history to 2026-08-20. **They were
-  deliberately left where they are** when the config moved to `logs/telemetry/`; the router creates
-  a fresh pair on its next start. Owner's decision, recorded in `plan.md`'s settled table.
-- `logs/corpus-gate/` — Phase 9's 8.8 MB corpus. Task 15 trained from it and it stays.
-- `docs/procedures/dying-backend/runs/` — Task 18's driving check. Disposable.
-
-## How this phase found what it found
-
-**Green tests are not a sign-off.** Every defect Phase 10 found was found by *driving the thing* or
-by *attacking the tests*, and none would have failed the suite as written. Two practices earned
-their place:
-
-1. **Mutation testing as a matter of course.** Introduce one deliberate fault into finished code
-   and check that a targeted test fails. **A mutation that survives is either a missing test or a
-   line doing nothing — find out which.**
-2. **Interrogating a passing check.** *"What would make this positive anyway?"* An unchanged
-   link-check count is also what a tool that never looked reports; two mutations failing the *same*
-   test is what a short circuit looks like. Both were read rather than accepted, and both times the
-   mechanism had to be checked before the result meant anything.
-
-**The instrument has lied repeatedly, always with a plausible number. Fix the instrument before
-believing the result** — and Task 18 added the sharpest case: the number needed to measure a defect
-*was* the defect.
-
-Follow the working agreement in `CLAUDE.md`. **Propose before implementing, ask before touching the
-machine and say what it is for, and exercise the real thing before committing.**
+*Everything else the previous version said was already in `docs/status.md`, `docs/reference/lessons.md`,
+`docs/reference/corpus.md`, `docs/reference/measurements.md`, `CLAUDE.md` or the Phase 10 notes. It was cut as
+duplication, not discarded as wrong.*

@@ -10,89 +10,56 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-21 — four method items added on the owner's instruction: `IDM-007`, `IDM-008`, a reading
-rule and a `notes.md` split.** Two of the four were **already in the repository and neither was a new
-rule.** `IDM-008` generalises Phase 10's register, which the owner instructed on 2026-08-19 in almost
-the same words; the reading rule is `wiki/claude-code-context-budget.md`'s lever 2, which needed a
-**trigger** in `CLAUDE.md` rather than a home. **Checking before writing is what found both**, and it
-changed what got written: `IDM-008` carries Phase 10's four findings as its argument instead of an
-assertion.
+**2026-08-21 — `docs/branch-index` merged as `3233fb7`, and the session's work is in five permanent
+homes rather than here.** The branch carried two bodies of work: the **branch index** —
+`reference/branches.md`, generated from git by `procedures/branch-index.py`, which `IDM-001` had
+refused as a hand-maintained list and now admits as a derived one — and **four method items on the
+owner's instruction**: `IDM-007` (raising a concern where it will be read), `IDM-008` (the register),
+the read-by-section rule in `CLAUDE.md`, and the forward-only `notes.md` split in `README.md`.
 
-**`IDM-007` is the one that is genuinely new**, and its evidence is three prior instances *about
-documents rather than people* — `IDM-005`'s step 2 caveat sitting below the stop line where a
-compliant reader never reaches it, and this file's own two records of prose that undercounts going
-stale invisibly. Same mechanism each time: something true, written down, in a place that does not
-reach the reader.
+**Read the merge message `3233fb7` for what the branch decided.** It carries no phase number, so per
+`IDM-001`'s third row that message *is* its record and it was written as the phase note it does not
+have.
 
-**Two of the four were argued down from what was proposed, and both are recorded where the argument
-is.** `IDM-008` was proposed for `CLAUDE.md` and is a **pointer** instead — writing a plan is a
-look-it-up moment, which is why `IDM-005` and `IDM-006` are pointers too; `IDM-000` now states that
-neither shortness nor importance earns a restatement. The `notes.md` split is **forward-only**:
-Phase 10's 3,284-line `notes.md` stays whole, because `notes.md:2143`-style citations break
-**silently** when a section moves — `link-check.py` checks paths, not line numbers.
+**Two things this session established that are worth arriving knowing.** **Checking before writing
+changed two of the four items** — `IDM-008` turned out to be Phase 10's register, instructed on
+2026-08-19, so it is written from that instance and carries its four findings as argument rather than
+assertion; the reading rule turned out to be a wiki page's lever 2 needing a *trigger* rather than a
+home. And **enumerating refs found `docs/add-claude-md`**, the repository's first branch, unrecorded
+in any document for twenty-five days — no rule was broken, there was simply nowhere to record a
+fast-forwarded branch belonging to no phase.
 
-**`CLAUDE.md` is 292 lines, up from 260**, and the growth was accepted deliberately against upstream's
-~200 guidance. The measurement of what it could lose is in `backlog.md` as a review-phase item, which
-is the condition it was accepted under.
+**The count sweep fired on its first use, and that is the thing to trust the mechanism for.**
+Regenerating the index after the merge took the table from 18 rows to 19 and made four sentences in
+three live documents stale in the same instant. They were re-derived from the table, not incremented:
+**eight of nineteen** branches carry no phase number. `f445d6f` records it.
 
-**2026-08-21 — the branch index exists, on `docs/branch-index`, and it is generated rather than
-written.** `reference/branches.md` carries all nineteen merged branches — opened date and fork point,
-merge date and merge commit, milestone, phase, and one line on what each was for. Five of its six
-columns come out of git via `procedures/branch-index.py`; only the description is typed.
-**`IDM-001` refused exactly this list on 2026-08-17** — *"a hand-maintained list would drift"* — so
-the amendment is narrow and keeps the objection: derived factual columns, hand-written interpretive
-one, and `--check` exits 1 when a branch has landed without a row. **Regenerating is part of the
-merge**, which is `CLAUDE.md`'s sixth restated fact and the reason it earned a place there:
-a merging session does not know the file exists.
+**`prompt.md` was rewritten, not deleted** (`665722d`), after harvesting the two things that lived
+only in it — the mutation-testing and passing-check practices into `reference/lessons.md` **§8**, and
+the on-disk inventory into this file. One claim in it was **dropped rather than carried**: `logs/` is
+gitignored, so its `git add -A` warning named a hazard that does not exist.
 
-**Enumerating refs found a branch nobody had written down.** `docs/add-claude-md` — five commits on
-2026-07-27, the README, `CLAUDE.md`, the design decisions and the first implementation plan. **It is
-the repository's first branch and appeared in no document for twenty-five days.** No rule was broken:
-it belongs to no phase and was fast-forwarded, so until `IDM-001` gained its third row there was
-nowhere to record it. Two counts move with it — there are **three** fast-forwarded branches where every
-sentence says two (each correct, each counting *phases*), and **eight of nineteen** branches carry no
-phase number.
+**`CLAUDE.md` is 297 lines, up from 260**, accepted deliberately by the owner against upstream's ~200
+guidance; the measurement of what it could lose is in `backlog.md` as a review-phase item, which is
+the condition it was accepted under.
 
-**Baselines, run 2026-08-21: `make test` 310, `make lint` clean.** `link-check.py` is quoted as a
-**delta** on purpose — this branch adds **one file and no broken path**, measured by running it on
-`main` and on the branch in the same checkout. The absolute count depends on files git does not
-carry, which is why the figure above and the one in `procedures/link-check.py`'s docstring disagree
-without either being wrong. **Both refusal paths of the new script were driven, not assumed**: a
-deleted row makes `--check` exit 1, and a missing description makes `--write` refuse rather than
-splice a blank column.
+**Phase 10 remains the last phase, merged `32c26bb`.** What it does and does not claim is in
+`milestone-2-corpus/implementation-plan.md` and `backlog.md` rather than here — failure mode 3
+undischarged, a call can still vanish, and no headline compression ratio.
 
-**2026-08-21 — Phase 10 is merged as `32c26bb`, and the next thing is the owner driving the corpus.**
-All thirty-three tasks done, `make test` **310**, `feat/phase-10-body-store` forked at `d885b2f` and
-merged `--no-ff`. **Both placeholders closed with it** — the Record table at the foot of `plan.md`
-and `notes.md`'s first line — which were the only two the phase left standing. The permanent record
-is `milestone-2-corpus/phase-10-body-store/`.
+**Baselines, run not predicted 2026-08-21 at the close of this session: `make test` **310**,
+`make lint` clean, `make check` valid, `branch-index.py --check` current at **19 rows**,
+`link-check.py` **44 files / 3 broken / 0 roundabout** over the live tiers — the three are `EPD-001`
+and `EPD-004`'s known deliberate absences, listed in `procedures/link-check.py`'s docstring.**
+*(A whole-repository run reports 91 / 76 / 2, most of it the frozen restructure archive; the absolute
+count also depends on untracked files, so compare deltas rather than absolutes. `make test` is ~2 s
+warm; a **first** run after the cloud folder evicts the virtualenv takes two to three minutes on
+hydration alone — slow, not stuck.)*
 
-**Trimmed to the current state on 2026-08-21, on the owner's decision** — it had reached ~560 lines
-against the ~30 above, in fifteen entries back to 2026-08-18. **Nothing was lost:** each restated
-what `phase-10-body-store/notes.md` holds as frozen-primary, the case the rule names.
-
-**Three documentation defects were closed the same day**, on the owner's instruction and outside any
-review phase. `reference/measurements.md`'s intermediate-slices row stated its slice as *"26.6× (no
-warmup probes)"* while silently inheriting the `/v1/messages` filter from the row above it, so read
-as written it recomputed to **0.245×** with the sign reversed. **All four slices were re-derived from
-the frozen CSV rather than relayed**, and the warmup predicate — which produced two plausible wrong
-answers first, 23.4× and 0.216× — is now written down beside them, which no document had done. The
-four `Branch:` lines that still said *"Merge back with `--no-ff`"* now carry their merge commits, and
-the in-flight table below no longer reads `make test` **308** in one clause and **310** in the next.
-The first two are recorded in `backlog.md` rather than deleted; the wider review stays parked.
-
-**What Phase 10 does not claim, stated in the documents rather than only here.** **Failure mode 3 is
-not discharged** — archiving cannot *break* a call, which was driven, but whether it *slows* one is
-unmeasured and needs a driven session with capture on against off. **A call can still vanish**; Task
-18a made that visible rather than impossible, and closing it needs a guarantee that a row can never
-be written twice. **There is no headline compression ratio**, on the owner's instruction: every
-figure is a small-sample confirmation that the mechanism works.
-
-**Baselines, run not predicted 2026-08-21: `make test` 310, `make lint` clean, `make check` valid,
-`link-check.py` 86 files, 75 broken, 2 roundabout — unchanged, correctly: today's edits added no
-`*.md` file and cited nothing that does not already exist.** *(`make test` is ~2 s warm; a **first**
-run after the cloud folder evicts the virtualenv takes two to three minutes on hydration alone —
-slow, not stuck.)*
+*Trimmed from 90 lines to this at the close of 2026-08-21, per this section's own ~30-line rule and
+for a second reason: its baseline line still read `link-check.py` **86 files, 75 broken** from before
+this branch, which is the staleness the rule exists to prevent. **Nothing was lost** — Phase 10's
+entry is `phase-10-body-store/notes.md` as frozen-primary, and this session's is `3233fb7`.*
 
 ## Where the project is
 
@@ -184,6 +151,28 @@ here as next, because the owner has not chosen Phase 11's subject and this file 
 Whether Claude Code shows LM Studio's context error was already there. **Whether archiving slows a
 call was added there on 2026-08-21** — until then it lived only in `prompt.md`, which is the one file
 allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table.*
+
+## What is on disk and not in git
+
+*Harvested here 2026-08-21 from `prompt.md`, which was the only place it was written down and which
+expires by design. **Verified by looking**, not relayed. This is working-copy state, so it belongs in
+this file and it goes stale — re-check before trusting a line of it.*
+
+`logs/` is gitignored whole (`.gitignore:228`), so none of this can be committed by accident.
+
+| Path | What it is |
+|---|---|
+| `logs/corpus/dicts/req-2026-08-20T110338Z-0e4d84d1.dict` | **The first real dictionary**, 262,144 bytes exactly. **Do not delete it.** `measurements.md` cites the `0e4d84d1` ID as evidence that the same parameters reproduce the same dictionary byte for byte |
+| `logs/corpus-gate/` | Phase 9's corpus, **8.8 MB**. Task 15 trained the dictionary above from it, and `measurements.md` names it as the slice behind four rows. It stays |
+| `logs/calls.csv`, `logs/router.log` | The router's history to 2026-08-20. **Deliberately left** where they are when the config moved to `logs/telemetry/` — owner's decision, in `milestone-2-corpus/phase-10-body-store/plan.md`'s settled table |
+| `logs/telemetry/` | **Does not exist yet.** The router creates it on its next start. Its absence is correct |
+| `docs/procedures/dying-backend/runs/` | Task 18's driving check. Disposable — an instrument's `runs/` is overwritten by the next run |
+
+**One warning was dropped rather than carried across.** `prompt.md` said *"stage with explicit paths,
+never `git add -A`."* The stated reason was that `logs/` holds uncommittable things — and `logs/` is
+gitignored, so `git add -A` cannot stage any of it. The advice may still be worth following for other
+reasons, but **the reason given for it was not a real hazard**, and repeating it would have preserved
+a rule whose justification does not hold.
 
 ## In-flight branches
 
