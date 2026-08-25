@@ -295,8 +295,13 @@ direction.
 **undicted** — `request_dict_id` is `none` on every row and the retrain log says `too-few-samples`,
 which is **not** the dictionary corruption `../reference/corpus.md` warns about, because the blobs
 name no dictionary for one to be missing. And it is **Anthropic-only**: `backend` is `anthropic` on
-all 171 rows, so no LM Studio traffic has ever been captured, and every tool built over this store
-has been exercised against one backend's material.
+all 171 rows, so every tool built over this store has been exercised against one backend's material.
+
+*Corrected 2026-08-25, the same day it was written. That paragraph first said no LM Studio traffic
+**had ever been captured**, which overreached the evidence it cited: the 171 rows are the **corpus**,
+and telemetry is a wider net. `calls.csv` holds **15 LM Studio calls on 2026-08-21**, before the
+corpus covered those days. The corpus claim was right; the "ever" was not, and the two populations are
+easy to conflate because one is a subset of the other.*
 
 ---
 
