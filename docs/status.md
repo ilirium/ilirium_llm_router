@@ -10,141 +10,46 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-25, later — the settings were verified before being committed, and auto mode was proved
-broken.** All three probes returned what the rewrite predicted — `git status` silent, `git add -A .`
-prompting, `git stash clear` denied — so `.claude/settings.json` landed unchanged. **Only the denial
-was observable to the session**; the other two merely completed, and a silent run is indistinguishable
-from an approved-after-prompt run from inside the model, so the owner was asked directly.
+**2026-08-25 — permissions closed, auto mode proved broken upstream, the corpus stopped being
+undicted, and this clone turned out to be two commits stale. No phase task started.**
 
-**Auto mode was switched on to test whether Anthropic's rate-limiter had been fixed. It failed in
-about ninety seconds, and the measurement is much harder than the earlier one.** From a frozen
-telemetry slice: **83 of 83 rate-limited calls were non-streamed and none of 391 streamed calls was**,
-non-streamed `/v1/messages` failed **100%** on both 08-24 and 08-25, and a streamed request **2.8×
-larger** to the same model succeeded **0.6 s** after a non-streamed one was rejected. 21 non-streamed
-`count_tokens` calls succeeded on the worst day, which narrows it to one path rather than to
-non-streaming. **That is `bugs/BUG-001`, in a new `bugs/` tier merged to `main`** — the phase branch
-does not carry it. **Phase 13 was allocated** for the rate-limit headers. **No phase task started.**
+**Permissions are settled and committed.** All three probes matched what the rewrite predicted, so
+`.claude/settings.json` landed unchanged. **Git is not in the built-in read-only set**, a deny entry
+matches exactly while an allow with `*` does not, and settings are **session-cached** — inert until
+restart, not until merge. **Only the denial was observable to the session**: a model sees a denial as
+a tool error and cannot see an approval at all, so the owner was the instrument for the other two.
+→ `milestone-2-corpus/phase-11-corpus-tools/notes.md`.
 
-**And the corpus stopped being undicted this morning, which nothing had noticed.** Found by
-re-verifying "What is on disk and not in git" below rather than by looking for it. `retrain.log`
-records `verdict=installed` at **2026-08-25T10:32:50Z** — window 2026-08-24, 69 samples, holdout 180,
-**candidate 3.317× against incumbent `none`** — and **328 of the 331 rows in that day's index
-reference the new dictionary**, the other three being empty rather than `none`. *(That read "all 320
-rows" for an hour, taken from the live file; a frozen copy an hour later said 328 of 331, and two
-copies a minute apart differed by 259 bytes. The corpus is still being written to.)* The **2.815×**
-undicted figure was described everywhere as *the number a dictionary
-must beat*; **it has been beaten, and by the machinery doing it unattended.** Every statement that the
-corpus is undicted, that `dicts/` is empty, or that `retrain.log` says `too-few-samples` was true on
-2026-08-24 and is false now — including in `milestone-2-corpus/phase-11-corpus-tools/plan.md`'s
-register, **which has not been revisited and is what the owner's pending position-3 decision rests
-on.**
+**Auto mode is broken upstream, and it is measured rather than inferred.** Non-streamed
+`POST /v1/messages` fails categorically while a streamed request **2.8× larger** to the same model
+succeeds **0.6 s** later. → `bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`, status
+**open**, in a **new `bugs/` tier**. **Neither upstream issue has been told, and that is the open
+action.** **Phase 13 was allocated** for the rate-limit response headers; Phases 11 and 12 went into
+`milestone-2-corpus/implementation-plan.md` with it, since the list ran 8, 9, 10, "closing review".
 
-**2026-08-25 — the permission model was measured, and it was backwards.** The handoff's one
-zero-cost check ran: `git add -A` **was blocked**, so settings are session-cached and a tracked
-permission change on a phase branch is inert until **restart**, not until merge. Chasing why
-`git status` still prompted found the larger thing — **git is not in Claude Code's built-in read-only
-set**, a deny entry matches **exactly** while an allow entry with `*` does not, and the allow list was
-therefore permissive where git destroys work (`git checkout -- .`, `git stash clear`) and absent where
-it is safe. `.claude/settings.json` was rewritten on *allow what cannot destroy work*, `settings.local.json`
-was merged into it and left **empty by decision** — every rule is now tracked — and the tracked file
-was left **uncommitted on purpose** until a session that had not written it could exercise it.
-*(It was, later the same day. See the entry above.)* No phase task started.
+**The corpus stopped being undicted at 10:32 and nothing had noticed.** `retrain.log` records
+`verdict=installed`, candidate **3.317×** against incumbent `none`, and **328 of 331** rows in that
+day's index reference the new dictionary. **The 2.815× everyone called *the number a dictionary must
+beat* has been beaten, unattended, while the branch was busy with permissions.** Figures and their
+caveats are in `plan.md`'s register — **and this bears directly on the owner's pending position-3
+decision**, which was framed when the machinery had never produced a dictionary.
 
-**2026-08-24 — Phase 11 opened, in a worktree, and its plan is written and unapproved.** Subject: the
-offline corpus tools. The layout changed under the project — a bare clone at
-`~/Projects/local/ilirium_llm_router` with `main`, `to-run-server` and the phase as **worktrees**, so
-`CLAUDE.md`'s note that two paths are *"the same directory"* is now false and is Task 2.
+**This clone was two commits stale for the whole of Phase 11**, exposed by `git push --all` rejecting
+`main`. `665722d` and `19fdaa7` were made 2026-08-21 from the other checkout and never arrived here —
+including the `CLAUDE.md` Status fix. Both were merged in, to `main` and then to the branch, where
+`prompt.md` and `status.md` were **resolved as the branch's copies on the owner's decision**; that
+merge message records what the choice costs and that it propagates at the Phase 11 merge.
 
-**The corpus was exercised and the re-derivation moved three things.** It was read **while it was
-still growing** — 114 → 123 request blobs between two counts — so every figure from it carries a
-moment. Both day folders are **undicted** and read back clean: 2.815×, 0 failures, which is the
-number a dictionary must beat rather than a ratio to quote. Two index facts changed the design:
-**63 of 168 calls are non-streamed**, so the converter meets plain JSON as well as SSE, and
-**`agent_id` is empty on all 171 rows**, so `--agent` is struck rather than shipped.
-
-**A day was spent establishing that the auto-mode classifier's 429s are not this router's fault** —
-66 of 232 calls, **every one non-streaming**, against 138 of 145 streaming calls succeeding, with a
-streaming call to the same model succeeding five seconds after five consecutive 429s on it. Not a
-task and not in `backlog.md` as a defect; what it left is one item to overturn — the *"do not go
-looking"* note on the rate-limit headers, whose reasoning failed its first real test.
-
-**2026-08-21 — four method items added on the owner's instruction: `IDM-007`, `IDM-008`, a reading
-rule and a `notes.md` split.** Two of the four were **already in the repository and neither was a new
-rule.** `IDM-008` generalises Phase 10's register, which the owner instructed on 2026-08-19 in almost
-the same words; the reading rule is `wiki/claude-code-context-budget.md`'s lever 2, which needed a
-**trigger** in `CLAUDE.md` rather than a home. **Checking before writing is what found both**, and it
-changed what got written: `IDM-008` carries Phase 10's four findings as its argument instead of an
-assertion.
-
-**`IDM-007` is the one that is genuinely new**, and its evidence is three prior instances *about
-documents rather than people* — `IDM-005`'s step 2 caveat sitting below the stop line where a
-compliant reader never reaches it, and this file's own two records of prose that undercounts going
-stale invisibly. Same mechanism each time: something true, written down, in a place that does not
-reach the reader.
-
-**Two of the four were argued down from what was proposed, and both are recorded where the argument
-is.** `IDM-008` was proposed for `CLAUDE.md` and is a **pointer** instead — writing a plan is a
-look-it-up moment, which is why `IDM-005` and `IDM-006` are pointers too; `IDM-000` now states that
-neither shortness nor importance earns a restatement. The `notes.md` split is **forward-only**:
-Phase 10's 3,284-line `notes.md` stays whole, because `notes.md:2143`-style citations break
-**silently** when a section moves — `link-check.py` checks paths, not line numbers.
-
-**`CLAUDE.md` is 292 lines, up from 260**, and the growth was accepted deliberately against upstream's
-~200 guidance. The measurement of what it could lose is in `backlog.md` as a review-phase item, which
-is the condition it was accepted under.
-
-**2026-08-21 — the branch index exists, on `docs/branch-index`, and it is generated rather than
-written.** `reference/branches.md` carries all nineteen merged branches — opened date and fork point,
-merge date and merge commit, milestone, phase, and one line on what each was for. Five of its six
-columns come out of git via `procedures/branch-index.py`; only the description is typed.
-**`IDM-001` refused exactly this list on 2026-08-17** — *"a hand-maintained list would drift"* — so
-the amendment is narrow and keeps the objection: derived factual columns, hand-written interpretive
-one, and `--check` exits 1 when a branch has landed without a row. **Regenerating is part of the
-merge**, which is `CLAUDE.md`'s sixth restated fact and the reason it earned a place there:
-a merging session does not know the file exists.
-
-**Enumerating refs found a branch nobody had written down.** `docs/add-claude-md` — five commits on
-2026-07-27, the README, `CLAUDE.md`, the design decisions and the first implementation plan. **It is
-the repository's first branch and appeared in no document for twenty-five days.** No rule was broken:
-it belongs to no phase and was fast-forwarded, so until `IDM-001` gained its third row there was
-nowhere to record it. Two counts move with it — there are **three** fast-forwarded branches where every
-sentence says two (each correct, each counting *phases*), and **eight of nineteen** branches carry no
-phase number.
-
-**Baselines, run 2026-08-21: `make test` 310, `make lint` clean.** `link-check.py` is quoted as a
-**delta** on purpose — this branch adds **one file and no broken path**, measured by running it on
-`main` and on the branch in the same checkout. The absolute count depends on files git does not
-carry, which is why the figure above and the one in `procedures/link-check.py`'s docstring disagree
-without either being wrong. **Both refusal paths of the new script were driven, not assumed**: a
-deleted row makes `--check` exit 1, and a missing description makes `--write` refuse rather than
-splice a blank column.
-
-**2026-08-21 — Phase 10 is merged as `32c26bb`, and the next thing is the owner driving the corpus.**
-All thirty-three tasks done, `make test` **310**, `feat/phase-10-body-store` forked at `d885b2f` and
-merged `--no-ff`. **Both placeholders closed with it** — the Record table at the foot of `plan.md`
-and `notes.md`'s first line — which were the only two the phase left standing. The permanent record
-is `milestone-2-corpus/phase-10-body-store/`.
-
-**Trimmed to the current state on 2026-08-21, on the owner's decision** — it had reached ~560 lines
-against the ~30 above, in fifteen entries back to 2026-08-18. **Nothing was lost:** each restated
-what `phase-10-body-store/notes.md` holds as frozen-primary, the case the rule names.
-
-**Three documentation defects were closed the same day**, on the owner's instruction and outside any
-review phase. `reference/measurements.md`'s intermediate-slices row stated its slice as *"26.6× (no
-warmup probes)"* while silently inheriting the `/v1/messages` filter from the row above it, so read
-as written it recomputed to **0.245×** with the sign reversed. **All four slices were re-derived from
-the frozen CSV rather than relayed**, and the warmup predicate — which produced two plausible wrong
-answers first, 23.4× and 0.216× — is now written down beside them, which no document had done. The
-four `Branch:` lines that still said *"Merge back with `--no-ff`"* now carry their merge commits, and
-the in-flight table below no longer reads `make test` **308** in one clause and **310** in the next.
-The first two are recorded in `backlog.md` rather than deleted; the wider review stays parked.
-
-**What Phase 10 does not claim, stated in the documents rather than only here.** **Failure mode 3 is
-not discharged** — archiving cannot *break* a call, which was driven, but whether it *slows* one is
-unmeasured and needs a driven session with capture on against off. **A call can still vanish**; Task
-18a made that visible rather than impossible, and closing it needs a guarantee that a row can never
-be written twice. **There is no headline compression ratio**, on the owner's instruction: every
-figure is a small-sample confirmation that the mechanism works.
+*Trimmed to the current state on 2026-08-25 — the second trim, and it had reached **162 lines**
+against the ~30 above with entries back to 2026-08-21. **Each cut entry's home was checked rather
+than assumed:** the four method items are `IDM-007` and `IDM-008` themselves; the branch index is
+`reference/branches.md` and `IDM-001`'s amendment; Phase 10's close is
+`milestone-2-corpus/phase-10-body-store/`; the three documentation defects and what Phase 10 does not
+claim are in `backlog.md` and `milestone-2-corpus/implementation-plan.md`. **Three had also gone stale
+in place** — `CLAUDE.md` at 292 lines when it is 297, "eight of nineteen" branches when the table is
+21 rows, and the corpus called undicted. **This section is ~58 lines, so it is still roughly twice
+its own rule** — a third of that is this note and the baselines block, and the note is meant to go at
+the next trim rather than accumulate like the entries it describes.*
 
 **Baselines. Read the dates — these were run at two different moments and only one pair is current.**
 
@@ -154,18 +59,12 @@ figure is a small-sample confirmation that the mechanism works.
 | `branch-index.py --check` | **current, 21 rows** | re-run **2026-08-25** |
 | `make test` / `make lint` / `make check` | 310 / clean / valid | **2026-08-21, not re-run since** |
 
-*This line read `link-check.py` **86 files, 75 broken** until 2026-08-25 — a figure relayed rather
-than measured, and wrong in both columns by the time anyone read it. The two checks above were run;
-the three `make` targets were **not**, because this worktree has no virtualenv and installing one to
-refresh a number was not worth it. **They keep their 2026-08-21 date rather than being restated as
-current**, which is the whole difference between a stale baseline and a dated one.*
-
-**`link-check.py`'s file count is environment-dependent and is not a comparable number across
-worktrees.** It walks `.venv/`, so a worktree that has run `make sync` reports nine more `*.md` files
-than one that has not. The **broken** count is unaffected — every entry it reports is a `docs/` path.
-
-*(`make test` is ~2 s warm; a **first** run after the cloud folder evicts the virtualenv takes two to
-three minutes on hydration alone — slow, not stuck.)*
+*The `make` row keeps its 2026-08-21 date rather than being restated as current — this worktree has
+no virtualenv, and that is the whole difference between a stale baseline and a dated one. The row
+above it read **86 files, 75 broken** until 2026-08-25: relayed rather than measured, and wrong in
+both columns. **`link-check.py`'s file count walks `.venv/`**, so it is not comparable across
+worktrees; its **broken** count is. `make test` is ~2 s warm, but minutes on first run while the
+cloud folder rehydrates — slow, not stuck.*
 
 ## Where the project is
 
@@ -237,26 +136,29 @@ is the full inventory.*
    its first rule is that the charter decides what the review finds. **Position 3 is the block** —
    whether *"document the dictionary tooling"* also means build something. Every `❓` in the plan's
    register is listed in its "Placeholders in this file".
-2. **Settle whether a tracked permission change on a phase branch takes effect before it merges.**
-   Costs one command in a fresh session — `git add -A` on a clean tree, against the deny rule added
-   2026-08-24. Blocked means settings are session-cached; not blocked means a phase cannot change
-   permissions for the phase that writes them, which constrains the worktree practice Task 3 records.
-   Written up in the phase's `notes.md`.
-   *(Items 1 and 2 replaced two that were done. **"Exercise the corpus by hand"** happened — the owner
-   drove sessions through the router on 2026-08-21 and 2026-08-24, and `logs/corpus/` in the
-   `to-run-server` worktree now holds two day folders, 171 index rows and 280-odd blobs, **undicted**,
-   which `--extract` reads back with zero failures. **"Plan Phase 11 — subject not chosen"** is spent:
-   the owner chose it on 2026-08-24.)*
+2. **Report `BUG-001` to the two upstream issues.** They are named in
+   `bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`, and both stall on exactly the
+   measurement it contains — a paired control showing a streamed request **2.8× larger** to the same
+   model accepted **0.6 s** after a non-streamed one was rejected. **The document says this is an
+   action, not a finished thing.** It is the only open item here that is not blocked on a decision.
+   *(This item replaced **"settle whether a tracked permission change takes effect before it
+   merges"**, answered 2026-08-25: settings are **session-cached**, inert until restart rather than
+   until merge, and the worktree-resolution explanation is dead. Before that, items 1 and 2 replaced
+   **"exercise the corpus by hand"** and **"plan Phase 11"**, both spent. The corpus figures that
+   entry quoted — two day folders, 171 rows, **undicted** — are all superseded; see "Where we
+   stopped".)*
 3. **Decide `EPD-001` or `002`.** Both are blocked on a person rather than on work, and both are argued
    on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions waiting on a person". Deciding
    one is cheaper than any measurement in the list, and neither decision waits on Phase 11.
    (`EPD-003` is no longer among them — decided 2026-08-17 by Phase 9.)
 
 *The measurement items are both in `backlog.md` under "Measurements left open" and neither is listed
-here as next, because the owner has not chosen Phase 11's subject and this file is not the inventory.
-Whether Claude Code shows LM Studio's context error was already there. **Whether archiving slows a
-call was added there on 2026-08-21** — until then it lived only in `prompt.md`, which is the one file
-allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table.*
+here as next, because Phase 11 is chosen and running and this file is not the inventory. Whether
+Claude Code shows LM Studio's context error was already there. **Whether archiving slows a call was
+added there on 2026-08-21** — until then it lived only in `prompt.md`, which is the one file allowed
+to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table. *(This sentence gave as its
+reason that "the owner has not chosen Phase 11's subject" until 2026-08-25, which stopped being true
+on 2026-08-24 — the conclusion held, the reason for it did not.)**
 
 ## What is on disk and not in git
 
@@ -314,25 +216,20 @@ permanent record of a phase's branch, fork point and merge commit is still its p
 when written and false the moment the branch opened. It is the defect this file's own milestone-table
 entry describes, in the section that exists to prevent it.*
 
-*What that branch was is no longer this file's job to remember, and that is the point of it.* It
-carried no phase number, so it has no phase note; its permanent record is **its merge commit
-message**, which `IDM-001`'s third row added on the day it was needed, plus **its row in
-`reference/branches.md`**, which the fourth row added the same day. The branch that exposed both gaps
-is the first to be recorded by both.
+**`docs/bugs-tier` merged 2026-08-25 and is not listed above**, because it is done. It carried no
+phase number, so its permanent record is **its merge commit message** plus **its row in
+`reference/branches.md`** — `IDM-001`'s third and fourth rows, both added the day they were needed.
 
-*It was empty in exactly this way once before: `docs/phase-9-corpus-gate` merged as **`b29d502`** on
-2026-08-17 and nothing replaced it until Phase 10 opened. The permanent record of both — branch, fork
-point and merge commit — is in the phase notes, which is where `method/IDM-001-git-branching.md` puts
-it and why this section may go empty without losing anything.*
+**Everything is pushed as of 2026-08-25, and `main` diverged before it was.** `git push --all`
+rejected `main` because `origin` held two commits from 2026-08-21 that this bare clone never
+received; both are merged in now. *(This paragraph read "`main` is ahead of `origin/main` and nothing
+has been pushed" until then — true when written, and the reason the divergence came as a surprise.)*
 
-**It was a `docs/` branch although the phase was about the router**, because no `src/` change survived
-it: Task 6 patched `proxy.py` and restored it, and `git diff main -- src/` was empty at the merge.
-`method/IDM-001-git-branching.md` is what makes that the right prefix — the prefix says what kind of
-work it is, and `phase-N-` says it is numbered work. **Phase 10 is the opposite case**, and it is: `feat/phase-10-body-store`,
-opened 2026-08-18. *(This sentence read "will be" until then.)*
+**Merged branches are kept, not deleted, and the tooling enforces it.** `branch-index.py` refuses to
+render when a description names a branch that no longer exists, so deleting one breaks the next
+merge's regeneration. Found on 2026-08-25 by deleting `docs/bugs-tier` and restoring it.
 
-`docs/phase-8-method-and-guardrails` was the first branch to **carry a phase number on a `docs/`
-prefix** — the form it settled: the prefix says what kind of work it is, `phase-N-` says it is a phase.
-`method/IDM-001-git-branching.md` now states that as the rule, with Phase 7 as the old form and Phase 8
-as the new one. `main` is ahead of `origin/main` and nothing has been pushed;
-`docs/milestone-boundary-restructure` and `docs/phase-8-method-and-guardrails` both still exist locally.
+*Trimmed 2026-08-25: four paragraphs of commentary on **merged** branches — `docs/phase-9-corpus-gate`,
+`docs/phase-8-method-and-guardrails`, `docs/branch-index` and Phase 10's prefix — were cut. This
+section's own opening rule says merged branches are not listed here, and it had accumulated 22 lines
+of them. All of it is in `reference/branches.md` and the phase notes.*

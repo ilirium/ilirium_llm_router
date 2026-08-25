@@ -196,9 +196,16 @@ record with lossy copies**, and that is not a reversible mistake.
    worktree's is not.
 3. **Record the worktree practice** — an `IDM-001` amendment covering the layout, and the
    `temp/to-run-server` branch, whose prefix `IDM-001` does not define and which never merges.
-   **Do not claim a new worktree starts with no allowlist** — the permissions doc says rules resolve
-   *"through worktrees to the main checkout"* and apply in worktrees, so state what was observed and
-   leave the mechanism to Task 3b.
+   **The mechanism is settled and this task no longer has to hedge it.** Settings are
+   **session-cached**: a tracked permission change is inert until the session **restarts**, not until
+   the branch merges. The competing explanation this task was written around — that tracked settings
+   resolve *"through worktrees to the main checkout"* — is **dead**, measured 2026-08-25, and Task 3b
+   does not need to carry it.
+
+   *Also worth recording here, found on 2026-08-25:* `temp/to-run-server` carries **no commits of its
+   own**, so its tip sits on the trunk and `../../procedures/branch-index.py` tables it as **merged**
+   rather than reporting it in flight — which is why a utility worktree needs a description in a table
+   of work.
 4. **Amend `CLAUDE.md`'s Shell section**, which today says only *"no `$(...)`"*. The general rule
    behind it is the documented one: **a command Claude Code cannot fully parse falls through to
    approval instead of being treated as read-only**, and commands over 10,000 characters always do.
@@ -207,8 +214,20 @@ record with lossy copies**, and that is not a reversible mistake.
    user-filed issue, was repeated here on 2026-08-24 without checking, and is corrected rather than
    quietly dropped.*
 5. **Amend `IDM-002` with the built-in read-only set** — `ls`, `cat`, `echo`, `pwd`, `head`, `tail`,
-   `grep`, `find`, `wc`, `which`, `diff`, `stat`, `du`, `cd`, and read-only forms of `git`, which run
-   without a prompt in **every** mode and are **not configurable**.
+   `grep`, `find`, `wc`, `which`, `diff`, `stat`, `du`, `cd`, which run without a prompt and are
+   **not configurable**.
+
+   **`git` is not in that set, and this task claimed it was until 2026-08-25.** Seven measurements in
+   this worktree settled it, and the decisive one is that **`git --version` prompted** — it touches
+   no repository, so the failure is neither the worktree layout nor an index refresh, both of which
+   were proposed and both of which were wrong. **Every git command prompts unless an allow rule
+   matches it.**
+
+   **The old claim was unobservable by whoever wrote it**, which is the part worth carrying into
+   `IDM-002`: a model sees a denial as a tool error and **cannot see an approval at all**, so a silent
+   run and an approved-after-prompt run are the same observation from the inside. The owner was the
+   only instrument available and was never asked. **`IDM-002` gets the measured version; do not
+   re-assert the old one.**
 
    *Why documentation and not allow rules, which is the question that produced this task:* an allow
    entry for a built-in read-only command grants nothing, so it is the fossil `IDM-002`'s pruning
@@ -220,7 +239,11 @@ record with lossy copies**, and that is not a reversible mistake.
    records what was done rather than proposing it: the four mutating git rules moved to the tracked
    file, the six read-only ones were **deleted rather than moved**, and two deny rules were added.
 6. Add Phase 11 to `milestone-2-corpus/implementation-plan.md`, which currently jumps 10 → closing
-   review.
+   review. **Done 2026-08-25, ahead of the plan.** Phases 11, 12 **and 13** went in together, because
+   adding 11 alone leaves the list reading 8, 9, 10, "closing review" with two settled owner decisions
+   missing. **Phase 13 is new** — the rate-limit response headers, allocated on the owner's
+   instruction, and its entry carries its two gates rather than just a title. The same pass marked the
+   capture step **discharged in fact, evidence pending Task 7**.
 7. Freeze the evidence slice. **Index and derived metrics only, redacted to stable placeholders per
    `../../README.md`; no blobs.** Bodies are real source and real prompts.
 
@@ -391,10 +414,16 @@ Phase 10's worked.*
 1. **Position 3 needs the owner's one word.** Documentation only, or dictionary work too.
 2. **Every `❓` in the register.**
 3. **The Record table** below.
-4. **Two tasks are already executed and say so — Task 1 and Task 5.** No other task may claim it.
-   Task 5 ran ahead of the plan on the owner's instruction, which is a deviation worth seeing rather
-   than smoothing over: the settings work was done while diagnosing an unrelated problem, and the
-   task now records it instead of proposing it.
+4. **Three tasks are already executed and say so — Task 1, Task 5 and Task 6.** No other task may
+   claim it. Both deviations ran ahead of the plan on the owner's instruction, and both are worth
+   seeing rather than smoothing over. **Task 5** — the settings work — was done while diagnosing an
+   unrelated problem. **Task 6** was done on 2026-08-25 and grew in the doing: it went in as Phases
+   11, 12 *and* 13, because adding 11 alone would have left two settled owner decisions missing from
+   the list.
+
+   *This item read "two tasks… Task 1 and Task 5" until 2026-08-25. **An unapproved plan accumulating
+   executed tasks is the thing to watch here** — three of Group A's seven are now done before the plan
+   they belong to has been reviewed.*
 
 ## What this phase does not settle
 
