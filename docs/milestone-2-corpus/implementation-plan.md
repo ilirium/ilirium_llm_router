@@ -249,13 +249,15 @@ is not known.
 
 ## What is deliberately not done yet
 
-The opening playbook has seven steps. **Steps 1–6 are not run**, and this section exists so that a
-later session does not read their absence as an oversight.
+The opening playbook has seven steps. **Steps 1 and 3–6 are not run**, and this section exists so
+that a later session does not read their absence as an oversight. **Step 2 is no longer among them —
+it was discharged in fact on 2026-08-24** and waits only on Phase 11's Task 7 to make its evidence
+durable; the row and the note below say what that means.
 
 | Step | State |
 |---|---|
 | 1. Name the falsifiable central claim, the non-goals, and what would refute it | **deferred to Phase 9** — see above. The refuting experiment *is* Phase 9's gate |
-| 2. Capture the real input | **NOT discharged** — settled 2026-08-17 by Phase 9's re-derivation. `docs/captures/` holds **one** body, and one body cannot exercise a cross-body dictionary. Phase 9's Group B spends it |
+| 2. Capture the real input | **discharged in fact 2026-08-24 — evidence pending Phase 11's Task 7.** A real driven session produced 171 index rows across two day folders. *Read as "NOT discharged" from 2026-08-17 until 2026-08-25, on the true-at-the-time ground that `docs/captures/` held one body; see the note below* |
 | 3. Spike whatever the architecture depends on | not started |
 | 4. Settle the expensive-to-reverse questions as EPD forks | **EPD-003 already is one.** Whether it needs a sibling is unknown |
 | 5. Write the spec, marking every statement measured / inferred / assumed | not started |
@@ -275,6 +277,26 @@ capture *changed* the architecture rather than informing it.
 holds one 119 KB request; the frozen CSV holds body lengths and no bodies; the probe bodies are
 synthetic and under a kilobyte. **The consequence is that the gate is not the twenty-minute measurement
 this plan and `EPD-003` both call it** — it is a live capture session plus twenty minutes of `zstd`.*
+
+**Discharged in fact 2026-08-24; the paragraph above is kept exactly as written because its reasoning
+was right.** It predicted the gate would cost a live capture session plus twenty minutes of `zstd`,
+and that is what it cost. The session ran, and the corpus in the `to-run-server` worktree now holds
+**171 index rows and roughly 280 blobs across two day folders** — enough material to exercise a
+cross-body dictionary, which one body never could.
+
+**What is not discharged is the evidence, and that is why the row says *pending Task 7*.** The
+capture lives in a **gitignored** logs folder, in one worktree, on one machine; no commit contains a
+byte of it. Phase 11's Task 7 freezes a slice, and until it runs there is nothing a later reader can
+check. **A capture that exists only on the laptop that made it discharges nothing** — which is the
+same class of failure this whole section was written to prevent, arriving from the opposite
+direction.
+
+*Two things about that material a session should not misread, both measured 2026-08-24.* It is
+**undicted** — `request_dict_id` is `none` on every row and the retrain log says `too-few-samples`,
+which is **not** the dictionary corruption `../reference/corpus.md` warns about, because the blobs
+name no dictionary for one to be missing. And it is **Anthropic-only**: `backend` is `anthropic` on
+all 171 rows, so no LM Studio traffic has ever been captured, and every tool built over this store
+has been exercised against one backend's material.
 
 ---
 
