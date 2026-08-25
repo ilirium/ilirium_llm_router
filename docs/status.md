@@ -25,6 +25,17 @@ larger** to the same model succeeded **0.6 s** after a non-streamed one was reje
 non-streaming. **That is `bugs/BUG-001`, in a new `bugs/` tier merged to `main`** — the phase branch
 does not carry it. **Phase 13 was allocated** for the rate-limit headers. **No phase task started.**
 
+**And the corpus stopped being undicted this morning, which nothing had noticed.** Found by
+re-verifying "What is on disk and not in git" below rather than by looking for it. `retrain.log`
+records `verdict=installed` at **2026-08-25T10:32:50Z** — window 2026-08-24, 69 samples, holdout 180,
+**candidate 3.317× against incumbent `none`** — and **all 320 rows in that day's index reference the
+new dictionary**. The **2.815×** undicted figure was described everywhere as *the number a dictionary
+must beat*; **it has been beaten, and by the machinery doing it unattended.** Every statement that the
+corpus is undicted, that `dicts/` is empty, or that `retrain.log` says `too-few-samples` was true on
+2026-08-24 and is false now — including in `milestone-2-corpus/phase-11-corpus-tools/plan.md`'s
+register, **which has not been revisited and is what the owner's pending position-3 decision rests
+on.**
+
 **2026-08-25 — the permission model was measured, and it was backwards.** The handoff's one
 zero-cost check ran: `git add -A` **was blocked**, so settings are session-cached and a tracked
 permission change on a phase branch is inert until **restart**, not until merge. Chasing why
@@ -132,11 +143,26 @@ unmeasured and needs a driven session with capture on against off. **A call can 
 be written twice. **There is no headline compression ratio**, on the owner's instruction: every
 figure is a small-sample confirmation that the mechanism works.
 
-**Baselines, run not predicted 2026-08-21: `make test` 310, `make lint` clean, `make check` valid,
-`link-check.py` 86 files, 75 broken, 2 roundabout — unchanged, correctly: today's edits added no
-`*.md` file and cited nothing that does not already exist.** *(`make test` is ~2 s warm; a **first**
-run after the cloud folder evicts the virtualenv takes two to three minutes on hydration alone —
-slow, not stuck.)*
+**Baselines. Read the dates — these were run at two different moments and only one pair is current.**
+
+| Check | Figure | When |
+|---|---|---|
+| `link-check.py` | **84 files, 86 broken, 2 roundabout** | re-run **2026-08-25** |
+| `branch-index.py --check` | **current, 21 rows** | re-run **2026-08-25** |
+| `make test` / `make lint` / `make check` | 310 / clean / valid | **2026-08-21, not re-run since** |
+
+*This line read `link-check.py` **86 files, 75 broken** until 2026-08-25 — a figure relayed rather
+than measured, and wrong in both columns by the time anyone read it. The two checks above were run;
+the three `make` targets were **not**, because this worktree has no virtualenv and installing one to
+refresh a number was not worth it. **They keep their 2026-08-21 date rather than being restated as
+current**, which is the whole difference between a stale baseline and a dated one.*
+
+**`link-check.py`'s file count is environment-dependent and is not a comparable number across
+worktrees.** It walks `.venv/`, so a worktree that has run `make sync` reports nine more `*.md` files
+than one that has not. The **broken** count is unaffected — every entry it reports is a `docs/` path.
+
+*(`make test` is ~2 s warm; a **first** run after the cloud folder evicts the virtualenv takes two to
+three minutes on hydration alone — slow, not stuck.)*
 
 ## Where the project is
 
@@ -228,6 +254,43 @@ here as next, because the owner has not chosen Phase 11's subject and this file 
 Whether Claude Code shows LM Studio's context error was already there. **Whether archiving slows a
 call was added there on 2026-08-21** — until then it lived only in `prompt.md`, which is the one file
 allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table.*
+
+## What is on disk and not in git
+
+*Harvested from `prompt.md` on 2026-08-21, which was the only place it was written down and which
+expires by design. **Re-verified by looking on 2026-08-25**, not relayed — and it had gone stale in
+three ways, which is what this section warns about happening to itself. This is working-copy state.
+Re-check before trusting a line of it.*
+
+**`logs/` is gitignored whole (`.gitignore:228`), so none of this can be committed by accident.**
+**And it is now per-worktree** — there are three checkouts of this repository and the layout below
+differs in each. That is new since this section was written.
+
+**`to-run-server/logs/` — the live one, 93 MB**
+
+| Path | What it is |
+|---|---|
+| `logs/corpus/2026-08-21/`, `2026-08-24/`, `2026-08-25/` | **Three** day folders. Every document that says "two" was written on 2026-08-24 and has not been re-counted |
+| `logs/corpus/dicts/req-2026-08-25T103250Z-9dd33823.dict` | **The corpus is no longer undicted.** Installed 2026-08-25T10:32:50Z, 262,144 bytes. All 320 rows in that day's index reference it |
+| `logs/corpus/retrain.log` | Three verdicts: `no-complete-day`, then `too-few-samples`, then **`installed`** |
+| `logs/telemetry/calls.csv`, `router.log` | **Exists.** This section said *"does not exist yet"* until 2026-08-25; the router created it on 2026-08-21 |
+
+**`main/logs/` — historical, 260 KB of corpus plus Phase 9's**
+
+| Path | What it is |
+|---|---|
+| `logs/corpus/dicts/req-2026-08-20T110338Z-0e4d84d1.dict` | **The first real dictionary**, 262,144 bytes exactly. **Do not delete it.** `reference/measurements.md` cites the `0e4d84d1` ID as evidence that the same parameters reproduce the same dictionary byte for byte |
+| `logs/corpus-gate/` | Phase 9's corpus, **8.8 MB** — re-measured 2026-08-25, unchanged. `measurements.md` names it as the slice behind four rows. It stays |
+| `logs/calls.csv`, `logs/router.log` | The router's history to 2026-08-20. **Deliberately left** where they are when the config moved to `logs/telemetry/` — owner's decision, in `milestone-2-corpus/phase-10-body-store/plan.md`'s settled table |
+
+**`phase-11-corpus-tools/logs/` — does not exist**, and neither does its `.venv/`. Nothing has been
+run in this worktree. Its absence is correct.
+
+**One warning was dropped rather than carried across, and it stays dropped.** `prompt.md` said
+*"stage with explicit paths, never `git add -A`."* The stated reason was that `logs/` holds
+uncommittable things — and `logs/` is gitignored, so `git add -A` cannot stage any of it. **The advice
+survives on other grounds** — there is now a deny rule that fires — **but the reason originally given
+was not a real hazard**, and repeating it would preserve a rule whose justification does not hold.
 
 ## In-flight branches
 

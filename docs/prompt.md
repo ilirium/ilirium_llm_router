@@ -101,8 +101,11 @@ tools** — which `CLAUDE.md` says anyway, for unrelated reasons.
   `uv run python`.
 - **A dictID is not a unique key.** `zstd --train` stamps **1** on everything.
 - **The dictionary pickup is every 500 bodies or a day rollover**, not the next body.
-- **`logs/` is gitignored and holds uncommittable things.** Stage with explicit paths, never
-  `git add -A` — a deny rule that does fire.
+- **Stage with explicit paths, never `git add -A`** — there is a deny rule and it fires. **Not**
+  because `logs/` holds uncommittable things: `logs/` is gitignored at `.gitignore:228`, so
+  `git add -A` cannot stage any of it. *That justification was examined and dropped on 2026-08-21;
+  this file re-asserted it on 2026-08-25 by being written from a stale base, and it is removed
+  again. The advice is right and the old reason for it is not.*
 - **Claude Code's built-in no-prompt set does not include git.** `ls`, `cat`, `grep`, `find`, `wc`,
   `du`, `cd` run free; every git command prompts unless an allow rule matches it. **`git checkout`
   prompts every time, deliberately — use `git switch`.**
