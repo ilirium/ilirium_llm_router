@@ -185,6 +185,59 @@ than theorised — and the owner's decision was to **report the hole, not close 
 the row from elsewhere must guarantee it can never write one twice.
 
 
+### Phase 11 — the offline tools over the store *(in flight)*
+
+*Added 2026-08-25. The phase opened on 2026-08-24 and this file did not learn of it for a day, which
+is the staleness described under "What is deliberately not done yet" behaving exactly as predicted.*
+
+**The store exists and nothing offline reads it well.** Phase 11 builds the tools over Phase 10's
+output: `extract` with selection, the dictionary commands documented rather than extended, and a
+converter from archived bodies to Claude Code session `JSONL` for an external history viewer. **The
+CLI becomes subcommands on one entry point** — owner's decision, 2026-08-24 — because four flags on
+one command had already stopped scaling.
+
+The plan is `phase-11-corpus-tools/plan.md` and **it is not approved**; two positions in its settled
+table were still open when this entry was written. Nothing here should be read as ratifying it.
+
+### Phase 12 — the installer and the `README.md` rewrite
+
+*Owner's decision, 2026-08-24.* Installation via `uv tool`, and the `README.md` rewritten around it.
+
+**Phase 12 inherits a commitment made in Phase 11, and it is written down in only one other place.**
+Phase 11 documents the existing dictionary commands with a user-facing note in the top-level
+`README.md`, **explicitly temporary until this phase reworks it**. A Phase 12 that rewrites the
+`README.md` without knowing that will silently drop the only user-facing description the dictionary
+tooling has.
+
+### Phase 13 — the Anthropic rate-limit response headers
+
+*Number allocated 2026-08-25 on the owner's instruction.* The work itself is a live item in
+`../backlog.md`, added 2026-08-24 as the reversal of an entry that had refused it; read that entry
+first, because it holds why the refusal was reasonable and what refuted it.
+
+**What it needs:** `retry-after` and the `anthropic-ratelimit-*` family, read off the reply **on the
+way past, never by parsing and rebuilding**. They are already relayed to the client untouched. The
+byte-relay premise does not change; this is the recorder learning to look at a header for the first
+time.
+
+**Why it is worth a phase rather than a patch.** On 2026-08-24 the router logged **66 rate-limited
+calls in one day** and could say only `rate_limit_error: Error` about every one of them — not which
+limit was hit, not when it clears. Two open upstream issues stall on exactly that measurement, and
+this router is positioned to take it.
+
+**It arrives carrying a collision with this file's own non-goal, and allocating a number does not
+clear it.** *"Changing `calls.csv`. Not its rotation, not its columns"* is named above as a
+Milestone 2 non-goal. Phase 13 needs a home for the headers, so one of two things has to happen
+first: **the non-goal is overturned**, or **the headers go somewhere that is not a `calls.csv`
+column** — the corpus day index and a sidecar are the visible candidates. **Neither is chosen here,
+and Phase 13's plan cannot skip the question.**
+
+**A named allowlist, never a copy — this is the design constraint, not a detail.**
+`../reference/corpus.md` says the store sees bodies only and never headers, *"so the credential never
+reaches disk."* A header-reading recorder walks straight up to that sentence. Whatever Phase 13
+builds must record an **explicit list of header names**; a blanket copy of the response headers puts
+the next `authorization` header into a file that is not supposed to be capable of holding one.
+
 ### The closing review phase — *unnamed, number unallocated*
 
 Every milestone closes with one, specified as measurement rather than removal; the checklist is in
