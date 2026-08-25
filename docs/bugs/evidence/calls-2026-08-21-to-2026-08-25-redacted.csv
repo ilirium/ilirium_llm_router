@@ -1,0 +1,526 @@
+timestamp,session_id,agent_id,backend,model,path,stream,input_tokens,output_tokens,cache_read_input_tokens,cache_creation_input_tokens,stop_reason,request_bytes,response_bytes,ttfb_ms,duration_ms,error_status,error_code,error_message,router_version
+2026-08-21T14:17:53.454+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,377,ok,,,0.1.0
+2026-08-21T14:17:54.525+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,452,452,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-21T14:18:15.624+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,,,,,,2198,155,1035,1039,client_disconnect,client_disconnect,The caller went away before the reply finished.,0.1.0
+2026-08-21T14:18:15.637+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,,,,,,181097,162,1855,1855,stream_error,overloaded_error,Overloaded,0.1.0
+2026-08-21T14:18:16.672+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,2184,119,984,984,http_error,529,overloaded_error: Overloaded,0.1.0
+2026-08-21T14:18:18.032+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,,,,,,181097,165,1600,1601,stream_error,overloaded_error,Overloaded,0.1.0
+2026-08-21T14:18:20.651+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,,,,,,181097,167,1815,1819,client_disconnect,client_disconnect,The caller went away before the reply finished.,0.1.0
+2026-08-21T14:18:22.472+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,181083,119,2434,2434,http_error,529,overloaded_error: Overloaded,0.1.0
+2026-08-21T14:18:25.529+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,181083,119,2511,2515,http_error,529,overloaded_error: Overloaded,0.1.0
+2026-08-21T14:18:29.198+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,181083,119,2109,2110,http_error,529,overloaded_error: Overloaded,0.1.0
+2026-08-21T14:18:33.378+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,181083,119,2587,2588,http_error,529,overloaded_error: Overloaded,0.1.0
+2026-08-21T14:18:40.774+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,181083,119,2156,2158,http_error,529,overloaded_error: Overloaded,0.1.0
+2026-08-21T14:18:52.533+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,181083,119,1965,1967,http_error,529,overloaded_error: Overloaded,0.1.0
+2026-08-21T14:19:13.520+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,2,639,0,64846,end_turn,181083,3144,11971,11973,ok,,,0.1.0
+2026-08-21T14:20:13.646+00:00,session-01,,lmstudio,qwen/qwen3.5-9b,/v1/messages,false,31,0,0,,max_tokens,466,287,3562,3564,ok,,,0.1.0
+2026-08-21T14:20:43.246+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,231,ok,,,0.1.0
+2026-08-21T14:20:44.078+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,504,504,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-21T14:20:54.400+00:00,session-02,,lmstudio,qwen/qwen3.5-9b,/v1/messages,false,31,0,0,,max_tokens,466,287,463,465,ok,,,0.1.0
+2026-08-21T14:21:21.391+00:00,session-02,,lmstudio,qwen/qwen3.5-9b,/v1/messages,true,370,143,0,,end_turn,2169,2028,2915,7326,ok,,,0.1.0
+2026-08-21T14:21:21.390+00:00,session-02,,lmstudio,qwen/qwen3.5-9b,/v1/messages,true,,,,,,173436,246,7462,7463,stream_error,api_error,"The number of tokens to keep from the initial prompt is greater than the context length. Try to load the model with a larger context length, or provide a shorter input",0.1.0
+2026-08-21T14:21:28.864+00:00,session-02,,lmstudio,qwen/qwen3.5-9b,/v1/messages,false,,,,,,173422,225,166,167,http_error,500,"api_error: The number of tokens to keep from the initial prompt is greater than the context length. Try to load the model with a larger context length, or provide a shorter input",0.1.0
+2026-08-21T14:21:29.548+00:00,session-02,,lmstudio,qwen/qwen3.5-9b,/v1/messages,false,,,,,,173422,225,121,122,http_error,500,"api_error: The number of tokens to keep from the initial prompt is greater than the context length. Try to load the model with a larger context length, or provide a shorter input",0.1.0
+2026-08-21T14:21:30.785+00:00,session-02,,lmstudio,qwen/qwen3.5-9b,/v1/messages,false,,,,,,173422,225,123,123,http_error,500,"api_error: The number of tokens to keep from the initial prompt is greater than the context length. Try to load the model with a larger context length, or provide a shorter input",0.1.0
+2026-08-21T14:21:32.983+00:00,session-02,,lmstudio,qwen/qwen3.5-9b,/v1/messages,false,,,,,,173422,225,150,152,http_error,500,"api_error: The number of tokens to keep from the initial prompt is greater than the context length. Try to load the model with a larger context length, or provide a shorter input",0.1.0
+2026-08-21T14:21:37.300+00:00,session-02,,lmstudio,qwen/qwen3.5-9b,/v1/messages,false,,,,,,173422,225,148,148,http_error,500,"api_error: The number of tokens to keep from the initial prompt is greater than the context length. Try to load the model with a larger context length, or provide a shorter input",0.1.0
+2026-08-21T14:21:47.010+00:00,session-02,,lmstudio,qwen/qwen3.5-9b,/v1/messages,false,,,,,,173422,225,118,118,http_error,500,"api_error: The number of tokens to keep from the initial prompt is greater than the context length. Try to load the model with a larger context length, or provide a shorter input",0.1.0
+2026-08-21T14:24:09.490+00:00,session-02,,lmstudio,google/gemma-4-e4b,/v1/messages,false,33,0,0,,max_tokens,469,289,1387,1388,ok,,,0.1.0
+2026-08-21T14:24:31.768+00:00,session-02,,lmstudio,google/gemma-4-e4b,/v1/messages,true,,,,,,167088,0,,49962,client_disconnect,client_disconnect,The caller went away before the reply finished.,0.1.0
+2026-08-21T14:26:29.800+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,,,,,,2198,162,1176,1178,stream_error,overloaded_error,Overloaded,0.1.0
+2026-08-21T14:26:30.987+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,2184,119,995,996,http_error,529,overloaded_error: Overloaded,0.1.0
+2026-08-21T14:26:29.795+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,2,990,64846,813,end_turn,184161,7801,1367,15784,ok,,,0.1.0
+2026-08-21T14:26:45.611+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,504,11,65659,990,end_turn,189619,1627,1330,1934,ok,,,0.1.0
+2026-08-21T14:26:34.058+00:00,session-02,,lmstudio,google/gemma-4-e4b,/v1/messages,true,38705,347,22528,,end_turn,167088,42757,48882,68371,ok,,,0.1.0
+2026-08-21T14:27:42.955+00:00,session-02,,lmstudio,google/gemma-4-e4b,/v1/messages,true,38960,356,38656,,end_turn,168782,44647,3800,23355,ok,,,0.1.0
+2026-08-21T14:29:34.621+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,218,ok,,,0.1.0
+2026-08-21T14:29:35.363+00:00,session-03,,lmstudio,google/gemma-4-e4b,/v1/messages,false,14,0,0,,max_tokens,316,289,449,450,ok,,,0.1.0
+2026-08-21T14:29:47.405+00:00,session-03,,anthropic,claude-opus-5,/v1/messages,true,711,16,0,0,end_turn,2198,1638,2119,3134,ok,,,0.1.0
+2026-08-21T14:29:47.420+00:00,session-03,,anthropic,claude-opus-5,/v1/messages,true,2,305,48416,16582,tool_use,181690,7537,1905,5713,ok,,,0.1.0
+2026-08-21T14:29:54.183+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,168,ok,,,0.1.0
+2026-08-21T14:29:54.747+00:00,session-04,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,482,483,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-21T14:29:53.700+00:00,session-03,,anthropic,claude-opus-5,/v1/messages,true,2,642,64998,933,end_turn,184914,4465,897,7483,ok,,,0.1.0
+2026-08-21T14:33:01.255+00:00,session-03,,anthropic,claude-opus-5,/v1/messages,true,94,77,65931,642,end_turn,187053,2195,1129,2332,ok,,,0.1.0
+2026-08-21T14:40:41.987+00:00,,,anthropic,,/,,,,,,,0,0,,269,http_error,404,,0.1.0
+2026-08-21T14:40:42.278+00:00,,,anthropic,,/favicon.ico,,,,,,,0,0,,94,http_error,404,,0.1.0
+2026-08-24T09:30:32.231+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,323,ok,,,0.1.0
+2026-08-24T09:30:33.102+00:00,session-05,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,480,481,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T09:39:38.582+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,223,ok,,,0.1.0
+2026-08-24T09:39:39.180+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,399,400,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T09:40:34.317+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,144,0,64830,tool_use,180964,5492,1460,2994,ok,,,0.1.0
+2026-08-24T09:40:34.320+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,715,22,0,0,end_turn,2212,1611,2069,3179,ok,,,0.1.0
+2026-08-24T09:40:37.881+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,300,64830,1698,tool_use,185796,11192,997,4065,ok,,,0.1.0
+2026-08-24T09:40:41.964+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,90,66528,473,tool_use,187604,3414,1161,1788,ok,,,0.1.0
+2026-08-24T09:40:43.772+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,298,67001,3961,tool_use,199006,8618,1208,4452,ok,,,0.1.0
+2026-08-24T09:40:48.253+00:00,session-06,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,138545,114,444,447,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T09:40:49.178+00:00,session-06,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,138545,114,419,420,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T09:40:50.522+00:00,session-06,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,138545,114,544,545,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T09:40:53.058+00:00,session-06,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,138545,114,399,406,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T09:40:56.834+00:00,session-06,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,138545,114,397,399,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T09:40:57.247+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,138543,114,549,551,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T09:40:58.260+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,138543,114,378,381,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T09:40:59.608+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,138543,114,460,469,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T09:41:01.652+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,138543,114,383,385,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T09:41:05.554+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,138543,114,429,432,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T09:41:06.057+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,158,70962,425,tool_use,200857,6645,1107,2458,ok,,,0.1.0
+2026-08-24T09:41:08.530+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,350,71387,1889,tool_use,206410,6623,1173,5872,ok,,,0.1.0
+2026-08-24T09:41:14.425+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,149,73276,864,tool_use,209590,5407,1492,2453,ok,,,0.1.0
+2026-08-24T09:41:16.888+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,305,74140,2536,tool_use,216739,7626,1279,5517,ok,,,0.1.0
+2026-08-24T09:41:22.411+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,1,220,76676,1940,tool_use,222813,8865,1698,4567,ok,,,0.1.0
+2026-08-24T09:41:27.052+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,562,78616,452,tool_use,224451,12264,1370,7979,ok,,,0.1.0
+2026-08-24T09:41:35.089+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,703,79068,1903,tool_use,228970,17713,2638,11092,ok,,,0.1.0
+2026-08-24T09:41:46.279+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,886,80971,1322,tool_use,232525,13688,1257,12663,ok,,,0.1.0
+2026-08-24T09:41:59.004+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,734,82293,1863,tool_use,237727,12026,1084,10911,ok,,,0.1.0
+2026-08-24T09:42:09.961+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,3113,84156,1242,end_turn,241559,18136,1145,44165,ok,,,0.1.0
+2026-08-24T09:45:54.221+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,94,76,85398,3113,end_turn,252185,1957,1184,2792,ok,,,0.1.0
+2026-08-24T10:18:54.109+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,346,88511,52,tool_use,252110,11185,1851,6330,ok,,,0.1.0
+2026-08-24T10:19:00.480+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,271,88563,571,tool_use,254135,11114,1365,3561,ok,,,0.1.0
+2026-08-24T10:19:04.075+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,1,149,89134,1399,tool_use,257982,5445,1169,2795,ok,,,0.1.0
+2026-08-24T10:19:06.877+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,830,90533,935,tool_use,260550,17532,965,11667,ok,,,0.1.0
+2026-08-24T10:19:18.556+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,142478,114,435,435,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:19:19.400+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,142478,114,488,489,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:19:20.669+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,142478,114,389,389,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:19:22.685+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,142478,114,416,417,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:19:26.136+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,142478,114,490,490,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:19:26.659+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,203,91468,957,tool_use,264086,6350,1397,3023,ok,,,0.1.0
+2026-08-24T10:19:29.694+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,903,92425,564,end_turn,266029,6450,1399,14772,ok,,,0.1.0
+2026-08-24T10:19:44.494+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,504,12,92989,903,end_turn,270234,1857,2228,2401,ok,,,0.1.0
+2026-08-24T10:23:52.296+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,1724,93892,61,tool_use,268997,19302,1209,24384,ok,,,0.1.0
+2026-08-24T10:24:16.705+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,143065,114,383,383,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:24:17.577+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,143065,114,463,464,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:24:18.870+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,143065,114,417,418,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:24:20.862+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,143065,114,868,869,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:24:25.339+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,143065,114,466,467,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:24:25.842+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,104,93953,1889,tool_use,276036,4052,2589,3210,ok,,,0.1.0
+2026-08-24T10:24:29.062+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,1133,95842,1287,tool_use,279451,20698,2239,15449,ok,,,0.1.0
+2026-08-24T10:24:44.556+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,143847,114,363,363,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:24:45.305+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,143847,114,435,435,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:24:46.526+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,143847,114,442,442,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:24:48.825+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,143847,114,399,400,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:24:52.854+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,143847,114,392,392,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:24:53.253+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,357,97129,1260,tool_use,283611,7732,1466,5767,ok,,,0.1.0
+2026-08-24T10:24:59.055+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,110,98389,433,tool_use,285400,4321,1740,2470,ok,,,0.1.0
+2026-08-24T10:25:01.532+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,1,172,98822,336,tool_use,286432,7044,2129,3390,ok,,,0.1.0
+2026-08-24T10:25:04.948+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,126,99158,167,tool_use,286880,5610,1880,2704,ok,,,0.1.0
+2026-08-24T10:25:07.671+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,382,99325,184,tool_use,287392,6306,1667,6679,ok,,,0.1.0
+2026-08-24T10:25:14.367+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,1507,99509,1190,tool_use,291020,18053,1754,23351,ok,,,0.1.0
+2026-08-24T10:25:37.789+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,144430,114,809,809,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:25:39.008+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,144430,114,420,421,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:25:40.396+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,144430,114,470,470,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:25:42.424+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,144430,114,562,563,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:25:46.898+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,144430,114,490,491,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:25:47.398+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,3106,100699,1634,end_turn,297204,18400,1953,44331,ok,,,0.1.0
+2026-08-24T10:26:31.796+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,504,16,102333,3106,end_turn,309051,2120,1777,2316,ok,,,0.1.0
+2026-08-24T10:31:25.614+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,331,105439,39,tool_use,307745,7296,2100,5571,ok,,,0.1.0
+2026-08-24T10:31:31.166+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2934,1437,0,0,end_turn,801,53094,980,17500,ok,,,0.1.0
+2026-08-24T10:31:31.165+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2926,2142,0,0,end_turn,813,63613,951,28228,ok,,,0.1.0
+2026-08-24T10:31:59.425+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,1785,374,105478,2629,tool_use,320839,13391,1808,6050,ok,,,0.1.0
+2026-08-24T10:32:05.096+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145074,114,484,484,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:05.960+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145074,114,466,466,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:07.248+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145074,114,411,411,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:09.398+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145074,114,379,379,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:13.704+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145074,114,395,396,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:05.476+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2931,1255,0,0,end_turn,832,43242,991,17333,ok,,,0.1.0
+2026-08-24T10:32:29.686+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145564,114,501,502,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:22.815+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,1,469,108107,3942,tool_use,327792,17797,2548,8177,ok,,,0.1.0
+2026-08-24T10:32:30.618+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145564,114,646,646,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:32.205+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145564,114,799,800,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:34.818+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145564,114,542,542,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:38.461+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145564,114,367,367,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:38.833+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145931,114,540,540,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:39.837+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145931,114,421,422,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:41.259+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145931,114,566,566,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:43.390+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145931,114,472,472,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:47.170+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,false,,,,,,145931,114,569,570,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T10:32:47.746+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,431,112049,764,tool_use,330423,9874,1847,7446,ok,,,0.1.0
+2026-08-24T10:33:00.119+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,4845,865,0,0,end_turn,14396,7357,1250,12151,ok,,,0.1.0
+2026-08-24T10:33:12.279+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,3505,112813,1344,end_turn,335367,19870,2304,46649,ok,,,0.1.0
+2026-08-24T10:33:58.980+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,504,11,114157,3505,end_turn,348076,1875,2196,2688,ok,,,0.1.0
+2026-08-24T10:36:59.032+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,94,78,117662,0,end_turn,346889,3021,1770,2831,ok,,,0.1.0
+2026-08-24T12:05:21.822+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,1546,0,117701,tool_use,346750,18107,3016,23636,ok,,,0.1.0
+2026-08-24T12:05:48.633+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,605,117701,2026,tool_use,353059,19038,1868,8134,ok,,,0.1.0
+2026-08-24T12:05:59.038+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,1592,119727,825,tool_use,355635,26761,1943,23650,ok,,,0.1.0
+2026-08-24T12:06:30.898+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,1,1227,120552,2088,tool_use,362393,25103,2659,17862,ok,,,0.1.0
+2026-08-24T12:07:01.662+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,1561,122640,1769,tool_use,367448,29316,2321,21806,ok,,,0.1.0
+2026-08-24T12:07:46.004+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,3934,124409,1986,end_turn,373655,23010,1987,57597,ok,,,0.1.0
+2026-08-24T12:11:43.667+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,94,86,126395,3934,end_turn,387647,4573,3485,4924,ok,,,0.1.0
+2026-08-24T12:55:24.202+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,3289,130329,87,tool_use,387701,89376,2365,48067,ok,,,0.1.0
+2026-08-24T12:56:12.339+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,771,130416,3419,tool_use,398940,31149,1666,9111,ok,,,0.1.0
+2026-08-24T13:04:06.704+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,656,133835,1234,tool_use,401541,15271,2163,9396,ok,,,0.1.0
+2026-08-24T13:04:20.489+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,1,2812,135069,1103,end_turn,404801,16921,2129,41592,ok,,,0.1.0
+2026-08-24T13:08:02.157+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,94,101,136172,2811,end_turn,414618,3710,2129,3752,ok,,,0.1.0
+2026-08-24T13:19:51.720+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,3442,138983,69,tool_use,414590,86880,1596,46931,ok,,,0.1.0
+2026-08-24T13:20:38.695+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,415,139052,3571,tool_use,425341,15973,1745,5780,ok,,,0.1.0
+2026-08-24T13:22:01.370+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,703,142623,817,tool_use,427277,18264,2424,11542,ok,,,0.1.0
+2026-08-24T13:22:12.944+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,623,143440,859,tool_use,430081,24255,2047,7628,ok,,,0.1.0
+2026-08-24T13:23:07.609+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,2,2446,144299,1280,end_turn,432894,15650,2952,40389,ok,,,0.1.0
+2026-08-24T13:26:48.057+00:00,session-06,,anthropic,claude-opus-5,/v1/messages,true,94,87,145579,2446,end_turn,441765,4087,2389,4019,ok,,,0.1.0
+2026-08-24T13:36:56.388+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,247,ok,,,0.1.0
+2026-08-24T13:36:59.092+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,445,446,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:37:52.027+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,715,17,0,0,end_turn,2210,1615,1743,2563,ok,,,0.1.0
+2026-08-24T13:37:52.025+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,121,48390,15116,tool_use,177632,4796,1465,2897,ok,,,0.1.0
+2026-08-24T13:37:55.536+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,202,63506,2628,tool_use,185065,7342,1133,3438,ok,,,0.1.0
+2026-08-24T13:37:59.024+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,692,66134,5931,tool_use,202524,9884,1533,11156,ok,,,0.1.0
+2026-08-24T13:38:10.219+00:00,session-07,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,135105,114,471,471,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:11.114+00:00,session-07,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,135105,114,425,426,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:12.495+00:00,session-07,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,135105,114,447,447,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:14.530+00:00,session-07,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,135105,114,420,421,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:18.834+00:00,session-07,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,135105,114,417,418,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:19.259+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,false,,,,,,135103,114,398,399,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:20.107+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,false,,,,,,135103,114,417,418,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:21.489+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,false,,,,,,135103,114,457,459,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:23.529+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,false,,,,,,135103,114,388,389,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:27.780+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,false,,,,,,135103,114,414,416,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:28.263+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,186,72065,790,tool_use,205866,5863,1254,2892,ok,,,0.1.0
+2026-08-24T13:38:31.161+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,185,72855,253,tool_use,206916,6812,1634,3134,ok,,,0.1.0
+2026-08-24T13:38:34.304+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,false,,,,,,135722,114,431,432,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:35.116+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,false,,,,,,135722,114,438,438,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:36.383+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,false,,,,,,135722,114,522,524,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:38.605+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,false,,,,,,135722,114,451,451,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:42.163+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,false,,,,,,135722,114,402,404,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-24T13:38:42.574+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,331,73108,312,tool_use,208338,5551,1809,6140,ok,,,0.1.0
+2026-08-24T13:38:48.726+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,318,73420,2041,tool_use,215029,8999,1183,5339,ok,,,0.1.0
+2026-08-24T13:38:56.483+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,175,75461,487,tool_use,217051,4876,1212,3135,ok,,,0.1.0
+2026-08-24T13:38:59.677+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,588,75948,1524,tool_use,221770,10279,1701,9795,ok,,,0.1.0
+2026-08-24T13:39:09.520+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,1140,77472,757,end_turn,224757,8290,1223,17461,ok,,,0.1.0
+2026-08-24T13:39:27.000+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,504,14,78229,1139,end_turn,229989,1751,1382,2484,ok,,,0.1.0
+2026-08-24T13:49:46.110+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1090,79368,310,tool_use,229507,13629,1456,14021,ok,,,0.1.0
+2026-08-24T13:50:44.509+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,497,79678,1832,tool_use,235040,14336,1266,6347,ok,,,0.1.0
+2026-08-24T13:50:53.994+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,129,81510,1129,tool_use,238430,4410,1369,2311,ok,,,0.1.0
+2026-08-24T13:50:56.316+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,159,82639,2874,tool_use,246410,5637,1003,2924,ok,,,0.1.0
+2026-08-24T13:50:59.248+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,134,85513,904,tool_use,249313,4571,1522,2690,ok,,,0.1.0
+2026-08-24T13:51:01.948+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,452,86417,1824,tool_use,254480,6767,1431,7444,ok,,,0.1.0
+2026-08-24T13:51:09.445+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,259,88241,967,tool_use,257807,6593,1267,4294,ok,,,0.1.0
+2026-08-24T13:51:13.750+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,175,89208,1628,tool_use,262705,5317,1979,3718,ok,,,0.1.0
+2026-08-24T13:51:17.514+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,879,90836,2098,tool_use,269232,9358,1129,13510,ok,,,0.1.0
+2026-08-24T13:51:31.033+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,213,92934,3616,tool_use,280940,8173,2090,4537,ok,,,0.1.0
+2026-08-24T13:51:38.150+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,124,96550,1093,tool_use,284443,3742,1335,2361,ok,,,0.1.0
+2026-08-24T13:51:40.526+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,451,97643,1643,tool_use,289213,8716,2031,7835,ok,,,0.1.0
+2026-08-24T13:52:01.324+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,452,99286,752,tool_use,291909,22403,1475,5401,ok,,,0.1.0
+2026-08-24T13:52:10.701+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,327,100038,1591,tool_use,295501,11526,1246,5876,ok,,,0.1.0
+2026-08-24T13:52:22.879+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,28878,996,0,0,end_turn,61265,7843,1568,15062,ok,,,0.1.0
+2026-08-24T13:52:38.001+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2080,101629,1326,tool_use,299699,14928,1024,29680,ok,,,0.1.0
+2026-08-24T13:53:07.698+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,192,102955,2559,tool_use,308759,7238,1597,3543,ok,,,0.1.0
+2026-08-24T13:53:11.344+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1142,105514,480,tool_use,309783,12713,1025,16798,ok,,,0.1.0
+2026-08-24T13:53:28.193+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,400,105994,1652,tool_use,315585,11757,1065,5279,ok,,,0.1.0
+2026-08-24T13:53:33.553+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,160,107646,540,tool_use,317498,6453,1831,2760,ok,,,0.1.0
+2026-08-24T13:53:36.365+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,3419,108186,386,tool_use,318552,84098,1439,49499,ok,,,0.1.0
+2026-08-24T13:59:54.602+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,562,108572,3782,tool_use,330595,10240,1246,7716,ok,,,0.1.0
+2026-08-24T14:00:09.713+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,582,112354,745,tool_use,333305,14131,1038,7134,ok,,,0.1.0
+2026-08-24T14:00:20.201+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1227,113099,817,tool_use,335834,10445,1037,17042,ok,,,0.1.0
+2026-08-24T14:00:37.295+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,249,113916,1943,tool_use,342755,9675,1749,4493,ok,,,0.1.0
+2026-08-24T14:01:55.817+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,1024,115859,428,tool_use,344568,13804,1397,13636,ok,,,0.1.0
+2026-08-24T14:02:32.040+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,86,116287,1252,tool_use,348704,3298,1654,2123,ok,,,0.1.0
+2026-08-24T14:03:04.414+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,911,117539,191,tool_use,349266,23874,1478,12832,ok,,,0.1.0
+2026-08-24T14:03:30.767+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,724,117730,1081,tool_use,353165,24404,1983,10183,ok,,,0.1.0
+2026-08-24T14:03:41.003+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,201,118811,828,tool_use,355947,7702,1555,3201,ok,,,0.1.0
+2026-08-24T14:03:48.204+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1056,119639,418,tool_use,356971,11929,1562,15557,ok,,,0.1.0
+2026-08-24T14:17:40.079+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,129,120057,1226,tool_use,361493,5335,1860,2698,ok,,,0.1.0
+2026-08-24T14:17:44.882+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,727,121283,136,tool_use,361910,9250,1699,11357,ok,,,0.1.0
+2026-08-24T14:18:40.002+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,1524,121419,1700,tool_use,367898,13038,1841,23672,ok,,,0.1.0
+2026-08-24T14:19:03.720+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,372,123119,2174,tool_use,375654,7012,1527,6245,ok,,,0.1.0
+2026-08-24T14:20:25.635+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,7044,125293,432,tool_use,377520,388368,1366,102250,ok,,,0.1.0
+2026-08-24T14:22:34.180+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1079,125725,7139,tool_use,396743,55032,1411,17514,ok,,,0.1.0
+2026-08-24T14:26:45.229+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,731,132864,1174,tool_use,400590,43115,1878,11648,ok,,,0.1.0
+2026-08-24T14:26:56.900+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,252,134867,0,tool_use,403046,6660,1597,5277,ok,,,0.1.0
+2026-08-24T14:27:05.189+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1064,136459,0,tool_use,407166,9765,1213,15434,ok,,,0.1.0
+2026-08-24T14:32:12.392+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,538,136459,1435,tool_use,412393,9476,1328,8304,ok,,,0.1.0
+2026-08-24T14:36:36.672+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,517,137894,640,tool_use,414880,28826,2010,8973,ok,,,0.1.0
+2026-08-24T14:37:48.427+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1383,138534,704,end_turn,416824,9863,1662,22139,ok,,,0.1.0
+2026-08-24T14:38:10.598+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,504,18,139238,1383,end_turn,422898,1664,1245,2175,ok,,,0.1.0
+2026-08-24T14:41:46.618+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,985,48390,92656,tool_use,422698,10120,2675,16364,ok,,,0.1.0
+2026-08-24T14:42:11.237+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,695,141046,1194,tool_use,427478,27695,1539,9593,ok,,,0.1.0
+2026-08-24T14:42:20.887+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,197,142240,797,tool_use,430083,8190,1863,3491,ok,,,0.1.0
+2026-08-24T14:42:27.741+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1593,143037,783,tool_use,431964,42812,1165,20796,ok,,,0.1.0
+2026-08-24T14:42:48.574+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,195,143820,1825,tool_use,437862,7810,1812,3521,ok,,,0.1.0
+2026-08-24T14:45:55.109+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1068,145645,1144,tool_use,440226,10246,1670,16818,ok,,,0.1.0
+2026-08-24T14:46:11.950+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,220,146789,1382,tool_use,445305,6483,1449,4209,ok,,,0.1.0
+2026-08-24T14:46:16.171+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,145,148171,674,tool_use,447846,4608,1105,2363,ok,,,0.1.0
+2026-08-24T14:46:18.555+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2155,148845,826,tool_use,450038,42516,1104,28743,ok,,,0.1.0
+2026-08-24T14:46:47.361+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,205,149671,2259,tool_use,457557,8336,1424,3131,ok,,,0.1.0
+2026-08-24T14:51:11.006+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2336,151930,715,tool_use,459317,30629,1548,31832,ok,,,0.1.0
+2026-08-24T14:51:42.895+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,224,152645,2567,tool_use,468073,8469,1938,3847,ok,,,0.1.0
+2026-08-24T14:51:49.832+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2400,155212,2158,tool_use,472374,18974,1219,35290,ok,,,0.1.0
+2026-08-24T14:52:28.936+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,493,157370,3683,tool_use,483959,7715,1201,7918,ok,,,0.1.0
+2026-08-24T14:52:36.891+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2398,161053,696,tool_use,486827,56980,1260,31722,ok,,,0.1.0
+2026-08-24T14:53:08.680+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,231,161749,2503,tool_use,495050,9067,3363,5229,ok,,,0.1.0
+2026-08-24T14:54:36.964+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2931,164252,415,end_turn,496067,17811,2058,44295,ok,,,0.1.0
+2026-08-24T15:00:18.074+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,266,164667,2948,tool_use,506195,6049,1449,4437,ok,,,0.1.0
+2026-08-24T15:00:24.958+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2931,1554,0,0,end_turn,821,52890,1182,19330,ok,,,0.1.0
+2026-08-24T15:00:44.298+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,646,167615,2430,tool_use,513653,12362,1606,9795,ok,,,0.1.0
+2026-08-24T15:00:55.364+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,4952,1474,0,0,end_turn,13859,10176,1523,17388,ok,,,0.1.0
+2026-08-24T15:01:12.760+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,628,170045,2122,tool_use,520309,13812,1329,8952,ok,,,0.1.0
+2026-08-24T15:02:07.647+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,5236,947,0,0,end_turn,13959,7520,1496,13764,ok,,,0.1.0
+2026-08-24T15:02:21.421+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1237,172167,1578,tool_use,525532,17767,1614,18437,ok,,,0.1.0
+2026-08-24T15:02:40.652+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,412,173745,1924,tool_use,532627,9710,1272,5023,ok,,,0.1.0
+2026-08-24T15:02:45.693+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1231,175669,5687,tool_use,550078,16164,3404,17959,ok,,,0.1.0
+2026-08-24T15:03:06.493+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,25519,2379,0,0,end_turn,101809,13107,1103,26007,ok,,,0.1.0
+2026-08-24T15:03:32.560+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,3407,181356,3613,end_turn,562539,19816,1394,45607,ok,,,0.1.0
+2026-08-24T15:08:59.706+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,940,184969,3425,tool_use,574420,12222,2129,13912,ok,,,0.1.0
+2026-08-24T15:09:19.601+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,83,188394,1119,tool_use,578879,3171,1683,2261,ok,,,0.1.0
+2026-08-24T15:09:21.869+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,186,189513,485,tool_use,580032,6812,1461,3328,ok,,,0.1.0
+2026-08-24T15:09:26.960+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,147,189998,1105,tool_use,583650,4691,2000,3733,ok,,,0.1.0
+2026-08-24T15:09:30.716+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1515,191103,1440,tool_use,587722,16635,1551,19962,ok,,,0.1.0
+2026-08-24T15:10:20.970+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,298,192543,1830,tool_use,593736,7421,1626,5105,ok,,,0.1.0
+2026-08-24T15:10:30.223+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2512,194373,612,tool_use,595893,20322,1585,36915,ok,,,0.1.0
+2026-08-24T15:11:07.198+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2304,194985,2862,tool_use,606460,48055,1884,32773,ok,,,0.1.0
+2026-08-24T15:13:45.545+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,2603,197847,2550,tool_use,614958,16731,1468,34304,ok,,,0.1.0
+2026-08-24T15:14:27.807+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,681,200397,2636,tool_use,623930,30080,1564,6996,ok,,,0.1.0
+2026-08-24T15:14:55.377+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,164,203033,757,tool_use,625781,7723,1641,2978,ok,,,0.1.0
+2026-08-24T15:15:03.800+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,168,203790,179,tool_use,626299,7037,1557,2745,ok,,,0.1.0
+2026-08-24T15:15:11.388+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,203,203969,183,tool_use,626828,8764,1753,3304,ok,,,0.1.0
+2026-08-24T15:15:17.075+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,177,204152,431,tool_use,627823,7485,1768,3946,ok,,,0.1.0
+2026-08-24T15:15:29.186+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,85,204583,193,tool_use,628853,3563,1711,2496,ok,,,0.1.0
+2026-08-24T15:15:42.399+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1857,204776,100,end_turn,629217,11563,1737,27337,ok,,,0.1.0
+2026-08-24T15:16:09.751+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,504,15,204876,1857,end_turn,636840,1639,1728,2504,ok,,,0.1.0
+2026-08-24T15:19:06.187+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2371,206733,79,tool_use,635649,17937,1837,35159,ok,,,0.1.0
+2026-08-24T15:19:41.436+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,216,206812,2542,tool_use,645361,8590,1907,5808,ok,,,0.1.0
+2026-08-24T15:19:47.275+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,446,209354,230,tool_use,645932,10522,1603,6483,ok,,,0.1.0
+2026-08-24T15:19:53.808+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1131,209584,1628,tool_use,651088,16876,1517,17189,ok,,,0.1.0
+2026-08-24T15:20:12.056+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,217,211212,1803,tool_use,658045,9307,1868,3515,ok,,,0.1.0
+2026-08-24T15:20:15.605+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2441,213015,2622,tool_use,665738,19721,1484,34791,ok,,,0.1.0
+2026-08-24T15:21:01.044+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2841,215637,2475,tool_use,675276,20164,1226,36238,ok,,,0.1.0
+2026-08-24T15:22:48.404+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,583,218112,2942,tool_use,685493,21710,1268,6627,ok,,,0.1.0
+2026-08-24T15:22:57.403+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,164,221054,792,tool_use,688161,6579,1402,2740,ok,,,0.1.0
+2026-08-24T15:23:02.602+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,171,221846,178,tool_use,688652,7596,1454,2605,ok,,,0.1.0
+2026-08-24T15:23:17.532+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,93,222024,186,tool_use,689188,4000,1405,2239,ok,,,0.1.0
+2026-08-24T15:23:34.389+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,362,222210,712,tool_use,690994,5762,1536,6124,ok,,,0.1.0
+2026-08-24T15:23:40.555+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,379,222922,377,tool_use,692773,18731,1441,5907,ok,,,0.1.0
+2026-08-24T15:23:46.514+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1896,223299,452,end_turn,694043,11662,1851,29106,ok,,,0.1.0
+2026-08-24T15:24:15.671+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,504,28,223751,1896,end_turn,700888,1663,1608,2734,ok,,,0.1.0
+2026-08-24T15:30:40.119+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,94,,225647,0,,699701,912,1672,2035,client_disconnect,client_disconnect,The caller went away before the reply finished.,0.1.0
+2026-08-24T15:35:14.245+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,4712,225647,92,tool_use,699730,47214,3014,58063,ok,,,0.1.0
+2026-08-24T15:37:37.547+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,351,225739,4789,tool_use,715541,15264,5792,8500,ok,,,0.1.0
+2026-08-24T15:37:46.070+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,245,230528,430,tool_use,716627,10853,3567,5675,ok,,,0.1.0
+2026-08-24T15:37:51.849+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,612,230958,415,tool_use,717885,10642,3771,10925,ok,,,0.1.0
+2026-08-24T15:38:24.452+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,169,231373,626,tool_use,720355,7418,4240,5438,ok,,,0.1.0
+2026-08-24T15:38:33.183+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1240,231999,184,tool_use,720890,64579,5294,20412,ok,,,0.1.0
+2026-08-24T15:38:53.619+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,527,232183,1338,tool_use,724503,7695,7953,13840,ok,,,0.1.0
+2026-08-24T15:39:07.513+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,301,233521,1547,tool_use,729233,13183,6131,8785,ok,,,0.1.0
+2026-08-24T15:39:16.405+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,181,235068,3640,tool_use,739051,6205,6416,8435,ok,,,0.1.0
+2026-08-24T15:39:24.923+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,582,238708,1201,tool_use,742672,17160,2504,9421,ok,,,0.1.0
+2026-08-24T15:39:34.370+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,115,239909,810,tool_use,745507,5102,2479,3603,ok,,,0.1.0
+2026-08-24T15:39:38.020+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,814,240719,129,tool_use,745900,45749,1743,12370,ok,,,0.1.0
+2026-08-24T15:39:50.458+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,499,240848,892,tool_use,748412,7778,4885,11842,ok,,,0.1.0
+2026-08-24T15:40:02.364+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,82,241740,515,tool_use,750763,3589,6737,7375,ok,,,0.1.0
+2026-08-24T15:40:09.851+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,855,242255,97,tool_use,751112,11379,4458,16921,ok,,,0.1.0
+2026-08-24T15:41:03.443+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1683,242352,945,tool_use,755044,58828,3394,27802,ok,,,0.1.0
+2026-08-24T15:41:31.259+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,105,243297,1781,tool_use,761392,4318,8870,9644,ok,,,0.1.0
+2026-08-24T15:41:40.974+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,399,245078,250,tool_use,762259,23764,1798,6729,ok,,,0.1.0
+2026-08-24T15:41:47.756+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,989,245328,474,end_turn,763686,6825,4955,18540,ok,,,0.1.0
+2026-08-24T15:42:06.304+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,504,15,245802,989,end_turn,768095,1647,4937,5757,ok,,,0.1.0
+2026-08-24T15:45:32.508+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,439,20,358,358,ok,,,0.1.0
+2026-08-24T15:45:32.516+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,1892,20,354,355,ok,,,0.1.0
+2026-08-24T15:45:32.510+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,872,20,363,363,ok,,,0.1.0
+2026-08-24T15:45:32.513+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,1328,20,361,362,ok,,,0.1.0
+2026-08-24T15:45:32.509+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,598,20,367,368,ok,,,0.1.0
+2026-08-24T15:45:32.509+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,506,20,368,369,ok,,,0.1.0
+2026-08-24T15:45:32.510+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,1783,20,373,373,ok,,,0.1.0
+2026-08-24T15:45:32.506+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,172,19,379,380,ok,,,0.1.0
+2026-08-24T15:45:32.513+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,200,19,373,374,ok,,,0.1.0
+2026-08-24T15:45:32.516+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,39726,22,374,375,ok,,,0.1.0
+2026-08-24T15:45:32.515+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,31072,22,376,377,ok,,,0.1.0
+2026-08-24T15:45:32.512+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,355,19,381,381,ok,,,0.1.0
+2026-08-24T15:45:32.514+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,4250,21,380,381,ok,,,0.1.0
+2026-08-24T15:45:32.517+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,18492,21,385,385,ok,,,0.1.0
+2026-08-24T15:45:32.507+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,1302,20,431,432,ok,,,0.1.0
+2026-08-24T15:45:32.514+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,752,20,447,448,ok,,,0.1.0
+2026-08-24T15:45:32.510+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,2218,20,453,455,ok,,,0.1.0
+2026-08-24T15:45:32.511+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,361,19,452,454,ok,,,0.1.0
+2026-08-24T15:45:32.512+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,2110,20,453,454,ok,,,0.1.0
+2026-08-24T15:45:32.895+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,61729,22,382,383,ok,,,0.1.0
+2026-08-24T15:45:33.280+00:00,session-07,,anthropic,claude-opus-5,/v1/messages/count_tokens,false,,,,,,1892,20,274,275,ok,,,0.1.0
+2026-08-24T15:45:52.497+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,3203,246791,3607,tool_use,773195,73771,1773,46831,ok,,,0.1.0
+2026-08-24T15:46:39.401+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,104,250398,3301,tool_use,784481,4279,1887,2687,ok,,,0.1.0
+2026-08-24T15:46:42.135+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,415,253699,119,tool_use,784864,23624,2006,7831,ok,,,0.1.0
+2026-08-24T15:46:50.022+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,105,253818,484,tool_use,786325,4336,1904,2754,ok,,,0.1.0
+2026-08-24T15:46:52.814+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,611,254302,261,end_turn,787115,5145,1833,12165,ok,,,0.1.0
+2026-08-24T15:47:04.991+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,504,23,254563,611,end_turn,790482,1663,1884,2706,ok,,,0.1.0
+2026-08-24T15:48:05.102+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2593,255174,18,tool_use,789113,17985,2394,37058,ok,,,0.1.0
+2026-08-24T15:48:42.216+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,1719,255192,2763,tool_use,799645,39183,2039,22533,ok,,,0.1.0
+2026-08-24T15:49:04.789+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1149,257955,1793,tool_use,805788,61495,1995,15995,ok,,,0.1.0
+2026-08-24T15:49:20.854+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,787,259748,1224,tool_use,809143,40579,1905,11690,ok,,,0.1.0
+2026-08-24T15:49:32.567+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2839,260972,862,tool_use,811433,156419,1742,35791,ok,,,0.1.0
+2026-08-24T15:50:08.435+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,620,261834,2916,tool_use,819547,24459,1795,9159,ok,,,0.1.0
+2026-08-24T15:50:17.616+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,101,264750,718,tool_use,821944,4428,1830,2753,ok,,,0.1.0
+2026-08-24T15:50:20.605+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,809,265468,170,tool_use,822437,10547,2202,11656,ok,,,0.1.0
+2026-08-24T15:50:32.455+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,143,265638,1093,tool_use,826251,5727,2390,3726,ok,,,0.1.0
+2026-08-24T15:50:36.221+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,604,266731,157,tool_use,826753,35003,1802,10860,ok,,,0.1.0
+2026-08-24T15:50:47.163+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,733,266888,678,end_turn,828803,5202,2215,11089,ok,,,0.1.0
+2026-08-24T15:50:58.267+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,504,15,267566,733,end_turn,832473,2017,2085,2787,ok,,,0.1.0
+2026-08-24T15:52:13.346+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,2458,268299,12,tool_use,831093,18800,2165,37937,ok,,,0.1.0
+2026-08-24T15:52:51.331+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,564,268311,2542,tool_use,841174,10405,2476,10987,ok,,,0.1.0
+2026-08-24T15:53:25.683+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1647,270853,646,tool_use,843957,13996,1814,24858,ok,,,0.1.0
+2026-08-24T15:53:50.571+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,725,271499,2018,tool_use,851756,38115,2025,10035,ok,,,0.1.0
+2026-08-24T15:54:00.682+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,1,1223,273517,932,tool_use,854381,69034,3031,20874,ok,,,0.1.0
+2026-08-24T15:54:21.587+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,124,274449,1299,tool_use,858096,5186,2229,3359,ok,,,0.1.0
+2026-08-24T15:54:25.207+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,1612,275748,166,tool_use,858577,40738,1991,24882,ok,,,0.1.0
+2026-08-24T15:54:50.199+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,114,275914,1710,tool_use,864599,4286,1907,2782,ok,,,0.1.0
+2026-08-24T15:54:53.059+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,659,277624,129,tool_use,865004,39359,1773,12332,ok,,,0.1.0
+2026-08-24T15:55:05.463+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,101,277753,735,tool_use,867231,4716,1531,2481,ok,,,0.1.0
+2026-08-24T15:55:07.988+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,2,941,278488,319,end_turn,868173,6441,2238,13702,ok,,,0.1.0
+2026-08-24T15:58:21.777+00:00,session-07,,anthropic,claude-opus-5,/v1/messages,true,94,93,278807,941,end_turn,871433,1982,1964,3312,ok,,,0.1.0
+2026-08-25T10:33:52.890+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,302,ok,,,0.1.0
+2026-08-25T10:33:53.701+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,511,512,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T10:35:55.195+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,131,0,63624,tool_use,177949,5206,1549,2957,ok,,,0.1.0
+2026-08-25T10:35:55.200+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,734,19,0,0,end_turn,2266,1634,1717,3012,ok,,,0.1.0
+2026-08-25T10:35:58.895+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,103,63624,2822,end_turn,185807,2628,2023,3646,ok,,,0.1.0
+2026-08-25T10:36:02.551+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,504,12,66446,103,end_turn,187638,1628,1136,1851,ok,,,0.1.0
+2026-08-25T10:36:34.332+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,600,66549,57,tool_use,186405,10522,1515,8482,ok,,,0.1.0
+2026-08-25T10:36:52.682+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,146,66606,595,tool_use,188798,4986,1503,3027,ok,,,0.1.0
+2026-08-25T10:36:55.721+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,198,67201,176,tool_use,189774,6163,1309,3292,ok,,,0.1.0
+2026-08-25T10:37:07.620+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,85,67377,215,tool_use,190971,3599,1293,1850,ok,,,0.1.0
+2026-08-25T10:37:09.482+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,1142,67592,603,tool_use,192429,13047,1057,18183,ok,,,0.1.0
+2026-08-25T10:37:27.734+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,1,120,68195,1639,tool_use,198803,4322,1649,2426,ok,,,0.1.0
+2026-08-25T10:37:30.190+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,1299,69834,1347,end_turn,202825,9319,1318,19705,ok,,,0.1.0
+2026-08-25T10:40:35.727+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,531,71181,1306,tool_use,207801,9451,1364,7187,ok,,,0.1.0
+2026-08-25T10:40:42.921+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,668,72487,615,tool_use,210265,10219,1333,10401,ok,,,0.1.0
+2026-08-25T10:41:50.160+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,2269,73102,705,end_turn,213233,13814,1529,32845,ok,,,0.1.0
+2026-08-25T10:42:23.051+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,504,5,73807,2269,end_turn,222518,1607,1497,2178,ok,,,0.1.0
+2026-08-25T10:44:20.001+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,2094,76076,36,tool_use,221237,15370,1458,30789,ok,,,0.1.0
+2026-08-25T10:44:50.852+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,1898,76112,2154,end_turn,229912,12546,1140,26819,ok,,,0.1.0
+2026-08-25T10:45:17.681+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,504,5,78266,1898,end_turn,238518,1614,1589,2246,ok,,,0.1.0
+2026-08-25T10:45:47.930+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,309,80164,5,tool_use,237116,5751,1353,4945,ok,,,0.1.0
+2026-08-25T10:45:55.135+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,1,211,80169,474,tool_use,239322,5511,1754,4478,ok,,,0.1.0
+2026-08-25T10:46:01.143+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,402,80643,248,end_turn,240597,4773,1173,7537,ok,,,0.1.0
+2026-08-25T10:46:08.687+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,504,7,80891,402,end_turn,243837,1613,1037,1710,ok,,,0.1.0
+2026-08-25T10:46:18.641+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,1774,81293,4,tool_use,242426,14102,1320,27434,ok,,,0.1.0
+2026-08-25T10:46:46.092+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,535,81297,1824,end_turn,249952,4702,1254,10244,ok,,,0.1.0
+2026-08-25T10:46:56.381+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,504,3,83121,535,end_turn,253099,1464,1065,1744,ok,,,0.1.0
+2026-08-25T10:47:28.698+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,1059,83656,28,end_turn,251771,8690,1265,18026,ok,,,0.1.0
+2026-08-25T10:47:46.732+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,504,17,83684,1059,end_turn,257785,1657,1226,1999,ok,,,0.1.0
+2026-08-25T10:48:47.645+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,2496,84743,22,tool_use,256412,18125,1333,37733,ok,,,0.1.0
+2026-08-25T10:49:41.061+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,100,84765,2509,tool_use,266426,4435,1303,2352,ok,,,0.1.0
+2026-08-25T10:49:47.295+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,335,87274,115,end_turn,266830,3488,1093,6355,ok,,,0.1.0
+2026-08-25T10:49:53.656+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,504,7,87389,335,end_turn,269398,1628,1038,1815,ok,,,0.1.0
+2026-08-25T10:49:56.643+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,1,3369,87724,134,end_turn,268440,18704,1031,43593,ok,,,0.1.0
+2026-08-25T10:50:40.297+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,504,7,87858,3368,end_turn,281199,1610,1229,1978,ok,,,0.1.0
+2026-08-25T10:53:16.181+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,3981,91226,59,tool_use,279997,21931,1303,44860,ok,,,0.1.0
+2026-08-25T10:54:01.091+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,999,91285,4582,tool_use,294561,46062,1359,8871,ok,,,0.1.0
+2026-08-25T10:54:16.553+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,145,95867,1076,tool_use,297106,5305,1291,2381,ok,,,0.1.0
+2026-08-25T10:54:19.065+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,1356,96943,155,end_turn,297570,9361,1172,19636,ok,,,0.1.0
+2026-08-25T10:54:38.762+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,504,6,97098,1356,end_turn,303827,1622,1503,2137,ok,,,0.1.0
+2026-08-25T10:57:06.945+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,133,98454,51,tool_use,302587,5696,1289,2740,ok,,,0.1.0
+2026-08-25T10:57:09.723+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,94,98505,285,tool_use,303659,4279,1373,1990,ok,,,0.1.0
+2026-08-25T10:57:11.732+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,4985,98790,378,tool_use,304600,68972,1365,55719,ok,,,0.1.0
+2026-08-25T10:58:07.512+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,147,99168,5062,tool_use,320151,6124,1568,2709,ok,,,0.1.0
+2026-08-25T10:58:10.319+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,2288,104230,157,end_turn,320622,13068,1295,29590,ok,,,0.1.0
+2026-08-25T11:01:41.212+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,94,87,104387,2288,end_turn,328098,1965,2255,3773,ok,,,0.1.0
+2026-08-25T11:05:51.604+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,1,479,106675,787,tool_use,329914,11906,1149,6251,ok,,,0.1.0
+2026-08-25T11:05:57.898+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,452,107462,2130,tool_use,335500,10847,1116,5714,ok,,,0.1.0
+2026-08-25T11:06:03.632+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,4606,109592,3110,tool_use,344735,30958,1072,59339,ok,,,0.1.0
+2026-08-25T11:07:03.051+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,3194,112702,5602,tool_use,365302,180723,1311,35417,ok,,,0.1.0
+2026-08-25T11:07:38.587+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,627,118304,3316,tool_use,375116,23789,1146,7335,ok,,,0.1.0
+2026-08-25T11:07:45.951+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,861,121620,725,tool_use,377686,29513,1567,11895,ok,,,0.1.0
+2026-08-25T11:07:57.865+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,1,1354,122345,1089,tool_use,381772,43699,1147,19716,ok,,,0.1.0
+2026-08-25T11:08:17.646+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,556,123434,1451,tool_use,387090,27667,1301,7302,ok,,,0.1.0
+2026-08-25T11:08:24.970+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,517,124885,631,tool_use,388801,24707,1355,6301,ok,,,0.1.0
+2026-08-25T11:08:31.293+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,4469,125516,592,tool_use,390302,233786,1252,52601,ok,,,0.1.0
+2026-08-25T11:09:23.979+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,89,126108,4546,tool_use,403911,3650,2971,3582,ok,,,0.1.0
+2026-08-25T11:09:27.857+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,1170,130654,4815,tool_use,413888,17441,1527,15992,ok,,,0.1.0
+2026-08-25T11:09:43.864+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,162,135469,1268,tool_use,418467,7148,1312,2541,ok,,,0.1.0
+2026-08-25T11:09:46.863+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,1,1701,136737,350,tool_use,419576,37270,1201,23934,ok,,,0.1.0
+2026-08-25T11:10:10.862+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,571,137087,1798,tool_use,425954,29130,1371,7109,ok,,,0.1.0
+2026-08-25T11:10:18.011+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,104,138885,648,tool_use,427668,4711,1468,2229,ok,,,0.1.0
+2026-08-25T11:10:20.505+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,405,139533,171,tool_use,428165,8884,1293,6013,ok,,,0.1.0
+2026-08-25T11:10:39.188+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,152,139704,411,tool_use,429891,6136,1498,2753,ok,,,0.1.0
+2026-08-25T11:10:42.006+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,1071,140115,224,tool_use,430485,19971,1540,15504,ok,,,0.1.0
+2026-08-25T11:10:57.534+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,185,140339,1169,tool_use,434950,7604,1797,3410,ok,,,0.1.0
+2026-08-25T11:11:25.363+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,94,141508,198,tool_use,435469,4144,1602,2349,ok,,,0.1.0
+2026-08-25T11:11:27.758+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,91,141706,161,tool_use,435934,3461,1506,2286,ok,,,0.1.0
+2026-08-25T11:11:30.068+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,1,921,141867,243,end_turn,436775,6670,1812,15374,ok,,,0.1.0
+2026-08-25T11:11:45.453+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,504,13,142110,920,end_turn,441027,1653,1377,2198,ok,,,0.1.0
+2026-08-25T11:13:23.773+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,464,143030,31,tool_use,439714,9381,1461,7606,ok,,,0.1.0
+2026-08-25T11:13:31.415+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,729,143061,985,tool_use,443115,10927,1736,11457,ok,,,0.1.0
+2026-08-25T11:13:45.221+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,2582,144046,765,tool_use,446278,64328,1388,29827,ok,,,0.1.0
+2026-08-25T11:14:15.108+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,459,144811,2680,tool_use,455519,22526,1808,6065,ok,,,0.1.0
+2026-08-25T11:14:21.183+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,437,147491,557,tool_use,456911,21579,1503,4982,ok,,,0.1.0
+2026-08-25T11:14:26.206+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,843,148048,535,tool_use,458323,42069,1355,10502,ok,,,0.1.0
+2026-08-25T11:14:36.752+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,333,148583,920,tool_use,460868,15658,1491,4445,ok,,,0.1.0
+2026-08-25T11:14:41.217+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,1,212,149503,538,tool_use,462423,9804,1341,3581,ok,,,0.1.0
+2026-08-25T11:23:10.631+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,2,689,150041,347,end_turn,463276,5265,1844,11701,ok,,,0.1.0
+2026-08-25T11:23:22.353+00:00,session-08,,anthropic,claude-opus-5,/v1/messages,true,504,9,150388,689,end_turn,466876,1610,1980,2848,ok,,,0.1.0
+2026-08-25T11:23:52.994+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,216,ok,,,0.1.0
+2026-08-25T11:23:53.195+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,430,430,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T11:24:50.025+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,736,17,0,0,end_turn,2277,1626,1581,2832,ok,,,0.1.0
+2026-08-25T11:24:50.017+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,103,0,63672,tool_use,178021,4193,1400,2843,ok,,,0.1.0
+2026-08-25T11:24:52.900+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,913,63672,4717,end_turn,191063,7149,1182,12661,ok,,,0.1.0
+2026-08-25T11:25:05.571+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,504,7,68389,913,end_turn,195813,1605,1123,1850,ok,,,0.1.0
+2026-08-25T11:25:15.880+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,982,69302,7,tool_use,194418,8765,1110,13942,ok,,,0.1.0
+2026-08-25T11:25:30.265+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,365,69309,1157,tool_use,198987,5604,1127,5787,ok,,,0.1.0
+2026-08-25T11:25:39.611+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,477,70466,380,tool_use,200791,7020,1269,8369,ok,,,0.1.0
+2026-08-25T11:25:48.003+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,216,70846,544,tool_use,203294,4845,1581,4357,ok,,,0.1.0
+2026-08-25T11:25:52.383+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,1,166,71390,361,tool_use,205038,4925,1297,3447,ok,,,0.1.0
+2026-08-25T11:25:55.836+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,807,71751,196,tool_use,206097,9886,1329,11320,ok,,,0.1.0
+2026-08-25T11:26:12.521+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,82,71947,822,tool_use,209591,3321,1486,2038,ok,,,0.1.0
+2026-08-25T11:26:14.604+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,659,72769,149,end_turn,210039,5989,1196,10746,ok,,,0.1.0
+2026-08-25T11:26:25.362+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,504,13,72918,659,end_turn,214004,1632,984,1714,ok,,,0.1.0
+2026-08-25T11:26:43.259+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,1422,73577,20,tool_use,212647,15120,1080,18922,ok,,,0.1.0
+2026-08-25T11:27:02.225+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,885,73597,1635,tool_use,218600,11223,1152,12685,ok,,,0.1.0
+2026-08-25T11:27:14.971+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,1,284,75232,1182,tool_use,223406,6558,1058,3909,ok,,,0.1.0
+2026-08-25T11:27:18.896+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,894,76414,1906,tool_use,229165,10127,1191,13173,ok,,,0.1.0
+2026-08-25T11:27:32.077+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,3264,78320,909,tool_use,232872,60101,1219,45329,ok,,,0.1.0
+2026-08-25T11:28:17.524+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,385,79229,3386,tool_use,245583,6915,1198,5744,ok,,,0.1.0
+2026-08-25T11:28:23.339+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,366,82615,400,tool_use,247384,20101,1324,5595,ok,,,0.1.0
+2026-08-25T11:28:29.029+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,858,83015,437,end_turn,248708,7161,1294,13034,ok,,,0.1.0
+2026-08-25T11:31:24.258+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,567,83452,897,tool_use,252163,11615,1151,8489,ok,,,0.1.0
+2026-08-25T11:31:32.755+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,1,311,84349,964,tool_use,255554,9312,1666,3790,ok,,,0.1.0
+2026-08-25T11:31:36.561+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,204,85313,1319,tool_use,258898,6807,1392,4025,ok,,,0.1.0
+2026-08-25T11:31:40.626+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,200,86632,592,tool_use,260862,6517,2137,4084,ok,,,0.1.0
+2026-08-25T11:31:44.729+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,374,87224,1895,tool_use,265654,7638,1063,6173,ok,,,0.1.0
+2026-08-25T11:31:50.927+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,1951,89119,923,tool_use,268787,16149,993,28061,ok,,,0.1.0
+2026-08-25T11:32:19.054+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,251,90042,2022,tool_use,276798,7159,1188,3567,ok,,,0.1.0
+2026-08-25T11:32:22.636+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,155,92064,266,tool_use,278059,6836,1272,2601,ok,,,0.1.0
+2026-08-25T11:32:25.284+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,1,389,92330,2052,tool_use,282769,7073,1219,5305,ok,,,0.1.0
+2026-08-25T11:32:30.610+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,4863,94382,823,end_turn,285477,27023,1306,69652,ok,,,0.1.0
+2026-08-25T11:36:41.146+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,94,77,95205,4863,end_turn,301900,1939,1215,2470,ok,,,0.1.0
+2026-08-25T11:56:41.861+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,1781,100068,95,tool_use,301976,14213,1384,24820,ok,,,0.1.0
+2026-08-25T11:57:06.763+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,324,100163,1796,tool_use,309334,18546,1297,5032,ok,,,0.1.0
+2026-08-25T11:57:11.847+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,92,101959,397,tool_use,310506,3878,1595,2183,ok,,,0.1.0
+2026-08-25T11:57:14.107+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,1910,102356,177,tool_use,311094,18450,1388,28852,ok,,,0.1.0
+2026-08-25T11:57:42.972+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,333,102533,2089,tool_use,319242,6957,1498,5726,ok,,,0.1.0
+2026-08-25T11:57:48.748+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,1,2353,104622,1985,end_turn,325466,15277,1275,35719,ok,,,0.1.0
+2026-08-25T12:01:24.535+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,94,101,106607,2352,end_turn,334374,1977,1479,2967,ok,,,0.1.0
+2026-08-25T12:43:56.398+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,338,108959,18,end_turn,334186,4337,2269,8401,ok,,,0.1.0
+2026-08-25T13:47:56.513+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,109,0,109333,end_turn,335876,3027,2626,4635,ok,,,0.1.0
+2026-08-25T13:51:29.457+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,626,109333,178,tool_use,336911,12797,1712,8679,ok,,,0.1.0
+2026-08-25T13:51:38.169+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,574,109511,958,tool_use,340051,8174,1506,8376,ok,,,0.1.0
+2026-08-25T13:51:46.558+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,231,110469,1966,tool_use,346030,7772,1912,4708,ok,,,0.1.0
+2026-08-25T13:51:51.302+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,149,112435,486,tool_use,347797,5817,1883,2922,ok,,,0.1.0
+2026-08-25T13:51:54.249+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,1931,112921,635,tool_use,349530,14726,1499,27482,ok,,,0.1.0
+2026-08-25T13:52:21.793+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,1,1853,113556,2122,tool_use,357407,14258,1401,25586,ok,,,0.1.0
+2026-08-25T13:52:47.614+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,2768,115678,5976,tool_use,372475,87427,1683,36681,ok,,,0.1.0
+2026-08-25T13:53:24.367+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,391,121654,2858,tool_use,381969,6759,1549,6525,ok,,,0.1.0
+2026-08-25T13:53:31.120+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,1070,124512,460,tool_use,383996,10745,1506,16462,ok,,,0.1.0
+2026-08-25T13:53:47.608+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,448,124972,1085,tool_use,388369,23514,1843,8059,ok,,,0.1.0
+2026-08-25T13:53:55.742+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,1075,126057,526,end_turn,389865,6873,1313,14921,ok,,,0.1.0
+2026-08-25T13:54:10.672+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,504,18,126583,1075,end_turn,394464,1751,1772,2486,ok,,,0.1.0
+2026-08-25T13:55:01.544+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,608,127658,18,tool_use,393091,7845,1551,10134,ok,,,0.1.0
+2026-08-25T13:55:11.688+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,1,1733,127676,1618,tool_use,398379,24742,1477,25315,ok,,,0.1.0
+2026-08-25T13:55:37.071+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,387,129294,1822,tool_use,404982,16713,1970,5771,ok,,,0.1.0
+2026-08-25T13:55:42.864+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,987,131116,477,tool_use,406162,54145,2253,13380,ok,,,0.1.0
+2026-08-25T13:55:56.281+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,99,131593,1077,tool_use,409138,4314,1607,2462,ok,,,0.1.0
+2026-08-25T13:55:58.987+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,163,132670,121,tool_use,409522,5923,1313,3103,ok,,,0.1.0
+2026-08-25T13:56:02.126+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,492,132791,178,tool_use,410503,26229,1445,7271,ok,,,0.1.0
+2026-08-25T13:56:09.491+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,726,132969,565,end_turn,412159,5592,1877,11957,ok,,,0.1.0
+2026-08-25T13:59:21.499+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,94,82,133534,726,end_turn,414673,1910,1345,2655,ok,,,0.1.0
+2026-08-25T14:00:51.035+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,3294,134260,186,tool_use,414996,23870,2761,46269,ok,,,0.1.0
+2026-08-25T14:01:37.155+00:00,session-09,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,153141,114,731,732,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:01:38.273+00:00,session-09,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,153141,114,398,398,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:01:39.574+00:00,session-09,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,153141,114,403,404,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:01:41.942+00:00,session-09,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,153141,114,481,483,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:01:45.531+00:00,session-09,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,153141,114,413,413,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:01:45.949+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,false,,,,,,153139,114,407,407,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:01:46.738+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,false,,,,,,153139,114,430,431,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:01:48.031+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,false,,,,,,153139,114,450,453,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:01:50.073+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,false,,,,,,153139,114,410,411,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:01:54.474+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,false,,,,,,153139,114,527,528,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:01:55.077+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,1,1837,134446,3775,tool_use,428729,15187,1686,25559,ok,,,0.1.0
+2026-08-25T14:02:20.683+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,false,,,,,,153758,114,786,789,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:02:21.859+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,false,,,,,,153758,114,385,386,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:02:23.229+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,false,,,,,,153758,114,536,537,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:02:25.564+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,false,,,,,,153758,114,493,494,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:02:29.940+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,false,,,,,,153758,114,397,398,http_error,429,rate_limit_error: Error,0.1.0
+2026-08-25T14:02:30.365+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,1957,138221,1966,tool_use,436208,15054,1397,28853,ok,,,0.1.0
+2026-08-25T14:02:59.290+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,2330,140187,3698,end_turn,448547,15191,1274,36484,ok,,,0.1.0
+2026-08-25T14:06:50.592+00:00,session-09,,anthropic,claude-opus-5,/v1/messages,true,2,1082,143885,2389,tool_use,457386,17294,1995,16131,ok,,,0.1.0
