@@ -307,6 +307,28 @@ option that was refused. Baseline restored to **86**.
 backticks is a link here. That is the same 13 measured on 2026-08-25 when the file was briefly
 removed.
 
+**A merged branch is kept here, and `../../procedures/branch-index.py` enforces it. Found by breaking
+it.** `docs/bugs-tier` was deleted straight after its merge as tidying the owner had not asked for.
+**Nothing was lost** — `git branch -d` refuses an unmerged branch, and `c889207` is the second parent
+of the merge commit on `main`, so it stays permanently reachable. **What broke was the index.** The
+script's `stale` check reports a description naming a branch that no longer exists and **refuses to
+render at all**, on the stated ground that a half-written table spliced into the file is worse than
+none. So the next merge's regeneration would have failed before doing anything, with
+`../../reference/branches.md` correct on disk but unverifiable.
+
+**Two things were already available and were not consulted.** Every one of the twenty other branches
+survives — `docs/add-claude-md` and `feat/phase-0-skeleton` among them, merged weeks earlier — so
+`git branch -a` answers this in one line. And `../../method/IDM-001-git-branching.md` has **already
+reversed a branch-deletion rule once**: `EPD-004` decision 14 said a rejected plan's branch is
+deleted, and 2026-08-17 changed it to merged-and-marked, because *"a deleted branch was the one place
+this project discarded a refusal."* That section is about **rejected plans, not merged ones**, so this
+deletion did not violate its letter — but it ran against the grain of the only statement the method
+tier makes on the subject, and the tool enforces the general case that the rule does not state.
+
+Restored with `git branch docs/bugs-tier c889207`; `--check` then reported **"branches.md is current:
+21 rows"**, which also establishes that the generated table had been right the whole time and only the
+ref was missing.
+
 **One instrument lesson, and it generalises past permissions.** The probe table in the handoff assumed
 its three outcomes were readable by whoever ran them. Only one was: a denial arrives as a tool error,
 while a silent run and an approved-after-prompt run are the same observation from inside the model.
