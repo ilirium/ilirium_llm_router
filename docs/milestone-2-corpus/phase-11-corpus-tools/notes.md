@@ -37,35 +37,134 @@ exactly that. Reading it back is the check, `--extract` is the instrument, and i
 blobs, 0 failed**. `request_dict_id` is `none`, not a dictID: the blobs name no dictionary, so there
 is none to be missing. **The alarming reading and the true one differ by one column of the index.**
 
-## A tracked deny rule written on a phase branch did not take effect
+## The deny rules work — and the allow list beside them was the actual hazard
 
-**Found 2026-08-24 by driving it, immediately after committing it — which is the wrong order and is
-the point.** `../../../CLAUDE.md` says *exercise it before committing*; this was committed first and
-the check came second. It would have been a defect in the phase record if the next session had
-inherited *"two deny rules added"* with nothing saying they were never seen to work.
+**Opened 2026-08-24, settled 2026-08-25 in a fresh session by driving it.**
 
-**What happened.** `Bash(git add -A)` was added to `.claude/settings.json`'s `deny` list and
-committed as `3d8ae54`. Running `git add -A` immediately afterwards **was not blocked**. The tree was
-clean, so nothing was staged and no harm followed — but the rule plainly did not fire.
+**What was open.** `Bash(git add -A)` was added to `.claude/settings.json`'s `deny` list, committed as
+`3d8ae54`, and **was not blocked** when run immediately afterwards. Two explanations were left
+standing: **a**, tracked settings resolve through the worktree to the main checkout, so a phase
+branch's permission change does nothing until it merges; **b**, settings are read once at session
+start and not reloaded.
 
-**What is established:** the rule is on disk and correct in *this* worktree, and **absent from
-`main`'s copy** — `main` is on the `main` branch, which does not carry the commit. Measured with
-`grep -c`, one file against the other.
+**It is `b`. Settings are session-cached.** In a fresh session `git add -A` was **blocked** on a clean
+tree, and so was `git stash`. Both deny rules fire. **Explanation `a` is dead** — a tracked permission
+change on a phase branch is inert until **restart**, not until merge, which is ordinary and costs the
+phase nothing.
 
-**Two explanations remain open, and they have very different consequences:**
+**The wrong order is still the lesson.** `../../../CLAUDE.md` says *exercise it before committing*;
+`3d8ae54` committed first and checked second. Had the next session inherited *"two deny rules added"*
+with nothing saying they were ever seen to work, the phase record would have carried a defect.
 
-| | If it is this | Consequence |
-|---|---|---|
-| **a** | Claude Code resolves `.claude/settings.json` **through the worktree to the main checkout**, the way the permissions doc says saved rules resolve | **A tracked permission change on a phase branch does nothing until it merges.** Every phase that edits the tracked settings file is writing a rule that cannot take effect during the phase that writes it |
-| **b** | Settings are read once at session start and not reloaded | A restart fixes it, and the finding is ordinary |
+### What the check found on the way past, which is larger than what it was for
 
-**A fresh session distinguishes them**, and costs nothing: if the deny fires after a restart it is
-**b**; if it still does not, it is **a**. Until then neither deny rule may be described as working.
+**Chasing why `git status` prompted the owner produced seven measurements**, all 2026-08-25, in
+**accept-edits** mode, in this worktree:
 
-*Why this belongs in the notes rather than only in the plan: it is the second time today that a
-plausible reading and the true one differed by one check — the empty `dicts/` was the first. Both
-were resolved by running the thing rather than reasoning about it, and in both cases the reasoning
-was available and wrong.*
+| driven | result |
+|---|---|
+| `ls` | silent |
+| `git status` · `git status && echo ok` · `git --version` · `git --no-optional-locks status` | **all prompted** |
+| `git add -A` · `git stash` | **denied** |
+| `git add -A .` | **ran, unprompted** |
+
+**Git is not in Claude Code's built-in read-only set.** `git --version` touches no repository and
+still prompted, so it is neither the worktree layout nor `git status`'s index refresh — **both were
+proposed here, both were persuasive, and both were wrong.** Git prompts unless an allow rule matches
+it; `ls` confirms the non-git half of the built-in set is real.
+
+**`../../prompt.md`'s claim that *"read-only `git` … runs without a prompt in every mode"* is false as
+written, and the way it entered the record is the finding.** It was asserted by a session that had no
+instrument to observe it: a model sees a denial as a tool error and **cannot see an approval at all**,
+so a silent run and an approved-after-prompt run are identical from the inside. The owner was the only
+instrument, and was never asked. `../../method/IDM-002-harness-configuration.md` is where the corrected
+fact belongs — that is Task 5.
+
+**A deny entry matches exactly; an allow entry with `*` does not.** `git add -A` was denied and
+`git add -A .` — one character longer, identical effect — ran, because it fell through to
+`Bash(git add *)`. **A deny list of spellings is not a guard**: the set of dangerous spellings is open
+and cannot be enumerated.
+
+**The allow list was permissive exactly where git destroys work and absent exactly where git is
+safe.** `Bash(git checkout *)` permitted `git checkout -- .`; `Bash(git stash *)` permitted
+`git stash clear` and `git stash drop`. The denies beside them stopped `git stash` and `git stash pop`
+— neither of which loses data. Meanwhile `git status` and `git log`, which cannot harm anything, cost
+a prompt every time.
+
+*Why this belongs in the notes: it is the third and fourth time in two days that a plausible reading
+and the true one differed by one check. The empty `dicts/` was the first, the deny rule the second,
+and here two mechanisms were reasoned out in sequence and both were wrong while the simple
+explanation sat available the whole time.*
+
+## What `.claude/settings.json` now says, and what is unverified about it
+
+**Rewritten 2026-08-25 on one principle: allow what cannot destroy work, and let everything else
+prompt.** The blocklist approach was abandoned for the reason above.
+
+- **Removed the three wildcard allows that carried an irreversible spelling** — `Bash(git add *)`,
+  `Bash(git checkout *)`, `Bash(git stash *)`.
+- **Added read-only git** — `status`, `log`, `diff`, `show`, `rev-parse`, `branch`/`branch --list`,
+  `stash list`, `worktree list`, `remote -v`; bare **and** `*` forms, since matching is literal.
+- **`git checkout` was replaced by `Bash(git switch *)` rather than narrowed.** `switch` changes
+  branches and cannot touch working-tree files; `checkout` conflates that with `restore`. Choosing a
+  different verb removes the destructive spelling without having to name it. **`git checkout` now
+  prompts every time**, deliberately — it is a working-practice change, not an oversight.
+- **Staging is explicit paths only** — `docs/*`, `src/*`, `tests/*`, `.claude/*` and six tracked root
+  files. This is the project's own rule expressed *as* the permission instead of as a blocklist of its
+  violations. **Matching is by prefix, so a two-path `git add` passes on the strength of its first
+  path alone** — much better than `git add *`, and not airtight.
+- **Five denies added** for the genuinely irreversible spellings — `git stash clear`, `git stash drop`,
+  `git reset --hard`, `git checkout -- .`, `git clean -fd`. They are belt-and-braces. **They are not
+  the guard, and no document should describe them as one.**
+
+**`settings.local.json` was merged in and emptied by the owner on 2026-08-25** — it exists, holds an
+empty `permissions` block, and grants nothing. Every rule is now tracked and reaches `main` and
+`to-run-server` when this branch merges. Four entries went as subsumed duplicates; `python3 *` and
+`curl *` were narrowed by the owner back to the two `docs/procedures/` scripts and the LM Studio probe.
+
+**Removing the local file broke 13 documentation links; recreating it empty restored all 13.**
+`link-check.py` ran **86 → 99 → 86** across the two moves, which has the side effect of confirming the
+baseline by measurement rather than by arithmetic. Ten of the thirteen sit in **frozen historical
+records** — Phase 7, 8 and 9 notes, `EPD-004`, the 2026-08-16 documentation review — and three in live
+documents, including `../../method/IDM-002-harness-configuration.md`.
+
+**The lesson is not about this file.** A path in backticks *is* a link here, so removing any referenced
+file breaks documents that had no defect — and the ten historical ones could not have been repaired
+without rewriting frozen records. **Check `link-check.py` before deleting a file the documentation
+names**, not after.
+
+**The local file now exists with an empty `permissions` block, by decision.** The split `IDM-002`
+describes is structurally intact — tracked policy, untracked local, gitignored, no overlap — but its
+*practice* changed on 2026-08-25: **the local half is deliberately empty and every rule is tracked.**
+`IDM-002` still calls that half *"machine accretion: whatever this laptop clicked allow on"*, which now
+describes a policy the owner has stopped following. **That is Task 5's to record**, and it was left
+alone here because Task 5 sits in an unapproved plan.
+
+**One conflict with `../../../CLAUDE.md` was raised and left standing:** `Bash(uvx ruff *)` permits an
+**unpinned** ruff — `uvx ruff format` with no version fetches the latest — and `CLAUDE.md` says never
+bump the ruff pin as a side effect. The rule authorises the thing the project documents against. Left
+as the owner's call, recorded here so it is not rediscovered as a surprise.
+
+**Verified 2026-08-25 by the following session, and only then committed.** Settings are
+session-cached, so the file could not be exercised by the session that wrote it — and committing
+first is exactly what `3d8ae54` did wrong. All three probes in `../../prompt.md` returned what the
+rewrite predicted: `git status` **silent**, `git add -A .` **prompting**, `git stash clear`
+**denied**. Nothing needed fixing because nothing surprised.
+
+**Only one of the three probes reports itself to a session, and that is the durable lesson.** A
+denial arrives as a tool error, so `git stash clear` was self-evident. The other two *completed* —
+which rules out denial and nothing else, because a silent run and an approved-after-prompt run are
+the same observation from inside the model. **The owner was the instrument for probes 1 and 2 and was
+asked directly.** This is the same correction recorded above against the previous handoff's
+*"runs without a prompt in every mode"*: the claim was not wrong so much as unobservable by whoever
+made it. **A probe whose two outcomes are indistinguishable to the reader is not a probe until
+someone who can tell them apart is asked.**
+
+Two incidental findings the probe table does not cover. **There were no stashes** — checked before
+probe 3 rather than trusting the deny to hold, so the destructive case cost nothing either way; that
+check is the cheap half of the same habit the probes exist to enforce. And **`git restore --staged`
+with explicit paths ran without a denial**, which no rule in the list names in either direction — it
+was needed because probe 2, once approved, really does stage everything.
 
 ## Where the opening session stopped — 2026-08-24
 
@@ -85,11 +184,14 @@ on the branch; a session started in `main` sees none of them.
 `3d8ae54` added the deny rules and folded the git allows, `9e0b59d` recorded that the denies did not
 fire.
 
-### The first thing to do, and it costs nothing
+### The first thing to do, and it costs nothing — *run 2026-08-25, and it is done*
 
-**Run `git add -A` on a clean tree.** Blocked → settings are session-cached and the rules work.
-Not blocked → a tracked permission change on a phase branch has no effect until it merges, which is
-a constraint Task 3 must record. **Do not describe either deny rule as working until this runs.**
+**Was:** run `git add -A` on a clean tree; blocked → settings are session-cached and the rules work;
+not blocked → a tracked permission change on a phase branch has no effect until it merges.
+
+**It was blocked.** Settings are session-cached, the rules work, and the merge-scope constraint Task 3
+was going to have to record does not exist. The full result, and the larger finding the check ran into,
+are two sections above.
 
 ### Two things waiting on the owner
 
@@ -114,6 +216,29 @@ headers rests on the recorder keeping the error body's symbolic type — and 66 
 [`anthropics/claude-code#82653`](https://github.com/anthropics/claude-code/issues/82653) and
 [`BerriAI/litellm#30365`](https://github.com/BerriAI/litellm/issues/30365).
 
+## Where the second session stopped — 2026-08-25
+
+**No phase task was started, and no corpus tool was written.** The session opened on the one check the
+handoff put first, and the check turned into the whole session. What it produced is in the two
+sections above; this is the state it leaves.
+
+**Still five commits, and the tree is deliberately dirty.** One modified file — `.claude/settings.json`
+— **uncommitted on purpose**, because it cannot be exercised until a restart and `3d8ae54` already
+demonstrated what committing first costs. `settings.local.json` was deleted by the owner; it was
+untracked, so git records nothing of it.
+
+**Nothing moved on Group A, the register, or the plan's approval.** The two items waiting on the owner
+are unchanged and still waiting: **position 3** in `plan.md`'s settled table, and **every `❓` in the
+register**.
+
+**Task 5 gained its material.** `IDM-002` now has a measured account to record rather than an
+inherited claim — that git is outside the built-in read-only set, that deny is exact-match while allow
+is a wildcard, and that a model cannot observe its own approvals. The third of those is the reason the
+first was wrong in `../../prompt.md` for a day.
+
+**Task 3 lost a constraint.** The worktree practice it records does not need to say anything about
+tracked permissions being inert until merge, because they are not — they are inert until restart.
+
 ## The git allows are, for now, only on this branch — and that is a self-inflicted gap
 
 **`main` and `to-run-server` currently have no `git add`, `git commit`, `git checkout` or `git stash`
@@ -130,9 +255,16 @@ in as many words — *"narrowing the tracked file later appears to do nothing, b
 still grants it."* Trading a permanent landmine for a temporary prompt is the wrong way round. The
 cost is one approval when committing in `main`, and it clears when this branch merges.
 
-**It is also the open question in miniature.** If tracked settings resolve through a worktree to the
-main checkout, then *this* worktree has no git allows either and the rules on this branch are inert
-everywhere — the same test settles both.
+**It was also the open question in miniature, and 2026-08-25 answered it.** Tracked settings do *not*
+resolve through the worktree to the main checkout — they are read from this worktree, once, at session
+start. So the rules on this branch are live **here** after a restart and nowhere else until the merge,
+which is exactly the shape described above: a temporary prompt in the other two worktrees, not a
+permanent landmine.
+
+**The gap widened on 2026-08-25 and closes the same way.** `settings.local.json` was merged into the
+tracked file and emptied, so *every* rule this worktree has — not just the git ones — now reaches the
+other two only at the merge. That is the intended direction: one tracked file, an empty local half that
+cannot contradict it, per `../../method/IDM-002-harness-configuration.md`.
 
 ## What is open at the end of Group A
 
