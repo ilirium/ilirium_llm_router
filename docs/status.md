@@ -10,6 +10,21 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-08-25, later — the settings were verified before being committed, and auto mode was proved
+broken.** All three probes returned what the rewrite predicted — `git status` silent, `git add -A .`
+prompting, `git stash clear` denied — so `.claude/settings.json` landed unchanged. **Only the denial
+was observable to the session**; the other two merely completed, and a silent run is indistinguishable
+from an approved-after-prompt run from inside the model, so the owner was asked directly.
+
+**Auto mode was switched on to test whether Anthropic's rate-limiter had been fixed. It failed in
+about ninety seconds, and the measurement is much harder than the earlier one.** From a frozen
+telemetry slice: **83 of 83 rate-limited calls were non-streamed and none of 391 streamed calls was**,
+non-streamed `/v1/messages` failed **100%** on both 08-24 and 08-25, and a streamed request **2.8×
+larger** to the same model succeeded **0.6 s** after a non-streamed one was rejected. 21 non-streamed
+`count_tokens` calls succeeded on the worst day, which narrows it to one path rather than to
+non-streaming. **That is `bugs/BUG-001`, in a new `bugs/` tier merged to `main`** — the phase branch
+does not carry it. **Phase 13 was allocated** for the rate-limit headers. **No phase task started.**
+
 **2026-08-25 — the permission model was measured, and it was backwards.** The handoff's one
 zero-cost check ran: `git add -A` **was blocked**, so settings are session-cached and a tracked
 permission change on a phase branch is inert until **restart**, not until merge. Chasing why
@@ -18,7 +33,8 @@ set**, a deny entry matches **exactly** while an allow entry with `*` does not, 
 therefore permissive where git destroys work (`git checkout -- .`, `git stash clear`) and absent where
 it is safe. `.claude/settings.json` was rewritten on *allow what cannot destroy work*, `settings.local.json`
 was merged into it and left **empty by decision** — every rule is now tracked — and the tracked file
-is **uncommitted on purpose** until a restart exercises it. No phase task started.
+was left **uncommitted on purpose** until a session that had not written it could exercise it.
+*(It was, later the same day. See the entry above.)* No phase task started.
 
 **2026-08-24 — Phase 11 opened, in a worktree, and its plan is written and unapproved.** Subject: the
 offline corpus tools. The layout changed under the project — a bare clone at
@@ -222,7 +238,7 @@ permanent record of a phase's branch, fork point and merge commit is still its p
 
 | Branch | Purpose | Tree | Next action |
 |---|---|---|---|
-| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: extract with selection, dictionaries as a command, and a converter to Claude Code session `JSONL` | five commits, forked at `f445d6f`; **one uncommitted file on purpose** — `.claude/settings.json`, pending the restart that can exercise it | **run the three permission probes after a restart, then commit the settings file** — then the owner ratifies position 3 in `plan.md`'s settled table, and the plan is reviewed under `method/IDM-004-reviewing-unexecuted-work.md` before Task 2 |
+| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: extract with selection, dictionaries as a command, and a converter to Claude Code session `JSONL` | **twelve commits plus a merge, clean tree**, forked at `f445d6f`. The settings file was probed and committed 2026-08-25. **`main` was merged in the same day** so the branch carries `docs/bugs/` | **the owner ratifies position 3 in `plan.md`'s settled table and values the register's `❓`** — then the plan is reviewed under `method/IDM-004-reviewing-unexecuted-work.md` before Task 2 |
 
 **Opened 2026-08-24, and it is the first branch worked in a git worktree** —
 `/Users/ilirium/Projects/local/ilirium_llm_router/phase-11-corpus-tools`, beside `main` and

@@ -266,6 +266,54 @@ tracked file and emptied, so *every* rule this worktree has — not just the git
 other two only at the merge. That is the intended direction: one tracked file, an empty local half that
 cannot contradict it, per `../../method/IDM-002-harness-configuration.md`.
 
+## Where the third session stopped — 2026-08-25
+
+**No phase task ran. Everything below is either the settings work closing out, or work that belongs to
+other branches and was kept off this one.**
+
+**The three probes ran and the settings file was committed** — `b70769a`, in that order, which was the
+whole point. Recorded in full above under "What `.claude/settings.json` now says".
+
+**Then the owner turned auto mode on to test whether Anthropic's rate-limiter had been fixed, and it
+failed inside two minutes.** The result is `../../bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`,
+on `main` — **not on this branch**, because the classifier diagnosis is not this phase's work and
+`../../method/IDM-001-git-branching.md` gives documentation its own prefix. It went to
+`docs/bugs-tier`, forked from `main`, merged `--no-ff`, and the tier it introduced is new.
+
+**What this branch kept**, because both correct text this branch's own commits added:
+
+- **Phase 13 allocated** in `../implementation-plan.md` for the rate-limit response headers, with its
+  two gates written into the entry rather than left to be rediscovered — `calls.csv` takes no new
+  columns under Milestone 2's non-goals, and the store's bodies-only-never-headers promise means a
+  **named allowlist** rather than a copy. Phases 11 and 12 were added at the same time; the list ran
+  8, 9, 10, "closing review".
+- **The capture step marked discharged in fact, evidence pending Task 7.** It had read "NOT
+  discharged" since 2026-08-17 on a ground that stopped being true on 2026-08-24.
+- **A correction to this branch's own text, the same day it was written**: *no LM Studio traffic has
+  **ever** been captured* overreached. The 171 rows are the corpus; `calls.csv` holds 15 LM Studio
+  calls on 2026-08-21. One population is a subset of the other and they are easy to conflate.
+
+**Two things a session picking this branch up should not get wrong.**
+
+**`main` was merged into this branch to bring `docs/bugs/` onto it**, which is a shape this project
+had not used before — the trunk into a phase branch, rather than the reverse. The reason is specific:
+the handoff documents cite `BUG-001`, **a path in backticks is a link here**, and the branch could not
+resolve them. `link-check.py` reported **seven** broken links repairable only from the other side.
+Un-backticking them would have silenced the instrument without fixing anything, which is the one
+option that was refused. Baseline restored to **86**.
+
+**A fresh worktree reports 13 more broken links than this one, and it is not a regression.**
+`.claude/settings.local.json` is gitignored, so `git worktree add` does not create it, and a path in
+backticks is a link here. That is the same 13 measured on 2026-08-25 when the file was briefly
+removed.
+
+**One instrument lesson, and it generalises past permissions.** The probe table in the handoff assumed
+its three outcomes were readable by whoever ran them. Only one was: a denial arrives as a tool error,
+while a silent run and an approved-after-prompt run are the same observation from inside the model.
+**A probe whose outcomes are indistinguishable to its reader is not a probe until someone who can tell
+them apart is asked.** The same shape produced `BUG-000`'s founding rule hours later — *an absence is
+not a fix* — arrived at independently, from counting 429s rather than from watching prompts.
+
 ## What is open at the end of Group A
 
 *(Group A has not started. The items above are Task 5's, executed ahead of the plan.)*
