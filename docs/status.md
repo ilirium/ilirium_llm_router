@@ -28,8 +28,11 @@ does not carry it. **Phase 13 was allocated** for the rate-limit headers. **No p
 **And the corpus stopped being undicted this morning, which nothing had noticed.** Found by
 re-verifying "What is on disk and not in git" below rather than by looking for it. `retrain.log`
 records `verdict=installed` at **2026-08-25T10:32:50Z** — window 2026-08-24, 69 samples, holdout 180,
-**candidate 3.317× against incumbent `none`** — and **all 320 rows in that day's index reference the
-new dictionary**. The **2.815×** undicted figure was described everywhere as *the number a dictionary
+**candidate 3.317× against incumbent `none`** — and **328 of the 331 rows in that day's index
+reference the new dictionary**, the other three being empty rather than `none`. *(That read "all 320
+rows" for an hour, taken from the live file; a frozen copy an hour later said 328 of 331, and two
+copies a minute apart differed by 259 bytes. The corpus is still being written to.)* The **2.815×**
+undicted figure was described everywhere as *the number a dictionary
 must beat*; **it has been beaten, and by the machinery doing it unattended.** Every statement that the
 corpus is undicted, that `dicts/` is empty, or that `retrain.log` says `too-few-samples` was true on
 2026-08-24 and is false now — including in `milestone-2-corpus/phase-11-corpus-tools/plan.md`'s

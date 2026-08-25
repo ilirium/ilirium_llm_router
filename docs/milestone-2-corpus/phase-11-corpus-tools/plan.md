@@ -337,6 +337,12 @@ deliberately not empty yet.*
 
 ### 8 · Numbers measured, with their moment
 
+**Two moments, and the second changed a premise this plan was written on.** Both are kept rather than
+overwritten — a figure with its moment attached is a record, and replacing one loses the fact that
+the corpus moved underneath it.
+
+**Measured 2026-08-24, on a day folder that was still being written:**
+
 | | Value | Slice |
 |---|---|---|
 | undicted ratio | **2.815×** | `2026-08-24` day folder, 280 blobs, **at 2026-08-24 while growing** |
@@ -345,8 +351,37 @@ deliberately not empty yet.*
 | distinct sessions | 4 | same |
 | populated `agent_id` | **0 of 171** | same |
 
-*None of these goes in `reference/measurements.md` until Task 5 freezes a slice — a number whose
-slice is still moving cannot fill the four columns `../../README.md` requires.*
+**Measured 2026-08-25 18:27 local, over frozen copies of all three day indexes:**
+
+| | Value | Slice |
+|---|---|---|
+| **a dictionary exists** | `req-2026-08-25T103250Z-9dd33823.dict`, **262,144 bytes** | `retrain.log`, `verdict=installed` at **2026-08-25T10:32:50Z** |
+| **trainer's candidate score** | **3.317×**, incumbent `none` | the trainer's own holdout — window `2026-08-24`, 1 day, **69 samples / 180 holdout**, level 9 |
+| rows carrying `9dd33823` | **328 of 331** | `2026-08-25` index. The other **3 are empty, not `none`** |
+| rows carrying `none` | **317** and **10** | the `2026-08-24` and `2026-08-21` folders, entirely undicted |
+| day folders | **3** | `2026-08-21`, `2026-08-24`, `2026-08-25` — every document saying "two" predates 2026-08-25 |
+| `2026-08-24`, completed | **317 rows** | the same folder the **171** above came from, read mid-day |
+
+**Do not compare 3.317× against 2.815× as though they were the same measurement.** 2.815× is
+`--extract` over 280 stored blobs; 3.317× is the trainer scoring a candidate against a 180-sample
+holdout at level 9. They answer different questions. Both spellings are kept so the difference
+survives contact with a later reader who wants one number.
+
+**`--extract` has not been re-run since the dictionary landed**, so there is **no post-dictionary
+end-to-end ratio in this table**, and one must not be inferred from the candidate score.
+
+**171 → 317 is one folder read twice, not a discrepancy.** The first reading caught a day still being
+written; the second is that day finished.
+
+*None of these goes in `reference/measurements.md` until **Task 7** freezes a slice — a number whose
+slice is still moving cannot fill the four columns `../../README.md` requires. **The corpus was still
+moving while this very table was written:** two copies of the `2026-08-25` index taken one minute
+apart differed by 259 bytes.*
+
+*(That sentence named **Task 5** until 2026-08-25. Task 5 is the `IDM-002` amendment and is already
+executed — it cannot also be the task that freezes a slice; **Task 7** is "Freeze the evidence slice".
+Two adjacent rows of this register are what made it visible, which is what `IDM-008` says the
+instrument is for.)*
 
 ## Placeholders in this file
 
