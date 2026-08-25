@@ -208,6 +208,25 @@ DESCRIPTIONS: dict[str, tuple[int | None, int | None, str]] = {
         "method items**: `IDM-007` on raising a concern where it will be read, `IDM-008` on the "
         "register, the read-by-section rule, and the forward-only `notes.md` split.",
     ),
+    "docs/bugs-tier": (
+        2,
+        None,
+        "The `bugs/` tier — defects in software this project does not own, where no commit of ours "
+        "is the ending. **Its boundary against `wiki/` is lifetime**: a wiki page is written to "
+        "stay true, a bug document hoping to stop being true. `BUG-000` carries the founding rule "
+        "that **an absence is not a fix**, so every entry names the positive check that would "
+        "close it. `BUG-001` is Anthropic rejecting non-streamed `/v1/messages` with 429 while a "
+        "streamed request **2.8× larger** to the same model succeeds 0.6 s later.",
+    ),
+    "temp/to-run-server": (
+        None,
+        None,
+        "**Not a piece of work, and the only row here that is not.** A worktree pinned to `main` "
+        "so the router can be run and driven while another branch holds the editable tree. It "
+        "carries no commits of its own — which is *why* it appears in this table at all: its tip "
+        "sits on the trunk, so it resolves as merged rather than in flight. The telemetry and "
+        "corpus that `BUG-001` and Phase 11 both rest on were captured through it.",
+    ),
 }
 
 TRUNK = "main"
