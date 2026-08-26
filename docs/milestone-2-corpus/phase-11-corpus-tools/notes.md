@@ -12,7 +12,7 @@ first phase of this project worked in a **git worktree** rather than in the trun
 
 | | |
 |---|---|
-| *(none yet)* | Group A has not started |
+| *(none yet)* | Group A is partly done — Tasks 1, 5 and 6 ran ahead of the plan and are recorded in the sections below rather than in a group file. **No group file exists yet**, and the first will be Group B's |
 
 ## The re-derivation before Task 1
 
@@ -180,9 +180,10 @@ phase work to be scheduled. Both were updated the same day.*
 **Start in the `phase-11-corpus-tools` worktree.** The plan, these notes and the settings change are
 on the branch; a session started in `main` sees none of them.
 
-**Three commits, tree clean:** `052ea3e` opened the phase, `12ada32` fixed a dead WebFetch domain,
+**Four commits, tree clean:** `052ea3e` opened the phase, `12ada32` fixed a dead WebFetch domain,
 `3d8ae54` added the deny rules and folded the git allows, `9e0b59d` recorded that the denies did not
-fire.
+fire. *(Said "three" over a list of four until 2026-08-26, when the forward review's cold run counted
+them. A prose count beside the thing it counts, again.)*
 
 ### The first thing to do, and it costs nothing — *run 2026-08-25, and it is done*
 
@@ -338,4 +339,151 @@ not a fix* — arrived at independently, from counting 429s rather than from wat
 
 ## What is open at the end of Group A
 
-*(Group A has not started. The items above are Task 5's, executed ahead of the plan.)*
+*(**Corrected 2026-08-26**, on the forward review's finding 15. This read "Group A has not started"
+while `plan.md` recorded three of its seven tasks done — **Tasks 1, 5 and 6**, all executed ahead of
+the plan on the owner's instruction. The two statements sat in two files for two days. A cold reader
+opening the notes first would have re-done the `IDM-002` amendment and the implementation-plan edit,
+which is exactly the cost the review priced.)*
+
+---
+
+## The forward review — both runs and the reconciliation, 2026-08-26
+
+**Protocol: `../../method/IDM-004-reviewing-unexecuted-work.md`. Charter: `review-charter.md`, written
+first and committed at `8bb501c` before either run started**, because `IDM-004`'s first rule is that
+the charter decides what the review finds.
+
+**Subject:** `plan.md` at `2d04840` — the ratification revision, not the version any earlier session
+saw. Tasks 2, 3, 4, 7 and Groups B–F. Tasks 1, 5 and 6 out of scope as executed.
+
+| | |
+|---|---|
+| Runs | the author (this session) and one fresh-context agent, **in parallel**, read-only |
+| Cold run's cost | ~157k tokens, 42 tool calls, ~23 minutes |
+| Findings | **~18 distinct.** 11 by the cold reader alone, 3 by the author alone, ~4 by both |
+| Overlap | **~22%** — and see "What this says about `IDM-004`" below, because it is **not** comparable with Phase 10's 18% |
+
+### The departure from `IDM-004` that was declared in advance
+
+**`IDM-004` assumes the author run is performed by the session that *wrote* the document.** That
+session was gone. This one is its successor by handoff: it ratified and revised the plan on 2026-08-26
+but did not hold the 2026-08-24 interviews behind positions 1–6. **The charter said so before the runs
+rather than after**, which is why the overlap figure above is recorded with a warning attached instead
+of being compared.
+
+---
+
+### One refutation was checked and did not survive
+
+**`IDM-004`: *verify a refutation before accepting it. A reviewer can be confidently wrong.*** This is
+the run where that rule earned its place.
+
+**The cold reader reported that finding 3's `agent_id` prediction had already resolved *before* the
+review began**, from "a subagent spawned earlier today" — 20 rows, timestamps 12:51:08–12:56:21.
+
+**Checked, and the causation is backwards.** Across all four day folders there is **exactly one
+distinct `agent_id`**, on **67 rows**, running 12:51:08 → 13:10:53. One value, not two. Those rows are
+**the cold reader's own calls**: it read the index partway through its own run, saw 20 of them, and
+attributed them to somebody else. The count reached 67 by the time it finished.
+
+**So the prediction resolved positively, and it resolved *because of* this review run — exactly as
+`plan.md`'s finding 3 said it would.** The outcome the reviewer reported is right; the mechanism it
+gave is not. **`observe.py:40` is confirmed by measurement for the first time in this project's
+history**, and task 18's defect-filing contingency is dead.
+
+*This is the repository's own recurring shape landing on the reviewer rather than on a session: a
+plausible reading and the true one, one query apart. It is the sixth recorded instance.*
+
+---
+
+### Accepted, ranked by what it costs to find later
+
+**Verified against the disk by the author before acceptance, not taken from the report.**
+
+| # | Finding | Evidence re-checked | Lands on |
+|---|---|---|---|
+| **1** | **45 consecutive calls have no stored request body.** `request_ref = too_large`, all in session `ad9392ae` — the corpus's largest at 292 calls, the one a reader would pick to demo. Structural, not a fluke: request bodies grow monotonically, so every long session eventually crosses the cap and **the tail is always what is lost** | **45 rows, the only sentinel present in the whole corpus** | task 12, `JSONL_SCHEMA_NOTE` |
+| **2** | **"Requests are cumulative" is false on raw bytes.** True only after two normalisations the plan never names: `cache_control` markers migrate between calls, and the same message is serialised as a bare string in one call and as content blocks in the next. Raw: 9 prefix / 84 not. Normalised: 85 / 8. Plus a filter: 75 / 0 | accepted on the reviewer's evidence; the author's own corpus-gate check confirmed the premise holds *with* retries as the visible artefact | tasks 11, 12, 13 |
+| **3** | **Five interleaved request classes share one `session_id`** — recap, suggestion-mode, cache-ping, two-message classifiers, and `count_tokens`. Emitting their deltas puts text into the transcript **the user never typed** | `count_tokens`: **65 rows** — 0/21/43/1 across the four days. The plan says "**No `count_tokens` at all**" | task 12 |
+| **4** | **`agent_id` is a partition key, not a filter.** A subagent's calls carry the **parent's** `session_id`, so a converter keyed on session alone splices a separate conversation into the parent transcript | **all 67 agent rows carry this session's id** | task 12 |
+| **5** | **`messages` carries a third role, `system`; the plan's model has two.** On 14 calls the *last* message — the one delta reconstruction emits as the new turn — is `system` | author confirmed independently in `corpus-gate/run-01/requests/00012.bin`: roles user, **system**, assistant, user | tasks 12, 13 |
+| **5b** | **…and it collides with the fidelity marker.** `JSONL_SCHEMA_NOTE` was settled as "a `system` record at the head of each file". **If real `system` turns exist in reconstructions, the marker announcing "this is not a real record" is indistinguishable from one** | author-only finding | register §5, task 13 |
+| **6** | **94 calls have an error response and no task says what the converter emits.** 92 `http_error` + 1 `client_disconnect` on `/v1/messages`. An error body is `{"type":"error",…}` — not a message | author's cross-tab: **693 stream=true ok; 92 stream=false http_error; 66 stream=false ok** | task 11 |
+| **7** | **Task 19 names a command that cannot produce the number it exists to produce.** The ratio is printed inside the verify loop at `cli.py:176`, which register §2 assigns to **`verify-archive`**, not `extract` | verified by reading the register against `cli.py` | task 19 |
+| **8** | **There is no `❓` column, so task 22's check cannot fail.** `❓` was always a marker inside cells. Two §5 rows defer their value to task 13 and under `IDM-008` should carry `❓`: `JSONL_SCHEMA_NOTE` and `SYNTHETIC_UUID_NAMESPACE` | verified against the register's own tables | register, task 22 |
+| **9** | **The register carries no record shape and no index shape**, both of which `IDM-008` requires by name. The JSONL record shape — **this phase's entire output** — appears nowhere; nor do the index's 26 columns; nor the five `request_ref` sentinels | `IDM-008` re-read; `stats.COLUMNS` (20) + `corpus.INDEX_EXTRA_COLUMNS` (6) = the 26 every day's `manifest` reports | register §§1–8 |
+| **10** | **`<seq>` is never defined** — per-session or per-day, width, timestamp or index order (the index is in **completion** order), and what it means for a session spanning days. 10 rows have an empty `session_id`, rendering `<out>/bodies//…` | accepted; dedup makes it load-bearing — 849 digest rows resolve to 737 distinct digests | register §7, task 17 |
+| **11** | **`corpus-gate` is misdescribed.** No root `manifest.csv` — one per run, no header row. "Responses as **raw SSE**" is wrong for 22 of run-01's 49, which are error JSON | author confirmed: `run-01/`, `run-02/`, `run-03/` each hold their own manifest; `00006.bin` is an `overloaded_error` body | finding 4, task 15 |
+| **12** | **"No LM Studio traffic exists in the captured corpus" is false in both places it is asserted** | **1 `backend=lmstudio` row** in `2026-08-21`, plus 3 calls in `corpus-gate/run-02-lmstudio/` | finding 3, "does not settle" |
+| **13** | **Task 14 has nothing to run.** It is "drive it and diff it", but `--format jsonl`'s writer is **task 17, in Group D, after it**. Group C is placed first deliberately and the dependency runs the other way | verified by reading the task order | Groups C/D ordering |
+| **14** | **Task 9 breaks an existing test and the plan does not mention it.** `tests/test_corpus.py:453` shells out to `python -m ilirium_llm_router --extract <day>` | accepted on the reviewer's citation | task 9 |
+| **15** | **`notes.md` said Group A had not started** while `plan.md` recorded three of its tasks done; and "Three commits" sat above a list of four | **fixed in this file, above**, at the two cited places | — |
+| **16** | **The register's SSE event list is incomplete — `event: ping` is absent** | author-only; observed in `corpus-gate/run-01/responses/00012.bin` | register §5, task 11 |
+| **17** | **Retries produce byte-identical consecutive requests** and delta reconstruction has no defined behaviour for a zero delta | author-only; `00003.bin`≡`00004.bin`, `00006.bin`≡`00008.bin` | task 12 |
+
+### Refused, downgraded, or already true
+
+**Recorded with reasons, per `IDM-004` — a refused finding with no reason is re-raised by the next review.**
+
+- **The `agent_id` causation.** Refuted above. **The finding's *conclusion* is accepted and its
+  *mechanism* is not**, and register §8's "0 of 770" needs replacing with a real number rather than
+  merely being corrected.
+- **`.sse`/`.json` extension rule.** The reviewer checked every stored response in all four folders
+  and found **zero mismatches** — the rule is sound. Downgraded to finding 10's edge case: 10 rows with
+  empty `stream` and zero-byte bodies. *Kept because the reviewer also noticed `observe.py` decides by
+  **content-type**, not by the request's `stream` flag, and the design deliberately allows them to
+  disagree.*
+- **The four superseded spellings** — `--to-jsonl`, `--verify-only`, `--day`-as-option,
+  `corpus-<day>`, the two-modules proposal, finding 2's old heading. The reviewer checked each against
+  the charter's test ("still presented as current") and **filed none.** The false-positive list did its
+  job; this is what naming them in advance buys.
+- **`link-check.py` at 87 broken / 97 files**, not 86/96. **Not a regression — the delta is entirely
+  `review-charter.md` itself** and its own forward citation. The baseline is confirmed rather than
+  moved.
+- **`Bash(uvx ruff *)`** remains a raised concern with no home. Not a plan defect; still nobody's.
+
+### Questions this review hands to the owner
+
+**None of these is a defect, and none can be settled by reading. They block the plan revision.**
+
+1. **The probe-class calls — emit, drop, or refuse the session?** Dropping them makes the transcript
+   match ground truth. Emitting them is the more honest record of *what crossed the wire*, which is
+   this milestone's stated subject. **They cannot both be right**, and the choice decides whether task
+   14's *"anything else in the diff is a converter defect"* survives as written or becomes a growing
+   list of expected differences.
+2. **A session whose request bodies stop being captured** — refuse it, emit up to the gap with the gap
+   named in-band, or emit assistant-only turns? Not recoverable by any tool: the bytes were never
+   written.
+3. **Where does the viewer's record schema come from?** It is not published. Two sources: the viewer's
+   Rust source, or a real `~/.claude/projects/*.jsonl`. **The plan forbids the second as *input* —
+   "oracle, never input" — but task 13 is schema discovery, not conversion, and the plan does not draw
+   that distinction.**
+4. **Is `PROJECT_NAME_DEFAULT = corpus` compatible with the viewer?** Every real project folder is
+   path-mangled. The plan asserts a plain name works, with no evidence.
+5. **Matching semantics for `--path`, `--session`, `--model`** — exact or prefix, and how repeated
+   filters of different kinds combine. `--path /v1/messages` under prefix matching now sweeps in 65
+   `count_tokens` rows.
+
+### What this says about `IDM-004` itself
+
+**Its predicted split did not hold, and that is evidence rather than noise.** `IDM-004` says the
+author finds defects about *the record* and the cold reader finds what the author *could not un-know*.
+Here the **cold reader found the record defects too** — the missing `❓` column, and this file
+contradicting `plan.md` about Group A. The author's three unique findings were all **data** findings:
+`ping`, retries, and the `system`-record collision.
+
+**`IDM-004` says its numbers are n=1 and not a rule.** This is n=2, and n=2 disagrees with n=1 about
+where the value comes from. *The overlap figure is not evidence either way, for the reason declared
+above.*
+
+### One side effect, recorded because it was a permission that was asked for and then taken elsewhere
+
+**The cold run created a `.venv` in this worktree.** The author had declined to do so an hour earlier
+and put the question to the owner, because `status.md` treats this worktree's *absence* of a virtualenv
+as load-bearing — the `make` baseline's 2026-08-21 date rests on it. **The agent needed `zstandard` and
+made one.** The worktree is still git-clean, since `.venv/` is gitignored.
+
+**The general shape is worth more than this instance: a constraint the parent session is honouring does
+not propagate to a delegate unless the prompt carries it.** The charter said "read-only, modify
+nothing, write no files" and a virtualenv is none of those things to a reader who needs to import a
+library. → the charter template gains an environment clause.
