@@ -52,9 +52,14 @@ size and cost.
 
 **Where the scratch writes go, and why it matters here.** The write and fsync timings write real
 files into `logs/`, because that is where the store will actually write — not into a system temp
-directory on a different filesystem. On this machine `logs/` sits inside a cloud-synced folder, so
-an fsync here is a measurement of *this* setup rather than of the disk, and that is the number the
-router would actually pay. The scratch directory is removed at the end.
+directory on a different filesystem. An fsync here is therefore a measurement of *this* setup
+rather than of the disk, and that is the number the router would actually pay. The scratch directory
+is removed at the end.
+
+**Which setup that is has changed, and the recorded figures predate the change.** When they were
+taken, `logs/` sat inside a cloud-synced folder; **since 2026-08-25 the working tree is under
+`~/Projects/local/`, which is not synced.** A re-run today measures a different filesystem from the
+one behind the numbers in `README.md`, and the two must not be read as one series.
 
 Run it with `uv run python <this file>` and no arguments — **not bare `python3`**, which on this
 machine is a 3.14 that has no `zstandard` installed; the package lives in the project's 3.13 venv.

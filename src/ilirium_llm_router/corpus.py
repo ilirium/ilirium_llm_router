@@ -601,8 +601,9 @@ class CorpusWriter:
     def _load_newest_dictionary(self) -> _Dictionary | None:
         """The newest dictionary in `<dir>/dicts/`, or `None` if there is not one yet.
 
-        **Newest is by filename, never by mtime.** `logs/` sits inside a cloud-synced folder on the
-        machine this was built for, and a sync rewrites mtimes; the name leads with a UTC stamp
+        **Newest is by filename, never by mtime.** An mtime is filesystem metadata that anything
+        outside this program can rewrite — a copy, a backup restore, an unpack — and a day folder
+        is *guaranteed* to survive being tarred and moved. The name leads with a UTC stamp
         precisely so that sorting it is meaningful.
 
         Returning `None` is the ordinary case at first run, not a failure: the store ships before
@@ -925,9 +926,14 @@ def _write_manifest(path: Path) -> None:
 def newest_dictionary(dicts_dir: Path) -> Path | None:
     """The dictionary that counts as current in a `dicts/` folder, or `None` if there is not one.
 
-    **Newest is by filename, never by mtime.** `logs/` sits inside a cloud-synced folder on the
-    machine this was built for, and a sync rewrites mtimes; the name leads with a UTC stamp
-    precisely so that sorting it is meaningful.
+    **Newest is by filename, never by mtime.** An mtime is filesystem metadata that anything
+    outside this program can rewrite — a copy, a backup restore, an unpack — and a day folder is
+    *guaranteed* to survive being tarred and moved to another machine, which rewrites every one of
+    them. The name leads with a UTC stamp precisely so that sorting it is meaningful.
+
+    *The reason given here until 2026-08-26 was that `logs/` sat inside a cloud-synced folder on
+    this machine. That stopped being true on 2026-08-25; the rule did not move, only its argument,
+    which was local when a durable one was available.*
 
     **Shared rather than duplicated, and that is the whole reason it is a function.** The corpus
     worker asks this to decide what to compress against, and `dictionary.py`'s trainer asks it to

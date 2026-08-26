@@ -217,8 +217,9 @@ def install_dictionary(root: Path, name: str, samples: list[bytes]) -> None:
 
 
 def test_the_newest_dictionary_is_chosen_by_filename_not_mtime(tmp_path: Path) -> None:
-    """`logs/` sits inside a cloud-synced folder on the machine this was built for, and a sync
-    rewrites mtimes. The name leads with a UTC stamp so that sorting it is meaningful."""
+    """An mtime is filesystem metadata anything outside this program can rewrite — a copy, a
+    backup restore, the unpack of a tarred day folder. The name leads with a UTC stamp so that
+    sorting it is meaningful."""
     samples = [bytes([i % 251]) * 3000 for i in range(40)]
     install_dictionary(tmp_path, "req-2026-08-18T104500Z-aaaaaaaa.dict", samples)
     install_dictionary(tmp_path, "req-2026-08-17T090000Z-bbbbbbbb.dict", samples)

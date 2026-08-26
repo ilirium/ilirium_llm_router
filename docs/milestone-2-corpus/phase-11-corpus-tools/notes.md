@@ -561,6 +561,26 @@ same way: the figures it qualifies were taken when the premise held. It needs a 
 rewrite — and **`phase-10-body-store/evidence/benchmark.py` is a frozen copy of the same file and must
 not be touched at all.**
 
-**Nothing outside the two files Task 2 names has been changed**, and the question is put to the owner
-rather than answered here. Position 20 is *"step by step, not leaps by leaps"*, and a task that
-quietly grows from two files to nine is the thing that position rejects.
+**The question was put to the owner rather than answered here** — position 20 is *"step by step, not
+leaps by leaps"*, and a task that quietly grows from two files to nine is the thing that position
+rejects. **The owner's answer, 2026-08-26: all seven.** It is committed separately from Task 2 so the
+task's own boundary stays visible in the history.
+
+**The two families are fixed differently, and that is the point of separating them.**
+
+- **Family A is rewritten.** All five now say an mtime is filesystem metadata that anything outside
+  this program can rewrite — a copy, a backup restore, the unpack of a tarred day folder. For
+  `dictionary.py`'s lock the durable form is narrower and truer: *`since=` is a fact the trainer
+  wrote*, and an mtime is not. Only `corpus.py`'s shared `newest_dictionary` carries the dated
+  correction note; four repetitions of it would be the defect again in a new costume.
+- **Family B is dated, not rewritten.** The recorded fsync figures **are** measurements of a
+  cloud-synced filesystem, because that is what was under them when they were taken. Rewriting the
+  caveat would falsify the record; deleting it would let somebody re-run the procedure today and read
+  the result as the same series. Both files now say when the premise held and when it stopped.
+
+**Verified after:** `make test` **310 passed**, ruff clean at the pinned `0.16.1`, `link-check.py`
+**87 broken / 2 roundabout** — all three unmoved. **Line width checked by hand**, because `CLAUDE.md`
+says `make lint` cannot see it: **zero added lines over 100 characters.** *(A first pass with `awk`
+reported eleven. It was counting **bytes**, and every one of the false positives was a line containing
+an em-dash. The instrument, again — and it was checked because the count looked wrong, not because
+anything failed.)*
