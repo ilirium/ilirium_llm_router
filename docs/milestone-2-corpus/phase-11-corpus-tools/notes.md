@@ -6,6 +6,11 @@
 first phase of this project worked in a **git worktree** rather than in the trunk checkout —
 `../../../../phase-11-corpus-tools`, beside `main` and `to-run-server` under a bare clone.
 
+**`for-the-owner.md` is beside this file, and it is written to a person rather than to a session.**
+Questions only the owner can answer, ideas that are not this phase's business, and things I would do
+differently. **Nothing in it blocks the build** — anything that did was asked in the session. Started
+2026-08-26 on the owner's suggestion; **no tier, no rule, no template**, deliberately.
+
 ## Index of the group files
 
 *In the order they were written, which is the chronology the letter-sorted split otherwise breaks.*
