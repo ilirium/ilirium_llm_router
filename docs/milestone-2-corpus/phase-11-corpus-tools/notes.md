@@ -404,7 +404,15 @@ plausible reading and the true one, one query apart. It is the sixth recorded in
 |---|---|---|---|
 | **1** | **45 consecutive calls have no stored request body.** `request_ref = too_large`, all in session `ad9392ae` — the corpus's largest at 292 calls, the one a reader would pick to demo. Structural, not a fluke: request bodies grow monotonically, so every long session eventually crosses the cap and **the tail is always what is lost** | **45 rows, the only sentinel present in the whole corpus** | task 12, `JSONL_SCHEMA_NOTE` |
 | **2** | **"Requests are cumulative" is false on raw bytes.** True only after two normalisations the plan never names: `cache_control` markers migrate between calls, and the same message is serialised as a bare string in one call and as content blocks in the next. Raw: 9 prefix / 84 not. Normalised: 85 / 8. Plus a filter: 75 / 0 | accepted on the reviewer's evidence; the author's own corpus-gate check confirmed the premise holds *with* retries as the visible artefact | tasks 11, 12, 13 |
-| **3** | **Five interleaved request classes share one `session_id`** — recap, suggestion-mode, cache-ping, two-message classifiers, and `count_tokens`. Emitting their deltas puts text into the transcript **the user never typed** | `count_tokens`: **65 rows** — 0/21/43/1 across the four days. The plan says "**No `count_tokens` at all**" | task 12 |
+| **3** | **Interleaved request classes share one `session_id`** — recap, suggestion-mode, two-message classifiers, and `count_tokens`. **Four kinds, not the five reported** — see the correction below | `count_tokens`: **65 rows** — 0/21/43/1 across the four days. The plan says "**No `count_tokens` at all**" | task 12 |
+
+***One of the reviewer's five classes was a real user message and is struck.*** It listed
+`"Ping to you to keep cache warm: I still reading and thinking"` ×2 as a synthetic probe. **The owner
+typed it, twice, and confirmed so on 2026-08-26 when asked.** The author flagged it as suspect before
+the owner was asked, on the grounds that it appears verbatim in this session's own dialogue — *a class
+of error only available to a reviewer that cannot see the conversation it is reading about.* **Had
+"drop the probe classes" been implemented from the reviewer's list unchecked, it would have deleted
+genuine turns** — the exact failure this phase names as refuting it.
 | **4** | **`agent_id` is a partition key, not a filter.** A subagent's calls carry the **parent's** `session_id`, so a converter keyed on session alone splices a separate conversation into the parent transcript | **all 67 agent rows carry this session's id** | task 12 |
 | **5** | **`messages` carries a third role, `system`; the plan's model has two.** On 14 calls the *last* message — the one delta reconstruction emits as the new turn — is `system` | author confirmed independently in `corpus-gate/run-01/requests/00012.bin`: roles user, **system**, assistant, user | tasks 12, 13 |
 | **5b** | **…and it collides with the fidelity marker.** `JSONL_SCHEMA_NOTE` was settled as "a `system` record at the head of each file". **If real `system` turns exist in reconstructions, the marker announcing "this is not a real record" is indistinguishable from one** | author-only finding | register §5, task 13 |
@@ -476,14 +484,23 @@ contradicting `plan.md` about Group A. The author's three unique findings were a
 where the value comes from. *The overlap figure is not evidence either way, for the reason declared
 above.*
 
-### One side effect, recorded because it was a permission that was asked for and then taken elsewhere
+### ~~One side effect~~ — **retracted 2026-08-26. This section was wrong, and it was the author's error, not the reviewer's**
 
-**The cold run created a `.venv` in this worktree.** The author had declined to do so an hour earlier
-and put the question to the owner, because `status.md` treats this worktree's *absence* of a virtualenv
-as load-bearing — the `make` baseline's 2026-08-21 date rests on it. **The agent needed `zstandard` and
-made one.** The worktree is still git-clean, since `.venv/` is gitignored.
+**This read: *"The cold run created a `.venv` in this worktree"*, and built a governance lesson on it —
+that a constraint the parent honours does not reach a delegate unless the prompt carries it, therefore
+the charter template needs an environment clause.**
 
-**The general shape is worth more than this instance: a constraint the parent session is honouring does
-not propagate to a delegate unless the prompt carries it.** The charter said "read-only, modify
-nothing, write no files" and a virtualenv is none of those things to a reader who needs to import a
-library. → the charter template gains an environment clause.
+**The owner created the `.venv`.** Told plainly when asked. **There was no side effect, no delegate
+exceeded its brief, and the lesson has no evidence under it.** It is struck rather than deleted,
+because a retracted claim that vanishes cannot show that the mechanism caught it.
+
+**How it happened is the part worth keeping.** The author observed a `.venv` that had not been there
+an hour earlier, knew a delegate had just run and had needed `zstandard`, and **inferred a cause that
+fit perfectly**. It was never checked against the one person who could confirm it. *That is the same
+shape as the reviewer's `agent_id` error two sections above — a plausible reading, a true one, and one
+question between them — except this time it is the author's, in the document that records the
+reviewer's.*
+
+**The charter's environment clause is not adopted**, having been argued from a fiction. If a future
+delegate does exceed its brief, that will be the evidence, and this paragraph is the reason to wait
+for it.
