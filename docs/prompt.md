@@ -1,144 +1,154 @@
 # The next session's prompt
 
 *The one file in `docs/` allowed to go stale, per `README.md` — which is why it is rewritten at each
-handoff rather than left. **Phase 11 replaced it on 2026-08-24, revised it on 2026-08-25, and replaced
-it again at the end of that day**; whatever comes next replaces it again.*
+handoff rather than left. **Replaced 2026-08-26, at the close of the session that ratified, reviewed
+and revised Phase 11's plan.** Whatever comes next replaces it again.*
 
 ---
 
-**Phase 11 is open, its plan is written, and the plan is not approved.** Branch
-`feat/phase-11-corpus-tools`, forked from `main` at `f445d6f`, **twelve commits plus a merge bringing
-`main` in, clean tree**. Subject:
-the offline tools over Phase 10's store — **extract** with selection, **dictionaries** as a
-first-class command, and a **converter** to Claude Code session `JSONL` for
-[`claude-code-history-viewer`](https://github.com/jhlee0409/claude-code-history-viewer). The CLI
-becomes subcommands to hold them.
+**Phase 11 is open, its plan is ratified, reviewed and revised, and work may begin at Task 2.**
+Branch `feat/phase-11-corpus-tools`, forked from `main` at `f445d6f`, **30 commits, clean tree**.
+
+**Nothing is queued before the owner.** For the first time in this phase there is no pending decision
+— twenty positions are settled, every one owned and dated. **Task 2 is the next action and it needs no
+permission.**
 
 **Work in the worktree.** `/Users/ilirium/Projects/local/ilirium_llm_router/phase-11-corpus-tools`.
 The project is a bare clone with `main`, `to-run-server` and this phase as sibling worktrees.
 **A session started in `main` sees none of Phase 11.**
 
-## Nothing is queued before the first task. Two things are queued before the owner.
-
-**The previous handoff opened with three permission probes. They ran, all three matched, and
-`.claude/settings.json` is committed** — `b70769a`. **Do not re-run them and do not re-open the
-question.** What was learned from running them is in
-`docs/milestone-2-corpus/phase-11-corpus-tools/notes.md`, under "What `.claude/settings.json` now
-says".
-
-**The two things waiting on the owner are unchanged and still block the plan:**
-
-1. **Position 3 in `plan.md`'s settled table.** Documentation only, or dictionary work too — it
-   decides Group D's shape. The plan states both readings and what each costs; **the response
-   dictionary option means an index schema bump**, which is the part that makes it more than an
-   addition.
-2. **Every `❓` in the plan's register**, listed in its "Placeholders in this file".
-
-**After those, the plan is reviewed under `docs/method/IDM-004-reviewing-unexecuted-work.md` before
-Task 2** — read `IDM-004` before reviewing, because its first rule is that the charter decides what
-the review finds.
-
 ## What to read, and in what order
 
-**Read `docs/status.md` first**, then the phase's `plan.md` — its "What is settled, and by whom" and
-"The re-derivation before Task 1" carry the design findings. Then whichever `docs/reference/` file the
-work touches.
+1. **`docs/status.md`** — first, every session.
+2. **`docs/milestone-2-corpus/phase-11-corpus-tools/plan.md`** — the settled table, then "The
+   re-derivation before Task 1" (six findings), then the task group you are about to run, then the
+   register section that covers it.
+3. **That phase's `notes.md`, section "The forward review"** — **before writing any converter code.**
+   It holds seventeen findings with their evidence and what each costs. **Do not re-derive them.**
 
-**Read by section.** `grep -n '^## ' <file>` first. `docs/wiki/claude-code-context-budget.md` says
-why, and says the fix is reading by section rather than reading less.
+**Read by section.** `grep -n '^## ' <file>` first. `plan.md` is 846 lines and `notes.md` is 512;
+neither should be read whole. `docs/wiki/claude-code-context-budget.md` says why, and says the fix is
+reading by section rather than reading less.
 
-## There is a new documentation tier — `docs/bugs/`
+## The review is done. Do not run another one.
 
-**Created 2026-08-25 on its own branch, merged to `main`, and `main` then merged into this one** —
-defects in software this project does not own, where no commit of ours is the ending.
+**`IDM-004` ran on 2026-08-26** — charter written first, author and cold runs in parallel, then
+reconciliation. `review-charter.md` is the worked example; `notes.md` holds both runs. **The protocol
+says run it once, against a document finished enough to be wrong.** It has been run.
 
-`docs/bugs/BUG-000-about-these-documents.md` holds the conventions. **Read it before filing one.** Two
-things it decides that a session would otherwise re-litigate: the boundary against `wiki/` is
-**lifetime** — a wiki page is written to stay true, a bug document hoping to stop being true — and
-**our own defects do not go there**, because a `fix/` branch is already their ending.
+**The single most useful thing it returned, and the thing to carry into every task:**
 
-*Why the trunk was merged into a phase branch: the handoff documents cite `BUG-001`, and a path in
-backticks is a link here, so the branch could not resolve them — seven broken links that were not
-repairable from this side. Un-backticking them would have silenced the checker without fixing
-anything.*
+> The plan's model of a captured session — *cumulative calls, one user turn and one assistant turn
+> each* — **is simpler than the traffic on disk.** The real thing is five interleaved request classes,
+> three roles, two content serialisations, a migrating `cache_control` annotation, 94 error responses,
+> and a 45-call tail with no request body at all. **Every one was an hour's reading away, and the plan
+> asserted the opposite of several of them in bold.**
 
-## Auto mode is broken upstream, it is measured, and one action is open
+**So: read the corpus before writing code that assumes what is in it.** Reading `index.csv` directly
+with `cut`/`awk`/`csv.DictReader` is cheap and settles most questions. Decompressing a blob needs
+`uv run python` — see the environment note below.
 
-`docs/bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`, on `main`, status **open**,
-last confirmed 2026-08-25. **Do not re-derive this.** The short form is that non-streamed
-`POST /v1/messages` fails categorically while streaming does not, and the control that proves it is
-not a rate limit is a streamed request **2.8× larger** to the same model succeeding **0.6 s** after a
-non-streamed one was rejected.
+## Phase 11 is a baseline tool. Do not widen it.
 
-**The open action: neither upstream issue has been told.** They are named in the document, and both
-stall on exactly the paired control it contains. **This is an action, not a finished thing.**
+**Position 20, the owner's words:** *"step by step, not leaps by leaps."*
 
-**The practical consequence while it is open:** auto mode makes every `Bash` call depend on a
-classifier that is failing, while `Read`/`Grep`/`Glob` do not use it at all. **Prefer the dedicated
-tools** — which `CLAUDE.md` says anyway, for unrelated reasons.
+**Deferred to a later phase — do not build these:** error responses, `count_tokens` calls, subagent
+partitioning, the `corpus-gate` second-source check, and all dictionary work.
 
-## What changed on this branch that later work depends on
+**Tasks 14 and 15 are struck.** They are struck **in place**, not renumbered, so every cross-reference
+to Task 13 and Task 22 still resolves. **Do not resurrect them**, and do not renumber the rest.
 
-- **Phase 13 is allocated** in `docs/milestone-2-corpus/implementation-plan.md`, for the rate-limit
-  response headers. **Read its entry before planning it** — it carries two gates, and neither is
-  discharged by having a number.
-- **Phases 11 and 12 were added to that file at the same time.** The list ran 8, 9, 10, "closing
-  review". **Phase 12 inherits a commitment from Phase 11** — the temporary `README.md` dictionary
-  note — and that is recorded in only one other place.
-- **The capture step is marked discharged in fact, evidence pending Task 7.** Task 7 freezes a slice;
-  until it runs, the material exists only in a gitignored folder on one machine.
-- **Task 5 still needs widening before it runs.** `IDM-002` describes the local settings half as
-  *"machine accretion"*; the owner stopped following that on 2026-08-25 and the half is deliberately
-  empty. The structure is intact, the practice changed, and `IDM-002` does not say so.
+**The baseline's one mechanical rule:** a call contributes a turn **only if its response is a
+message**; the rest are skipped and counted. It is lossless because requests are cumulative, and it
+asks *"is this response a message?"*, never *"is this call a probe?"* — **do not turn it back into
+classification.**
+
+**Three `❓` are live and deliberate**, all resolved at Task 13: `JSONL_SCHEMA_NOTE`'s wording,
+`SYNTHETIC_UUID_NAMESPACE`'s literal, and **the fidelity record's `type` — which must not be a plain
+`system` record**, because a real `system` role occurs inside `messages` and would be indistinguishable
+from the marker announcing *"this is not a real record"*.
+
+## The gap this phase carries on purpose
+
+**Task 14 was struck, and with it the phase's only *exercise the real thing* step.** The owner tests
+the tools **by hand after the phase is finished**, having judged that a ground-truth diff costs too
+much and settles too little before anyone has held the tool.
+
+**So the phase's evidence is tests and mutation testing, and nothing else.** `CLAUDE.md` says green
+tests are not evidence. **The closing record must say the central question was answered mechanically
+and confirmed by hand afterwards** — a phase note reporting green tests as though the question were
+closed is the exact failure the plan's first "does not settle" bullet exists to prevent.
+
+**Task 23's mutation testing is therefore not optional polish.** It is the strongest evidence the
+phase produces.
+
+## What is open, and what is merely available
+
+- **`BUG-001` has not been reported to either upstream issue.** Named in
+  `docs/bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`, status **open**. Both issues
+  stall on exactly the paired control it contains. **This is an action, not a finished thing**, and it
+  is the only open item not attached to Phase 11.
+- **The `make test` / `lint` / `check` baseline is stale, and its reason expired.** It kept its
+  2026-08-21 date because this worktree had no virtualenv. **It has one now**, so the figure can be
+  re-measured here and has not been. **Cheapest open item in `status.md`.** First run takes minutes
+  while the cloud folder rehydrates — slow, not stuck.
+- **Failure mode 3 is still not discharged** — whether archiving *slows* a call is unmeasured.
+- **A call can still vanish**, and closing it needs a guarantee a row can never be written twice.
+- **`Bash(uvx ruff *)` permits an unpinned ruff**, which `CLAUDE.md` says never to invoke as a side
+  effect. Raised, standing, owned by nobody.
 
 ## Things a session gets wrong about this code
 
-- **There is deliberately no headline compression ratio.** Every figure is a small-sample
-  confirmation that the mechanism works.
+- **`python3` here is 3.14; the venv is 3.13.** Anything importing `zstandard` must run under
+  `uv run python`. **The `.venv` in this worktree exists — the owner created it on 2026-08-26.**
+- **The corpus is live and grows while you read it.** It went **770 → 904 rows in one afternoon**, and
+  two copies of one index a minute apart differed by 259 bytes. Every figure needs its moment attached.
+- **The corpus captures this session's own traffic**, including subagents. That is how
+  `observe.py:40` was finally confirmed. It also means a subagent you spawn writes rows.
+- **A session spans day folders.** `extract` takes **positional, repeatable** day folders; the shell's
+  glob is the "all of it" case. A selected session with calls in a folder that was not passed is an
+  **error**, not a partial reconstruction.
+- **There is deliberately no headline compression ratio**, and **2.815× and 3.317× must never be
+  compared** — different measurements of different things. The register says so at length.
 - **Three compression levels, not one.** Storing and scoring use `corpus.compress_level_zstd`;
   training uses its own, lower level.
-- **`python3` here is 3.14; the venv is 3.13.** Anything importing `zstandard` must run under
-  `uv run python`.
 - **A dictID is not a unique key.** `zstd --train` stamps **1** on everything.
-- **The dictionary pickup is every 500 bodies or a day rollover**, not the next body.
-- **Stage with explicit paths, never `git add -A`** — there is a deny rule and it fires. **Not**
-  because `logs/` holds uncommittable things: `logs/` is gitignored at `.gitignore:228`, so
-  `git add -A` cannot stage any of it. *That justification was examined and dropped on 2026-08-21;
-  this file re-asserted it on 2026-08-25 by being written from a stale base, and it is removed
-  again. The advice is right and the old reason for it is not.*
-- **Claude Code's built-in no-prompt set does not include git.** `ls`, `cat`, `grep`, `find`, `wc`,
-  `du`, `cd` run free; every git command prompts unless an allow rule matches it. **`git checkout`
-  prompts every time, deliberately — use `git switch`.**
-- **A fresh worktree reports 13 more broken links than this one.** `.claude/settings.local.json` is
-  gitignored, so `git worktree add` does not create it, and a path in backticks is a link here.
-  **That is an artefact, not a regression.**
-- **`CLAUDE.md` is wrong about this machine and fixing it is Task 2.** It says the `code-2026` and
-  OneDrive paths are *"the same directory"*. True of those two; there are now **genuinely two
-  checkouts** because of the local clone.
+- **`STORE_ERROR`'s value is `"error"`, not `"store_error"`.** Register §11 holds all five sentinels;
+  only `too_large` is present in the corpus, on 45 rows.
+- **The index is in completion order.** Sort before analysing. `<seq>` in extracted output is
+  **timestamp** order for exactly this reason.
+- **Stage with explicit paths, never `git add -A`** — there is a deny rule and it fires.
+- **Claude Code's built-in no-prompt set does not include git.** Every git command prompts unless an
+  allow rule matches. **`git checkout` prompts every time, deliberately — use `git switch`.**
+- **`git merge` cannot read its message from stdin.** `-F -` works for `git commit` and fails here;
+  write the message to a temp file.
+- **Auto mode was turned off by the owner on 2026-08-26**, after `BUG-001` made every `Bash` call
+  depend on a failing classifier. `Read`/`Glob` do not use it. Prefer the dedicated tools, which
+  `CLAUDE.md` says anyway.
 
-## What this phase left standing, unchanged
+## Two retractions from 2026-08-26 — do not resurrect either
 
-- **Failure mode 3 is not discharged.** Whether archiving *slows* a call is unmeasured.
-- **A call can still vanish**, and closing it needs a guarantee a row can never be written twice.
-- **Retention is out of scope for Milestone 2** — a scope boundary, not a backlog item.
-- **One conflict left standing by the owner:** `Bash(uvx ruff *)` permits an **unpinned** ruff, which
-  `CLAUDE.md` says never to invoke as a side effect.
+Both are struck rather than deleted, in `notes.md`, so the mechanism that caught them stays visible.
 
-## How the sessions found what they found
+- **The cold reader claimed the `agent_id` prediction had resolved *before* the review.** It was
+  reading **its own traffic** — one distinct `agent_id` in the whole corpus. The prediction resolved
+  **because of** the run, exactly as predicted.
+- **This session claimed the cold run created the `.venv`.** **The owner created it.** A governance
+  lesson built on that inference — that the charter template needs an environment clause — was
+  **withdrawn, not adopted.** If a delegate does one day exceed its brief, *that* is the evidence.
 
-**Five times in three days a plausible reading and the true one differed by one check.** The empty
-`dicts/` looked exactly like corpus corruption; `--extract` settled it in seconds. A blob count and an
-index row count disagreed by four, and the sophisticated explanation was true, available, and not the
-answer. A prompting `git status` was explained twice, persuasively, before `git --version` showed git
-is simply not in the built-in set. And a 429 that looked like a rate limit was one query away from a
-2.8×-larger request succeeding in the same second.
+**The shape under both:** a plausible reading and the true one, one question apart. It is now the
+sixth and seventh recorded instance, and one of them was the author's, inside the document recording
+the reviewer's. **`IDM-004`'s "verify a refutation before accepting it" is what caught the first.
+Asking the owner is what caught the second.**
 
-**The instrument lesson underneath all of them.** A probe whose outcomes are indistinguishable to its
-reader is not a probe. A model cannot see an approval; an absence of errors is not a pass; a quiet
-session and a fixed bug look identical. **Name what a positive result would look like before running
-anything.**
+## The instrument lesson, which keeps paying
 
-**`git merge` cannot read its message from stdin.** `-F -` works for `git commit` and fails here.
+**Name what a positive result would look like before running anything.** `plan.md`'s finding 3 wrote
+down *"column 3 must hold a non-empty value afterwards, or `observe.py:40` is wrong"* **before** the
+review ran. It did, and a comment nobody had ever observed became a measurement. **A probe whose
+outcomes are indistinguishable to its reader is not a probe.**
 
 Follow the working agreement in `CLAUDE.md`. **Propose before implementing, ask before touching the
-machine and say what it is for, and exercise the real thing before committing.**
+machine and say what it is for, and exercise the real thing before committing** — noting that for this
+phase the owner has taken the exercising step for themselves, afterwards.

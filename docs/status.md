@@ -10,28 +10,38 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-26 — Phase 11's plan is ratified, its register carries no unvalued names, and the forward
-review has not run yet. Still no phase task started.**
+**2026-08-26 — Phase 11's plan was ratified, reviewed and revised in one day. Work may begin at
+Task 2. Still no phase task started.**
 
-**Fourteen settled positions, every one owned and dated**, and the `❓` column is empty.
-**Two of them corrected this plan rather than confirming it:** `verify-archive` became its own command,
-and `--format` replaced the `--to-jsonl` boolean the plan proposed — which had reproduced, one level
-down, the exact defect subcommands were adopted to fix. → `milestone-2-corpus/phase-11-corpus-tools/plan.md`.
+**Twenty settled positions, and the forward review is done** — charter, both runs in parallel,
+reconciliation, **seventeen findings folded in**. → `milestone-2-corpus/phase-11-corpus-tools/`, whose
+`review-charter.md` is new and whose `notes.md` holds both runs.
 
-**Two findings arrived during ratification and both change what gets built.** **A session spans day
-folders** — `15b29c2a…`, 39 calls on the 25th and 19 on the 26th, and it is the session that ratified
-the plan. Because requests are cumulative, a single-day converter would emit a day of prior
-conversation as one opening turn: **misleading output, not merely short**. Day folders are now
-positional and repeatable, and a session with calls in a folder that was not passed is an error. And
-**Claude Code's own records for all three `2026-08-25` sessions are on disk**, so the converter can be
-**diffed against ground truth** rather than eyeballed — **oracle, never input**, since reading them
-would destroy the corpus-alone property the phase exists to demonstrate.
+**The review's own summary is the thing to carry forward.** The plan's model of a captured session —
+*cumulative calls, one user turn and one assistant turn each* — **is simpler than the traffic on
+disk**: five interleaved request classes, three roles, two content serialisations, a migrating
+`cache_control` annotation, 94 error responses, and **a 45-call tail with no request body at all**.
+*"Every one of those is visible in an hour with `csv.DictReader`, and none of them is in the plan."*
 
-**`agent_id` is empty on all 770 rows, and the column is not broken.** `observe.py:40` says it arrives
-only on a subagent's call; **none has ever run through this router**, so that comment has never been
-observed to be true. `--agent` was reinstated because the review itself spawns one, and the positive
-result is named before the run: **column 3 of `2026-08-26/index.csv` must hold a non-empty value
-afterwards, or `observe.py:40` is wrong and the phase has found a defect instead.**
+**The phase was then deliberately narrowed to a baseline tool.** Errors, `count_tokens`, subagent
+partitioning and the second-source check are **deferred**; **Task 14 is struck** — the owner exercises
+the tools **by hand after the phase**, so the phase's own evidence is tests and mutation testing.
+**That gap is named first in the plan's "does not settle"**, because `CLAUDE.md` says green tests are
+not evidence and this phase now has only green tests.
+
+**`observe.py:40` is confirmed by measurement for the first time in this project's history.** It says
+`agent_id` *"arrives only on a subagent's call"* — a comment nothing had ever observed. The review's
+cold run was a subagent through a capturing router, and **67 rows now carry an `agent_id`**, exactly as
+`plan.md`'s finding 3 predicted before it ran. **All 67 carry the parent's `session_id`**, which makes
+`agent_id` a partition key for the converter rather than a filter for the extractor — recorded, and
+deliberately not acted on.
+
+**Two claims were retracted the same day, one in each direction, and both are struck rather than
+deleted.** The cold reader reported the `agent_id` prediction had resolved *before* the review; it was
+reading **its own traffic**. And this session reported that the cold run created a `.venv` in this
+worktree; **the owner created it**, and a governance lesson built on that inference was withdrawn. *A
+plausible reading and the true one, one question apart — twice in one afternoon, once by the reviewer
+and once by the author, in the document recording the reviewer.*
 
 *2026-08-25's entry — permissions closed and committed, `BUG-001` measured, the corpus dicting itself,
 this clone two commits stale — was cut here on 2026-08-26. **Homes checked rather than assumed:** the
@@ -55,16 +65,22 @@ called undicted after it had dicted itself.*
 
 | Check | Figure | When |
 |---|---|---|
-| `link-check.py` | **84 files, 86 broken, 2 roundabout** | re-run **2026-08-25** |
+| `link-check.py` | **97 files, 87 broken, 2 roundabout** | re-run **2026-08-26** |
 | `branch-index.py --check` | **current, 21 rows** | re-run **2026-08-25** |
-| `make test` / `make lint` / `make check` | 310 / clean / valid | **2026-08-21, not re-run since** |
+| `make test` / `make lint` / `make check` | 310 / clean / valid | **2026-08-21, not re-run since — and now runnable here** |
 
-*The `make` row keeps its 2026-08-21 date rather than being restated as current — this worktree has
-no virtualenv, and that is the whole difference between a stale baseline and a dated one. The row
-above it read **86 files, 75 broken** until 2026-08-25: relayed rather than measured, and wrong in
-both columns. **`link-check.py`'s file count walks `.venv/`**, so it is not comparable across
-worktrees; its **broken** count is. `make test` is ~2 s warm, but minutes on first run while the
-cloud folder rehydrates — slow, not stuck.*
+*The `link-check` row moved from **86 broken** on 2026-08-25, and **the whole delta is `review-charter.md`
+and its own forward citation** — not a regression, and the plan's contribution is unchanged at three.
+The file count moved 84 → 97 in the same period; **that column is not comparable across worktrees**
+because the script walks `.venv/`, and this worktree acquired one on 2026-08-26. **The broken count is
+the comparable one.** *(The row read **86 files, 75 broken** until 2026-08-25 — relayed rather than
+measured, and wrong in both columns.)*
+
+**The `make` row's reason has expired and the row has not.** It kept its 2026-08-21 date because this
+worktree had **no virtualenv**; the owner created one on 2026-08-26, so **the figure can now be
+re-measured here and has not been.** That is a stale baseline rather than a dated one, and it is the
+cheapest open item in this file. `make test` is ~2 s warm, but minutes on first run while the cloud
+folder rehydrates — slow, not stuck.*
 
 ## Where the project is
 
