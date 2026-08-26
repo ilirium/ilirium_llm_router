@@ -10,54 +10,60 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-26 — Phase 11's plan was ratified, reviewed and revised, and then Group A ran to
-completion. Tasks 1–7 are done; work resumes at Task 8, the subcommand skeleton.**
+**2026-08-26 — Groups A and B are complete and Task 11 with them. Twelve commits, the last being
+the handoff. Work resumes at Task 12, delta reconstruction, which is the hard core of the phase.**
 
-**Five commits, all documentation and comments — no `src/` behaviour changed yet.** `CLAUDE.md`'s
-inode note, the worktree practice in `IDM-001`, the Shell rule with its source, `IDM-002`'s read-only
-set, and the frozen evidence slice.
+**Tasks 1–11 done.** Group A closed the documentation debts and froze the evidence slice; Group B put
+the CLI on subcommands; Task 11 built `transcript.py`. **355 tests, up from 310.**
 
-**Three findings worth carrying, in the order they cost:**
+**Four findings, in the order they cost:**
 
-1. **Task 5 was recorded in `plan.md` as executed and half of it had not been done.** Its settings work
-   ran on 2026-08-24; the `IDM-002` amendment its title names was never written, and was found only
-   because Task 4 went to cite it. **A two-part task, one part done, the whole marked done** — and the
-   forward review read past it, because a review checks what a document says and the document said
-   something true about one half.
-2. **The vendor documentation contradicts this branch's `git` finding, and it is unresolved on
+1. **Task 11's "66 buffered assistant replies" was the `count_tokens` count.** The task had already
+   corrected that exact conflation once and then landed on 66 anyway. **The corpus holds ONE buffered
+   reply in 979 rows.** Measured by decompressing every response blob. The path is built; *"both
+   encodings are handled"* is now in "does not settle" so it is not read as coverage.
+2. **Task 5 was recorded in `plan.md` as executed and half of it had not been done.** Its settings
+   work ran on 2026-08-24; the `IDM-002` amendment its title names was never written, and was found
+   only because Task 4 went to cite it. **The forward review read past it**, because a review checks
+   what a document says and this one said something true about one half of a two-part task.
+3. **The vendor documentation contradicts this branch's `git` finding, and it is unresolved on
    purpose.** Anthropic's built-in read-only set ends *"and read-only forms of `git`"*; seven
-   measurements here on 2026-08-25 concluded every git command prompts. **Recorded in `IDM-002` with
-   the one-observation check that settles it, and no allow rule removed.** *The hazard was written
-   down as the reason for that section and then happened inside it, within 48 hours.*
-3. **The secrets scan on the evidence slice reported 1913 suspect cells and every one was a sha256.**
-   Instrument fixed before the result was believed, and moved to scan the **redacted** row with nothing
-   written until clean.
+   measurements here on 2026-08-25 concluded every git command prompts. **In `IDM-002` with the
+   one-observation check that settles it, and no allow rule removed.** *The hazard was written down as
+   the reason for that section and then happened inside it, within 48 hours.*
+4. **Three instrument errors, all caught because a number looked wrong and none by anything failing.**
+   `awk` counting bytes not characters; a secrets scan reporting **1913** suspect cells that were all
+   sha256 digests; `$?` after a pipe reporting `tail`'s exit code.
 
-**The evidence slice is frozen and citable — 979 rows, four day folders, taken 2026-08-26T15:16:22Z**,
-redacted to stable placeholders with `freeze.py` committed beside it. **Every data finding from the
-forward review reproduces on it** at four to five times the sample. It is **not** regenerable and says
-so: the corpus read 770 rows during ratification and 979 four hours later.
+**The two strongest pieces of evidence are not tests.** `verify-archive` over the whole live corpus:
+**1793 blobs, 0 failed.** And `reassemble` over every response blob, joined back to the index:
+**979 rows, 0 unresolved, 0 contradictions** against an `error_status` column written at capture time
+months earlier. *Two instruments built phases apart agreeing row for row.*
 
 **One thing waits on the owner and nothing is blocked by it:** with auto mode off, does `git --version`
-prompt? A model cannot answer it — a denial is a tool error and an approval is invisible.
+prompt? **A model cannot answer it** — a denial is a tool error and an approval is invisible.
+→ `milestone-2-corpus/phase-11-corpus-tools/for-the-owner.md`, which is **new** and holds everything
+addressed to a person rather than to a session.
 
-*2026-08-26's earlier entry — ratification, the forward review's seventeen findings, the narrowing to a
-baseline tool, `observe.py:40` confirmed, two retractions — is summarised in `plan.md`'s settled table
-and `notes.md`'s "The forward review", which is where it belongs. **This is the fourth trim**, and the
-first one this section's own rule asked for out loud: it stood at ~78 lines against ~30, and said so.*
+*The earlier 2026-08-26 entries — ratification, the forward review, Group A's own findings — are in
+that phase's `plan.md` and `notes.md`, task by task. **Fifth trim.***
 
-**Baselines. Read the dates — these were run at two different moments and only one pair is current.**
+**Baselines, all re-run 2026-08-26 at the close of this session, in this worktree.**
 
-| Check | Figure | When |
-|---|---|---|
-| `link-check.py` | **87 broken, 2 roundabout** | re-run **2026-08-26**, unmoved across all five commits |
-| `branch-index.py --check` | **current, 21 rows** | re-run **2026-08-26** |
-| `make test` / `make lint` / `make check` | **310 passed / clean / valid** | re-run **2026-08-26, in this worktree** |
+| Check | Figure |
+|---|---|
+| `make test` | **355 passed** — 310 at the session's start, +27 CLI and +18 reassembly |
+| `make lint` / `make check` | clean at the pinned `0.16.1` / valid |
+| `link-check.py` | **86 broken, 2 roundabout** — down one: the register's forward reference to `transcript.py` now resolves |
+| `branch-index.py --check` | **current, 21 rows** |
 
-**310 is still the number to beat — no test has been added or removed**, which is correct: Group A
-changes no behaviour. **The file count is deliberately absent from the `link-check` row**; it moved by
-one within a single session with no document added, because the script walks `.venv/` and this worktree
-acquired one. **Broken is the comparable figure and the file count never was.**
+**`make lint` cannot see column width and it bit inside this session** — a 101-character line went
+into a commit and passed. `--select E501` reports **23 errors in 9 files**, all prose rewraps.
+Deliberately not actioned: `method/IDM-003-development-tooling.md` owns tooling changes. **Check added
+lines by hand until then.**
+
+*The file count stays out of the `link-check` row: it moves when `.venv/` does, and broken is the
+comparable figure.*
 
 ## Where the project is
 
@@ -124,9 +130,11 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 11, starting at Task 8.** ~~Ratify position 3~~, ~~run the forward review~~ and
-   ~~Group A~~ — **all done 2026-08-26.** Group B is the CLI restructure, and it is the first task in
-   this phase to change `src/`. Twenty settled positions, and the review returned **seventeen accepted
+1. **Execute Phase 11, starting at Task 12.** ~~Ratify position 3~~, ~~the forward review~~,
+   ~~Group A~~, ~~Group B~~ and ~~Task 11~~ — **all done 2026-08-26.** Task 12 is **delta
+   reconstruction**: the two normalisations, ordering across day folders, and the error when a
+   selected session has calls in a folder that was not passed. **It is the hard core of the phase**,
+   and `notes.md`'s "The forward review" holds the seventeen findings it must not re-derive. Twenty settled positions, and the review returned **seventeen accepted
    findings**, all folded in. **The review's own summary is the thing to carry forward:** the plan's
    model of a captured session was simpler than the traffic on disk, and *"every one of those is
    visible in an hour with `csv.DictReader`, and none of them is in the plan."*
@@ -184,7 +192,8 @@ differs in each. That is new since this section was written.
 | `logs/calls.csv`, `logs/router.log` | The router's history to 2026-08-20. **Deliberately left** where they are when the config moved to `logs/telemetry/` — owner's decision, in `milestone-2-corpus/phase-10-body-store/plan.md`'s settled table |
 
 **`phase-11-corpus-tools/logs/` — still does not exist. `.venv/` does, and `evidence/` is now
-committed.**
+committed.** *`logs/`'s continued absence is still evidence rather than trivia: `make test`, `make
+lint` and `make check` have all run here and none of them created it.*
 
 *Both halves changed meaning on 2026-08-26 and the entry is rewritten rather than patched.* The venv
 was created **by the owner**, so `uv run python` works here and anything importing `zstandard` can be
@@ -212,7 +221,7 @@ permanent record of a phase's branch, fork point and merge commit is still its p
 
 | Branch | Purpose | Tree | Next action |
 |---|---|---|---|
-| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: `extract` with selection over one or more day folders, `verify-archive`, and a converter to Claude Code session `JSONL`. **Dictionaries are documented, not extended** — position 3, ratified 2026-08-26 | forked at `f445d6f`; **`main` merged in 2026-08-25** so the branch carries `docs/bugs/`. **The plan was ratified and revised 2026-08-26** — 14 settled positions, `❓` column empty | **start work at Task 8**, the subcommand skeleton — **Group A closed 2026-08-26**, Tasks 1–7, five commits, no `src/` behaviour changed. The forward review ran the same day and its seventeen findings are folded into `plan.md`. **Task 14 is struck on the owner's decision**: the tools are exercised by hand *after* the phase, so the phase's own evidence is tests and mutation testing |
+| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: `extract` with selection over one or more day folders, `verify-archive`, and a converter to Claude Code session `JSONL`. **Dictionaries are documented, not extended** — position 3, ratified 2026-08-26 | forked at `f445d6f`; **`main` merged in 2026-08-25** so the branch carries `docs/bugs/`. **The plan was ratified and revised 2026-08-26** — 14 settled positions, `❓` column empty | **start work at Task 12**, delta reconstruction. **Groups A and B and Task 11 closed 2026-08-26**, twelve commits, 355 tests. `cli.py` is on subcommands and `transcript.py` reassembles both encodings. **Task 14 is struck on the owner's decision**: the tools are exercised by hand *after* the phase, so the phase's own evidence is tests and mutation testing — and task 23's mutation check is therefore the strongest thing it produces |
 
 **Opened 2026-08-24, and it is the first branch worked in a git worktree** —
 `/Users/ilirium/Projects/local/ilirium_llm_router/phase-11-corpus-tools`, beside `main` and

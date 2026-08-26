@@ -510,7 +510,7 @@ reviewer's.*
 delegate does exceed its brief, that will be the evidence, and this paragraph is the reason to wait
 for it.
 
-## Task 2 — the inode note, and a justification with seven homes, 2026-08-26
+## Task 2 — the inode note, and a justification with eight homes in seven files, 2026-08-26
 
 **Both halves the task names are done, and both were wrong in a larger way than the task expected.**
 
@@ -535,7 +535,7 @@ sentence it replaces is the one a session would have needed.
 **left alone deliberately**: it is the record of a 2026-08-16 decision and cites `CLAUDE.md` as it
 stood that day. Correcting an archived deliberation to match today would destroy what it records.*
 
-### The mtime justification is dead, and it has seven live homes
+### The mtime justification is dead, and it has eight live homes in seven files
 
 `reference/corpus.md` said *"newest is by filename, never by mtime"* because *"`logs/` sits inside a
 cloud-synced folder on the machine this was built for, and a sync rewrites mtimes."*
@@ -550,8 +550,10 @@ above it.** `reference/corpus.md:55` already promises a day folder can be `tar`'
 another machine; unpacking rewrites every mtime, so mtime ordering cannot survive the move the store
 guarantees. That is now the stated reason.
 
-**What the task did not know is how many places repeat the dead one.** Two families, seven live homes,
-and the two named in the task are two of them:
+**What the task did not know is how many places repeat the dead one.** **Eight live homes across seven
+files** — `corpus.py` carries it twice — of which the task named **one**, `reference/corpus.md`. **Seven
+sit outside the task, and two of those are in `src/`.** Two families, and they cannot be fixed the same
+way:
 
 | | Where | Which claim |
 |---|---|---|
@@ -567,8 +569,8 @@ rewrite — and **`phase-10-body-store/evidence/benchmark.py` is a frozen copy o
 not be touched at all.**
 
 **The question was put to the owner rather than answered here** — position 20 is *"step by step, not
-leaps by leaps"*, and a task that quietly grows from two files to nine is the thing that position
-rejects. **The owner's answer, 2026-08-26: all seven.** It is committed separately from Task 2 so the
+leaps by leaps"*, and a task that quietly grows from two files to eight is the thing that position
+rejects. **The owner's answer, 2026-08-26: fix all seven of the homes outside the task.** It is committed separately from Task 2 so the
 task's own boundary stays visible in the history.
 
 **The two families are fixed differently, and that is the point of separating them.**

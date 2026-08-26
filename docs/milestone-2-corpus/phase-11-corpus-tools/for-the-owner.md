@@ -104,14 +104,20 @@ in two places**: this branch's tracked `settings.json` and `main`'s `settings.lo
 written down, or it narrows to `Bash(uvx ruff@0.16.1 *)`. **Both are one-line changes; the current state
 is the only one that costs anything**, because it is a standing invitation to bump a pin invisibly.
 
-## REGRET · Task 2 grew from two files to nine, and I asked rather than assumed — opened 2026-08-26
+## REGRET · Task 2 grew from two files to eight, and I asked rather than assumed — opened 2026-08-26
 
-`plan.md`'s Task 2 named two files. The dead mtime justification turned out to have **seven live
-homes**, two of them in `src/`. **I stopped and asked rather than widening the task**, and you said all
-seven — which was right, and the commit is separate from Task 2 so the task's boundary stays visible.
+`plan.md`'s Task 2 named two files. The dead mtime justification in one of them turned out to have
+**eight homes across seven files** — `corpus.py` carries it twice — of which **seven sit outside the
+task and two of those are in `src/`**. **I stopped and asked rather than widening the task**, and you
+said fix all seven, which was right; the commit is separate from Task 2 so the boundary stays visible.
+
+*The count itself drifted while being written down — this entry and `notes.md` said "seven homes" and
+"two files to nine" in the same afternoon. **Reconciled at the session's close, and recorded rather
+than silently corrected**, because a count going stale inside the document describing a count going
+stale is this repository's signature failure and it should keep being visible.*
 
 **Recording it because the instinct could have gone the other way and cost you.** Position 20 is *"step
-by step, not leaps by leaps"*, and a task that quietly grows from two files to nine is exactly what that
+by step, not leaps by leaps"*, and a task that quietly grows from two files to eight is exactly what that
 position rejects. **If you would rather I just fixed obvious verbatim-duplicate corrections in future
 without asking, say so** — the cost of asking is a round trip, the cost of not asking is a commit you
 did not sanction. I do not think either default is obviously right, which is why it is here.
