@@ -468,8 +468,8 @@ record with lossy copies**, and that is not a reversible mistake.
 
 ### Group B — the CLI restructure
 
-8. Subcommand skeleton, bare invocation still serving.
-9. Move `check`, `train-dict`, `tune-dict`, `extract` across; **split verification out as
+8. **Done 2026-08-26.** Subcommand skeleton, bare invocation still serving.
+9. **Done 2026-08-26.** Move `check`, `train-dict`, `tune-dict`, `extract` across; **split verification out as
    `verify-archive`**; delete the old flags; update `Makefile` (one line — `Makefile:30`, `--check` →
    `check`; `make run` needs no change). **And fix `tests/test_corpus.py:453`, which shells out to
    `python -m ilirium_llm_router --extract <day>` and asserts on its output** — deleting the flag
@@ -525,7 +525,7 @@ role. The ordering now costs nothing and buys nothing, and it is left alone rath
     defect against `observe.py:40` if the review left `agent_id` empty — is **dead, discharged
     positively**. The forward review's cold run produced **67 rows** carrying an `agent_id`, and
     `observe.py:40` is confirmed by measurement for the first time in this project's history.*
-19. **Re-run `verify-archive` now that a dictionary exists.** The register records that there is **no
+19. **Discharged in fact 2026-08-26, ahead of the group** — driven as task 9's exercise, over all four day folders. The figures are in register §8 and the task stays visible rather than being struck. **Re-run `verify-archive` now that a dictionary exists.** The register records that there is **no
     post-dictionary end-to-end ratio** and that 3.317× must not be read as one. This closes that hole
     and is a **measurement, not a feature** — position 3 postpones dictionary *work*, not dictionary
     *numbers*.
@@ -691,8 +691,11 @@ the corpus moved underneath it.
 holdout at level 9. They answer different questions. Both spellings are kept so the difference
 survives contact with a later reader who wants one number.
 
-**`--extract` has not been re-run since the dictionary landed**, so there is **no post-dictionary
-end-to-end ratio in this table**, and one must not be inferred from the candidate score.
+~~**`--extract` has not been re-run since the dictionary landed**, so there is **no post-dictionary
+end-to-end ratio in this table**, and one must not be inferred from the candidate score.~~
+**Closed 2026-08-26** — `verify-archive` was driven over all four folders as task 9's exercise; the
+block below carries the result. *The warning it ends with survives the closure: the candidate score is
+still not an end-to-end ratio, and the two are still not the same measurement.*
 
 **171 → 317 is one folder read twice, not a discrepancy.** The first reading caught a day still being
 written; the second is that day finished.
@@ -734,6 +737,36 @@ citable, because it is the only one whose source is committed.** → `evidence/`
 
 **770 → 979 in one afternoon**, the fifth occasion this document records the corpus moving under a
 measurement — and the last one that has to, because from here the phase measures the frozen copy.
+
+**Measured 2026-08-26 ~18:40 local, by driving `verify-archive` over all four day folders.** This
+is the **same instrument on every row**, which none of the blocks above can say.
+
+| Day | Blobs | Dictionary | Ratio |
+|---|---|---|---|
+| `2026-08-21` | 14 | none | **3.140×** |
+| `2026-08-24` | 580 | none | **2.553×** |
+| `2026-08-25` | 729 | `9dd33823` | **3.120×** |
+| `2026-08-26` | 470 | `9dd33823` | **3.056×** |
+| **all four** | **1793, 0 failed** | mixed | **2.927×** — 424,909,243 → 145,169,429 bytes |
+
+**Every blob in the live corpus opens and verifies against the digest in its own filename.** 1793 of
+1793. That is the round trip Phase 10 promised, driven at scale for the first time.
+
+***The one number in this document that moved without the corpus growing a new day: `2026-08-24` read
+**2.815×** at 280 blobs mid-day and reads **2.553×** at 580 blobs complete.*** Same folder, same
+command, same absence of a dictionary — **the derived ratio fell as the day filled up.** Every earlier
+note here warns that *counts* move under a measurement; this is the first showing that a **ratio** does
+too, which is worse, because a count that looks stale is obvious and a ratio never does.
+
+**A dicted day beats an undicted one on this instrument — 3.120× and 3.056× against 2.553× — and that
+is still not a headline ratio.** Different days carry different traffic, so this is **suggestive and
+uncontrolled**, not a measurement of what the dictionary is worth. `reference/corpus.md:193` refuses
+headline ratios and this phase does not start one. **The controlled version is the dicted-vs-undicted
+benchmark, which position 13 postponed into `../../backlog.md`.**
+
+*1793 blobs against the frozen slice's 821 + 934 = 1755 distinct digests is **not** a discrepancy —
+the slice was taken at 15:16Z and this run is some four hours later, on a corpus that is still being
+written.*
 
 *None of these goes in `reference/measurements.md` until **Task 7** freezes a slice — a number whose
 slice is still moving cannot fill the four columns `../../README.md` requires. **The corpus was still

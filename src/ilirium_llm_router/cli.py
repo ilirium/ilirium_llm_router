@@ -34,16 +34,13 @@ def main() -> int:
     args = _parse_args()
     load_dotenv()
 
-    # **Bare and `serve` are the same path, not two.** `args.command` is `None` when no subcommand
-    # was given, and everything below already reads as "the server unless something returned first",
-    # so the default needs no branch of its own. Phase 11 task 8.
-    if args.command not in (None, "serve"):  # pragma: no cover - task 9 fills this in
-        raise AssertionError(f"unrouted subcommand: {args.command!r}")
-
-    # Before the config is loaded, deliberately: reading a day folder back needs the folder and
-    # nothing else, which is the self-containment rule the reader exists to demonstrate.
-    if args.extract is not None:
-        return _extract(args.extract)
+    # **Before the config is loaded, deliberately.** Reading day folders back needs the folders and
+    # nothing else, which is the self-containment rule these two exist to demonstrate: `tar` a day,
+    # unpack it on a machine that has no `config.yaml`, and point this at it.
+    if args.command == "verify-archive":
+        return _verify_archive(args.days)
+    if args.command == "extract":
+        return _extract(args)
 
     try:
         config = load_config(args.config)
@@ -53,12 +50,16 @@ def main() -> int:
 
     _report(config, args.config)
 
-    if args.check:
+    if args.command == "check":
         print("\nConfiguration is valid.")
         return 0
 
-    if args.train_dict or args.tune_dict:
+    if args.command in ("train-dict", "tune-dict"):
         return _train_dict(config, args)
+
+    # **Bare and `serve` are the same path, not two.** `args.command` is `None` when no subcommand
+    # was given, and everything below already reads as "the server unless something returned
+    # first", so the default needs no branch of its own.
 
     import uvicorn
 
@@ -106,42 +107,13 @@ def _config_flag(parser: argparse.ArgumentParser, *, top_level: bool) -> None:
     )
 
 
-def _parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        prog="ilirium-llm-router",
-        description="Route Claude Code to Anthropic and to locally served models at the same time.",
-    )
-    _config_flag(parser, top_level=True)
+def _retrain_flags(parser: argparse.ArgumentParser) -> None:
+    """The four overrides and `--from`, shared by `train-dict` and `tune-dict`.
 
-    # `dest="command"` leaves `None` for the bare invocation, which `main` reads as "serve". The
-    # subparsers are deliberately **not** `required=True`: bare must keep working.
-    commands = parser.add_subparsers(dest="command", metavar="COMMAND")
-    serve = commands.add_parser(
-        "serve",
-        help="start the server (the same thing a bare invocation does)",
-        description="Start the router. This is what a bare `ilirium-llm-router` does.",
-    )
-    _config_flag(serve, top_level=False)
-
-    parser.add_argument(
-        "--check",
-        action="store_true",
-        help="validate the configuration, report it, and exit without starting the server",
-    )
-    parser.add_argument(
-        "--train-dict",
-        action="store_true",
-        help="train a dictionary now and install it if it beats the one in use; works even when "
-        "automatic retraining is off, and does not start the server",
-    )
-    parser.add_argument(
-        "--tune-dict",
-        action="store_true",
-        help="sweep maxdict x k and print the whole surface; never installs anything",
-    )
-    # The four mirror the `retrain` config keys one-for-one, which is the rule rather than a
-    # preference: it makes "the flag wins over the key for this run" a mapping a reader can see
-    # instead of a table they have to learn. It is why `--k` keeps its one-letter spelling.
+    **The four mirror the `retrain` config keys one-for-one**, which is the rule rather than a
+    preference: it makes "the flag wins over the key for this run" a mapping a reader can see
+    instead of a table they have to learn. It is why `--k` keeps its one-letter spelling.
+    """
     parser.add_argument("--window-days", type=int, help="override corpus.retrain.window_days")
     parser.add_argument(
         "--sample-min-bytes", type=int, help="override corpus.retrain.sample_min_bytes"
@@ -156,60 +128,200 @@ def _parse_args() -> argparse.Namespace:
         help="train from a directory that is not a corpus, each subdirectory counting as one "
         "session; the lock, retrain.log and the install still use corpus.dir",
     )
+
+
+def _days_argument(parser: argparse.ArgumentParser) -> None:
+    """`DAY...`, positional and repeatable — position 7, the owner's.
+
+    **A required *option* was the wrong shape and is struck.** Days are positional, so the shell's
+    own glob covers "all of it" — `verify-archive logs/corpus/2026-*/` — and no `--all` flag or
+    corpus-root concept is needed. Repeatable because **a session spans day folders**: finding 5
+    measured one session with calls on two consecutive days.
+    """
     parser.add_argument(
-        "--extract",
+        "days",
+        nargs="+",
         type=Path,
         metavar="DAY",
-        help="read every body back out of one corpus day folder, verify each against the digest "
-        "in its own filename, and report; does not start the server",
+        help="one or more corpus day folders; the shell's glob is the 'all of it' case",
     )
-    return parser.parse_args()
 
 
-def _extract(day: Path) -> int:
-    """Read a day folder back and say whether all of it opens.
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        prog="ilirium-llm-router",
+        description="Route Claude Code to Anthropic and to locally served models at the same time.",
+    )
+    _config_flag(parser, top_level=True)
 
-    **Minimal on purpose.** The extraction *tool* — selection by session, call or model, output
-    layout, bulk verification — is Phase 11's. What this is for is making the round trip a thing
-    somebody can run rather than a snippet written once, which is what a check nobody can repeat
-    turns into.
+    # `dest="command"` leaves `None` for the bare invocation, which `main` reads as "serve". The
+    # subparsers are deliberately **not** `required=True`: bare must keep working.
+    commands = parser.add_subparsers(dest="command", metavar="COMMAND")
 
-    It reads the day folder and nothing above it, so it is also the self-containment rule made
-    executable: `tar` a day, unpack it elsewhere, point this at it.
+    serve = commands.add_parser(
+        "serve",
+        help="start the server (the same thing a bare invocation does)",
+        description="Start the router. This is what a bare `ilirium-llm-router` does.",
+    )
+    _config_flag(serve, top_level=False)
+
+    check = commands.add_parser(
+        "check",
+        help="validate the configuration, report it, and exit without starting the server",
+    )
+    _config_flag(check, top_level=False)
+
+    train = commands.add_parser(
+        "train-dict",
+        help="train a dictionary now and install it if it beats the one in use; works even when "
+        "automatic retraining is off, and does not start the server",
+    )
+    _config_flag(train, top_level=False)
+    _retrain_flags(train)
+
+    tune = commands.add_parser(
+        "tune-dict",
+        help="sweep maxdict x k and print the whole surface; never installs anything",
+    )
+    _config_flag(tune, top_level=False)
+    _retrain_flags(tune)
+
+    extract = commands.add_parser(
+        "extract",
+        help="read bodies out of one or more day folders, with selection, into files",
+        description="Select calls out of a corpus and write them where a person can read them.",
+    )
+    _days_argument(extract)
+    # **`--out` and `--format` are both required — position 8, the owner's.** A run always states
+    # what it produces. `--format` is a *selector*, not a mode flag: the plan proposed `--to-jsonl`
+    # and the owner replaced it, because a boolean mode with a companion option that is meaningless
+    # without it is the exact defect subcommands were adopted to fix, one level down.
+    extract.add_argument("--out", type=Path, required=True, metavar="DIR",
+                         help="output root; `bodies/` and `projects/` are written under it")
+    extract.add_argument("--format", dest="formats", action="append", required=True,
+                         choices=("bodies", "jsonl"),
+                         help="what to write; repeatable, so both can be asked for at once")
+    extract.add_argument("--session", dest="sessions", action="append", default=[], metavar="ID",
+                         help="only this session; repeatable, and repeats are OR'd")
+    extract.add_argument("--model", dest="models", action="append", default=[], metavar="NAME",
+                         help="only this model; repeatable, and repeats are OR'd")
+    extract.add_argument("--agent", dest="agents", action="append", default=[], metavar="ID",
+                         help="only this subagent; repeatable, and repeats are OR'd")
+    extract.add_argument("--path", metavar="PATH",
+                         help="only this request path, matched exactly — so `/v1/messages` does "
+                              "not sweep in `/v1/messages/count_tokens`")
+    # **`default=None`, not "corpus".** The default is applied downstream, so that *"was it given?"*
+    # stays answerable here — which is what makes the error below possible at all.
+    extract.add_argument("--project-name", metavar="NAME",
+                         help="the folder under `projects/` (default: corpus); requires "
+                              "--format jsonl")
+
+    verify = commands.add_parser(
+        "verify-archive",
+        help="read every body back out of one or more day folders, verify each against the digest "
+        "in its own filename, and report; writes nothing",
+    )
+    _days_argument(verify)
+
+    args = parser.parse_args()
+
+    # **A parse error, not a silent no-op.** `--project-name` scopes a *format*, and passing it
+    # without that format is a mistake the user wants told about — argparse cannot express the
+    # dependency, so it is checked here and reported through the subparser so the usage line is
+    # `extract`'s rather than the program's.
+    if args.command == "extract" and args.project_name is not None and "jsonl" not in args.formats:
+        extract.error("--project-name is meaningless without --format jsonl")
+    return args
+
+
+def _verify_archive(days: list[Path]) -> int:
+    """Read day folders back and say whether all of them open.
+
+    **This is `--extract`'s read-and-check half, now its own command** — position 9, the owner's.
+    The plan had carried a `--verify-only` flag on `extract`; that flag **named the default**, since
+    an `extract` with no output destination cannot do anything else, and two spellings for one
+    behaviour is what the register exists to catch.
+
+    It reads the day folders it is given and **nothing above them**, so it is the self-containment
+    rule made executable: `tar` a day, unpack it elsewhere, point this at it.
+
+    **Every day is attempted even after one fails.** A run that stopped at the first bad folder
+    would report the first problem and hide the rest, and the question this answers is *"does all of
+    it open?"* rather than *"is there a problem?"*.
     """
     from .corpus import CorpusError, CorpusReader
 
-    if not day.is_dir():
-        print(f"error: {day} is not a directory", file=sys.stderr)
-        return 1
+    grand_total = grand_failed = grand_plaintext = grand_compressed = 0
+    missing = False
 
-    reader = CorpusReader(day)
-    directions = reader.directions()
-    if not directions:
-        print(f"error: {day} holds no requests/ or responses/ folder", file=sys.stderr)
-        return 1
+    for day in days:
+        print(f"=== {day}")
+        if not day.is_dir():
+            print(f"error: {day} is not a directory", file=sys.stderr)
+            missing = True
+            continue
 
-    total = plaintext = compressed = failed = 0
-    for direction in directions:
-        for blob in reader.blobs(direction):
-            total += 1
-            compressed += blob.stat().st_size
-            try:
-                plaintext += len(reader.read(blob))
-            except CorpusError as exc:
-                failed += 1
-                print(f"  FAILED  {direction}/{blob.name}: {exc}", file=sys.stderr)
+        reader = CorpusReader(day)
+        directions = reader.directions()
+        if not directions:
+            print(f"error: {day} holds no requests/ or responses/ folder", file=sys.stderr)
+            missing = True
+            continue
 
-    manifest = day / "manifest"
-    if manifest.exists():
-        print(manifest.read_text(encoding="utf-8").strip())
-    dictionaries = sorted(p.name for p in (day / "dicts").glob("*.dict"))
-    print(f"dictionaries: {', '.join(dictionaries) if dictionaries else 'none'}")
-    print(f"{total} blob(s), {failed} failed")
-    if total and not failed:
-        print(f"{plaintext} → {compressed} bytes, {plaintext / compressed:.3f}x")
-        print("every blob verified against the digest in its own filename")
-    return 1 if failed else 0
+        total = plaintext = compressed = failed = 0
+        for direction in directions:
+            for blob in reader.blobs(direction):
+                total += 1
+                compressed += blob.stat().st_size
+                try:
+                    plaintext += len(reader.read(blob))
+                except CorpusError as exc:
+                    failed += 1
+                    print(f"  FAILED  {direction}/{blob.name}: {exc}", file=sys.stderr)
+
+        manifest = day / "manifest"
+        if manifest.exists():
+            print(manifest.read_text(encoding="utf-8").strip())
+        dictionaries = sorted(path.name for path in (day / "dicts").glob("*.dict"))
+        print(f"dictionaries: {', '.join(dictionaries) if dictionaries else 'none'}")
+        print(f"{total} blob(s), {failed} failed")
+        if total and not failed:
+            print(f"{plaintext} → {compressed} bytes, {plaintext / compressed:.3f}x")
+            print("every blob verified against the digest in its own filename")
+
+        grand_total += total
+        grand_failed += failed
+        grand_plaintext += plaintext
+        grand_compressed += compressed
+
+    # **Only when there is more than one day**, so a single-day run prints exactly what it always
+    # did and the two forms do not have to be read differently.
+    if len(days) > 1:
+        print(f"\n=== {len(days)} day folder(s)")
+        print(f"{grand_total} blob(s), {grand_failed} failed")
+        if grand_total and not grand_failed:
+            ratio = grand_plaintext / grand_compressed
+            print(f"{grand_plaintext} → {grand_compressed} bytes, {ratio:.3f}x")
+
+    return 1 if (grand_failed or missing) else 0
+
+
+def _extract(args: argparse.Namespace) -> int:
+    """Selection over the index, output as files a person can open.
+
+    **The flag surface is complete and the behaviour is not** — Phase 11 builds it in Group D,
+    tasks 16 to 18, on top of the converter Group C writes. This exists now because task 9 is where
+    the CLI is settled and task 10 tests that surface: `--out` and `--format` required,
+    `--project-name` a parse error without `--format jsonl`.
+
+    **It reports rather than pretending.** A command that parses and then does nothing quietly is
+    the failure this phase exists to avoid one level up.
+    """
+    print("error: `extract` is not implemented yet — Phase 11 group D, tasks 16-18.",
+          file=sys.stderr)
+    print(f"       parsed: {len(args.days)} day(s), formats={args.formats}, out={args.out}",
+          file=sys.stderr)
+    return 2
 
 
 def _train_dict(config: Config, args: argparse.Namespace) -> int:
@@ -247,7 +359,7 @@ def _train_dict(config: Config, args: argparse.Namespace) -> int:
 
     trainer = DictionaryTrainer(corpus)
     print()
-    if args.tune_dict:
+    if args.command == "tune-dict":
         return _tune(trainer, args)
 
     verdict = trainer.run(

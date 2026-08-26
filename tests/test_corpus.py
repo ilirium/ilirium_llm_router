@@ -444,14 +444,14 @@ def test_the_reader_tries_every_dictionary_claiming_the_frames_id(tmp_path: Path
     assert CorpusReader(tmp_path / DAY).read(blob) == b"q" * 9000
 
 
-def test_extract_reads_a_day_back_and_reports(tmp_path: Path) -> None:
+def test_verify_archive_reads_a_day_back_and_reports(tmp_path: Path) -> None:
     store = writer(tmp_path)
     store.store(TIMESTAMP, "requests", b"x" * 4096)
     store.store(TIMESTAMP, "responses", b"y" * 4096)
     drain(store)
 
     finished = subprocess.run(
-        [sys.executable, "-m", "ilirium_llm_router", "--extract", str(tmp_path / DAY)],
+        [sys.executable, "-m", "ilirium_llm_router", "verify-archive", str(tmp_path / DAY)],
         capture_output=True,
         text=True,
         check=False,

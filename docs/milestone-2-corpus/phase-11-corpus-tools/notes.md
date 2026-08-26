@@ -768,3 +768,67 @@ now the register can say how little of that path has ever been exercised by real
 `IDM-002` amendment; **Task 7** freezes the slice. **This is the third instance of that exact
 off-by-two in this phase** — register §8 carried it, and a session reading only the README would have
 gone looking for the freeze in the settings work.*
+
+## Tasks 8 and 9 — the CLI becomes subcommands, 2026-08-26
+
+**The first `src/` change in this phase.** `serve`, `check`, `train-dict`, `tune-dict`, `extract` and
+`verify-archive`; bare invocation still serves; every old flag deleted rather than aliased.
+
+### The defect that would have shipped silently, and how it was caught
+
+**A subparser's `--config` with an ordinary default overwrites the top-level value after parsing.**
+`ilirium-llm-router -c other.yaml serve` would have loaded `config.yaml` — **the flag accepted, the
+flag ignored, and no error anywhere.** `argparse.SUPPRESS` fixes it: the attribute is set only when
+the option actually appears.
+
+**Measured in both directions rather than asserted in a docstring**, because a claim about argparse is
+exactly the kind that reads as obviously true and is not:
+
+```
+SUPPRESS (what cli.py uses)    -c other.yaml serve -> other.yaml
+ordinary default (the trap)    -c other.yaml serve -> config.yaml
+```
+
+*The instrument lesson applied to a docstring. Writing "SUPPRESS is not a style choice" costs nothing
+and proves nothing; the counterfactual is what makes it a fact, and it took four lines.*
+
+### `verify-archive` over the whole live corpus — 1793 blobs, 0 failed
+
+**Driven, not tested.** `CLAUDE.md` says green tests are not evidence, and the tests here are all
+`tmp_path` fixtures. → register §8 for the table.
+
+**Every blob in the live corpus opens and verifies against the digest in its own filename.** That is
+Phase 10's promise driven at scale for the first time — it had been driven on one day folder, at 280
+blobs, and now on four at 1793.
+
+**It also discharges task 19 ahead of its group**, and the task is left visible rather than struck so
+the ordering stays legible.
+
+***And it caught a ratio going stale, which no note in this repository had recorded before.***
+`2026-08-24` read **2.815×** at 280 blobs mid-day and reads **2.553×** at 580 blobs complete. Same
+folder, same command, same absence of a dictionary. **Every earlier warning here is about counts
+moving under a measurement; a count that has gone stale is at least visible as a count. A ratio never
+looks stale.**
+
+### Four decisions inside task 9 worth naming
+
+1. **Every day is attempted even after one fails.** A run that stopped at the first bad folder would
+   report the first problem and hide the rest — and the question `verify-archive` answers is *"does
+   all of it open?"*, not *"is there a problem?"*.
+2. **The grand-total block prints only when more than one day was given**, so a single-day run prints
+   exactly what `--extract` always did and the two forms need not be read differently.
+3. **`--project-name` without `--format jsonl` is a parse error**, reported through the *subparser* so
+   the usage line is `extract`'s rather than the program's. `--project-name` defaults to `None` rather
+   than to `corpus`, because *"was it given?"* has to stay answerable for that check to exist at all.
+4. **`extract` parses fully and refuses to run**, returning 2 and naming the tasks that will build it.
+   A command that parsed and then quietly did nothing is the same failure this phase exists to avoid
+   one level up.
+
+### One measurement here was the instrument's fault, again
+
+Checking exit codes, `echo "exit=$?"` after a pipe into `tail` reported **0** for a run that had
+failed. **`$?` was `tail`'s.** Re-run without the pipeline: missing folder **1**, good folder **0**,
+`extract` stub **2**, deleted flag **2** — all correct.
+
+*Third instrument error in one session — the `awk` byte-count, the `1913` sha256 "secrets", and now
+this. All three were caught because the number looked wrong, and none by anything that failed.*

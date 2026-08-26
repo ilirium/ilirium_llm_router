@@ -27,7 +27,7 @@ run: ## Start the router
 	uv run ilirium-llm-router -c $(CONFIG)
 
 check: ## Validate the config and print it, without starting the server
-	uv run ilirium-llm-router -c $(CONFIG) --check
+	uv run ilirium-llm-router -c $(CONFIG) check
 
 test: ## Run the tests (make test ARGS="tests/test_routing.py::test_..." for one)
 	uv run pytest $(ARGS)
