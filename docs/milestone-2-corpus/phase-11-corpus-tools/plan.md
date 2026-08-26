@@ -486,10 +486,30 @@ ahead of the extractor so the expensive discovery would arrive early. **The forw
 that discovery without any code being written** — the 45-call tail, the two normalisations, the third
 role. The ordering now costs nothing and buys nothing, and it is left alone rather than churned.*
 
-11. SSE reassembly **and** the plain-JSON path. **`ping` is a real event and is in the list** — see
-    register §5. *This task said "63 of 168 real calls need the second" until 2026-08-26; that figure
-    was a partial-day snapshot and it conflated "not streamed" with "a buffered assistant reply". The
-    current corpus has **66** buffered replies, and the conclusion is unaffected.*
+11. **Done 2026-08-26.** SSE reassembly **and** the plain-JSON path. **`ping` is a real event and is in the list** — see
+    register §5.
+
+    ***The buffered-reply count was wrong twice, and the second time it was wrong in the sentence
+    that corrected the first.*** This task said *"63 of 168 real calls need the second"*, then said
+    the conflation of *"not streamed"* with *"a buffered assistant reply"* had been fixed and the
+    figure was **66**. **66 is the `count_tokens` count.** Measured 2026-08-26 by decompressing
+    **every response blob in the live corpus** and reading its shape:
+
+    | Response shape | Blobs | What the converter does |
+    |---|---|---|
+    | SSE | **808** | reassemble — the main path |
+    | JSON, `type=error` | **93** | **skipped**, deferred by position 20 |
+    | JSON, `{"input_tokens": N}` — a `count_tokens` reply | **47** blobs / 66 index rows | **skipped**: not a message |
+    | zero-length | **4** | **skipped** |
+    | **JSON, `type=message` — an actual buffered reply** | **1** | reassemble |
+
+    **The plain-JSON message path is exercised by exactly one call in the whole corpus.** It is still
+    built — position 15 filters nothing, and a `stream=false` success is legal — **but it must be
+    tested synthetically, and a later session must not read "buffered replies are handled" as
+    coverage.** → "What this phase does not settle".
+
+    *The conclusion the old note defended does survive: both paths are needed. What does not survive
+    is the impression that the second one is a third of the traffic. **It is one call in 979.***
 12. Delta reconstruction across a session's calls, **spanning day folders** (finding 5), **the two
     normalisations without which it is wrong on real data** (finding 7), **and the error when a
     selected session has calls in a folder that was not passed.** The error is not a nicety: without
@@ -574,7 +594,7 @@ deliberate, all resolved at Task 13.*
 | Name | | |
 |---|---|---|
 | `src/ilirium_llm_router/extract.py` | selection over an index, output layout | new |
-| `src/ilirium_llm_router/transcript.py` | SSE + JSON reassembly, delta reconstruction | new |
+| `src/ilirium_llm_router/transcript.py` | SSE + JSON reassembly, delta reconstruction | **task 11 built the reassembly half, 2026-08-26** |
 | `src/ilirium_llm_router/jsonl.py` | the viewer's record shapes | new |
 | `src/ilirium_llm_router/cli.py` | restructured, not new | **modified** |
 
@@ -630,7 +650,11 @@ which is exactly what `--extract` does today.*
 |---|---|
 | `JSONL_SCHEMA_NOTE` | **❓ — wording deferred to Task 13.** *Marked `❓` rather than left blank on 2026-08-26: `IDM-008`'s rule is that anything named and never valued is `❓`, and **deferring a value to a task is a plan for getting one, not a value**.* What it must contain is settled: the tool, the source days and session, the call count, **the count of calls skipped because their response was not a message**, the generation moment, and the five fields absent by construction — `cwd`, `gitBranch`, `version`, `toolUseResult`, agent attribution |
 | the fidelity record's `type` | **❓ — must not be plain `system`.** A real `system` role occurs *inside* `messages` and reaches the transcript, so a `system` record announcing *"this is not a real record"* is **indistinguishable from a real turn**. Settled at Q4/N3 as "a `system` record at the head of the file" before that was known. Resolve at Task 13 |
-| SSE event names consumed | `message_start`, `content_block_start`, `content_block_delta`, `content_block_stop`, `message_delta`, `message_stop`, `error`, **`ping`** |
+| SSE event names consumed | `message_start`, `content_block_start`, `content_block_delta`, `content_block_stop`, `message_delta`, `message_stop`, `error`, **`ping`** — **all eight observed**, 2026-08-26 |
+| **`content_block` types** | **Five, not three** — `text`, `tool_use`, `thinking`, **`server_tool_use`**, **`web_search_tool_result`**. *Added 2026-08-26: the register named the events and never what they carry, and the reassembler consumes these. Counts over the **whole** corpus, by reassembling every response: 552 / 654 / 461 / 4 / 4 — so **`tool_use` is the most common block here and `thinking` is not rare**. The last two are Anthropic **server-side** tools and were missed by a two-day sample, which is why the count was re-run over all four days* |
+| **`content_block_delta` types** | `text_delta`, `input_json_delta`, `thinking_delta`, **`signature_delta`** — *`input_json_delta` carries a **tool input as JSON string fragments** that must be concatenated and only then parsed, which is the one piece of real work in reassembly. 64,260 of them in two days against 2,071 `text_delta`* |
+| `message_delta`'s `stop_reason` | `tool_use` **626**, `end_turn` **181**, `max_tokens` **1**, over the whole corpus — so **most turns here end in a tool call**, not in text to the user |
+| **skip reasons** — `transcript.py` | `empty`, `error`, `stream-error`, `not-a-message`, `malformed`, `incomplete`. **Six, and each is a different fact about the capture**, which is why they are not one `skipped` flag. Live counts: 93 `error`, 66 `not-a-message`, 11 `empty`, **1 `incomplete`**, 0 `stream-error`, 0 `malformed` |
 | `SYNTHETIC_UUID_NAMESPACE` | **❓ — the literal is minted at Task 13.** The *mechanism* is settled and is not `❓`: `uuid5(NAMESPACE, "<request-blob-digest>:<record-index-within-call>")`, so **the same corpus produces the same file forever, on any machine.** Minted rather than borrowed so our ids cannot collide with anyone else's `uuid5` values. **Not** `uuid4` — Task 13 tests determinism by converting twice and diffing. *`<block-index>` was the spelling until 2026-08-26 and was undefined for a delta-reconstructed turn, which by construction is not a content block of any one response* |
 | `PROJECT_NAME_DEFAULT` | `corpus` — one bucket. **`corpus-<day>` was proposed and killed by finding 5**: a session spanning two days has no single day to file under |
 
@@ -890,6 +914,11 @@ Phase 10's worked.*
   record must say so; **a phase note that reports green tests as though the question were closed would
   be the exact failure this bullet exists to prevent.** *The one measurement this milestone has already
   paid for twice is the one nobody took.*
+- **Whether the plain-JSON message path works on anything but a synthetic fixture.** The whole live
+  corpus holds **one** buffered assistant reply. The path is built and unit-tested; it is **not**
+  exercised at scale, and *"both response encodings are handled"* must not be read as coverage of the
+  second. *Found 2026-08-26 by decompressing every response blob — see task 11, which carried 66 as
+  that count until then.*
 - **Error responses, `count_tokens` calls, subagent partitioning, and the second-source check.**
   Deferred by position 20. **What the baseline does instead is mechanical and stated, not undefined:**
   a call contributes a turn **only if its response is a message**, and the rest are skipped and
