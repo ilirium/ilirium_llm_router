@@ -53,34 +53,41 @@ its own merge commit message.*
 **Still open and unchanged: `BUG-001` has not been reported to either upstream issue.** It remains the
 only item in "What is next" not blocked on a decision.
 
-*Trimmed on 2026-08-26 — the **third** trim, and the first that left the section inside its own rule.
-It stood at ~58 lines carrying 2026-08-25's four entries; those are summarised in one italic paragraph
-above with each home checked rather than assumed. **The previous trim's own note predicted it would go
-at the next trim, and it has.** For the record it kept: the second trim, on 2026-08-25, cut ~162 lines
-of entries reaching back to 2026-08-21, and found **three that had gone stale in place** — `CLAUDE.md`
-at 292 lines when it was 297, "eight of nineteen" branches against a 21-row table, and the corpus
-called undicted after it had dicted itself.*
+*Trimmed on 2026-08-26 — the **third** trim. It stood at ~58 lines carrying 2026-08-25's four entries;
+those are summarised in one italic paragraph above with each home checked rather than assumed. For the
+record it kept: the second trim, on 2026-08-25, cut ~162 lines reaching back to 2026-08-21 and found
+**three entries that had gone stale in place** — `CLAUDE.md` at 292 lines when it was 297, "eight of
+nineteen" branches against a 21-row table, and the corpus called undicted after it had dicted itself.*
+
+***This note claimed the trim "left the section inside its own rule" for most of 2026-08-26, and by the
+end of the day that was false: the section is ~78 lines against ~30.** It was true when written, at
+~35 lines, and then the same session added the forward review's outcome and re-measured the baselines
+into it. **A self-describing note went stale the same way the entries it describes do, in the section
+whose rule exists to stop exactly that** — the fourth recorded instance of prose about a count
+outliving the count. Roughly a third of the 78 is the baselines block, which is state rather than
+entries; **the honest reading is that this section needs a fourth trim and did not get one, rather than
+that the rule has been met.***
 
 **Baselines. Read the dates — these were run at two different moments and only one pair is current.**
 
 | Check | Figure | When |
 |---|---|---|
-| `link-check.py` | **97 files, 87 broken, 2 roundabout** | re-run **2026-08-26** |
-| `branch-index.py --check` | **current, 21 rows** | re-run **2026-08-25** |
-| `make test` / `make lint` / `make check` | 310 / clean / valid | **2026-08-21, not re-run since — and now runnable here** |
+| `link-check.py` | **87 broken, 2 roundabout** (file count: see below) | re-run **2026-08-26** |
+| `branch-index.py --check` | **current, 21 rows** | re-run **2026-08-26** |
+| `make test` / `make lint` / `make check` | **310 passed in 2.5 s / clean / valid** | re-run **2026-08-26, in this worktree** |
 
-*The `link-check` row moved from **86 broken** on 2026-08-25, and **the whole delta is `review-charter.md`
-and its own forward citation** — not a regression, and the plan's contribution is unchanged at three.
-The file count moved 84 → 97 in the same period; **that column is not comparable across worktrees**
-because the script walks `.venv/`, and this worktree acquired one on 2026-08-26. **The broken count is
-the comparable one.** *(The row read **86 files, 75 broken** until 2026-08-25 — relayed rather than
-measured, and wrong in both columns.)*
+***The file count is dropped from that row, and this is the evidence for dropping it.* It read 84 on
+2026-08-25 and 97 then 98 during 2026-08-26 — moving by one *within a single session, with no document
+added*, because `link-check.py` walks `.venv/` and this worktree acquired one. **The broken count is
+the comparable figure and the file count never was.** Broken moved 86 → 87 the same day, and **the
+whole delta is `review-charter.md` and its own forward citation** — not a regression.**
 
-**The `make` row's reason has expired and the row has not.** It kept its 2026-08-21 date because this
-worktree had **no virtualenv**; the owner created one on 2026-08-26, so **the figure can now be
-re-measured here and has not been.** That is a stale baseline rather than a dated one, and it is the
-cheapest open item in this file. `make test` is ~2 s warm, but minutes on first run while the cloud
-folder rehydrates — slow, not stuck.*
+**The `make` row is measured in this worktree for the first time, and it moved nothing: 310 passed in
+2.5 s, ruff clean at the pinned `0.16.1`, config valid.** Identical to the five-day-old figure, which
+is the finding — **no test has been added or removed since 2026-08-21**, consistent with no phase task
+having started. **One new `StarletteDeprecationWarning`** (`httpx` → `httpx2`) is recorded and
+deliberately not actioned: `method/IDM-003-development-tooling.md` governs dependency bumps, and
+nothing here bumps a pin as a side effect.*
 
 ## Where the project is
 
@@ -205,8 +212,18 @@ differs in each. That is new since this section was written.
 | `logs/corpus-gate/` | Phase 9's corpus, **8.8 MB** — re-measured 2026-08-25, unchanged. `measurements.md` names it as the slice behind four rows. It stays |
 | `logs/calls.csv`, `logs/router.log` | The router's history to 2026-08-20. **Deliberately left** where they are when the config moved to `logs/telemetry/` — owner's decision, in `milestone-2-corpus/phase-10-body-store/plan.md`'s settled table |
 
-**`phase-11-corpus-tools/logs/` — does not exist**, and neither does its `.venv/`. Nothing has been
-run in this worktree. Its absence is correct.
+**`phase-11-corpus-tools/logs/` — still does not exist. `.venv/` now does.**
+
+*Both halves changed meaning on 2026-08-26 and the entry is rewritten rather than patched.* The venv
+was created **by the owner**, so `uv run python` works here and anything importing `zstandard` can be
+run in this worktree. *(This file briefly recorded that a review subagent created it. It did not; that
+claim is retracted in `milestone-2-corpus/phase-11-corpus-tools/notes.md`.)*
+
+**`logs/`'s absence has stopped being trivial and become evidence.** It used to be correct because
+nothing had ever run here. **Three `make` targets have now run — `test`, `lint` and `check` — and the
+folder still does not exist**, which is `cli.py`'s documented promise that `--check` configures no
+logging demonstrated rather than asserted. **This worktree's config also reports `Corpus: off`**, so
+nothing done here can write to the corpus.
 
 **One warning was dropped rather than carried across, and it stays dropped.** `prompt.md` said
 *"stage with explicit paths, never `git add -A`."* The stated reason was that `logs/` holds

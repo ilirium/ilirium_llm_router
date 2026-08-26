@@ -88,10 +88,12 @@ phase produces.
   `docs/bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`, status **open**. Both issues
   stall on exactly the paired control it contains. **This is an action, not a finished thing**, and it
   is the only open item not attached to Phase 11.
-- **The `make test` / `lint` / `check` baseline is stale, and its reason expired.** It kept its
-  2026-08-21 date because this worktree had no virtualenv. **It has one now**, so the figure can be
-  re-measured here and has not been. **Cheapest open item in `status.md`.** First run takes minutes
-  while the cloud folder rehydrates — slow, not stuck.
+- ~~**The `make` baseline is stale.**~~ **Closed 2026-08-26** — re-run in this worktree: **310 passed
+  in 2.5 s, ruff clean at the pinned `0.16.1`, config valid.** Identical to the 2026-08-21 figure,
+  which is the finding: **no test has been added or removed**, consistent with no phase task having
+  started. **So the suite you inherit is green and the number to beat is 310.** *One new
+  `StarletteDeprecationWarning` (`httpx` → `httpx2`) is recorded in `status.md` and deliberately not
+  actioned — `IDM-003` governs dependency bumps, and nothing bumps a pin as a side effect.*
 - **Failure mode 3 is still not discharged** — whether archiving *slows* a call is unmeasured.
 - **A call can still vanish**, and closing it needs a guarantee a row can never be written twice.
 - **`Bash(uvx ruff *)` permits an unpinned ruff**, which `CLAUDE.md` says never to invoke as a side
