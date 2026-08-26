@@ -73,8 +73,16 @@ A rename after any capture is a migration.
 | a dictionary | `req-<UTC>-<dictID>.dict`, stamp `%Y-%m-%dT%H%M%SZ`, dictID **8 lowercase hex** |
 | the trainer's staging file | `<pid>-<uuid>.tmp`, unique per run |
 
-**"Newest" is by filename, never by mtime.** `logs/` sits inside a cloud-synced folder on the
-machine this was built for, and a sync rewrites mtimes.
+**"Newest" is by filename, never by mtime.** An mtime is not a property of this store — **`tar` and
+unpack rewrites every one of them**, and the paragraph above promises precisely that a day folder can
+be moved to another machine and still read. Filename ordering survives that move; mtime ordering does
+not.
+
+*The reason given here until 2026-08-26 was that `logs/` sat inside a cloud-synced folder and a sync
+rewrote mtimes. **That was a fact about one machine, and it is no longer true of that machine** — the
+live `logs/` is now per-worktree under `~/Projects/local/`, which is not synced. The rule does not
+move; only its argument was local, and the durable one was sitting four lines above it the whole
+time.*
 
 ## The index
 

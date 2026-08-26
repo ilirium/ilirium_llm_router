@@ -20,8 +20,17 @@ above as the current count; it is Milestone 1's, and it is dated for that reason
 read it first, every session, for where the project is, what is on disk and what is next.
 How Milestone 1 got there is in `docs/milestone-1-core/`.
 
-Note: `/Users/ilirium/Projects/code-2026/ilirium_llm_router` and the OneDrive path are the *same
-directory* (identical inode), not two checkouts. Editing either edits both.
+**The repository is a bare clone with sibling worktrees**, at
+`~/Projects/local/ilirium_llm_router` — `main`, `to-run-server` and the phase branch,
+**one branch checked out each**. Editing one **does not** edit another, `logs/` is per-worktree, and a
+session started in `main` sees none of the open phase.
+
+*This note said the opposite until 2026-08-26 — that `~/Projects/code-2026/ilirium_llm_router` and the
+OneDrive path were the **same directory** (identical inode) and "editing either edits both". **The
+symlink half is still true and the checkout is gone**: `~/Projects/code-2026` still resolves into
+OneDrive, but the working tree under it was archived to `ilirium_llm_router.zip` on 2026-08-25, and
+`~/Projects/local/` is not synced at all. The note was not merely stale — it told a session that two
+paths were one directory at the moment the project acquired three that genuinely are not.*
 
 ## Working agreement
 

@@ -504,3 +504,63 @@ reviewer's.*
 **The charter's environment clause is not adopted**, having been argued from a fiction. If a future
 delegate does exceed its brief, that will be the evidence, and this paragraph is the reason to wait
 for it.
+
+## Task 2 — the inode note, and a justification with seven homes, 2026-08-26
+
+**Both halves the task names are done, and both were wrong in a larger way than the task expected.**
+
+### The inode note was not stale — it was inverted
+
+`CLAUDE.md` said `~/Projects/code-2026/ilirium_llm_router` and the OneDrive path were the **same
+directory** (identical inode), *"editing either edits both"*. The task predicted this had become false
+because *"with this clone there are now genuinely two checkouts"*. **Checked rather than assumed, and
+the truth is one step further on:**
+
+| Claim | What is on disk, 2026-08-26 |
+|---|---|
+| the two paths are one directory | **`~/Projects/code-2026` is still a symlink** into `~/Storage/OneDrive/software-engineering/code-2026`, itself a symlink to `~/Library/CloudStorage/OneDrive-Personal`. The **inode half was never wrong** |
+| …and the project is at the end of it | **It is not.** `code-2026/` holds `ilirium_llm_router.zip`, 26 MB, **2026-08-25 18:01**. The working tree was archived, not moved |
+| not two checkouts | **Three**, and none of them there — a bare clone at `~/Projects/local/ilirium_llm_router/` with `main`, `to-run-server` and this phase as worktrees, created **2026-08-25 18:25**, twenty-four minutes after the zip |
+
+**So the note told a session that two paths were one directory at the exact moment the project
+acquired three that genuinely are not** — the most expensive shape a stale note can take, because the
+sentence it replaces is the one a session would have needed.
+
+*`docs/epd/EPD-004-documentation-structure.md:998` carries the same fact in the present tense, and is
+**left alone deliberately**: it is the record of a 2026-08-16 decision and cites `CLAUDE.md` as it
+stood that day. Correcting an archived deliberation to match today would destroy what it records.*
+
+### The mtime justification is dead, and it has seven live homes
+
+`reference/corpus.md` said *"newest is by filename, never by mtime"* because *"`logs/` sits inside a
+cloud-synced folder on the machine this was built for, and a sync rewrites mtimes."*
+
+**Verified before acting on it, per the instrument lesson:** `~/Projects/local/` is a real directory
+under `~/Projects/`, not a symlink and not under `~/Library/CloudStorage/`. The live corpus at
+`to-run-server/logs/` is outside every sync root. **The reason is false about this machine as of
+2026-08-25.**
+
+**The rule is not in question — the argument for it was simply local when a durable one was four lines
+above it.** `reference/corpus.md:55` already promises a day folder can be `tar`'d and unpacked on
+another machine; unpacking rewrites every mtime, so mtime ordering cannot survive the move the store
+guarantees. That is now the stated reason.
+
+**What the task did not know is how many places repeat the dead one.** Two families, seven live homes,
+and the two named in the task are two of them:
+
+| | Where | Which claim |
+|---|---|---|
+| **A** | `reference/corpus.md:76` **← fixed** | newest-by-filename |
+| **A** | `corpus.py:604`, `corpus.py:928` | newest-by-filename — **in `src/`, verbatim** |
+| **A** | `dictionary.py:766` | the retrain lock's age comes from inside the file, *"the same reason"* |
+| **A** | `tests/test_corpus.py:220`, `tests/test_dictionary.py:676` | the same reason, as a test's docstring |
+| **B** | `docs/procedures/corpus-benchmark/README.md:86`, `benchmark.py:55` | **a different claim** — that the fsync figure *measures* a cloud-synced filesystem, so it is the number the router would really pay |
+
+**Family B is not a stale reason, it is a stale caveat on a measurement**, and it cannot be fixed the
+same way: the figures it qualifies were taken when the premise held. It needs a dated note, not a
+rewrite — and **`phase-10-body-store/evidence/benchmark.py` is a frozen copy of the same file and must
+not be touched at all.**
+
+**Nothing outside the two files Task 2 names has been changed**, and the question is put to the owner
+rather than answered here. Position 20 is *"step by step, not leaps by leaps"*, and a task that
+quietly grows from two files to nine is the thing that position rejects.
