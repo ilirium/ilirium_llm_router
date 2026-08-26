@@ -1,7 +1,12 @@
 """Command line entry point.
 
-`--check` validates the configuration and exits, which is also what Phase 0 delivers. Without it the
-server starts.
+**Subcommands on one entry point** — owner's decision, Phase 11 position 2. Today's surface was nine
+flags on one parser, most of which apply to exactly one mode: `--maxdict` is meaningless with
+`--extract`, and argparse cannot say so. A subcommand makes that structural instead of documented.
+
+**Bare `ilirium-llm-router` still starts the server**, and that is deliberate rather than a leftover.
+`make run` depends on it, so does habit, and Phase 12 makes this a `uv tool` where the bare form is
+the one people type. `serve` is the explicit spelling of the same thing.
 """
 
 from __future__ import annotations
@@ -28,6 +33,12 @@ DEFAULT_CONFIG_PATH = Path("config.yaml")
 def main() -> int:
     args = _parse_args()
     load_dotenv()
+
+    # **Bare and `serve` are the same path, not two.** `args.command` is `None` when no subcommand
+    # was given, and everything below already reads as "the server unless something returned first",
+    # so the default needs no branch of its own. Phase 11 task 8.
+    if args.command not in (None, "serve"):  # pragma: no cover - task 9 fills this in
+        raise AssertionError(f"unrouted subcommand: {args.command!r}")
 
     # Before the config is loaded, deliberately: reading a day folder back needs the folder and
     # nothing else, which is the self-containment rule the reader exists to demonstrate.
@@ -77,18 +88,41 @@ def main() -> int:
     return 0
 
 
+def _config_flag(parser: argparse.ArgumentParser, *, top_level: bool) -> None:
+    """Add `-c/--config` to one parser.
+
+    **The subcommand copy uses `SUPPRESS`, and that is not a style choice.** A subparser option with
+    an ordinary default *overwrites* the top-level value after parsing, so `-c other.yaml serve`
+    would silently fall back to `config.yaml` — the flag accepted, ignored, and no error. With
+    `SUPPRESS` the attribute is only set when the option actually appears, so both spellings work
+    and neither shadows the other. Tested in task 10 rather than trusted.
+    """
+    parser.add_argument(
+        "-c",
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH if top_level else argparse.SUPPRESS,
+        help=f"path to the YAML config file (default: {DEFAULT_CONFIG_PATH})",
+    )
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="ilirium-llm-router",
         description="Route Claude Code to Anthropic and to locally served models at the same time.",
     )
-    parser.add_argument(
-        "-c",
-        "--config",
-        type=Path,
-        default=DEFAULT_CONFIG_PATH,
-        help=f"path to the YAML config file (default: {DEFAULT_CONFIG_PATH})",
+    _config_flag(parser, top_level=True)
+
+    # `dest="command"` leaves `None` for the bare invocation, which `main` reads as "serve". The
+    # subparsers are deliberately **not** `required=True`: bare must keep working.
+    commands = parser.add_subparsers(dest="command", metavar="COMMAND")
+    serve = commands.add_parser(
+        "serve",
+        help="start the server (the same thing a bare invocation does)",
+        description="Start the router. This is what a bare `ilirium-llm-router` does.",
     )
+    _config_flag(serve, top_level=False)
+
     parser.add_argument(
         "--check",
         action="store_true",
