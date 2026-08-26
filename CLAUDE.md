@@ -137,10 +137,18 @@ CSV column. The recorder's rule is unchanged.)*
 
 → `docs/reference/corpus.md` — **read it before storing, reading or retraining against the corpus**:
 before adding an index column, before changing where a blob or a dictionary lives, before assuming a
-day folder needs anything outside itself, and **before quoting a compression ratio**. Three things a
+day folder needs anything outside itself, and **before quoting a compression ratio**. Four things a
 session gets wrong from the name alone: the store is **off by default**, so no `logs/corpus/` is
-correct behaviour; **there are three compression levels, not one**; and **there is deliberately no
-headline ratio** — every figure is a small-sample confirmation that the mechanism works.
+correct behaviour; **there are three compression levels, not one**; **there is deliberately no
+headline ratio** — every figure is a small-sample confirmation that the mechanism works; and **the
+store holds bodies only, never headers.**
+
+**That last one has two reasons and a session that carries only the first will propose the wrong
+fix.** The one people expect: **a credential never reaches disk** — no `Authorization`, no OAuth
+token, no API key, because nothing header-shaped is ever written. The one they do not: the store is
+attached to a **tee of the body bytes and never sees a header at all**, so capturing headers is not a
+policy switch but a **write-path change**. And the header-derived facts that matter are already
+columns — `session_id` and `agent_id`, read at `observe.py:316`. *Added 2026-08-26.*
 
 ## Anthropic models
 

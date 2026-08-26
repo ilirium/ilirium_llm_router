@@ -109,6 +109,15 @@ review — so the open half is real and its evidence is unchanged.
 document. **Phase 10 is the worked example either way**, since its register and the defects it caught
 are recorded in `milestone-2-corpus/phase-10-body-store/notes.md` and summarised in `IDM-008`.
 
+**Give every item here a stable, referencable index.** *Added 2026-08-26 on the owner's instruction.*
+Items are cited today by quoting their bold opening phrase — `status.md`'s "What is next" does it,
+and so do two phase plans. **A quoted title is not an identifier:** editing a title silently breaks
+every citation of it, nothing checks that, and the break stays invisible until a reader follows one.
+*What it would take:* an id per item, a rule for allocating one that survives items being deleted when
+done, and a decision on whether `procedures/link-check.py` learns to verify them — that last part is
+what turns this from a convention into an instrument. *Parked because* it touches every item in a
+545-line file, and an id scheme is worth deciding once rather than growing.
+
 ---
 
 ## Documentation defects found and not fixed
@@ -273,6 +282,20 @@ back nearly half the local wall clock at the price of the first special case in 
 *Weaker than it looks?* The opposite — this is the largest measured cost in the project, and the
 reason it is parked is that nobody has been willing to take the trade.
 
+**What a reconstructed session cannot contain, and the fix nobody should reach for.** *Added
+2026-08-26, from Phase 11's converter design.* The corpus holds bodies, so five things Claude Code's
+own session records carry can never be rebuilt from it: **`cwd`**, **`gitBranch`**, **`version`**,
+**`toolUseResult`** — Claude Code's enriched record of what a tool returned, where the wire carries
+only the `tool_result` content — and **agent attribution**. *Why this is an item rather than a line of
+documentation:* the obvious fix is *"capture some headers"* and **it does not work**, because none of
+the five is a header. They are client-side state that never crosses the wire in any form; at most
+`User-Agent` yields a version string. *The part that is genuinely owner-shaped:* whether the router
+should ever record context it is **told** rather than **sent**, which means a capture-time change and
+a new field on the write path. Nobody has asked for it. *Weaker than it looks?* **Yes, and this is the
+rare item that says so.** What is missing is chrome — every user turn, assistant turn, tool call and
+tool result **is** reconstructable, so a transcript comes out complete in substance and thin in
+metadata.
+
 **Three diagnostics reserved out of Phase 10, deliberately.** Named 2026-08-18 when the owner asked
 what else should be logged so that loss is diagnosable, and answered *KISS — this is a prototype meant
 to be finished and used*. **A live metrics or status endpoint**, for watching queue depth and drop
@@ -366,6 +389,22 @@ methodology extracted from n=1 is a guess about what generalises. Do not create 
 > in place instead of edited away.*
 
 ## Instruments and housekeeping
+
+**Whether a reconstruction can be checked against the real thing — and it looks like it can.** *Added
+2026-08-26 on the owner's instruction, which asked whether the original `uuid`s could be recovered
+from local state.* **Checked the same day: yes, for any session driven on this machine.** Claude Code
+keeps its own session records at `~/.claude/projects/<mangled-path>/<session-id>.jsonl`, and **all
+three session ids in the `2026-08-25` corpus index have a file there** — `15b29c2a…`, `8aa605b9…`,
+`ad9392ae…`. *(Established by listing filenames only. No session content was read.)*
+
+**There are two uses for that and only one of them is safe.** As an **oracle** it is worth more than
+the uuids ever were: a reconstruction can be **diffed against the real record** rather than eyeballed,
+which turns *"looks right"* into *"differs in exactly these fields"*. As an **input** it is a trap — a
+converter that reads real uuids out of `~/.claude/` no longer reconstructs from the corpus alone, and
+**silently stops working for a corpus copied from another machine**, which is the precise property
+Phase 11 exists to demonstrate. *Parked because* Phase 11 ships synthetic deterministic uuids and does
+not need it. *Worth doing because* the oracle is the strongest test of the converter available, and it
+already exists on disk.
 
 **Nothing runs `procedures/branch-index.py --check` automatically, so the branch index's whole
 guarantee rests on somebody remembering.** *Added 2026-08-21, the day the script was written.* The
@@ -519,6 +558,49 @@ the thing that mattered.
 `milestone-2-corpus/implementation-plan.md` names *"changing `calls.csv`, not its rotation, not its
 columns"*. **So this needs the non-goal overturned first, or a home that is not a CSV column**, the
 same gate the sequence column sits behind.
+
+---
+
+## Dictionaries
+
+*Added 2026-08-26 on the owner's instruction, and **it is the first section here grouped by topic
+rather than by kind**.* Under the 2026-08-19 section order the items below would file in three
+different places — one is a measurement, one is tooling, one is an instrument. Grouped anyway, because
+they are three questions about **one mechanism**, and a mechanism nobody owns is how each of them
+stayed unasked. *If that turns out to be the wrong call the fix is cheap: each item is self-contained
+and can be scattered back.*
+
+**All three were considered for Phase 11 and postponed on 2026-08-26**, when the owner settled
+position 3 of `milestone-2-corpus/phase-11-corpus-tools/plan.md`. That phase's subject is extracting
+and converting bodies so a reconstructed dialogue can be **checked by eye**; dictionary features are
+not in it.
+
+**Whether a response dictionary pays is already on this list and is deliberately not restated here.**
+It is under "Measurements left open", added 2026-08-19. This file points rather than restates, and
+that item carries an argument — that automatic retraining would make the request-only asymmetry
+permanent *by default rather than by decision* — which a summary here would lose.
+
+### Dictionary commands — `list`, `show`, `install`
+
+*Added 2026-08-26.* The dictionary machinery has no user-facing surface beyond `--train-dict` and
+`--tune-dict`. Nothing answers **which dictionaries exist**, **which one a given day's rows
+reference**, **when one was installed and what it scored against the incumbent**, or lets you
+**install a specific one**. All of those mean reading `retrain.log` and `index.csv` by hand today.
+*Parked because* the owner chose to keep Phase 11 to a single question. *Weaker than it looks?*
+**Partly, and only for one third of it** — `--extract` already prints a day folder's dictionaries, so
+`show` overlaps something that exists. `list` and `install` do not.
+
+### A benchmark: what a dictionary is worth against no dictionary
+
+*Added 2026-08-26.* Nothing can currently answer *"is the installed dictionary helping, and by how
+much"* against real stored bodies. `--tune-dict` sweeps **training parameters**, and the trainer
+scores a **candidate** on a holdout; neither measures the installed dictionary against the same bodies
+stored undicted. *Why this is more than convenience:* the two figures this project already has —
+**2.815×** from `--extract` over stored blobs and **3.317×** from the trainer's holdout — **must not be
+compared**, and `phase-11-corpus-tools/plan.md`'s register says so in as many words. A benchmark that
+takes one frozen slice and reports both encodings of **it** is the instrument that would make such a
+comparison legitimate for the first time. *Parked because* `reference/corpus.md:193` deliberately
+refuses a headline ratio, so this needs a shape that answers the question without manufacturing one.
 
 ---
 

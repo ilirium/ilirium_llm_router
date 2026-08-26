@@ -10,46 +10,46 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-25 — permissions closed, auto mode proved broken upstream, the corpus stopped being
-undicted, and this clone turned out to be two commits stale. No phase task started.**
+**2026-08-26 — Phase 11's plan is ratified, its register carries no unvalued names, and the forward
+review has not run yet. Still no phase task started.**
 
-**Permissions are settled and committed.** All three probes matched what the rewrite predicted, so
-`.claude/settings.json` landed unchanged. **Git is not in the built-in read-only set**, a deny entry
-matches exactly while an allow with `*` does not, and settings are **session-cached** — inert until
-restart, not until merge. **Only the denial was observable to the session**: a model sees a denial as
-a tool error and cannot see an approval at all, so the owner was the instrument for the other two.
-→ `milestone-2-corpus/phase-11-corpus-tools/notes.md`.
+**Fourteen settled positions, every one owned and dated**, and the `❓` column is empty.
+**Two of them corrected this plan rather than confirming it:** `verify-archive` became its own command,
+and `--format` replaced the `--to-jsonl` boolean the plan proposed — which had reproduced, one level
+down, the exact defect subcommands were adopted to fix. → `milestone-2-corpus/phase-11-corpus-tools/plan.md`.
 
-**Auto mode is broken upstream, and it is measured rather than inferred.** Non-streamed
-`POST /v1/messages` fails categorically while a streamed request **2.8× larger** to the same model
-succeeds **0.6 s** later. → `bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`, status
-**open**, in a **new `bugs/` tier**. **Neither upstream issue has been told, and that is the open
-action.** **Phase 13 was allocated** for the rate-limit response headers; Phases 11 and 12 went into
-`milestone-2-corpus/implementation-plan.md` with it, since the list ran 8, 9, 10, "closing review".
+**Two findings arrived during ratification and both change what gets built.** **A session spans day
+folders** — `15b29c2a…`, 39 calls on the 25th and 19 on the 26th, and it is the session that ratified
+the plan. Because requests are cumulative, a single-day converter would emit a day of prior
+conversation as one opening turn: **misleading output, not merely short**. Day folders are now
+positional and repeatable, and a session with calls in a folder that was not passed is an error. And
+**Claude Code's own records for all three `2026-08-25` sessions are on disk**, so the converter can be
+**diffed against ground truth** rather than eyeballed — **oracle, never input**, since reading them
+would destroy the corpus-alone property the phase exists to demonstrate.
 
-**The corpus stopped being undicted at 10:32 and nothing had noticed.** `retrain.log` records
-`verdict=installed`, candidate **3.317×** against incumbent `none`, and **328 of 331** rows in that
-day's index reference the new dictionary. **The 2.815× everyone called *the number a dictionary must
-beat* has been beaten, unattended, while the branch was busy with permissions.** Figures and their
-caveats are in `plan.md`'s register — **and this bears directly on the owner's pending position-3
-decision**, which was framed when the machinery had never produced a dictionary.
+**`agent_id` is empty on all 770 rows, and the column is not broken.** `observe.py:40` says it arrives
+only on a subagent's call; **none has ever run through this router**, so that comment has never been
+observed to be true. `--agent` was reinstated because the review itself spawns one, and the positive
+result is named before the run: **column 3 of `2026-08-26/index.csv` must hold a non-empty value
+afterwards, or `observe.py:40` is wrong and the phase has found a defect instead.**
 
-**This clone was two commits stale for the whole of Phase 11**, exposed by `git push --all` rejecting
-`main`. `665722d` and `19fdaa7` were made 2026-08-21 from the other checkout and never arrived here —
-including the `CLAUDE.md` Status fix. Both were merged in, to `main` and then to the branch, where
-`prompt.md` and `status.md` were **resolved as the branch's copies on the owner's decision**; that
-merge message records what the choice costs and that it propagates at the Phase 11 merge.
+*2026-08-25's entry — permissions closed and committed, `BUG-001` measured, the corpus dicting itself,
+this clone two commits stale — was cut here on 2026-08-26. **Homes checked rather than assumed:** the
+permissions findings are in `milestone-2-corpus/phase-11-corpus-tools/notes.md`, the auto-mode
+measurement is `bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`, the dictionary
+figures are in that phase's `plan.md` register under two dated moments, and the stale-clone merge is in
+its own merge commit message.*
 
-*Trimmed to the current state on 2026-08-25 — the second trim, and it had reached **162 lines**
-against the ~30 above with entries back to 2026-08-21. **Each cut entry's home was checked rather
-than assumed:** the four method items are `IDM-007` and `IDM-008` themselves; the branch index is
-`reference/branches.md` and `IDM-001`'s amendment; Phase 10's close is
-`milestone-2-corpus/phase-10-body-store/`; the three documentation defects and what Phase 10 does not
-claim are in `backlog.md` and `milestone-2-corpus/implementation-plan.md`. **Three had also gone stale
-in place** — `CLAUDE.md` at 292 lines when it is 297, "eight of nineteen" branches when the table is
-21 rows, and the corpus called undicted. **This section is ~58 lines, so it is still roughly twice
-its own rule** — a third of that is this note and the baselines block, and the note is meant to go at
-the next trim rather than accumulate like the entries it describes.*
+**Still open and unchanged: `BUG-001` has not been reported to either upstream issue.** It remains the
+only item in "What is next" not blocked on a decision.
+
+*Trimmed on 2026-08-26 — the **third** trim, and the first that left the section inside its own rule.
+It stood at ~58 lines carrying 2026-08-25's four entries; those are summarised in one italic paragraph
+above with each home checked rather than assumed. **The previous trim's own note predicted it would go
+at the next trim, and it has.** For the record it kept: the second trim, on 2026-08-25, cut ~162 lines
+of entries reaching back to 2026-08-21, and found **three that had gone stale in place** — `CLAUDE.md`
+at 292 lines when it was 297, "eight of nineteen" branches against a 21-row table, and the corpus
+called undicted after it had dicted itself.*
 
 **Baselines. Read the dates — these were run at two different moments and only one pair is current.**
 
@@ -131,11 +131,12 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Review Phase 11's plan, and ratify position 3.** The plan is written and unapproved on
-   `feat/phase-11-corpus-tools`; `method/IDM-004-reviewing-unexecuted-work.md` is the protocol, and
-   its first rule is that the charter decides what the review finds. **Position 3 is the block** —
-   whether *"document the dictionary tooling"* also means build something. Every `❓` in the plan's
-   register is listed in its "Placeholders in this file".
+1. **Run the forward review of Phase 11's plan.** ~~Ratify position 3~~ — **done 2026-08-26**, along
+   with every `❓` in the register and thirteen other positions. What is left is
+   `method/IDM-004-reviewing-unexecuted-work.md`, whose **first rule is that the charter decides what
+   the review finds**, so iteration 1 is writing the charter rather than reviewing anything. Then the
+   author and cold runs **in parallel** — serially, the author repairs whatever the cold reader would
+   have stumbled on, and the stumble is the signal.
 2. **Report `BUG-001` to the two upstream issues.** They are named in
    `bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`, and both stall on exactly the
    measurement it contains — a paired control showing a streamed request **2.8× larger** to the same
@@ -206,7 +207,7 @@ permanent record of a phase's branch, fork point and merge commit is still its p
 
 | Branch | Purpose | Tree | Next action |
 |---|---|---|---|
-| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: extract with selection, dictionaries as a command, and a converter to Claude Code session `JSONL` | **twelve commits plus a merge, clean tree**, forked at `f445d6f`. The settings file was probed and committed 2026-08-25. **`main` was merged in the same day** so the branch carries `docs/bugs/` | **the owner ratifies position 3 in `plan.md`'s settled table and values the register's `❓`** — then the plan is reviewed under `method/IDM-004-reviewing-unexecuted-work.md` before Task 2 |
+| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: `extract` with selection over one or more day folders, `verify-archive`, and a converter to Claude Code session `JSONL`. **Dictionaries are documented, not extended** — position 3, ratified 2026-08-26 | forked at `f445d6f`; **`main` merged in 2026-08-25** so the branch carries `docs/bugs/`. **The plan was ratified and revised 2026-08-26** — 14 settled positions, `❓` column empty | **run the forward review under `method/IDM-004-reviewing-unexecuted-work.md`** — derive the charter first, then the author and cold runs in parallel, then reconcile into the phase's `notes.md`. Task 2 is next after that |
 
 **Opened 2026-08-24, and it is the first branch worked in a git worktree** —
 `/Users/ilirium/Projects/local/ilirium_llm_router/phase-11-corpus-tools`, beside `main` and

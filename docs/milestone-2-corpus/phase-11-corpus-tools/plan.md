@@ -1,13 +1,22 @@
 # Phase 11 — corpus tools: plan
 
-**Draft, not approved. Nothing here is a build order** — `../../../CLAUDE.md`'s working agreement
-says a design answer is not one, and this document is the proposal the owner reviews before Task 1.
+**Ratified 2026-08-26. Not yet reviewed, and still not a build order** — the forward review under
+`../../method/IDM-004-reviewing-unexecuted-work.md` runs against *this* revision, before Task 2.
+*Every position in the settled table now has an owner and a date, and the register's `❓` column is
+empty; what remains is whether the document is executable by somebody who was not here, which is the
+question only the review answers.*
 
 **Subject.** The offline tools that sit on top of the store Phase 10 built: **extract** bodies out of
-a corpus with selection, **train** dictionaries as a first-class command rather than a flag, and
-**convert** captured calls into Claude Code session `JSONL` so a session can be read in
+a corpus with selection, **verify** an archive as its own command, and **convert** captured calls into
+Claude Code session `JSONL` so a session can be read in
 [`claude-code-history-viewer`](https://github.com/jhlee0409/claude-code-history-viewer). The CLI is
 restructured into subcommands to hold them.
+
+**Dictionaries are documented, not extended.** *Corrected 2026-08-26 — this paragraph promised
+"**train** dictionaries as a first-class command rather than a flag" until position 3 was ratified the
+other way.* The phase writes a temporary `README.md` note covering the commands that already ship;
+`list`/`show`/`install`, response dictionaries and a dicted-vs-undicted benchmark are all in
+`../../backlog.md`.
 
 **`--extract` already exists and is deliberately minimal.** `cli.py:135` says so in its own docstring
 and names this phase: *"the extraction tool — selection by session, call or model, output layout,
@@ -29,22 +38,45 @@ assumption** and the review reports it as unratified.*
 |---|---|---|
 | 1 | Phase 11 belongs to **Milestone 2**, and the milestone stays open past Phase 12 | **owner**, 2026-08-24 |
 | 2 | The CLI becomes **subcommands on one entry point**, not more flags and not a second console script | **owner**, 2026-08-24 |
-| 3 | **No new dictionary features.** The gap is that the existing ones are undocumented — the phase writes a user-facing note in the top-level `README.md`, explicitly temporary until Phase 12 reworks it | **owner**, 2026-08-24 — *see the caveat below, this is my reading of a free-text answer and needs one word of ratification* |
+| 3 | **No new dictionary features.** The gap is that the existing ones are undocumented — the phase writes a user-facing note in the top-level `README.md`, explicitly temporary until Phase 12 reworks it | **owner**, 2026-08-24, **ratified 2026-08-26** |
 | 4 | The real input is the owner's own driven session at `to-run-server/logs/corpus/` | **owner**, 2026-08-24 |
 | 5 | Work moves to **git worktrees** as the standing practice | **owner**, 2026-08-24 |
 | 6 | Phase 12 is the installer (`uv tool`) and the `README.md` rewrite | **owner**, 2026-08-24 |
+| 7 | **`extract` takes one or more day folders as positional arguments**, and **errors** if a selected session has calls in a folder that was not passed | **owner**, 2026-08-26 |
+| 8 | **`--out` is required. `--format` is required and repeatable** — `bodies`, `jsonl`, or both. A run always states what it produces | **owner**, 2026-08-26 |
+| 9 | **Verification is its own command, `verify-archive`**, not a flag on `extract` | **owner**, 2026-08-26 |
+| 10 | **No header capture, and the reason is recorded in `CLAUDE.md`** rather than left to be rediscovered | **owner**, 2026-08-26 |
+| 11 | **`--agent` is built after all** — this phase's own review run is what generates the first subagent traffic | **owner**, 2026-08-26 |
+| 12 | One `--out` root with `projects/` beside `bodies/`, and **never into `~/.claude/projects/`** | **owner**, 2026-08-26 |
+| 13 | Dictionary work — response dictionaries, `list`/`show`/`install`, and a dicted-vs-undicted benchmark — is **postponed into `../../backlog.md`**, under a new `Dictionaries` section | **owner**, 2026-08-26 |
+| 14 | The evidence slice is a **live snapshot labelled with its moment**, not a stopped router | **owner**, 2026-08-26 |
 
-**Position 3 is the one I am least sure I have right.** The question asked what was missing from the
-dictionary tooling; the answer was *"write a user-faced note in the main README.md to be visible, it
-would be temporal, when we will rework the README.md in Phase 12."* I read that as **no new dictionary
-code, document what ships**. If it instead meant *"and also add the standalone/response-dictionary
-work"*, the register below is short by a section and Group D changes shape. **One word settles it.**
+**Position 3 was ratified on 2026-08-26, and it was decided against a premise that had changed since
+it was asked.** When the question was put, the machinery had never produced a dictionary and 2.815×
+was *"the number a dictionary must beat"*. By the time it was answered a dictionary had installed
+itself unattended at **3.317×** — so the decision was taken knowing the mechanism works, which is the
+strongest argument available for **not** building more of it. The three postponed ideas are in
+`../../backlog.md`; **whether a response dictionary pays was already there**, added 2026-08-19, and was
+pointed at rather than restated.
 
-## The re-derivation before Task 1, and it moved three things
+*Positions 7–14 were settled in one ratification pass on 2026-08-26, which is also when every `❓` in
+the register below was valued. **Two of them came from the owner rather than from this plan** —
+`verify-archive` as a separate command, and `--format` as a selector instead of the `--to-jsonl`
+boolean this plan proposed. The second fixed a defect the plan had reproduced: a mode flag whose
+companion option is meaningless without it, which is the exact problem position 2 adopted subcommands
+to solve.*
 
-`../../../CLAUDE.md`: *check prior evidence before planning a rerun*. Done 2026-08-24, against the
-owner's live corpus and Phase 9's frozen one. Four findings, and the first one invalidates a
-measurement taken during this very session.
+## The re-derivation before Task 1, and it moved six things
+
+`../../../CLAUDE.md`: *check prior evidence before planning a rerun*. Done in **two passes** — 2026-08-24
+against the owner's live corpus and Phase 9's frozen one, then again on **2026-08-26** during
+ratification. **Six findings. The first invalidates a measurement taken during this very session, and
+the fifth invalidates the converter's core assumption.**
+
+**The second pass exists because the first one's findings decayed in under two days.** Finding 2 was
+false by 2026-08-25 and finding 3's sample had quadrupled by 2026-08-26. That is not a criticism of
+the first pass — it is what re-deriving against a **live** corpus means, and it is the reason every
+figure here carries its moment.
 
 **1 · The corpus is live and was growing while it was being read.** Request blobs in the
 `2026-08-24` day folder went **114 → 123** between two reads minutes apart; `index.csv` went 165
@@ -54,8 +86,17 @@ Every figure below is therefore a **snapshot with a moment attached**, and the p
 slice before it measures anything. *This is the instrument lying with a plausible number again — the
 Phase 10 pattern — except here the number was not wrong, it was unrepeatable, which is harder to see.*
 
-**2 · The captured corpus is undicted, and the round trip works anyway.** Driven, not assumed —
-`ilirium-llm-router --extract` on the `2026-08-24` folder, at the moment it held 280 blobs:
+**2 · The corpus was undicted on 2026-08-24, the round trip worked anyway, and it has been dicted
+since 2026-08-25T10:32:50Z.**
+
+*Heading corrected 2026-08-26. It read **"The captured corpus is undicted"** in the present tense and
+stayed on the page for a full day after it stopped being true — while the register below already
+carried the contradicting figure. **Two adjacent statements in one document, one true and one false,
+and the false one was the heading.** That is the same failure this plan records against `status.md`'s
+prose, happening here.*
+
+Driven, not assumed — `ilirium-llm-router --extract` on the `2026-08-24` folder, at the moment it held
+280 blobs:
 
 ```
 index_schema_version: 1
@@ -66,18 +107,26 @@ dictionaries: none
 every blob verified against the digest in its own filename
 ```
 
-`request_dict_id` is `none` on **all 171 rows**, both day folders have an **empty `dicts/`**, and
-there is no `logs/corpus/dicts/` in that worktree at all. `retrain.log` says why, and it is working
-as designed rather than failing:
+**As of 2026-08-24** `request_dict_id` was `none` on all 171 rows, both day folders then in existence
+had an **empty `dicts/`**, and there was no `logs/corpus/dicts/` in that worktree at all.
+`retrain.log` said why, and it was working as designed rather than failing:
 
 ```
 2026-08-21T14:29:14Z verdict=skipped reason=no-complete-day
 2026-08-24T13:35:10Z verdict=skipped reason=too-few-samples window=2026-08-21 samples=0 holdout=4
 ```
 
-**2.815× is the honest no-dictionary baseline on real traffic**, and it is *not* a headline ratio —
-`reference/corpus.md:193` refuses those and this phase does not start one. It is a snapshot of one
-growing day, undicted, and its only job is to be the number a dictionary must beat.
+**Then it dicted itself, unattended, and nothing noticed for a day.** A third verdict —
+`verdict=installed`, **2026-08-25T10:32:50Z** — produced `req-2026-08-25T103250Z-9dd33823.dict`,
+262,144 bytes, scoring **3.317×** against incumbent `none` on its own holdout. **The number this
+finding called *"the number a dictionary must beat"* had been beaten while the branch was busy with
+permissions.**
+
+**2.815× was the honest no-dictionary baseline on real traffic** and it is *not* a headline ratio —
+`reference/corpus.md:193` refuses those and this phase does not start one. **It must not be compared
+against 3.317×**; the register below says why, at length, and that warning is the load-bearing part of
+this finding now. What survives is the round trip: 280 blobs, 0 failed, every one verified against the
+digest in its own filename.
 
 **3 · What the index actually holds, measured 2026-08-24 on 171 rows.** This is what the extractor
 can select on, so an assumption here is expensive:
@@ -89,19 +138,75 @@ can select on, so an assumption here is expensive:
 | `model` | `claude-opus-5` 158, `claude-sonnet-5` 10, empty 3 |
 | `stream` | **`true` 105, `false` 63.** Both response encodings are present |
 | `session_id` | **4 distinct**, 3 rows empty (the `/api/hello` calls) |
-| `agent_id` | **empty on all 171 rows** |
+| `agent_id` | **empty on all 171 rows** — and re-measured 2026-08-26 across **all four day folders, 770 rows: still empty on every one** |
 
 **Two of those change the design.** `stream: false` on 63 of 168 means the converter meets **plain
 JSON replies as well as SSE**, so "reassemble the SSE stream" is half the job and a plan that says
-only that is wrong. And **`--agent` selection would match nothing today** — the column exists, the
-capture never populated it, and shipping a filter that silently returns empty is worse than not
-shipping it.
+only that is wrong.
+
+**And `agent_id` is not what this plan first said it was.** The original wording — *"the column
+exists, the capture never populated it"* — reads as a defect, and it is wrong. `observe.py:317` reads
+the `x-claude-code-agent-id` header, and `observe.py:40` states that an `agent_id` *"arrives only on a
+subagent's call, so an empty one means the main conversation rather than a missing value."* **The
+column works. No subagent has ever run through this router.** The distinction is not pedantic: *broken*
+invites a fix, *never exercised* invites generating the traffic.
+
+**Which is what settled it.** `--agent` was struck on 2026-08-24 and is **reinstated as of
+2026-08-26**, because this phase's own IDM-004 review spawns a cold-reader subagent whose calls pass
+through the router while it is capturing. **The review generates the first agent traffic this corpus
+has ever held**, so the filter can be built and tested against real rows rather than shipped empty.
+
+**One claim in this repository has never been observed, and the review run tests it.** `observe.py:40`
+asserts that `agent_id` arrives on a subagent's call. That is a **comment, not a measurement** — 770
+rows have never contained one. Stating the positive result before the run, per the instrument lesson
+this phase inherited:
+
+> **After the cold run, `2026-08-26/index.csv` column 3 must hold at least one non-empty value.**
+> If it is still empty on every row, `observe.py:40` is **wrong**, `--agent` cannot be built, and the
+> phase has found a defect instead of a feature. Either outcome is worth having; the run was happening
+> regardless.
 
 **4 · Phase 9's gate corpus is usable input and is already on disk.** `logs/corpus-gate/` — 8.8 MB,
 three runs, `requests/NNNNN.bin` as **plaintext JSON** and `responses/NNNNN.bin` as **raw SSE**, with
 `manifest.csv` carrying `session_id` and `path`. It is not day-folder shaped, so it is no use to the
 extractor — but it is a second, differently-shaped source for the converter, and having two is what
 stops the converter being written against one folder's accidents.
+
+**5 · A session spans day folders, and the naive converter would produce a *wrong* transcript rather
+than a short one.** Measured 2026-08-26 over all four day indexes:
+
+```
+2026-08-25:  15b29c2a-3678-450e-8408-598fa7843099   39 calls
+2026-08-26:  15b29c2a-3678-450e-8408-598fa7843099   19 calls
+```
+
+**That session id is the session that ratified this plan.** The conversation being used to design the
+converter is itself the counter-example, and it was found by looking rather than by reasoning.
+
+**Why this is the sharpest finding in the list.** Requests are cumulative — request *N* carries turns
+1..*N*. A converter given only `2026-08-26` has **no previous call to diff against**, so it emits that
+day's first request's entire prior history **as a single opening turn**. The output is not incomplete;
+it is **misleading**, which is the exact condition this plan names as refuting the phase:
+*"a fidelity loss that makes the viewer's output misleading rather than merely incomplete."*
+
+**Two consequences, both settled as positions 7 and 12.** Day folders are **positional and
+repeatable**, so `extract 2026-08-25 2026-08-26 --session 15b29c2a…` is expressible and
+`extract logs/corpus/2026-*/` extracts everything without needing an `--all` flag or a corpus-root
+concept. And the converter **errors** when a selected session has calls in a folder that was not
+passed, rather than silently reconstructing a partial one. **That error is the whole defence** — it is
+what keeps a cross-day session from failing quietly.
+
+**6 · The real session records exist on this machine, which turns Task 14 from eyeballing into
+diffing.** Claude Code keeps its own records at `~/.claude/projects/<mangled-path>/<session-id>.jsonl`,
+and **all three session ids in the `2026-08-25` index have a file there** — `15b29c2a…`, `8aa605b9…`,
+`ad9392ae…`. *(Established 2026-08-26 by listing filenames only; no session content was read.)*
+
+**Oracle, never input, and the distinction is load-bearing.** A reconstruction can be **diffed against
+the real record**, which is a far stronger check than opening it in a viewer and forming an
+impression. But a converter that *reads* uuids out of `~/.claude/` no longer reconstructs from the
+corpus alone and **silently breaks for a corpus copied from another machine** — destroying the very
+property this phase exists to demonstrate. Synthetic deterministic uuids stay the default; the local
+records are a test fixture. The research item is in `../../backlog.md`.
 
 ## The question this phase closes
 
@@ -135,13 +240,53 @@ been total.
 is where the spelling becomes a promise to strangers. **Renaming after the installer ships is the
 expensive version of this change; renaming now is free.**
 
+**This plan reproduced, inside a subcommand, the exact defect subcommands were adopted to fix.** It
+proposed `extract --to-jsonl` — a **mode flag** — alongside `--project-name`, which is meaningless
+without it. That is position 2's own complaint (*"most of which apply to exactly one mode, and argparse
+cannot say so"*) at one level down. **The owner caught it on 2026-08-26** and replaced the boolean with
+a **required, repeatable `--format`** taking `bodies` and `jsonl`. `--project-name` is now scoped to a
+format rather than to a mode, and argparse errors explicitly when it is passed without
+`--format jsonl`. *Recorded rather than quietly corrected: the fix came from the owner, and the plan
+had reviewed its own CLI section twice without seeing it.*
+
+**Verification became its own command on the same pass.** `verify-archive <DAY>...` reads and checks
+and writes nothing — which is what today's `--extract` already does. The plan had carried a
+`--verify-only` flag on `extract`; that flag **named the default**, since an `extract` with no output
+destination cannot do anything else, and two spellings for one behaviour is what the register exists
+to catch. The row is struck below.
+
 ### The extractor
 
-Selection over the index, output as files a person can open. It reads the day folder **and nothing
-above it**, which is `reference/corpus.md`'s self-containment guarantee kept executable.
+Selection over the index, output as files a person can open. It reads **the day folders it is given
+and nothing above them**, which is `reference/corpus.md`'s self-containment guarantee kept executable.
+Days are positional and repeatable (position 7), so the shell's own glob covers *"all of it"* and no
+`--all` flag or corpus-root concept is needed:
 
-`--agent` is **not** implemented, on finding 3. The register carries the row struck with the reason,
-so the next phase does not rediscover the column and assume it was forgotten.
+```
+ilirium-llm-router extract 2026-08-25 --out ./dump --format bodies
+ilirium-llm-router extract logs/corpus/2026-*/ --out ./dump --format bodies --format jsonl
+ilirium-llm-router verify-archive logs/corpus/2026-*/
+```
+
+**One `--out` root holds both formats**, and the layout is the reason it can:
+
+```
+<out>/bodies/<session-id>/00001-request.json
+                          00001-response.sse     ← .sse streamed, .json not
+<out>/projects/corpus/<session-id>.jsonl
+```
+
+**`projects/` sits at the root deliberately** — the viewer's Custom Claude Directory can be pointed
+straight at `<out>` and works, while `bodies/` sits beside it and is ignored. **Never
+`~/.claude/projects/`** (position 12): writing lossy reconstructions into the real history directory
+would corrupt the owner's own record, and that is not a reversible mistake.
+
+**`--agent` is implemented, reversing this plan's 2026-08-24 decision.** It was struck because the
+column is empty on every row the corpus has ever held — still true at 770 rows on 2026-08-26 — and a
+filter that silently returns empty is worse than no filter. **What changed is that the traffic is
+about to exist:** this phase's IDM-004 review spawns a cold-reader subagent through a capturing
+router, so `--agent` gets built against real rows. **If the review's run leaves column 3 empty, the
+strike stands and finding 3's prediction has caught a defect in `observe.py` instead.**
 
 ### The converter, and the part that is actually hard
 
@@ -153,6 +298,14 @@ its `messages` array against the previous call's and emit only the **new** user-
 emit the assistant turn from that call's response. Tool results ride in as `tool_result` blocks in
 the next request's user turn, so they arrive for free.
 
+**And a session's calls are not all in one day folder — finding 5.** Delta reconstruction walks a
+session in timestamp order **across every folder it was given**, so the diff for the first call after
+midnight is taken against the last call of the previous day rather than against nothing. **When a
+selected session has calls in a folder that was not passed, the converter errors and names the missing
+day.** It does not reconstruct what it can and stay quiet: the failure mode this guards against
+produces a transcript whose opening turn silently contains a whole day of prior conversation, which
+reads as real.
+
 **Three fidelity limits, and they are limits rather than bugs.** The store keeps **bodies only, never
 headers**, and Claude Code's own session records carry client-side facts that never crossed the wire:
 
@@ -160,10 +313,25 @@ headers**, and Claude Code's own session records carry client-side facts that ne
 |---|---|
 | `cwd`, `gitBranch`, `version` | Client state. Never in an API body |
 | `toolUseResult` | Claude Code's own enriched record. The wire carries `tool_result` content, not this |
-| `agentId` / sidechain attribution | Header-derived, and empty on all 171 captured rows |
+| `agentId` / sidechain attribution | Header-derived. The column exists and works; empty on all **770** captured rows because no subagent has ever run through the router |
 
-**The output must say so in-band rather than look complete.** How — a `system` line at the head of
-each file, or a sidecar — is ❓ in the register.
+**A fourth limit was proposed on 2026-08-26 and rejected, and the reasoning belongs here because the
+proposal is the obvious one.** The question was whether headers could be captured selectively —
+keeping the useful ones, dropping anything sensitive. **It does not work, for a reason that has
+nothing to do with sensitivity: none of the missing fields is a header.** `cwd`, `gitBranch`,
+`version` and `toolUseResult` are client-side state that never crosses the wire in any form; at most
+`User-Agent` yields a version string. The two header-derived facts that matter — `session_id` and
+`agent_id` — are **already columns**, read at `observe.py:316`. Capturing headers would buy a version
+string in exchange for a write-path change. *The credential argument is real and secondary: the store
+is attached to a tee of body bytes and never sees a header, so no token can reach disk. Both halves
+are now in `../../../CLAUDE.md`, because a session carrying only the security half proposes the wrong
+fix.*
+
+**The output says so in-band, as a `system` record at the head of each file** — settled 2026-08-26,
+against a sidecar. A sidecar is not in-band: the viewer is the only place these files get read, and it
+would not show one. `JSONL_SCHEMA_NOTE` in the register carries the wording. **One risk, checked at
+Task 14:** if the viewer refuses to render an unrecognised `system` record, the fallback is a `user`
+record carrying the same text — uglier, still visible, still in-band.
 
 **Output goes to its own root, never into `~/.claude/projects/`.** The viewer supports custom Claude
 directories (Settings → Custom Claude Directories), so reconstructed sessions stay separable from
@@ -250,8 +418,11 @@ record with lossy copies**, and that is not a reversible mistake.
 ### Group B — the CLI restructure
 
 8. Subcommand skeleton, bare invocation still serving.
-9. Move `check`, `train-dict`, `tune-dict`, `extract` across; delete the old flags; update `Makefile`.
-10. Tests for the surface, including that bare invocation still resolves to serve.
+9. Move `check`, `train-dict`, `tune-dict`, `extract` across; **split verification out as
+   `verify-archive`**; delete the old flags; update `Makefile`.
+10. Tests for the surface, including that bare invocation still resolves to serve, that `--format` and
+    `--out` are **required** on `extract`, and that `--project-name` without `--format jsonl` is a
+    **parse error rather than a silent no-op**.
 
 ### Group C — the converter, first because it is the risk
 
@@ -259,32 +430,47 @@ record with lossy copies**, and that is not a reversible mistake.
 foresee, and Phase 10's lesson is that the expensive discovery should arrive early.
 
 11. SSE reassembly **and** the plain-JSON path — 63 of 168 real calls need the second.
-12. Delta reconstruction across a session's calls.
-13. `uuid`/`parentUuid` synthesis and the record types the viewer needs.
-14. **Drive it against the real corpus and open the result in the viewer.** Green tests are not
-    evidence. This task is the one that says whether the phase works.
+12. Delta reconstruction across a session's calls, **spanning day folders** (finding 5), **and the
+    error when a selected session has calls in a folder that was not passed.** The error is not a
+    nicety: without it a cross-day session reconstructs into a plausible-looking transcript whose first
+    turn silently contains a day of prior conversation.
+13. `uuid`/`parentUuid` synthesis and the record types the viewer needs. **Determinism is a test, not
+    an aspiration** — convert twice, diff, expect zero bytes of difference.
+14. **Drive it against the real corpus, diff it against the real session record, then open it in the
+    viewer.** Green tests are not evidence. **Finding 6 upgraded this task**: `~/.claude/projects/` holds
+    Claude Code's own record for all three sessions in the `2026-08-25` index, so the reconstruction can
+    be **diffed against ground truth** instead of eyeballed. Expected difference is exactly the fidelity
+    table above and nothing else; **anything else in the diff is a converter defect.** This task is the
+    one that says whether the phase works.
 15. Run it against `corpus-gate` too — the second-source check.
 
 ### Group D — the extractor
 
-16. Selection by day, session, model, path.
-17. Output layout and bulk verification.
-18. `--agent` struck, with the reason recorded rather than the row deleted.
+16. Selection by session, model, path, **and `--agent`**, over one or more positional day folders.
+17. Output layout — `bodies/` and `projects/` under one `--out` — and `verify-archive`.
+18. **`--agent` built and tested against the review run's traffic.** If that run leaves `agent_id`
+    empty on every row, this task instead **files the defect** against `observe.py:40` and the strike
+    is restored, per finding 3's stated prediction.
+19. **Re-run `extract` now that a dictionary exists.** The register records that there is **no
+    post-dictionary end-to-end ratio** and that 3.317× must not be read as one. This closes that hole
+    and is a **measurement, not a feature** — position 3 postpones dictionary *work*, not dictionary
+    *numbers*.
 
 ### Group E — documentation
 
-19. The temporary `README.md` note (position 3) — the dictionary commands and the new subcommands,
-    marked as superseded by Phase 12.
-20. `reference/corpus.md` and `reference/observability.md` updated for the tools.
+20. The temporary `README.md` note (position 3) — the dictionary commands and the new subcommands,
+    marked as superseded by Phase 12. **It carries the Phase 12 commitment**, which is recorded in only
+    one other place.
+21. `reference/corpus.md` and `reference/observability.md` updated for the tools.
 
 ### Group F — verify, harvest and close
 
-21. **The register check** — `../../method/IDM-008-the-register.md`'s closing task. Every row below
+22. **The register check** — `../../method/IDM-008-the-register.md`'s closing task. Every row below
     against the code, `❓` column empty.
-22. **Mutation testing on the converter.** One deliberate fault, a targeted test must fail. A
+23. **Mutation testing on the converter.** One deliberate fault, a targeted test must fail. A
     mutation that survives is a missing test or a dead line — find out which.
-23. Harvest into `reference/lessons.md` and `reference/measurements.md`.
-24. Merge `--no-ff`, then regenerate the branch index **after** the merge commit.
+24. Harvest into `reference/lessons.md` and `reference/measurements.md`.
+25. Merge `--no-ff`, then regenerate the branch index **after** the merge commit.
 
 ## The register — every name and number this phase introduces
 
@@ -301,7 +487,12 @@ deliberately not empty yet.*
 | `src/ilirium_llm_router/jsonl.py` | the viewer's record shapes | new |
 | `src/ilirium_llm_router/cli.py` | restructured, not new | **modified** |
 
-*Three modules or two is ❓ — `transcript.py` and `jsonl.py` may not earn separate homes.*
+**Three, settled 2026-08-26.** This plan proposed folding `jsonl.py` into `transcript.py` on the
+grounds that record shapes are small; the owner kept them apart. The split that earns it:
+`transcript.py` answers *what was said* (reassembly, delta reconstruction, cross-day ordering),
+`jsonl.py` answers *what the viewer will accept* (record shapes, `uuid` chaining, the schema note).
+**The second is somebody else's schema and will move when their tool moves** — a boundary worth having
+a file for.
 
 ### 2 · CLI — the exact spelling
 
@@ -312,37 +503,44 @@ deliberately not empty yet.*
 | `ilirium-llm-router check` | `--check` |
 | `ilirium-llm-router train-dict` | `--train-dict` |
 | `ilirium-llm-router tune-dict` | `--tune-dict` |
-| `ilirium-llm-router extract` | `--extract` |
-| `ilirium-llm-router to-jsonl` | new — **name ❓**, `to-jsonl` / `sessions` / `replay` |
+| `ilirium-llm-router extract` | `--extract`'s selection and output half |
+| `ilirium-llm-router verify-archive` | `--extract`'s read-and-check half — **new command**, settled 2026-08-26 |
+
+*There is **no** `to-jsonl` command. It was proposed, then proposed again as `extract --to-jsonl`, and
+settled as `extract --format jsonl`. See §3.*
 
 ### 3 · `extract` flags
 
 | Flag | Type | Default |
 |---|---|---|
-| `--day` | path | required |
+| *(positional)* `DAY...` | one or more paths | **required, repeatable** — the shell's glob is the "all days" case |
+| `--out` | path | **required** |
+| `--format` | `bodies` \| `jsonl`, repeatable | **required** — a run always states what it produces |
 | `--session` | str, repeatable | all |
 | `--model` | str, repeatable | all |
 | `--path` | str | all |
-| `--out` | path | ❓ |
-| `--verify-only` | flag | today's behaviour |
-| ~~`--agent`~~ | — | **struck** — empty on all 171 real rows |
+| `--agent` | str, repeatable | all — **reinstated 2026-08-26** |
+| `--project-name` | str | `corpus` — **error** if passed without `--format jsonl` |
+| ~~`--day`~~ | — | **struck** — a required *option* is the wrong shape; days are positional |
+| ~~`--verify-only`~~ | — | **struck** — it named the default; verification is now `verify-archive` |
 
-### 4 · `to-jsonl` flags
+### 4 · `verify-archive` flags
 
 | Flag | Type | Default |
 |---|---|---|
-| `--day` | path | required |
-| `--session` | str, repeatable | all |
-| `--out` | path | ❓ |
-| `--project-name` | str | ❓ — the folder name under the output root |
+| *(positional)* `DAY...` | one or more paths | **required, repeatable** |
+
+*No `--out`, by construction. It reads, verifies against the digest in each filename, and reports —
+which is exactly what `--extract` does today.*
 
 ### 5 · Constants
 
 | Name | Value |
 |---|---|
-| `JSONL_SCHEMA_NOTE` | ❓ — the in-band fidelity statement, if that is the shape chosen |
+| `JSONL_SCHEMA_NOTE` | The in-band fidelity statement, emitted as a `system` record on line 1 of every generated file. Names the tool, the source days and session, the call count, the generation moment, and the five fields absent by construction — `cwd`, `gitBranch`, `version`, `toolUseResult`, agent attribution. **Exact wording is drafted at Task 13 and checked at Task 22** |
 | SSE event names consumed | `message_start`, `content_block_start`, `content_block_delta`, `content_block_stop`, `message_delta`, `message_stop`, `error` |
-| `SYNTHETIC_UUID_NAMESPACE` | ❓ — must be deterministic so reruns produce stable files |
+| `SYNTHETIC_UUID_NAMESPACE` | A **UUIDv5 namespace literal, minted once** at Task 13 and pasted into the source. Record ids are `uuid5(NAMESPACE, "<request-blob-digest>:<block-index>")`, so **the same corpus produces the same file forever, on any machine.** Minted rather than borrowed so our ids cannot collide with anyone else's `uuid5` values. **Not** `uuid4` — Task 13 tests determinism by converting twice and diffing |
+| `PROJECT_NAME_DEFAULT` | `corpus` — one bucket. **`corpus-<day>` was proposed and killed by finding 5**: a session spanning two days has no single day to file under |
 
 ### 6 · Existing names this must not collide with
 
@@ -354,9 +552,18 @@ deliberately not empty yet.*
 
 | | Form |
 |---|---|
-| output root | ❓ |
-| a session file | `<root>/projects/<project>/<session_id>.jsonl` |
-| extracted body | ❓ — `<out>/<session>/<seq>-{request,response}.json`? |
+| output root | **whatever `--out` names.** No default — nothing is written unless a destination is given |
+| a session file | `<out>/projects/<project>/<session_id>.jsonl`, `<project>` defaulting to `corpus` |
+| extracted body | `<out>/bodies/<session_id>/<seq>-request.json` and `<seq>-response.json` **or** `<seq>-response.sse` |
+| never | **`~/.claude/projects/`** — position 12. Lossy reconstructions in the real history directory is not a reversible mistake |
+
+*The response extension is not decoration: it is **`.sse` for a streamed reply and `.json` for a
+buffered one**, which at 105 streamed against 63 buffered is a distinction a reader meets immediately.
+The encoding is legible without opening the file.*
+
+*`projects/` sits directly under `<out>` so the viewer's Custom Claude Directory can be pointed at
+`<out>` itself; `bodies/` sits beside it and the viewer ignores it. **That is why one `--out` serves
+both formats** rather than needing two destinations.*
 
 ### 8 · Numbers measured, with their moment
 
@@ -396,6 +603,22 @@ end-to-end ratio in this table**, and one must not be inferred from the candidat
 **171 → 317 is one folder read twice, not a discrepancy.** The first reading caught a day still being
 written; the second is that day finished.
 
+**Measured 2026-08-26 during ratification, over all four day indexes:**
+
+| | Value | Slice |
+|---|---|---|
+| **day folders** | **4** — `2026-08-26` appeared | *the "3" one row-group above went stale in a single day* |
+| total index rows | **770** | 10 + 317 + 413 + 30 |
+| populated `agent_id` | **0 of 770** | every row, every folder. The column works; no subagent has ever run |
+| **a session spanning two folders** | `15b29c2a…` — **39** calls on the 25th, **19** on the 26th | the session that ratified this plan |
+| distinct sessions | 3 on the 25th, 1 so far on the 26th | plus 3 empty-`session_id` rows on the 25th |
+| **ground-truth session records on disk** | **3 of 3** for the `2026-08-25` index | `~/.claude/projects/…/<session-id>.jsonl`; filenames listed, contents not read |
+
+**`2026-08-25` went 331 → 413 rows and `2026-08-26` went 19 → 30 during the ratification conversation
+itself.** That is roughly two hours. It is the fourth separate occasion this document has recorded the
+corpus moving underneath a measurement, and it is why position 14 accepts a **labelled live snapshot**
+rather than pretending a still one is available.
+
 *None of these goes in `reference/measurements.md` until **Task 7** freezes a slice — a number whose
 slice is still moving cannot fill the four columns `../../README.md` requires. **The corpus was still
 moving while this very table was written:** two copies of the `2026-08-25` index taken one minute
@@ -411,9 +634,13 @@ instrument is for.)*
 *The section that exists so these are closed out deliberately rather than found by chance —
 Phase 10's worked.*
 
-1. **Position 3 needs the owner's one word.** Documentation only, or dictionary work too.
-2. **Every `❓` in the register.**
-3. **The Record table** below.
+1. ~~**Position 3 needs the owner's one word.**~~ **Closed 2026-08-26** — documentation only, and the
+   three dictionary ideas are in `../../backlog.md` under a new `Dictionaries` section.
+2. ~~**Every `❓` in the register.**~~ **Closed 2026-08-26. The `❓` column is now empty**, which is the
+   condition Task 22 checks against the code. Nine were valued; **three of them changed shape rather
+   than merely acquiring a value** — `--day` became positional, `--verify-only` was struck as a
+   duplicate of the default, and `to-jsonl` stopped being a command.
+3. **The Record table** below — the merge commit, which cannot exist until the merge.
 4. **Three tasks are already executed and say so — Task 1, Task 5 and Task 6.** No other task may
    claim it. Both deviations ran ahead of the plan on the owner's instruction, and both are worth
    seeing rather than smoothing over. **Task 5** — the settings work — was done while diagnosing an
@@ -429,10 +656,18 @@ Phase 10's worked.*
 
 - Whether archiving slows a call. Failure mode 3, still open.
 - The vanishing-row race. Still parked, still needs the never-write-twice guarantee.
-- Whether a response dictionary pays. Still in `../../backlog.md`.
+- **Anything about dictionaries beyond documenting what ships.** Response dictionaries,
+  `list`/`show`/`install`, and a dicted-vs-undicted benchmark are all in `../../backlog.md` under
+  `Dictionaries` — position 13, and the reason that section exists.
 - Anything about LM Studio — **no local traffic exists in the captured corpus**, so every tool here
   is exercised against Anthropic material only. Stated because it is exactly the kind of gap a later
-  session reads as coverage.
+  session reads as coverage. *Accepted on 2026-08-26 with a reason rather than by omission: LM Studio
+  natively implements the same `POST /v1/messages`, so its bodies are the same shape and are unlikely
+  to move the converter. That is an argument, not a measurement, and it is written down so a later
+  session can disagree with it.*
+- **Whether the client-side fields can ever be recovered.** `cwd`, `gitBranch`, `version`,
+  `toolUseResult` and agent attribution are absent by construction; the item in `../../backlog.md`
+  records why capturing headers is **not** the fix.
 
 ## Record
 
