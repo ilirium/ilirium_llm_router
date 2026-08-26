@@ -463,7 +463,7 @@ record with lossy copies**, and that is not a reversible mistake.
    missing. **Phase 13 is new** — the rate-limit response headers, allocated on the owner's
    instruction, and its entry carries its two gates rather than just a title. The same pass marked the
    capture step **discharged in fact, evidence pending Task 7**.
-7. Freeze the evidence slice. **Index and derived metrics only, redacted to stable placeholders per
+7. **Done 2026-08-26.** Freeze the evidence slice. **Index and derived metrics only, redacted to stable placeholders per
    `../../README.md`; no blobs.** Bodies are real source and real prompts.
 
 ### Group B — the CLI restructure
@@ -648,7 +648,7 @@ which is exactly what `--extract` does today.*
 | a session file | `<out>/projects/<project>/<session_id>.jsonl`, `<project>` defaulting to `corpus` |
 | extracted body | `<out>/bodies/<session_id>/<seq>-request.json` and `<seq>-response.json` **or** `<seq>-response.sse` |
 | `<seq>` | **Five digits, zero-padded, assigned per session in `timestamp` order, starting at `00001`.** *Defined 2026-08-26; it was undefined, and the forward review priced that as silently mis-labelling every extracted body.* **Timestamp order, not index order** — `stats.py` says the index is in **completion** order, so reading it in file order would number a session's bodies by when each call *finished* |
-| a row with no `session_id` | goes to `<out>/bodies/_no-session/`. **10 rows have one** — 8 × `/api/hello`, 1 × `/`, 1 × `/favicon.ico` — and `<out>/bodies//00001-request.json` is not a path |
+| a row with no `session_id` | goes to `<out>/bodies/_no-session/`. **11 rows have one at 2026-08-26T15:16Z** — 9 × `/api/hello`, 1 × `/`, 1 × `/favicon.ico` — and `<out>/bodies//00001-request.json` is not a path. *Read **10** at 770 rows; the figure moves with the corpus and the shape does not* |
 | never | **`~/.claude/projects/`** — position 12. Lossy reconstructions in the real history directory is not a reversible mistake |
 
 *The response extension is not decoration: it is **`.sse` for a streamed reply and `.json` for a
@@ -712,6 +712,28 @@ written; the second is that day finished.
 itself.** That is roughly two hours. It is the fourth separate occasion this document has recorded the
 corpus moving underneath a measurement, and it is why position 14 accepts a **labelled live snapshot**
 rather than pretending a still one is available.
+
+**Measured 2026-08-26T15:16:22Z, on the frozen slice — and this is the first block here that is
+citable, because it is the only one whose source is committed.** → `evidence/`, redacted, with
+`freeze.py` beside it.
+
+| | Value | Slice |
+|---|---|---|
+| total index rows | **979** | 10 + 317 + 413 + 239, four day folders |
+| **populated `agent_id`** | **67 of 979**, **one** distinct agent | *replaces "0 of 770", which the review said needed a real number rather than a correction* |
+| …and their parent | **all 67 inside one session** | `agent_id` is a **partition key**, not a filter — review finding 4, confirmed on the frozen slice |
+| distinct sessions | **9** non-empty, **11** rows empty | across all four days |
+| **a session spanning two folders** | **276 calls** across the 25th and 26th | it was **39 + 19** when finding 5 was written, on the same session |
+| `too_large` | **45 rows, all in one session** — the largest, at 292 calls | the **only** sentinel present. **No response is ever `too_large`** |
+| **sentinels never observed** | **four of five** — `dropped`, `absent`, `error`, and `none` as a *response* ref | `absent` does not appear even on the 9 router-authored `/api/hello` rows, which carry real digests |
+| streamed ok / buffered ok | **807 / 67** | of 902 `/v1/messages` |
+| error rows | **93** `http_error` + **2** with `stream` empty + **1** `client_disconnect` | all 93 are `429` |
+| `count_tokens` | **66** | same sessions as `/v1/messages` |
+| dedup | request **934 rows → 821 distinct**; response **979 → 934** | so `<seq>` cannot be derived from a digest |
+| LM Studio | **1 row**, `google/gemma-4-e4b` | `2026-08-21` |
+
+**770 → 979 in one afternoon**, the fifth occasion this document records the corpus moving under a
+measurement — and the last one that has to, because from here the phase measures the frozen copy.
 
 *None of these goes in `reference/measurements.md` until **Task 7** freezes a slice — a number whose
 slice is still moving cannot fill the four columns `../../README.md` requires. **The corpus was still

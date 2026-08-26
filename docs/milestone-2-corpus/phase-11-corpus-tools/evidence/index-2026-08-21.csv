@@ -1,0 +1,11 @@
+timestamp,session_id,agent_id,backend,model,path,stream,input_tokens,output_tokens,cache_read_input_tokens,cache_creation_input_tokens,stop_reason,request_bytes,response_bytes,ttfb_ms,duration_ms,error_status,error_code,error_message,router_version,request_ref,response_ref,queue_ms,store_ms,queue_bytes,request_dict_id
+2026-08-21T14:29:34.621+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,218,ok,,,0.1.0,req-01,resp-01,0,2,0,none
+2026-08-21T14:29:35.363+00:00,session-01,,lmstudio,google/gemma-4-e4b,/v1/messages,false,14,0,0,,max_tokens,316,289,449,450,ok,,,0.1.0,req-02,resp-02,0,1,605,none
+2026-08-21T14:29:47.405+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,711,16,0,0,end_turn,2198,1638,2119,3134,ok,,,0.1.0,req-03,resp-03,0,2,3836,none
+2026-08-21T14:29:47.420+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,2,305,48416,16582,tool_use,181690,7537,1905,5713,ok,,,0.1.0,req-04,resp-04,0,8,189227,none
+2026-08-21T14:29:54.183+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,168,ok,,,0.1.0,req-01,resp-01,0,1,0,none
+2026-08-21T14:29:54.747+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,482,483,http_error,429,rate_limit_error: Error,0.1.0,req-05,resp-05,0,2,425,none
+2026-08-21T14:29:53.700+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,2,642,64998,933,end_turn,184914,4465,897,7483,ok,,,0.1.0,req-06,resp-06,0,7,189379,none
+2026-08-21T14:33:01.255+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,94,77,65931,642,end_turn,187053,2195,1129,2332,ok,,,0.1.0,req-07,resp-07,0,24,189248,none
+2026-08-21T14:40:41.987+00:00,,,anthropic,,/,,,,,,,0,0,,269,http_error,404,,0.1.0,req-01,resp-01,0,2,0,none
+2026-08-21T14:40:42.278+00:00,,,anthropic,,/favicon.ico,,,,,,,0,0,,94,http_error,404,,0.1.0,req-01,resp-01,0,0,0,none

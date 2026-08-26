@@ -699,3 +699,67 @@ local half is supposed to stay empty, and per-worktree accumulation means it ref
 `IDM-001`'s worktree section was **amended after it was written** to distinguish this from the dead
 tracked-settings claim beside it — *the two are one word apart and the doc's phrasing is the same one
 this branch declared dead.*
+
+## Task 7 — the frozen slice, and the instrument that cried wolf 1913 times, 2026-08-26
+
+**979 rows, four day folders, 26 columns, taken 2026-08-26T15:16:22Z.** Index only, redacted, no
+blobs — ever. → `evidence/`, with `freeze.py` committed beside it so the redaction is auditable.
+
+**Group A is now complete.** Tasks 1–7, of which 1, 5 and 6 ran ahead of the plan and 2, 3, 4, the
+missing half of 5, and 7 ran here.
+
+### Why the script is committed and the result still is not reproducible
+
+**Re-running `freeze.py` tomorrow produces a larger slice with a different mapping.** The corpus read
+**770 rows** during this plan's ratification and **979** here, the same day. `../../README.md` asks
+every evidence artefact to say whether it can be regenerated, and the answer is **no** — the CSVs are
+the record, the script is the audit trail. *The plan's own `evidence/README.md` predicted this would be
+the column the phase struggled with, and it was right.*
+
+### The instrument reported 1913 secrets and every one was a sha256
+
+The secrets pass is a **separate problem from identifiers**, per `../../README.md`, so it is a separate
+pass. Its first version matched `[A-Za-z0-9+/]{60,}` as "a long base64-ish blob" and reported **1913
+suspect cells**. **Every one was a digest**: sixty-four hex characters satisfy that rule perfectly.
+
+**`CLAUDE.md`: when a check comes back negative, fix the instrument before believing the result.** Two
+things changed, and the second matters more than the first:
+
+1. The pattern now excludes pure hex, with the reason in a comment so nobody removes the exclusion.
+2. **The scan moved to run on the *redacted* row, and nothing is written until it is clean.** The
+   question worth asking is whether the **committed** file carries a secret — which also covers any
+   column the script does not redact. The first version asked a different question and wrote the files
+   anyway before reporting.
+
+*A rule that fires on everything is indistinguishable from a rule that fires on nothing. The clean
+result is only worth having because the pattern was made capable of returning a dirty one.*
+
+### Two families were redacted beyond the one that was asked for
+
+`session_id` (9 distinct) and `agent_id` (1) were the obvious ones. **The two `*_ref` digest columns
+were taken as well.** A sha256 does not reveal a body but it **confirms a guess about one**, and
+placeholders preserve every property this phase needs — dedup counts, cross-day identity, which rows
+share a blob. **`request_dict_id` was deliberately left alone**: it names a dictionary, not a person,
+and `9dd33823` is already committed in `../../status.md`.
+
+**The five sentinels pass through unchanged, and that is load-bearing rather than tidy.** A sentinel
+run through a digest redactor becomes a **fake identifier** — and the extractor's entire reason for
+knowing the sentinels is to read *"no blob here"* instead of trying a filename.
+
+### What the slice settles, and the one thing it adds
+
+**Every data finding from the forward review reproduces**, at four to five times the sample it was
+found on — the 45-row `too_large` tail all inside the 292-call session, the cross-day session now at
+**276 calls**, **67 agent rows all carrying the parent's session id**, both response encodings, 96
+error rows, 66 `count_tokens`. The review read the disk correctly.
+
+**One thing no earlier reading had: `absent` never appears.** Not even on the **9** router-authored
+`/api/hello` rows, which carry real digests. **Four of the five sentinels have never been observed in
+this corpus** — `dropped`, `absent`, `error`, and `none` as a *response* ref. The extractor must still
+handle all five; the register already says a sentinel used as a filename fails at the filesystem, and
+now the register can say how little of that path has ever been exercised by real data.
+
+*`evidence/README.md` itself said **"Empty until Task 5"** and named Task 5 twice. Task 5 is the
+`IDM-002` amendment; **Task 7** freezes the slice. **This is the third instance of that exact
+off-by-two in this phase** — register §8 carried it, and a session reading only the README would have
+gone looking for the freeze in the settings work.*
