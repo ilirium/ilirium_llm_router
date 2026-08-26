@@ -24,7 +24,12 @@ The project is a **bare clone** with `main`, `to-run-server` and this phase as s
    then the task group you are about to run, then the register section covering it.
 3. **That phase's `notes.md`, section "The forward review"** — **before writing any converter code.**
    Seventeen findings with their evidence. **Do not re-derive them.**
-4. **`for-the-owner.md`, in the same folder — this is new.** Everything addressed to a person rather
+4. **`notes-group-c.md` — the group you are working in.** *The phase's notes were **split by group on
+   2026-08-26**, per `docs/README.md`'s rule. **`notes.md` is still the entry point** and keeps what
+   belongs to no group — the re-derivation, the session boundaries, the forward review, the "Verified
+   by" line, and what was open at the end of a group. **Task work goes in the group file**, and
+   `notes.md`'s index lists them in written order.*
+5. **`for-the-owner.md`, in the same folder — this is new.** Everything addressed to a person rather
    than to a session: **three `ASK`, four `IDEA`, two `REGRET`**, each marked so they skim. **Add to
    it rather than burying an owner-facing point in `notes.md`**, and do not invent a rule or a tier
    for it — the owner asked for the file and explicitly not for a convention.
@@ -64,6 +69,7 @@ reconstruction has no defined behaviour for a zero delta (finding 17). And `mess
 | `tests/test_transcript.py` | new |
 | `evidence/` | **the frozen slice — 979 rows, four days, redacted**, with `freeze.py` beside it |
 | `for-the-owner.md` | new |
+| `notes-group-a.md`, `-b.md`, `-c.md` | **new — the notes are split by group.** `notes.md` went 963 → 403 lines and stays the entry point. **Write task notes into the group file** |
 | `extract.py`, `jsonl.py` | **do not exist yet.** Groups C and D |
 
 **`extract` parses its full flag surface and returns 2**, naming the tasks that will build it. That is

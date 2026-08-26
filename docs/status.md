@@ -46,7 +46,13 @@ prompt? **A model cannot answer it** — a denial is a tool error and an approva
 addressed to a person rather than to a session.
 
 *The earlier 2026-08-26 entries — ratification, the forward review, Group A's own findings — are in
-that phase's `plan.md` and `notes.md`, task by task. **Fifth trim.***
+that phase's `plan.md` and its **group notes**, task by task. **Fifth trim.***
+
+**The phase's notes were split by group on 2026-08-26**, on the owner's instruction and per
+`README.md`'s rule: `notes-group-a.md`, `-b.md`, `-c.md`, with `notes.md` going **963 → 403 lines** and
+staying the entry point. **The split surfaced two required lines that were missing** — `notes.md` now
+carries the **"Verified by"** table and says it was **written while measuring**, both of which
+`README.md` asks of every phase note and neither of which existed.
 
 **Baselines, all re-run 2026-08-26 at the close of this session, in this worktree.**
 

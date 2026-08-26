@@ -389,7 +389,10 @@ record with lossy copies**, and that is not a reversible mistake.
 
 ## The tasks
 
-**Six groups. `notes-group-<letter>.md` per group**, per `../../README.md`'s split rule.
+**Six groups. `notes-group-<letter>.md` per group**, per `../../README.md`'s split rule. **Done
+2026-08-26**, on the owner's instruction, once three groups' worth of sections had accumulated in one
+file: `notes-group-a.md`, `notes-group-b.md` and `notes-group-c.md` exist and `notes.md` went 963 →
+403 lines. **`notes.md` stays the entry point** and keeps what belongs to no group.
 
 ### Group A — open the phase
 

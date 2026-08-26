@@ -11,13 +11,56 @@ Questions only the owner can answer, ideas that are not this phase's business, a
 differently. **Nothing in it blocks the build** — anything that did was asked in the session. Started
 2026-08-26 on the owner's suggestion; **no tier, no rule, no template**, deliberately.
 
+## How to read these notes
+
+**Written while measuring, not afterwards** — `../../README.md` asks every phase note to say which,
+because it changes how far a reader should trust the narrative. Each section was written in the session
+that did the work, and where a figure was later found wrong it is **struck in place** rather than
+replaced, so the mechanism that caught it stays visible.
+
+**This file is the entry point and it is not the whole record.** A task group's notes live in
+`notes-group-<letter>.md`; what stays here is what belongs to **no** group — the re-derivation before
+Task 1, the session boundaries, the forward review, and what was open at the end of a group.
+
+**Read by section.** `grep -n '^## ' <file>` first.
+
 ## Index of the group files
 
 *In the order they were written, which is the chronology the letter-sorted split otherwise breaks.*
 
-| | |
+| | | |
+|---|---|---|
+| `notes-group-a.md` | **Group A — open the phase**, tasks 1–7 | **complete.** Its first three sections predate the group structure and are Task 5's working record, written 2026-08-24 and 2026-08-25 |
+| `notes-group-b.md` | **Group B — the CLI restructure**, tasks 8–10 | **complete**, 2026-08-26. The first group in this phase to change `src/` |
+| `notes-group-c.md` | **Group C — the converter**, tasks 11–13 | **in flight** — task 11 done, 12 and 13 not. Tasks 14 and 15 are **struck in place** |
+| *(none yet)* | Groups D, E, F | not started |
+
+**The split happened on 2026-08-26**, at the owner's instruction, once the phase had three groups' worth
+of sections in one file. *`notes.md` was 963 lines by then. `../../README.md` says to expect this file
+to stay the larger one and that this is not a failure of the rule — what the split buys is that a group
+file can be read whole.*
+
+## Verified by
+
+*`../../README.md`: what was run, when, and what it produced — because **green tests are not a
+sign-off**, and every phase here was signed off by driving the real thing.*
+
+**The phase is in flight, so this line is not a sign-off yet.** What has been driven, all 2026-08-26 in
+this worktree:
+
+| What was driven | What it produced |
 |---|---|
-| *(none yet)* | Group A is partly done — Tasks 1, 5 and 6 ran ahead of the plan and are recorded in the sections below rather than in a group file. **No group file exists yet**, and the first will be Group B's |
+| `verify-archive` over **all four live day folders** | **1793 blobs, 0 failed**, every one verified against the digest in its own filename. Phase 10's round trip at scale for the first time |
+| `reassemble` over **every response blob**, joined back to the index | **979 rows, 0 unresolved, 0 contradictions** against an `error_status` column written at capture time months earlier |
+| Every CLI invocation shape, through the real parser | bare, `serve`, `-c` on either side of the subcommand, every `extract` error path, and the deleted flags — exit codes checked without a pipeline |
+| `freeze.py` over the live corpus | the frozen slice, **979 rows**, secrets pass clean |
+| Three mutations of `cli.py` | each killed by **exactly one** test, file restored byte-identically |
+| `make test` / `make lint` / `make check` | **355 passed** / clean at the pinned `0.16.1` / valid |
+
+***The one thing still owed is the largest.*** Task 14 is struck, so **the owner exercises the tools by
+hand after the phase**, and **task 23's mutation testing on the converter** is the strongest evidence
+the phase itself will produce. **A closing record that reports green tests as though the central
+question were closed is the exact failure the plan's first "does not settle" bullet exists to prevent.**
 
 ## The re-derivation before Task 1
 
@@ -42,134 +85,6 @@ exactly that. Reading it back is the check, `--extract` is the instrument, and i
 blobs, 0 failed**. `request_dict_id` is `none`, not a dictID: the blobs name no dictionary, so there
 is none to be missing. **The alarming reading and the true one differ by one column of the index.**
 
-## The deny rules work — and the allow list beside them was the actual hazard
-
-**Opened 2026-08-24, settled 2026-08-25 in a fresh session by driving it.**
-
-**What was open.** `Bash(git add -A)` was added to `.claude/settings.json`'s `deny` list, committed as
-`3d8ae54`, and **was not blocked** when run immediately afterwards. Two explanations were left
-standing: **a**, tracked settings resolve through the worktree to the main checkout, so a phase
-branch's permission change does nothing until it merges; **b**, settings are read once at session
-start and not reloaded.
-
-**It is `b`. Settings are session-cached.** In a fresh session `git add -A` was **blocked** on a clean
-tree, and so was `git stash`. Both deny rules fire. **Explanation `a` is dead** — a tracked permission
-change on a phase branch is inert until **restart**, not until merge, which is ordinary and costs the
-phase nothing.
-
-**The wrong order is still the lesson.** `../../../CLAUDE.md` says *exercise it before committing*;
-`3d8ae54` committed first and checked second. Had the next session inherited *"two deny rules added"*
-with nothing saying they were ever seen to work, the phase record would have carried a defect.
-
-### What the check found on the way past, which is larger than what it was for
-
-**Chasing why `git status` prompted the owner produced seven measurements**, all 2026-08-25, in
-**accept-edits** mode, in this worktree:
-
-| driven | result |
-|---|---|
-| `ls` | silent |
-| `git status` · `git status && echo ok` · `git --version` · `git --no-optional-locks status` | **all prompted** |
-| `git add -A` · `git stash` | **denied** |
-| `git add -A .` | **ran, unprompted** |
-
-**Git is not in Claude Code's built-in read-only set.** `git --version` touches no repository and
-still prompted, so it is neither the worktree layout nor `git status`'s index refresh — **both were
-proposed here, both were persuasive, and both were wrong.** Git prompts unless an allow rule matches
-it; `ls` confirms the non-git half of the built-in set is real.
-
-**`../../prompt.md`'s claim that *"read-only `git` … runs without a prompt in every mode"* is false as
-written, and the way it entered the record is the finding.** It was asserted by a session that had no
-instrument to observe it: a model sees a denial as a tool error and **cannot see an approval at all**,
-so a silent run and an approved-after-prompt run are identical from the inside. The owner was the only
-instrument, and was never asked. `../../method/IDM-002-harness-configuration.md` is where the corrected
-fact belongs — that is Task 5.
-
-**A deny entry matches exactly; an allow entry with `*` does not.** `git add -A` was denied and
-`git add -A .` — one character longer, identical effect — ran, because it fell through to
-`Bash(git add *)`. **A deny list of spellings is not a guard**: the set of dangerous spellings is open
-and cannot be enumerated.
-
-**The allow list was permissive exactly where git destroys work and absent exactly where git is
-safe.** `Bash(git checkout *)` permitted `git checkout -- .`; `Bash(git stash *)` permitted
-`git stash clear` and `git stash drop`. The denies beside them stopped `git stash` and `git stash pop`
-— neither of which loses data. Meanwhile `git status` and `git log`, which cannot harm anything, cost
-a prompt every time.
-
-*Why this belongs in the notes: it is the third and fourth time in two days that a plausible reading
-and the true one differed by one check. The empty `dicts/` was the first, the deny rule the second,
-and here two mechanisms were reasoned out in sequence and both were wrong while the simple
-explanation sat available the whole time.*
-
-## What `.claude/settings.json` now says, and what is unverified about it
-
-**Rewritten 2026-08-25 on one principle: allow what cannot destroy work, and let everything else
-prompt.** The blocklist approach was abandoned for the reason above.
-
-- **Removed the three wildcard allows that carried an irreversible spelling** — `Bash(git add *)`,
-  `Bash(git checkout *)`, `Bash(git stash *)`.
-- **Added read-only git** — `status`, `log`, `diff`, `show`, `rev-parse`, `branch`/`branch --list`,
-  `stash list`, `worktree list`, `remote -v`; bare **and** `*` forms, since matching is literal.
-- **`git checkout` was replaced by `Bash(git switch *)` rather than narrowed.** `switch` changes
-  branches and cannot touch working-tree files; `checkout` conflates that with `restore`. Choosing a
-  different verb removes the destructive spelling without having to name it. **`git checkout` now
-  prompts every time**, deliberately — it is a working-practice change, not an oversight.
-- **Staging is explicit paths only** — `docs/*`, `src/*`, `tests/*`, `.claude/*` and six tracked root
-  files. This is the project's own rule expressed *as* the permission instead of as a blocklist of its
-  violations. **Matching is by prefix, so a two-path `git add` passes on the strength of its first
-  path alone** — much better than `git add *`, and not airtight.
-- **Five denies added** for the genuinely irreversible spellings — `git stash clear`, `git stash drop`,
-  `git reset --hard`, `git checkout -- .`, `git clean -fd`. They are belt-and-braces. **They are not
-  the guard, and no document should describe them as one.**
-
-**`settings.local.json` was merged in and emptied by the owner on 2026-08-25** — it exists, holds an
-empty `permissions` block, and grants nothing. Every rule is now tracked and reaches `main` and
-`to-run-server` when this branch merges. Four entries went as subsumed duplicates; `python3 *` and
-`curl *` were narrowed by the owner back to the two `docs/procedures/` scripts and the LM Studio probe.
-
-**Removing the local file broke 13 documentation links; recreating it empty restored all 13.**
-`link-check.py` ran **86 → 99 → 86** across the two moves, which has the side effect of confirming the
-baseline by measurement rather than by arithmetic. Ten of the thirteen sit in **frozen historical
-records** — Phase 7, 8 and 9 notes, `EPD-004`, the 2026-08-16 documentation review — and three in live
-documents, including `../../method/IDM-002-harness-configuration.md`.
-
-**The lesson is not about this file.** A path in backticks *is* a link here, so removing any referenced
-file breaks documents that had no defect — and the ten historical ones could not have been repaired
-without rewriting frozen records. **Check `link-check.py` before deleting a file the documentation
-names**, not after.
-
-**The local file now exists with an empty `permissions` block, by decision.** The split `IDM-002`
-describes is structurally intact — tracked policy, untracked local, gitignored, no overlap — but its
-*practice* changed on 2026-08-25: **the local half is deliberately empty and every rule is tracked.**
-`IDM-002` still calls that half *"machine accretion: whatever this laptop clicked allow on"*, which now
-describes a policy the owner has stopped following. **That is Task 5's to record**, and it was left
-alone here because Task 5 sits in an unapproved plan.
-
-**One conflict with `../../../CLAUDE.md` was raised and left standing:** `Bash(uvx ruff *)` permits an
-**unpinned** ruff — `uvx ruff format` with no version fetches the latest — and `CLAUDE.md` says never
-bump the ruff pin as a side effect. The rule authorises the thing the project documents against. Left
-as the owner's call, recorded here so it is not rediscovered as a surprise.
-
-**Verified 2026-08-25 by the following session, and only then committed.** Settings are
-session-cached, so the file could not be exercised by the session that wrote it — and committing
-first is exactly what `3d8ae54` did wrong. All three probes in `../../prompt.md` returned what the
-rewrite predicted: `git status` **silent**, `git add -A .` **prompting**, `git stash clear`
-**denied**. Nothing needed fixing because nothing surprised.
-
-**Only one of the three probes reports itself to a session, and that is the durable lesson.** A
-denial arrives as a tool error, so `git stash clear` was self-evident. The other two *completed* —
-which rules out denial and nothing else, because a silent run and an approved-after-prompt run are
-the same observation from inside the model. **The owner was the instrument for probes 1 and 2 and was
-asked directly.** This is the same correction recorded above against the previous handoff's
-*"runs without a prompt in every mode"*: the claim was not wrong so much as unobservable by whoever
-made it. **A probe whose two outcomes are indistinguishable to the reader is not a probe until
-someone who can tell them apart is asked.**
-
-Two incidental findings the probe table does not cover. **There were no stashes** — checked before
-probe 3 rather than trusting the deny to hold, so the destructive case cost nothing either way; that
-check is the cheap half of the same habit the probes exist to enforce. And **`git restore --staged`
-with explicit paths ran without a denial**, which no rule in the list names in either direction — it
-was needed because probe 2, once approved, really does stage everything.
 
 ## Where the opening session stopped — 2026-08-24
 
@@ -222,6 +137,7 @@ headers rests on the recorder keeping the error body's symbolic type — and 66 
 [`anthropics/claude-code#82653`](https://github.com/anthropics/claude-code/issues/82653) and
 [`BerriAI/litellm#30365`](https://github.com/BerriAI/litellm/issues/30365).
 
+
 ## Where the second session stopped — 2026-08-25
 
 **No phase task was started, and no corpus tool was written.** The session opened on the one check the
@@ -245,32 +161,6 @@ first was wrong in `../../prompt.md` for a day.
 **Task 3 lost a constraint.** The worktree practice it records does not need to say anything about
 tracked permissions being inert until merge, because they are not — they are inert until restart.
 
-## The git allows are, for now, only on this branch — and that is a self-inflicted gap
-
-**`main` and `to-run-server` currently have no `git add`, `git commit`, `git checkout` or `git stash`
-approval at all.** Measured 2026-08-24: `grep -c git` returns **0** against both of `main`'s settings
-files.
-
-**How it happened, plainly:** the four mutating git rules were removed from the local half and added
-to the tracked half in the same pass. The tracked half is a **branch commit**, so the removal took
-effect everywhere and the replacement took effect nowhere except here.
-
-**Left as it is, deliberately.** Restoring them to the local files of the other two worktrees would
-put the same permission in both halves, which `../../method/IDM-002-harness-configuration.md` refuses
-in as many words — *"narrowing the tracked file later appears to do nothing, because the local copy
-still grants it."* Trading a permanent landmine for a temporary prompt is the wrong way round. The
-cost is one approval when committing in `main`, and it clears when this branch merges.
-
-**It was also the open question in miniature, and 2026-08-25 answered it.** Tracked settings do *not*
-resolve through the worktree to the main checkout — they are read from this worktree, once, at session
-start. So the rules on this branch are live **here** after a restart and nowhere else until the merge,
-which is exactly the shape described above: a temporary prompt in the other two worktrees, not a
-permanent landmine.
-
-**The gap widened on 2026-08-25 and closes the same way.** `settings.local.json` was merged into the
-tracked file and emptied, so *every* rule this worktree has — not just the git ones — now reaches the
-other two only at the merge. That is the intended direction: one tracked file, an empty local half that
-cannot contradict it, per `../../method/IDM-002-harness-configuration.md`.
 
 ## Where the third session stopped — 2026-08-25
 
@@ -342,6 +232,7 @@ while a silent run and an approved-after-prompt run are the same observation fro
 them apart is asked.** The same shape produced `BUG-000`'s founding rule hours later — *an absence is
 not a fix* — arrived at independently, from counting 429s rather than from watching prompts.
 
+
 ## What is open at the end of Group A
 
 *(**Corrected 2026-08-26**, on the forward review's finding 15. This read "Group A has not started"
@@ -351,6 +242,7 @@ opening the notes first would have re-done the `IDM-002` amendment and the imple
 which is exactly the cost the review priced.)*
 
 ---
+
 
 ## The forward review — both runs and the reconciliation, 2026-08-26
 
@@ -509,455 +401,3 @@ reviewer's.*
 **The charter's environment clause is not adopted**, having been argued from a fiction. If a future
 delegate does exceed its brief, that will be the evidence, and this paragraph is the reason to wait
 for it.
-
-## Task 2 — the inode note, and a justification with eight homes in seven files, 2026-08-26
-
-**Both halves the task names are done, and both were wrong in a larger way than the task expected.**
-
-### The inode note was not stale — it was inverted
-
-`CLAUDE.md` said `~/Projects/code-2026/ilirium_llm_router` and the OneDrive path were the **same
-directory** (identical inode), *"editing either edits both"*. The task predicted this had become false
-because *"with this clone there are now genuinely two checkouts"*. **Checked rather than assumed, and
-the truth is one step further on:**
-
-| Claim | What is on disk, 2026-08-26 |
-|---|---|
-| the two paths are one directory | **`~/Projects/code-2026` is still a symlink** into `~/Storage/OneDrive/software-engineering/code-2026`, itself a symlink to `~/Library/CloudStorage/OneDrive-Personal`. The **inode half was never wrong** |
-| …and the project is at the end of it | **It is not.** `code-2026/` holds `ilirium_llm_router.zip`, 26 MB, **2026-08-25 18:01**. The working tree was archived, not moved |
-| not two checkouts | **Three**, and none of them there — a bare clone at `~/Projects/local/ilirium_llm_router/` with `main`, `to-run-server` and this phase as worktrees, created **2026-08-25 18:25**, twenty-four minutes after the zip |
-
-**So the note told a session that two paths were one directory at the exact moment the project
-acquired three that genuinely are not** — the most expensive shape a stale note can take, because the
-sentence it replaces is the one a session would have needed.
-
-*`docs/epd/EPD-004-documentation-structure.md:998` carries the same fact in the present tense, and is
-**left alone deliberately**: it is the record of a 2026-08-16 decision and cites `CLAUDE.md` as it
-stood that day. Correcting an archived deliberation to match today would destroy what it records.*
-
-### The mtime justification is dead, and it has eight live homes in seven files
-
-`reference/corpus.md` said *"newest is by filename, never by mtime"* because *"`logs/` sits inside a
-cloud-synced folder on the machine this was built for, and a sync rewrites mtimes."*
-
-**Verified before acting on it, per the instrument lesson:** `~/Projects/local/` is a real directory
-under `~/Projects/`, not a symlink and not under `~/Library/CloudStorage/`. The live corpus at
-`to-run-server/logs/` is outside every sync root. **The reason is false about this machine as of
-2026-08-25.**
-
-**The rule is not in question — the argument for it was simply local when a durable one was four lines
-above it.** `reference/corpus.md:55` already promises a day folder can be `tar`'d and unpacked on
-another machine; unpacking rewrites every mtime, so mtime ordering cannot survive the move the store
-guarantees. That is now the stated reason.
-
-**What the task did not know is how many places repeat the dead one.** **Eight live homes across seven
-files** — `corpus.py` carries it twice — of which the task named **one**, `reference/corpus.md`. **Seven
-sit outside the task, and two of those are in `src/`.** Two families, and they cannot be fixed the same
-way:
-
-| | Where | Which claim |
-|---|---|---|
-| **A** | `reference/corpus.md:76` **← fixed** | newest-by-filename |
-| **A** | `corpus.py:604`, `corpus.py:928` | newest-by-filename — **in `src/`, verbatim** |
-| **A** | `dictionary.py:766` | the retrain lock's age comes from inside the file, *"the same reason"* |
-| **A** | `tests/test_corpus.py:220`, `tests/test_dictionary.py:676` | the same reason, as a test's docstring |
-| **B** | `docs/procedures/corpus-benchmark/README.md:86`, `benchmark.py:55` | **a different claim** — that the fsync figure *measures* a cloud-synced filesystem, so it is the number the router would really pay |
-
-**Family B is not a stale reason, it is a stale caveat on a measurement**, and it cannot be fixed the
-same way: the figures it qualifies were taken when the premise held. It needs a dated note, not a
-rewrite — and **`phase-10-body-store/evidence/benchmark.py` is a frozen copy of the same file and must
-not be touched at all.**
-
-**The question was put to the owner rather than answered here** — position 20 is *"step by step, not
-leaps by leaps"*, and a task that quietly grows from two files to eight is the thing that position
-rejects. **The owner's answer, 2026-08-26: fix all seven of the homes outside the task.** It is committed separately from Task 2 so the
-task's own boundary stays visible in the history.
-
-**The two families are fixed differently, and that is the point of separating them.**
-
-- **Family A is rewritten.** All five now say an mtime is filesystem metadata that anything outside
-  this program can rewrite — a copy, a backup restore, the unpack of a tarred day folder. For
-  `dictionary.py`'s lock the durable form is narrower and truer: *`since=` is a fact the trainer
-  wrote*, and an mtime is not. Only `corpus.py`'s shared `newest_dictionary` carries the dated
-  correction note; four repetitions of it would be the defect again in a new costume.
-- **Family B is dated, not rewritten.** The recorded fsync figures **are** measurements of a
-  cloud-synced filesystem, because that is what was under them when they were taken. Rewriting the
-  caveat would falsify the record; deleting it would let somebody re-run the procedure today and read
-  the result as the same series. Both files now say when the premise held and when it stopped.
-
-**Verified after:** `make test` **310 passed**, ruff clean at the pinned `0.16.1`, `link-check.py`
-**87 broken / 2 roundabout** — all three unmoved. **Line width checked by hand**, because `CLAUDE.md`
-says `make lint` cannot see it: **zero added lines over 100 characters.** *(A first pass with `awk`
-reported eleven. It was counting **bytes**, and every one of the false positives was a line containing
-an em-dash. The instrument, again — and it was checked because the count looked wrong, not because
-anything failed.)*
-
-## Task 3 — the worktree practice, and the branch that is not work, 2026-08-26
-
-**`IDM-001` gains one section**, "Worktrees are the standing practice, and one branch is not work",
-and `CLAUDE.md`'s existing `IDM-001` pointer gains one clause naming it. Nothing else moved.
-
-**The mechanical fact the task was missing, and it is the one that explains everything else:** git
-**refuses to check out a branch that another worktree already holds.** So "run the router against a
-stable tree while a phase branch holds the editable one" cannot be solved by checking `main` out
-twice — a branch had to be **created to be pinned**, and that is the entire reason `temp/to-run-server`
-exists. Written into the amendment, because without it `temp/` looks like a naming preference rather
-than a forced move.
-
-**`temp/` is deliberately not a fifth row of the prefix table**, and the amendment says so in as many
-words. That table answers *what kind of work this is*; this branch is not work. It carries no commits
-of its own, it never merges, its fork point is lost and that is acceptable, and it will never have a
-phase folder. A row in the prefix table would invite the next one.
-
-**`branch-index.py` tabling it as *merged* is not a defect and must not be fixed there.** Confirmed by
-running it: `--check` reports `branches.md is current: 21 rows` and names only
-`feat/phase-11-corpus-tools` as in flight — `temp/to-run-server` is absent from that report because
-its tip **is** an ancestor of `main` (`f445d6f`, verified with `git merge-base --is-ancestor`). The
-script asks git a factual question and git's answer is right. **What it means is that a branch which is
-not work still needs a row**, because the row's last column is the only place that can say so — which
-is the argument `IDM-001` already makes in "A derived index is not the hand-maintained list this
-document refused", arriving at a case it was not written for.
-
-*It already has that row.* `reference/branches.md:44` carries it, describing itself as **"not a piece
-of work, and the only row here that is not."** Checked before writing rather than assumed; the
-amendment records the rule, it does not create the record.
-
-**Three consequences of the layout, and only the third needed measuring.** `logs/` is per-worktree, so
-a document naming "the corpus" must say which tree's. A session started in `main` sees none of an open
-phase. And **tracked settings are read from the worktree the session started in, once, at session
-start** — so a permission added on a phase branch is live here after a restart and reaches the other
-two only at the merge.
-
-**The dead explanation is named in the amendment so it cannot be re-proposed.** For one day it was
-believed that tracked settings resolve *through* a worktree to the main checkout, which would have made
-a permission inert until it **merged**. They do not: settings are **session-cached**, inert until the
-session **restarts**. *The two predictions differ by days, and by what you would do about it. Only
-measurement separated them — and the plan's Task 3 was written around the wrong one, which is why it
-carries an instruction not to hedge it.*
-
-## Tasks 4 and 5 — the Shell rule, and the task that was recorded as done, 2026-08-26
-
-**Task 4 was one clause. It took three because the clause needed a source, the source contradicted a
-settled finding, and the document Task 4 points at did not exist.**
-
-### The plan's figure was right, and it was worth not taking on trust
-
-Task 4 asserted the general rule *"as documented"* and gave a 10,000-character limit. **Nothing in this
-repository recorded either**, so neither belonged in the auto-loaded file unsourced. Fetched from
-[`code.claude.com/docs/en/permissions`](https://code.claude.com/docs/en/permissions), 2026-08-26,
-against Claude Code **2.1.231**, and **all four claims hold verbatim**:
-
-> *"When Claude Code can't fully parse a command, it asks for approval instead of treating the command
-> as read-only. Commands longer than 10,000 characters always prompt because they exceed what the
-> analysis parses."*
-
-**And the plan's self-correction was right too** — compound-ness is not the trigger, and
-`cd packages/api && ls` is the doc's own example. *The claim it corrected came from a user-filed issue
-and was repeated on 2026-08-24 without checking. This is the one place a check confirmed the document
-rather than moving it, which is worth recording: the re-derivation habit is not only for finding
-errors.* One exception is now in `CLAUDE.md` because git is constant here — **`cd` into a different
-directory followed by `git` does prompt**, since that directory's hooks could run.
-
-### Task 5 was recorded as executed and half of it had not been done
-
-**`IDM-002` had no read-only-set section at all.** Found by Task 4 going to point at it. The plan's
-"Placeholders" item said *three* tasks were already executed; the note under Task 5 described only the
-**settings** work, which is real and did run on 2026-08-24. **The half the task's title names — record
-the built-in set, dated, with the source link — was never written.**
-
-*The shape: a two-part task, one part executed, the whole marked done, and the record describing the
-part that ran. It survived the forward review because a review checks what a document **says**, and
-this document said something true about one half of a task.* **Both plan.md sites are corrected rather
-than quietly filled in.**
-
-### And the section contradicted this branch's own measurement within minutes of being written
-
-**The documented set ends: `du`, `cd`, *"and read-only forms of `git`"*.**
-
-**This branch measured the opposite on 2026-08-25** — seven probes, the decisive one being that
-**`git --version` prompted**, a command touching no repository. `prompt.md`, `plan.md` and this file
-all carry *"every git command prompts unless an allow rule matches."*
-
-**Checked before treating it as a conflict:** the tracked file has **no blanket `ask` or `deny` on
-`git`** — the thirteen deny rules are specific (`git add -A`, `git stash`, `git reset --hard`), so the
-doc's stated way of forcing a prompt on a built-in read-only command is not what happened here.
-
-**Two readings survive and reading cannot separate them:** the clause postdates 2026-08-25, or
-`git --version` is not a *read-only form* to the classifier. **Recorded unresolved in `IDM-002`, with
-the check named and its positive result stated first** — with auto mode off, run `git --version` and
-have the owner say whether a prompt appeared. **A model cannot run it alone**: a denial is a tool
-error, an approval is invisible, so silence and approved-after-prompt are the same observation from
-the inside. **Auto mode removes the prompt entirely**, so a probe taken today measures nothing.
-
-***The hazard was written down as the reason for the section and then happened inside it.*** Task 5's
-own rationale said a vendor fact recorded here is **"a second home for a fact Anthropic owns and can
-change, which would then disagree with reality silently."* It disagreed within 48 hours. **No git
-allow rule was removed** — deleting twenty entries on an unverified reading is the expensive direction.
-
-### One more disagreement, found while checking the first
-
-**Anthropic documents that an auto-saved approval lands at the git repository root, *"resolved through
-worktrees to the main checkout"*, from v2.1.211. At v2.1.231 here, it does not.** All three worktrees
-hold their own `settings.local.json` with **different contents** — this branch's written 2026-08-26,
-`main`'s unchanged since 2026-08-24.
-
-**Hypothesis, marked as one: a bare clone has no main checkout to resolve to.** It matters because the
-local half is supposed to stay empty, and per-worktree accumulation means it refills three times over.
-`IDM-001`'s worktree section was **amended after it was written** to distinguish this from the dead
-tracked-settings claim beside it — *the two are one word apart and the doc's phrasing is the same one
-this branch declared dead.*
-
-## Task 7 — the frozen slice, and the instrument that cried wolf 1913 times, 2026-08-26
-
-**979 rows, four day folders, 26 columns, taken 2026-08-26T15:16:22Z.** Index only, redacted, no
-blobs — ever. → `evidence/`, with `freeze.py` committed beside it so the redaction is auditable.
-
-**Group A is now complete.** Tasks 1–7, of which 1, 5 and 6 ran ahead of the plan and 2, 3, 4, the
-missing half of 5, and 7 ran here.
-
-### Why the script is committed and the result still is not reproducible
-
-**Re-running `freeze.py` tomorrow produces a larger slice with a different mapping.** The corpus read
-**770 rows** during this plan's ratification and **979** here, the same day. `../../README.md` asks
-every evidence artefact to say whether it can be regenerated, and the answer is **no** — the CSVs are
-the record, the script is the audit trail. *The plan's own `evidence/README.md` predicted this would be
-the column the phase struggled with, and it was right.*
-
-### The instrument reported 1913 secrets and every one was a sha256
-
-The secrets pass is a **separate problem from identifiers**, per `../../README.md`, so it is a separate
-pass. Its first version matched `[A-Za-z0-9+/]{60,}` as "a long base64-ish blob" and reported **1913
-suspect cells**. **Every one was a digest**: sixty-four hex characters satisfy that rule perfectly.
-
-**`CLAUDE.md`: when a check comes back negative, fix the instrument before believing the result.** Two
-things changed, and the second matters more than the first:
-
-1. The pattern now excludes pure hex, with the reason in a comment so nobody removes the exclusion.
-2. **The scan moved to run on the *redacted* row, and nothing is written until it is clean.** The
-   question worth asking is whether the **committed** file carries a secret — which also covers any
-   column the script does not redact. The first version asked a different question and wrote the files
-   anyway before reporting.
-
-*A rule that fires on everything is indistinguishable from a rule that fires on nothing. The clean
-result is only worth having because the pattern was made capable of returning a dirty one.*
-
-### Two families were redacted beyond the one that was asked for
-
-`session_id` (9 distinct) and `agent_id` (1) were the obvious ones. **The two `*_ref` digest columns
-were taken as well.** A sha256 does not reveal a body but it **confirms a guess about one**, and
-placeholders preserve every property this phase needs — dedup counts, cross-day identity, which rows
-share a blob. **`request_dict_id` was deliberately left alone**: it names a dictionary, not a person,
-and `9dd33823` is already committed in `../../status.md`.
-
-**The five sentinels pass through unchanged, and that is load-bearing rather than tidy.** A sentinel
-run through a digest redactor becomes a **fake identifier** — and the extractor's entire reason for
-knowing the sentinels is to read *"no blob here"* instead of trying a filename.
-
-### What the slice settles, and the one thing it adds
-
-**Every data finding from the forward review reproduces**, at four to five times the sample it was
-found on — the 45-row `too_large` tail all inside the 292-call session, the cross-day session now at
-**276 calls**, **67 agent rows all carrying the parent's session id**, both response encodings, 96
-error rows, 66 `count_tokens`. The review read the disk correctly.
-
-**One thing no earlier reading had: `absent` never appears.** Not even on the **9** router-authored
-`/api/hello` rows, which carry real digests. **Four of the five sentinels have never been observed in
-this corpus** — `dropped`, `absent`, `error`, and `none` as a *response* ref. The extractor must still
-handle all five; the register already says a sentinel used as a filename fails at the filesystem, and
-now the register can say how little of that path has ever been exercised by real data.
-
-*`evidence/README.md` itself said **"Empty until Task 5"** and named Task 5 twice. Task 5 is the
-`IDM-002` amendment; **Task 7** freezes the slice. **This is the third instance of that exact
-off-by-two in this phase** — register §8 carried it, and a session reading only the README would have
-gone looking for the freeze in the settings work.*
-
-## Tasks 8 and 9 — the CLI becomes subcommands, 2026-08-26
-
-**The first `src/` change in this phase.** `serve`, `check`, `train-dict`, `tune-dict`, `extract` and
-`verify-archive`; bare invocation still serves; every old flag deleted rather than aliased.
-
-### The defect that would have shipped silently, and how it was caught
-
-**A subparser's `--config` with an ordinary default overwrites the top-level value after parsing.**
-`ilirium-llm-router -c other.yaml serve` would have loaded `config.yaml` — **the flag accepted, the
-flag ignored, and no error anywhere.** `argparse.SUPPRESS` fixes it: the attribute is set only when
-the option actually appears.
-
-**Measured in both directions rather than asserted in a docstring**, because a claim about argparse is
-exactly the kind that reads as obviously true and is not:
-
-```
-SUPPRESS (what cli.py uses)    -c other.yaml serve -> other.yaml
-ordinary default (the trap)    -c other.yaml serve -> config.yaml
-```
-
-*The instrument lesson applied to a docstring. Writing "SUPPRESS is not a style choice" costs nothing
-and proves nothing; the counterfactual is what makes it a fact, and it took four lines.*
-
-### `verify-archive` over the whole live corpus — 1793 blobs, 0 failed
-
-**Driven, not tested.** `CLAUDE.md` says green tests are not evidence, and the tests here are all
-`tmp_path` fixtures. → register §8 for the table.
-
-**Every blob in the live corpus opens and verifies against the digest in its own filename.** That is
-Phase 10's promise driven at scale for the first time — it had been driven on one day folder, at 280
-blobs, and now on four at 1793.
-
-**It also discharges task 19 ahead of its group**, and the task is left visible rather than struck so
-the ordering stays legible.
-
-***And it caught a ratio going stale, which no note in this repository had recorded before.***
-`2026-08-24` read **2.815×** at 280 blobs mid-day and reads **2.553×** at 580 blobs complete. Same
-folder, same command, same absence of a dictionary. **Every earlier warning here is about counts
-moving under a measurement; a count that has gone stale is at least visible as a count. A ratio never
-looks stale.**
-
-### Four decisions inside task 9 worth naming
-
-1. **Every day is attempted even after one fails.** A run that stopped at the first bad folder would
-   report the first problem and hide the rest — and the question `verify-archive` answers is *"does
-   all of it open?"*, not *"is there a problem?"*.
-2. **The grand-total block prints only when more than one day was given**, so a single-day run prints
-   exactly what `--extract` always did and the two forms need not be read differently.
-3. **`--project-name` without `--format jsonl` is a parse error**, reported through the *subparser* so
-   the usage line is `extract`'s rather than the program's. `--project-name` defaults to `None` rather
-   than to `corpus`, because *"was it given?"* has to stay answerable for that check to exist at all.
-4. **`extract` parses fully and refuses to run**, returning 2 and naming the tasks that will build it.
-   A command that parsed and then quietly did nothing is the same failure this phase exists to avoid
-   one level up.
-
-### One measurement here was the instrument's fault, again
-
-Checking exit codes, `echo "exit=$?"` after a pipe into `tail` reported **0** for a run that had
-failed. **`$?` was `tail`'s.** Re-run without the pipeline: missing folder **1**, good folder **0**,
-`extract` stub **2**, deleted flag **2** — all correct.
-
-*Third instrument error in one session — the `awk` byte-count, the `1913` sha256 "secrets", and now
-this. All three were caught because the number looked wrong, and none by anything that failed.*
-
-## Task 10 — the CLI's first test file, and three mutations to prove it can fail, 2026-08-26
-
-**`tests/test_cli.py` is new, and the point worth recording is that it had to be.** The CLI had **no
-test file at all**. It was reached only sideways — two tests in `test_dictionary.py` import
-`_with_overrides`, one in `test_corpus.py` shells out — so **the surface this phase restructured had
-never been described anywhere that a change would break.** 310 → **337**.
-
-### The tests were mutated, because a test that cannot fail is this phase's own recorded defect
-
-Task 22's `❓` check *"could not fail"* and the forward review found it. **Writing 27 green tests and
-reporting the number would be the same thing one level down**, so three mutations were applied to
-`cli.py` and reverted:
-
-| Mutation | Result |
-|---|---|
-| `argparse.SUPPRESS` → an ordinary default | **1 failed**, `test_the_config_flag_wins_from_either_side_of_the_subcommand` |
-| the `--project-name` guard deleted | **1 failed**, `test_project_name_without_jsonl_is_an_error_not_a_silent_no_op` |
-| `--out` no longer `required` | **1 failed**, `test_out_and_format_are_both_required` |
-
-**Each killed by exactly one test, and `cli.py` restored byte-identically afterwards** — confirmed with
-`git diff --stat`, which came back empty. *This is not task 23: that one is mutation testing on the
-**converter**, and it is still owed.*
-
-**One test is deliberately two assertions where one would look sufficient.** The config-flag test
-checks `-c other.yaml serve` **and** `serve -c other.yaml`. **Only the first fails without
-`SUPPRESS`** — a test written with the second alone would have passed against the defect, which is the
-whole failure mode being guarded.
-
-### A 101-character line was committed in task 8 and `make lint` passed it
-
-**`CLAUDE.md` warns that `make lint` cannot see column width** — `E501` is not in ruff's default set
-while `pyproject.toml` sets `line-length = 100`. **The warning stopped being theoretical inside this
-session.** Six over-width lines across `cli.py` and `test_cli.py`, one of them already committed.
-
-*Task 2 checked added-line width on purpose and reported zero; task 8 did not, and task 8 is the one
-that leaked.* **Fixed here, and the underlying gap is in `for-the-owner.md`** with the measurement that
-makes it actionable: `--select E501` reports **23 errors in 9 files**, all prose rewraps, so the fix is
-bounded — but it is a tooling change and `IDM-003` owns those.
-
-### Two rewraps in a row pushed a *different* line over
-
-Fixing six over-width lines by rewrapping produced two new ones, because rewrapping moves words onto the
-following line. **Caught only by re-running the check after the fix.** *A fix that is not re-measured
-is a hypothesis, and this one was wrong twice before it was right.*
-
-## Task 11 — reassembly, and two instruments that agree on all 979 rows, 2026-08-26
-
-`transcript.py` reads a captured reply back into the message it was, or says which of six reasons it
-was not one. **The store never parses a body and this module parses every one of them** — that is the
-line the phase has to keep on the right side of, and nothing here is imported by the write path.
-
-### The corpus was read before the code was written, and it moved three things
-
-**Every response blob in the live corpus was decompressed and shaped**, 2026-08-26:
-
-| Shape | Blobs |
-|---|---|
-| SSE | **808** |
-| JSON `type=error` | **93** |
-| JSON `{"input_tokens": N}` — `count_tokens` | **47** |
-| zero-length | **4** |
-| **JSON `type=message` — a buffered reply** | **1** |
-
-**1 · The plan's "66 buffered replies" was the `count_tokens` count.** The task had already corrected
-this exact conflation once — *"it conflated 'not streamed' with 'a buffered assistant reply'"* — and
-then landed on **66**, which is the number of `count_tokens` rows. **The real figure is one call in
-979.** The path is still built; what does not survive is the impression that it is a third of the
-traffic, and *"both encodings are handled"* is now in "does not settle" so it is not read as coverage.
-
-**2 · A content block has five types, not one.** `text`, `tool_use`, `thinking`, `server_tool_use`,
-`web_search_tool_result`. **The last two were invisible in a two-day sample** and appeared only when
-the count was re-run over all four days — 4 occurrences each. *A sample that covers 60% of a corpus
-can still miss a category entirely, which is the argument for the full pass and not the fast one.*
-
-**3 · A tool input arrives as JSON string fragments.** **64,260 `input_json_delta` against 2,071
-`text_delta`** — the deltas are overwhelmingly *tool arguments*, not prose. They must be concatenated
-and parsed **after** the block closes; parsing each fragment fails on all but the last. **All 654
-tool inputs in the corpus parse to dicts, none left as a fallback string.**
-
-*None of this is in the register's SSE list, which named the **events** and never what they carry.
-Four rows added.*
-
-### The strongest evidence this task produced is not a test
-
-**`reassemble` was driven over every response blob in the live corpus and joined back to the index**,
-which records `error_status` independently at capture time. **979 rows, 0 unresolved, 0
-contradictions:**
-
-| index `error_status` | reassembler says | rows |
-|---|---|---|
-| `ok` | **message** | **808** |
-| `ok` | skip: `not-a-message` | 66 |
-| `ok` | skip: `empty` | 9 |
-| `http_error` | skip: `error` | 93 |
-| `http_error` | skip: `empty` | 2 |
-| `client_disconnect` | skip: `incomplete` | **1** |
-
-**Two instruments, built years and phases apart, agreeing row for row.** `observe.py` wrote
-`error_status` from HTTP status at capture time; `transcript.py` derives its verdict from the body's
-own shape months later, knowing nothing about the column. **Nothing lines up like that by accident**,
-and no green test could have said it.
-
-*It also confirms the digest→path reconstruction — `FANOUT = 2`, `BLOB_SUFFIX = ".zst"` — on 979 rows
-with **zero** unresolved, which is what the extractor will depend on.*
-
-### The one `incomplete` stream was identified, not shrugged at
-
-One SSE stream ends mid-`text_delta` at 912 bytes, with **no `error` event and no `message_stop`**.
-Joined back to its index row: **it is the corpus's single `client_disconnect`** — *"The caller went
-away before the reply finished."*
-
-**That is why `stream-error` and `incomplete` are two reasons and not one.** An `error` event means
-the router authored one because the upstream stream broke; a bare stop means **nothing went wrong
-upstream at all** and the caller simply left. *`stream-error` has **zero** occurrences in the live
-corpus and seven in Phase 9's gate corpus — so one of the six reasons is tested only synthetically,
-and it is written down here rather than left to look like coverage.*
-
-### What the tests carry that the corpus cannot
-
-**18 tests, 337 → 355.** Two paths exist here or nowhere: **the buffered reply** (one real example)
-and the **SSE `error` event** (none). The rest are the reverse — cheap to assert, and already proven
-at scale by the pass above.
-
-*The `data:`-split-over-several-lines test is for something Anthropic does not currently do. The SSE
-spec allows it, and a reassembler that assumed otherwise would break on the day it changed, for a
-reason no capture would ever explain.*
