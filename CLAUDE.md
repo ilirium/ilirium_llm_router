@@ -284,9 +284,22 @@ config key only look wrong when they sit in adjacent rows.
 
 ## Shell
 
-**Keep bash commands statically analyzable — no `$(...)`.** Command substitution defeats the
-guardrails firewall even for otherwise-approved commands, so it turns a silent call into a prompt.
-Use absolute paths, and prefer the Read/Grep/Glob tools over shelling out to `cat`/`grep`/`find`.
+**Keep bash commands statically analyzable — no `$(...)`.** The general rule, which is the documented
+one: **a command Claude Code cannot fully parse asks for approval instead of being treated as
+read-only**, and **anything over 10,000 characters always prompts** because it exceeds what the
+analysis parses. Command substitution is the instance met here, so it turns a silent call into a
+prompt even for an otherwise-approved command. Use absolute paths, and prefer the Read/Grep/Glob tools
+over shelling out to `cat`/`grep`/`find`.
+
+**Compound commands are *not* the trigger.** `cd packages/api && ls` runs unprompted when each part
+qualifies on its own; a rule must match **each subcommand** independently. The one exception worth
+carrying, because git is constant here: **`cd` into a different directory followed by `git` prompts**,
+since that directory's hooks could run. *The "compound commands prompt" claim came from a user-filed
+issue and was repeated here on 2026-08-24 without checking; corrected 2026-08-26 against the source.*
+
+→ `docs/method/IDM-002-harness-configuration.md` — **read it before adding an allow rule, and before
+assuming a command is silent.** It holds the built-in read-only set that no allowlist can extend, the
+wrappers that get stripped before matching, and why `git` is not in that set.
 
 ## Opening and closing a milestone
 

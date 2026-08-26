@@ -627,3 +627,75 @@ a permission inert until it **merged**. They do not: settings are **session-cach
 session **restarts**. *The two predictions differ by days, and by what you would do about it. Only
 measurement separated them — and the plan's Task 3 was written around the wrong one, which is why it
 carries an instruction not to hedge it.*
+
+## Tasks 4 and 5 — the Shell rule, and the task that was recorded as done, 2026-08-26
+
+**Task 4 was one clause. It took three because the clause needed a source, the source contradicted a
+settled finding, and the document Task 4 points at did not exist.**
+
+### The plan's figure was right, and it was worth not taking on trust
+
+Task 4 asserted the general rule *"as documented"* and gave a 10,000-character limit. **Nothing in this
+repository recorded either**, so neither belonged in the auto-loaded file unsourced. Fetched from
+[`code.claude.com/docs/en/permissions`](https://code.claude.com/docs/en/permissions), 2026-08-26,
+against Claude Code **2.1.231**, and **all four claims hold verbatim**:
+
+> *"When Claude Code can't fully parse a command, it asks for approval instead of treating the command
+> as read-only. Commands longer than 10,000 characters always prompt because they exceed what the
+> analysis parses."*
+
+**And the plan's self-correction was right too** — compound-ness is not the trigger, and
+`cd packages/api && ls` is the doc's own example. *The claim it corrected came from a user-filed issue
+and was repeated on 2026-08-24 without checking. This is the one place a check confirmed the document
+rather than moving it, which is worth recording: the re-derivation habit is not only for finding
+errors.* One exception is now in `CLAUDE.md` because git is constant here — **`cd` into a different
+directory followed by `git` does prompt**, since that directory's hooks could run.
+
+### Task 5 was recorded as executed and half of it had not been done
+
+**`IDM-002` had no read-only-set section at all.** Found by Task 4 going to point at it. The plan's
+"Placeholders" item said *three* tasks were already executed; the note under Task 5 described only the
+**settings** work, which is real and did run on 2026-08-24. **The half the task's title names — record
+the built-in set, dated, with the source link — was never written.**
+
+*The shape: a two-part task, one part executed, the whole marked done, and the record describing the
+part that ran. It survived the forward review because a review checks what a document **says**, and
+this document said something true about one half of a task.* **Both plan.md sites are corrected rather
+than quietly filled in.**
+
+### And the section contradicted this branch's own measurement within minutes of being written
+
+**The documented set ends: `du`, `cd`, *"and read-only forms of `git`"*.**
+
+**This branch measured the opposite on 2026-08-25** — seven probes, the decisive one being that
+**`git --version` prompted**, a command touching no repository. `prompt.md`, `plan.md` and this file
+all carry *"every git command prompts unless an allow rule matches."*
+
+**Checked before treating it as a conflict:** the tracked file has **no blanket `ask` or `deny` on
+`git`** — the thirteen deny rules are specific (`git add -A`, `git stash`, `git reset --hard`), so the
+doc's stated way of forcing a prompt on a built-in read-only command is not what happened here.
+
+**Two readings survive and reading cannot separate them:** the clause postdates 2026-08-25, or
+`git --version` is not a *read-only form* to the classifier. **Recorded unresolved in `IDM-002`, with
+the check named and its positive result stated first** — with auto mode off, run `git --version` and
+have the owner say whether a prompt appeared. **A model cannot run it alone**: a denial is a tool
+error, an approval is invisible, so silence and approved-after-prompt are the same observation from
+the inside. **Auto mode removes the prompt entirely**, so a probe taken today measures nothing.
+
+***The hazard was written down as the reason for the section and then happened inside it.*** Task 5's
+own rationale said a vendor fact recorded here is **"a second home for a fact Anthropic owns and can
+change, which would then disagree with reality silently."* It disagreed within 48 hours. **No git
+allow rule was removed** — deleting twenty entries on an unverified reading is the expensive direction.
+
+### One more disagreement, found while checking the first
+
+**Anthropic documents that an auto-saved approval lands at the git repository root, *"resolved through
+worktrees to the main checkout"*, from v2.1.211. At v2.1.231 here, it does not.** All three worktrees
+hold their own `settings.local.json` with **different contents** — this branch's written 2026-08-26,
+`main`'s unchanged since 2026-08-24.
+
+**Hypothesis, marked as one: a bare clone has no main checkout to resolve to.** It matters because the
+local half is supposed to stay empty, and per-worktree accumulation means it refills three times over.
+`IDM-001`'s worktree section was **amended after it was written** to distinguish this from the dead
+tracked-settings claim beside it — *the two are one word apart and the doc's phrasing is the same one
+this branch declared dead.*

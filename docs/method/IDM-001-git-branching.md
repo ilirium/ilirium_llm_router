@@ -87,11 +87,20 @@ row exists; do not remove it as noise.
   Measured 2026-08-25. So a permission added on a phase branch is live **in that worktree after a
   restart** and reaches the other two **only at the merge**. → `IDM-002-harness-configuration.md`.
 
-  ***The competing explanation is dead and is named so it is not re-proposed.*** It was believed for a
-  day that tracked settings resolve *through* a worktree to the main checkout, which would have made a
-  permission inert until it **merged**. They do not. Settings are **session-cached**: inert until the
-  session **restarts**. The two predictions differ by days and by what you would do about it, and only
-  measurement separated them.
+  ***The competing explanation is dead for the tracked half, and it is named so it is not
+  re-proposed.*** It was believed for a day that tracked settings resolve *through* a worktree to the
+  main checkout, which would have made a permission inert until it **merged**. They do not. Settings
+  are **session-cached**: inert until the session **restarts**. The two predictions differ by days and
+  by what you would do about it, and only measurement separated them.
+
+  **The *local* half is a separate question, and the answer here is not the documented one.** Anthropic
+  documents that an auto-saved approval lands in `.claude/settings.local.json` *"at the root of the git
+  repository, resolved through worktrees to the main checkout"*, since v2.1.211. **On this machine, at
+  v2.1.231, it does not**: all three worktrees hold their own `settings.local.json` with **different
+  contents**, and this branch's was written on 2026-08-26 while `main`'s had not changed since
+  2026-08-24. *The likely reason — **unverified, and stated as a hypothesis** — is that **a bare clone
+  has no main checkout to resolve to**, so the fallback is the worktree. The check that would settle
+  it: grant one approval here and see which file grows.* → `IDM-002-harness-configuration.md`.
 
 *Why this is in `IDM-001` and not only in `../status.md`: the layout outlives the phase that adopted
 it, and the `temp/` rule is a branching rule. `status.md` holds which worktrees exist right now.*

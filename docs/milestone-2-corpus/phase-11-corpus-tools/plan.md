@@ -395,12 +395,12 @@ record with lossy copies**, and that is not a reversible mistake.
 
 1. Branch, worktree and this folder. **Done** — branch `feat/phase-11-corpus-tools`, worktree at
    `../../../../phase-11-corpus-tools`.
-2. **Fix `CLAUDE.md`'s inode note, first commit.** It says the code-2026 and OneDrive paths are the
+2. **Done 2026-08-26.** **Fix `CLAUDE.md`'s inode note, first commit.** It says the code-2026 and OneDrive paths are the
    same directory and *"editing either edits both"*. With this clone there are now genuinely two
    checkouts and **the note tells a session the opposite of the truth**. Also correct
    `reference/corpus.md`'s mtime justification, which cites a cloud-synced `logs/` that this
    worktree's is not.
-3. **Record the worktree practice** — an `IDM-001` amendment covering the layout, and the
+3. **Done 2026-08-26.** **Record the worktree practice** — an `IDM-001` amendment covering the layout, and the
    `temp/to-run-server` branch, whose prefix `IDM-001` does not define and which never merges.
    **The mechanism is settled and this task no longer has to hedge it.** Settings are
    **session-cached**: a tracked permission change is inert until the session **restarts**, not until
@@ -412,14 +412,14 @@ record with lossy copies**, and that is not a reversible mistake.
    own**, so its tip sits on the trunk and `../../procedures/branch-index.py` tables it as **merged**
    rather than reporting it in flight — which is why a utility worktree needs a description in a table
    of work.
-4. **Amend `CLAUDE.md`'s Shell section**, which today says only *"no `$(...)`"*. The general rule
+4. **Done 2026-08-26.** **Amend `CLAUDE.md`'s Shell section**, which today says only *"no `$(...)`"*. The general rule
    behind it is the documented one: **a command Claude Code cannot fully parse falls through to
    approval instead of being treated as read-only**, and commands over 10,000 characters always do.
    One clause on the existing line, same reason, same place. *Compound commands are **not** the
    trigger — `cd packages/api && ls` runs unprompted when each part qualifies. That claim came from a
    user-filed issue, was repeated here on 2026-08-24 without checking, and is corrected rather than
    quietly dropped.*
-5. **Amend `IDM-002` with the built-in read-only set** — `ls`, `cat`, `echo`, `pwd`, `head`, `tail`,
+5. **Done 2026-08-26 — later than this plan recorded; see below.** **Amend `IDM-002` with the built-in read-only set** — `ls`, `cat`, `echo`, `pwd`, `head`, `tail`,
    `grep`, `find`, `wc`, `which`, `diff`, `stat`, `du`, `cd`, which run without a prompt and are
    **not configurable**.
 
@@ -441,9 +441,22 @@ record with lossy copies**, and that is not a reversible mistake.
    would then disagree with reality silently. Record it dated, with the source link, the way
    `../../wiki/` records everything learned by reading somebody else's software.
 
-   **Executed ahead of the plan on 2026-08-24, on the owner's instruction**, and this task now
-   records what was done rather than proposing it: the four mutating git rules moved to the tracked
-   file, the six read-only ones were **deleted rather than moved**, and two deny rules were added.
+   **The settings half was executed ahead of the plan on 2026-08-24, on the owner's instruction**,
+   and this task records what was done rather than proposing it: the four mutating git rules moved to
+   the tracked file, the six read-only ones were **deleted rather than moved**, and two deny rules
+   were added.
+
+   ***The `IDM-002` half — which is what this task's title names — was not done, and was recorded here
+   as though it were.*** Written **2026-08-26**, found by Task 4 going to point at it and discovering
+   there was nothing there. **`IDM-002` had no read-only-set section at all.** *The failure is this
+   plan's own recurring shape: a task with two halves, one executed, the whole marked done, and the
+   note describing only the half that ran. Placeholder 4 below carried the wrong count for two days.*
+
+   **And the amendment, once written, immediately contradicted the measurement above.** Anthropic's
+   documentation puts **read-only forms of `git` inside the built-in set**; this branch's seven
+   measurements say every git command prompts. **The conflict is recorded unresolved in `IDM-002`**
+   with the one-observation check that settles it, because a model cannot see an approval and
+   therefore cannot run that check alone. **No git allow rule was removed on the strength of it.**
 6. Add Phase 11 to `milestone-2-corpus/implementation-plan.md`, which currently jumps 10 → closing
    review. **Done 2026-08-25, ahead of the plan.** Phases 11, 12 **and 13** went in together, because
    adding 11 alone leaves the list reading 8, 9, 10, "closing review" with two settled owner decisions
@@ -794,8 +807,11 @@ Phase 10's worked.*
    and the fidelity record's `type`. **Deferring a value to a task is a plan for getting one, not a
    value** — `IDM-008`'s rule, applied to this plan for the first time.
 3. **The Record table** below — the merge commit, which cannot exist until the merge.
-4. **Three tasks are already executed and say so — Task 1, Task 5 and Task 6.** No other task may
-   claim it. Both deviations ran ahead of the plan on the owner's instruction, and both are worth
+4. **Task 1 and Task 6 ran ahead of the plan; Task 5 was recorded as having done so and only half
+   had.** *Corrected 2026-08-26.* This item read *"three tasks are already executed and say so — Task
+   1, Task 5 and Task 6"* until Task 4 went to cite `IDM-002`'s read-only set and found the section
+   did not exist. **Task 5's settings half ran on 2026-08-24; its `IDM-002` half was written on
+   2026-08-26**, in order, as part of this phase. **No other task may claim early execution.** Both deviations ran ahead of the plan on the owner's instruction, and both are worth
    seeing rather than smoothing over. **Task 5** — the settings work — was done while diagnosing an
    unrelated problem. **Task 6** was done on 2026-08-25 and grew in the doing: it went in as Phases
    11, 12 *and* 13, because adding 11 alone would have left two settled owner decisions missing from
