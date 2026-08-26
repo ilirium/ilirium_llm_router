@@ -584,3 +584,46 @@ says `make lint` cannot see it: **zero added lines over 100 characters.** *(A fi
 reported eleven. It was counting **bytes**, and every one of the false positives was a line containing
 an em-dash. The instrument, again — and it was checked because the count looked wrong, not because
 anything failed.)*
+
+## Task 3 — the worktree practice, and the branch that is not work, 2026-08-26
+
+**`IDM-001` gains one section**, "Worktrees are the standing practice, and one branch is not work",
+and `CLAUDE.md`'s existing `IDM-001` pointer gains one clause naming it. Nothing else moved.
+
+**The mechanical fact the task was missing, and it is the one that explains everything else:** git
+**refuses to check out a branch that another worktree already holds.** So "run the router against a
+stable tree while a phase branch holds the editable one" cannot be solved by checking `main` out
+twice — a branch had to be **created to be pinned**, and that is the entire reason `temp/to-run-server`
+exists. Written into the amendment, because without it `temp/` looks like a naming preference rather
+than a forced move.
+
+**`temp/` is deliberately not a fifth row of the prefix table**, and the amendment says so in as many
+words. That table answers *what kind of work this is*; this branch is not work. It carries no commits
+of its own, it never merges, its fork point is lost and that is acceptable, and it will never have a
+phase folder. A row in the prefix table would invite the next one.
+
+**`branch-index.py` tabling it as *merged* is not a defect and must not be fixed there.** Confirmed by
+running it: `--check` reports `branches.md is current: 21 rows` and names only
+`feat/phase-11-corpus-tools` as in flight — `temp/to-run-server` is absent from that report because
+its tip **is** an ancestor of `main` (`f445d6f`, verified with `git merge-base --is-ancestor`). The
+script asks git a factual question and git's answer is right. **What it means is that a branch which is
+not work still needs a row**, because the row's last column is the only place that can say so — which
+is the argument `IDM-001` already makes in "A derived index is not the hand-maintained list this
+document refused", arriving at a case it was not written for.
+
+*It already has that row.* `reference/branches.md:44` carries it, describing itself as **"not a piece
+of work, and the only row here that is not."** Checked before writing rather than assumed; the
+amendment records the rule, it does not create the record.
+
+**Three consequences of the layout, and only the third needed measuring.** `logs/` is per-worktree, so
+a document naming "the corpus" must say which tree's. A session started in `main` sees none of an open
+phase. And **tracked settings are read from the worktree the session started in, once, at session
+start** — so a permission added on a phase branch is live here after a restart and reaches the other
+two only at the merge.
+
+**The dead explanation is named in the amendment so it cannot be re-proposed.** For one day it was
+believed that tracked settings resolve *through* a worktree to the main checkout, which would have made
+a permission inert until it **merged**. They do not: settings are **session-cached**, inert until the
+session **restarts**. *The two predictions differ by days, and by what you would do about it. Only
+measurement separated them — and the plan's Task 3 was written around the wrong one, which is why it
+carries an instruction not to hedge it.*

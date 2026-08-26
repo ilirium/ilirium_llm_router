@@ -246,7 +246,10 @@ plan, or before recording where a branch went.** It holds the folder⇄branch sl
 check, what happens to a rejected plan (merged and marked, not deleted — the phase number is spent),
 and the **four** homes where a branch is recorded — `docs/status.md` while it is in flight,
 `docs/reference/branches.md` once it lands, the phase note permanently, and **the merge commit message
-for a branch carrying no phase number**, which has no phase note to put it in.
+for a branch carrying no phase number**, which has no phase note to put it in. **Amended 2026-08-26
+with the worktree layout and the one branch here that is not work**: `temp/to-run-server` is `main`
+pinned into a worktree because git will not check a branch out twice — it carries no commits, never
+merges, and `temp/` is deliberately **not** a fifth row of the prefix table above.
 
 → `docs/reference/branches.md` — **read it to find out what a branch or a merge hash was**, and before
 hand-typing any table of merge hashes: `IDM-001` refused one, and this file is the derived answer that
