@@ -131,12 +131,12 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Run the forward review of Phase 11's plan.** ~~Ratify position 3~~ — **done 2026-08-26**, along
-   with every `❓` in the register and thirteen other positions. What is left is
-   `method/IDM-004-reviewing-unexecuted-work.md`, whose **first rule is that the charter decides what
-   the review finds**, so iteration 1 is writing the charter rather than reviewing anything. Then the
-   author and cold runs **in parallel** — serially, the author repairs whatever the cold reader would
-   have stumbled on, and the stumble is the signal.
+1. **Execute Phase 11, starting at Task 2.** ~~Ratify position 3~~ and ~~run the forward review~~ —
+   **both done 2026-08-26.** Twenty settled positions, and the review returned **seventeen accepted
+   findings**, all folded in. **The review's own summary is the thing to carry forward:** the plan's
+   model of a captured session was simpler than the traffic on disk, and *"every one of those is
+   visible in an hour with `csv.DictReader`, and none of them is in the plan."*
+   **Three `❓` are live and deliberate**, all resolved at Task 13.
 2. **Report `BUG-001` to the two upstream issues.** They are named in
    `bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`, and both stall on exactly the
    measurement it contains — a paired control showing a streamed request **2.8× larger** to the same
@@ -207,7 +207,7 @@ permanent record of a phase's branch, fork point and merge commit is still its p
 
 | Branch | Purpose | Tree | Next action |
 |---|---|---|---|
-| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: `extract` with selection over one or more day folders, `verify-archive`, and a converter to Claude Code session `JSONL`. **Dictionaries are documented, not extended** — position 3, ratified 2026-08-26 | forked at `f445d6f`; **`main` merged in 2026-08-25** so the branch carries `docs/bugs/`. **The plan was ratified and revised 2026-08-26** — 14 settled positions, `❓` column empty | **run the forward review under `method/IDM-004-reviewing-unexecuted-work.md`** — derive the charter first, then the author and cold runs in parallel, then reconcile into the phase's `notes.md`. Task 2 is next after that |
+| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: `extract` with selection over one or more day folders, `verify-archive`, and a converter to Claude Code session `JSONL`. **Dictionaries are documented, not extended** — position 3, ratified 2026-08-26 | forked at `f445d6f`; **`main` merged in 2026-08-25** so the branch carries `docs/bugs/`. **The plan was ratified and revised 2026-08-26** — 14 settled positions, `❓` column empty | **start work at Task 2.** The forward review ran 2026-08-26 — charter, both runs, reconciliation, and seventeen findings folded into `plan.md`. **Task 14 is struck on the owner's decision**: the tools are exercised by hand *after* the phase, so the phase's own evidence is tests and mutation testing |
 
 **Opened 2026-08-24, and it is the first branch worked in a git worktree** —
 `/Users/ilirium/Projects/local/ilirium_llm_router/phase-11-corpus-tools`, beside `main` and

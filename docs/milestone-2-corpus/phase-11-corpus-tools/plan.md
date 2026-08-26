@@ -1,10 +1,18 @@
 # Phase 11 — corpus tools: plan
 
-**Ratified 2026-08-26. Not yet reviewed, and still not a build order** — the forward review under
-`../../method/IDM-004-reviewing-unexecuted-work.md` runs against *this* revision, before Task 2.
-*Every position in the settled table now has an owner and a date, and the register's `❓` column is
-empty; what remains is whether the document is executable by somebody who was not here, which is the
-question only the review answers.*
+**Ratified, reviewed, and revised from the review — 2026-08-26.** The forward review under
+`../../method/IDM-004-reviewing-unexecuted-work.md` ran against the `2d04840` revision of this file;
+its charter is `review-charter.md`, both runs and the reconciliation are in `notes.md`, and
+**seventeen findings are folded in below.** Twenty positions are settled, every one owned and dated.
+
+**The heaviest thing the review returned was not a defect in the plan's reasoning — it was the cost of
+one measurement nobody had taken.** The document's model of a captured session (*cumulative calls, one
+user turn and one assistant turn each*) is simpler than the traffic on disk, which is five interleaved
+request classes, three roles, two content serialisations, a migrating `cache_control` annotation, 94
+error responses and a 45-call tail with no request body at all. **Every one of those was an hour's
+reading away, and this plan asserted the opposite of several of them in bold.**
+
+**Work may begin at Task 2.**
 
 **Subject.** The offline tools that sit on top of the store Phase 10 built: **extract** bodies out of
 a corpus with selection, **verify** an archive as its own command, and **convert** captured calls into
@@ -50,6 +58,12 @@ assumption** and the review reports it as unratified.*
 | 12 | One `--out` root with `projects/` beside `bodies/`, and **never into `~/.claude/projects/`** | **owner**, 2026-08-26 |
 | 13 | Dictionary work — response dictionaries, `list`/`show`/`install`, and a dicted-vs-undicted benchmark — is **postponed into `../../backlog.md`**, under a new `Dictionaries` section | **owner**, 2026-08-26 |
 | 14 | The evidence slice is a **live snapshot labelled with its moment**, not a stopped router | **owner**, 2026-08-26 |
+| 15 | **The converter emits every call it can reconstruct a turn from, and filters nothing.** No probe-class detection, no auxiliary-call heuristics | **owner**, 2026-08-26 |
+| 16 | A session whose request bodies stop being captured is **emitted up to the gap, then stopped, with the gap stated in-band** | **owner**, 2026-08-26 |
+| 17 | The viewer's record shape is learned from **its source and one real session file**, shallowly — schema only, and **not** by diffing | **owner**, 2026-08-26 |
+| 18 | Selection matching is **exact** on `--path`, `--session` and `--model` | **owner**, 2026-08-26 |
+| 19 | **Task 14 is struck.** The owner exercises the tools by hand **after the phase is finished**; the phase's own evidence is code, tests and mutation testing | **owner**, 2026-08-26 |
+| 20 | **This is a baseline tool.** Error responses, `count_tokens`, subagent partitioning and the second-source check are all **deferred to a later phase** — *"step by step, not leaps by leaps"* | **owner**, 2026-08-26 |
 
 **Position 3 was ratified on 2026-08-26, and it was decided against a premise that had changed since
 it was asked.** When the question was put, the machinery had never produced a dictionary and 2.815×
@@ -59,8 +73,10 @@ strongest argument available for **not** building more of it. The three postpone
 `../../backlog.md`; **whether a response dictionary pays was already there**, added 2026-08-19, and was
 pointed at rather than restated.
 
-*Positions 7–14 were settled in one ratification pass on 2026-08-26, which is also when every `❓` in
-the register below was valued. **Two of them came from the owner rather than from this plan** —
+*Positions 7–14 were settled in one ratification pass on 2026-08-26, which is also when the register's
+nine original `❓` were valued — **three more were opened by the review later the same day, and are
+listed in "Placeholders in this file".** **Two of these positions came from the owner rather than from
+this plan** —
 `verify-archive` as a separate command, and `--format` as a selector instead of the `--to-jsonl`
 boolean this plan proposed. The second fixed a defect the plan had reproduced: a mode flag whose
 companion option is meaningless without it, which is the exact problem position 2 adopted subcommands
@@ -133,8 +149,8 @@ can select on, so an assumption here is expensive:
 
 | Column | What is really in it |
 |---|---|
-| `path` | `/v1/messages` 168, `/api/hello` 3. **No `count_tokens` at all** |
-| `backend` | `anthropic` **171 — no LM Studio traffic captured** |
+| `path` | `/v1/messages` 168, `/api/hello` 3. ~~**No `count_tokens` at all**~~ — **false by 2026-08-26: 65 `count_tokens` rows**, 0/21/43/1 across the four days, inside the same sessions |
+| `backend` | `anthropic` 171 — ~~**no LM Studio traffic captured**~~ **false: `2026-08-21` holds one `backend=lmstudio` row**, `google/gemma-4-e4b`, both bodies stored and readable now |
 | `model` | `claude-opus-5` 158, `claude-sonnet-5` 10, empty 3 |
 | `stream` | **`true` 105, `false` 63.** Both response encodings are present |
 | `session_id` | **4 distinct**, 3 rows empty (the `/api/hello` calls) |
@@ -166,11 +182,23 @@ this phase inherited:
 > phase has found a defect instead of a feature. Either outcome is worth having; the run was happening
 > regardless.
 
-**4 · Phase 9's gate corpus is usable input and is already on disk.** `logs/corpus-gate/` — 8.8 MB,
-three runs, `requests/NNNNN.bin` as **plaintext JSON** and `responses/NNNNN.bin` as **raw SSE**, with
-`manifest.csv` carrying `session_id` and `path`. It is not day-folder shaped, so it is no use to the
-extractor — but it is a second, differently-shaped source for the converter, and having two is what
-stops the converter being written against one folder's accidents.
+**4 · Phase 9's gate corpus is on disk, and this plan described it wrongly in three ways.**
+`logs/corpus-gate/` — 8.8 MB, three runs, `requests/NNNNN.bin` as **plaintext JSON**. It is not
+day-folder shaped, so it is no use to the extractor.
+
+***Corrected 2026-08-26 by the forward review. The description below is what is actually there; the
+task that would have used it is struck (task 15), and the correction stays anyway so no later session
+inherits the wrong picture.***
+
+- **There is no `manifest.csv` at the root.** There is **one per run** — `run-01-anthropic/`,
+  `run-02-lmstudio/`, `run-03-anthropic/`. The root holds only `dicts/`.
+- **The manifests have no header row**, and six unnamed columns (seven in `run-02`). This plan said
+  they "carry `session_id` and `path`"; a reader must infer which position each is.
+- **"Responses as raw SSE" is wrong for 22 of run-01's 49**, which are
+  `{"type":"error","error":{"type":"overloaded_error"…}}`. Two more are zero-length, and one SSE
+  response opens with `event: error` and no `message_start` at all.
+- **`run-02-lmstudio` is real LM Studio traffic** — `lfm2.5-8b-a1b-mlx`, responses in SSE. See the
+  correction to finding 3's `backend` row.
 
 **5 · A session spans day folders, and the naive converter would produce a *wrong* transcript rather
 than a short one.** Measured 2026-08-26 over all four day indexes:
@@ -220,8 +248,18 @@ contradiction — it is the line this phase has to keep on the right side of. **
 tools; the store stays opaque.** If that line moves, the phase has failed even with green tests.
 
 **What would refute it:** a body the converter cannot reconstruct a turn from, or a fidelity loss
-that makes the viewer's output misleading rather than merely incomplete. Group C is built to find
-that early rather than at the close.
+that makes the viewer's output misleading rather than merely incomplete.
+
+***Group C was built to find that early. The forward review found it first, and without any code
+being written*** — the 45-call tail with no request bodies, the two normalisations, the third role,
+and a session spanning midnight. **Four candidate refutations surfaced by reading the disk rather than
+by building against it**, which is what `../../method/IDM-004-reviewing-unexecuted-work.md` costs one
+review run to buy.
+
+**And the question is not closed inside this phase.** Position 19 moves the hands-on check after the
+merge, so what the phase itself establishes is that the tools are **correct by test and by mutation**.
+Whether a corpus reads back out *legibly, to a person* is confirmed afterwards, by the owner. **That
+is a real gap and it is named in "What this phase does not settle" rather than papered over here.**
 
 ## The shape
 
@@ -419,42 +457,72 @@ record with lossy copies**, and that is not a reversible mistake.
 
 8. Subcommand skeleton, bare invocation still serving.
 9. Move `check`, `train-dict`, `tune-dict`, `extract` across; **split verification out as
-   `verify-archive`**; delete the old flags; update `Makefile`.
+   `verify-archive`**; delete the old flags; update `Makefile` (one line — `Makefile:30`, `--check` →
+   `check`; `make run` needs no change). **And fix `tests/test_corpus.py:453`, which shells out to
+   `python -m ilirium_llm_router --extract <day>` and asserts on its output** — deleting the flag
+   breaks it. *Named here because task 10 reads as "write new tests" and this is an existing one; the
+   forward review found it, and the only other way to find it is to run `make test` and be surprised.*
 10. Tests for the surface, including that bare invocation still resolves to serve, that `--format` and
     `--out` are **required** on `extract`, and that `--project-name` without `--format jsonl` is a
     **parse error rather than a silent no-op**.
 
-### Group C — the converter, first because it is the risk
+### Group C — the converter
 
-*Deliberately ahead of the extractor.* It is the only part that can fail on something a plan cannot
-foresee, and Phase 10's lesson is that the expensive discovery should arrive early.
+*It was "first because it is the risk" until 2026-08-26, and **that rationale is spent**. Group C ran
+ahead of the extractor so the expensive discovery would arrive early. **The forward review delivered
+that discovery without any code being written** — the 45-call tail, the two normalisations, the third
+role. The ordering now costs nothing and buys nothing, and it is left alone rather than churned.*
 
-11. SSE reassembly **and** the plain-JSON path — 63 of 168 real calls need the second.
-12. Delta reconstruction across a session's calls, **spanning day folders** (finding 5), **and the
-    error when a selected session has calls in a folder that was not passed.** The error is not a
-    nicety: without it a cross-day session reconstructs into a plausible-looking transcript whose first
-    turn silently contains a day of prior conversation.
-13. `uuid`/`parentUuid` synthesis and the record types the viewer needs. **Determinism is a test, not
-    an aspiration** — convert twice, diff, expect zero bytes of difference.
-14. **Drive it against the real corpus, diff it against the real session record, then open it in the
-    viewer.** Green tests are not evidence. **Finding 6 upgraded this task**: `~/.claude/projects/` holds
-    Claude Code's own record for all three sessions in the `2026-08-25` index, so the reconstruction can
-    be **diffed against ground truth** instead of eyeballed. Expected difference is exactly the fidelity
-    table above and nothing else; **anything else in the diff is a converter defect.** This task is the
-    one that says whether the phase works.
-15. Run it against `corpus-gate` too — the second-source check.
+11. SSE reassembly **and** the plain-JSON path. **`ping` is a real event and is in the list** — see
+    register §5. *This task said "63 of 168 real calls need the second" until 2026-08-26; that figure
+    was a partial-day snapshot and it conflated "not streamed" with "a buffered assistant reply". The
+    current corpus has **66** buffered replies, and the conclusion is unaffected.*
+12. Delta reconstruction across a session's calls, **spanning day folders** (finding 5), **the two
+    normalisations without which it is wrong on real data** (finding 7), **and the error when a
+    selected session has calls in a folder that was not passed.** The error is not a nicety: without
+    it a cross-day session reconstructs into a plausible-looking transcript whose first turn silently
+    contains a day of prior conversation.
+13. `uuid`/`parentUuid` synthesis and the record types the viewer needs — **register §9 carries the
+    shape**. **Determinism is a test, not an aspiration** — convert twice, diff, expect zero bytes of
+    difference.
+14. ~~**Drive it against the real corpus, diff it against the real session record, then open it in the
+    viewer.**~~ **Struck 2026-08-26 on the owner's decision, and struck whole rather than narrowed.**
+    The owner tests by hand **after the phase is finished**, having said plainly why: the ground-truth
+    diff costs a great many tokens, it generates more decisions than it settles, and *"this is too
+    early — I want to test by hand first, and only then will I have enough understanding of what I
+    want."* **This phase's evidence is therefore mechanical: code and tests, plus task 21's mutation
+    check.** → "What this phase does not settle", which now carries the consequence rather than
+    leaving it implied.
+
+    *Striking this also discharged a review finding for free. Task 14 **had nothing to run**: the writer
+    for `--format jsonl` is task 15 below, in Group D, **after** it. The dependency ran backwards and
+    would have forced a group reorder. Removing the task removed the inversion.*
+15. ~~Run it against `corpus-gate` too — the second-source check.~~ **Struck 2026-08-26**, deferred to a
+    later phase. Its value fell once error bodies were deferred: **22 of run-01's 49 responses are
+    error JSON**, which this phase skips. **The corrected description of `corpus-gate` stays in finding
+    4 regardless**, so no later session inherits the wrong picture of it.
 
 ### Group D — the extractor
 
 16. Selection by session, model, path, **and `--agent`**, over one or more positional day folders.
+    **Matching is exact on all three** (position 18) — so `--path /v1/messages` does **not** sweep in
+    `/v1/messages/count_tokens`. Repeated filters of one kind are OR; different kinds are AND.
 17. Output layout — `bodies/` and `projects/` under one `--out` — and `verify-archive`.
-18. **`--agent` built and tested against the review run's traffic.** If that run leaves `agent_id`
-    empty on every row, this task instead **files the defect** against `observe.py:40` and the strike
-    is restored, per finding 3's stated prediction.
-19. **Re-run `extract` now that a dictionary exists.** The register records that there is **no
+18. **`--agent` built against the review run's traffic.** *The contingency this task carried — file a
+    defect against `observe.py:40` if the review left `agent_id` empty — is **dead, discharged
+    positively**. The forward review's cold run produced **67 rows** carrying an `agent_id`, and
+    `observe.py:40` is confirmed by measurement for the first time in this project's history.*
+19. **Re-run `verify-archive` now that a dictionary exists.** The register records that there is **no
     post-dictionary end-to-end ratio** and that 3.317× must not be read as one. This closes that hole
     and is a **measurement, not a feature** — position 3 postpones dictionary *work*, not dictionary
     *numbers*.
+
+    *This task said **`extract`** until 2026-08-26 and would have closed nothing. The ratio is printed
+    at `cli.py:176`, inside the verify loop — which register §2 assigns to **`verify-archive`**, not to
+    `extract`. **The split that created `verify-archive` moved the print statement away from the task
+    that needs it, in the same revision, and neither noticed the other.** Two adjacent register rows
+    are what made it visible, which is the second time in this phase `IDM-008`'s instrument has caught
+    something two prose passes read past.*
 
 ### Group E — documentation
 
@@ -466,17 +534,27 @@ foresee, and Phase 10's lesson is that the expensive discovery should arrive ear
 ### Group F — verify, harvest and close
 
 22. **The register check** — `../../method/IDM-008-the-register.md`'s closing task. Every row below
-    against the code, `❓` column empty.
+    against the code, **and no `❓` left anywhere in the register.**
+
+    *This said "`❓` column empty" until 2026-08-26, and **the check could not fail**: there is no `❓`
+    column. `❓` has always been a marker inside a cell, and the register's tables are
+    `| Flag | Type | Default |` and `| Name | Value |`. The claim "the `❓` column is now empty" was
+    written into this file and into `status.md` and committed, and it was true only because the column
+    does not exist. **A check that cannot fail is not a check** — which is the exact defect `IDM-008`
+    exists to catch, found by the forward review in the section describing the instrument.*
 23. **Mutation testing on the converter.** One deliberate fault, a targeted test must fail. A
-    mutation that survives is a missing test or a dead line — find out which.
+    mutation that survives is a missing test or a dead line — find out which. **With task 14 struck,
+    this is the strongest evidence the phase produces**, so it is no longer optional polish.
 24. Harvest into `reference/lessons.md` and `reference/measurements.md`.
 25. Merge `--no-ff`, then regenerate the branch index **after** the merge commit.
 
 ## The register — every name and number this phase introduces
 
 *Per `../../method/IDM-008-the-register.md`. **Authoritative for the value; the prose above holds the
-why.** `❓` marks something named and never valued — that column is the instrument, and it is
-deliberately not empty yet.*
+why.** `❓` marks something named and never valued. **It is a marker inside a cell, not a column** —
+this section said "that column is the instrument" until 2026-08-26, and Task 22's closing check was
+written against a column that does not exist, so it could not fail. **Three `❓` are live**, all
+deliberate, all resolved at Task 13.*
 
 ### 1 · New modules
 
@@ -537,9 +615,10 @@ which is exactly what `--extract` does today.*
 
 | Name | Value |
 |---|---|
-| `JSONL_SCHEMA_NOTE` | The in-band fidelity statement, emitted as a `system` record on line 1 of every generated file. Names the tool, the source days and session, the call count, the generation moment, and the five fields absent by construction — `cwd`, `gitBranch`, `version`, `toolUseResult`, agent attribution. **Exact wording is drafted at Task 13 and checked at Task 22** |
-| SSE event names consumed | `message_start`, `content_block_start`, `content_block_delta`, `content_block_stop`, `message_delta`, `message_stop`, `error` |
-| `SYNTHETIC_UUID_NAMESPACE` | A **UUIDv5 namespace literal, minted once** at Task 13 and pasted into the source. Record ids are `uuid5(NAMESPACE, "<request-blob-digest>:<block-index>")`, so **the same corpus produces the same file forever, on any machine.** Minted rather than borrowed so our ids cannot collide with anyone else's `uuid5` values. **Not** `uuid4` — Task 13 tests determinism by converting twice and diffing |
+| `JSONL_SCHEMA_NOTE` | **❓ — wording deferred to Task 13.** *Marked `❓` rather than left blank on 2026-08-26: `IDM-008`'s rule is that anything named and never valued is `❓`, and **deferring a value to a task is a plan for getting one, not a value**.* What it must contain is settled: the tool, the source days and session, the call count, **the count of calls skipped because their response was not a message**, the generation moment, and the five fields absent by construction — `cwd`, `gitBranch`, `version`, `toolUseResult`, agent attribution |
+| the fidelity record's `type` | **❓ — must not be plain `system`.** A real `system` role occurs *inside* `messages` and reaches the transcript, so a `system` record announcing *"this is not a real record"* is **indistinguishable from a real turn**. Settled at Q4/N3 as "a `system` record at the head of the file" before that was known. Resolve at Task 13 |
+| SSE event names consumed | `message_start`, `content_block_start`, `content_block_delta`, `content_block_stop`, `message_delta`, `message_stop`, `error`, **`ping`** |
+| `SYNTHETIC_UUID_NAMESPACE` | **❓ — the literal is minted at Task 13.** The *mechanism* is settled and is not `❓`: `uuid5(NAMESPACE, "<request-blob-digest>:<record-index-within-call>")`, so **the same corpus produces the same file forever, on any machine.** Minted rather than borrowed so our ids cannot collide with anyone else's `uuid5` values. **Not** `uuid4` — Task 13 tests determinism by converting twice and diffing. *`<block-index>` was the spelling until 2026-08-26 and was undefined for a delta-reconstructed turn, which by construction is not a content block of any one response* |
 | `PROJECT_NAME_DEFAULT` | `corpus` — one bucket. **`corpus-<day>` was proposed and killed by finding 5**: a session spanning two days has no single day to file under |
 
 ### 6 · Existing names this must not collide with
@@ -555,6 +634,8 @@ which is exactly what `--extract` does today.*
 | output root | **whatever `--out` names.** No default — nothing is written unless a destination is given |
 | a session file | `<out>/projects/<project>/<session_id>.jsonl`, `<project>` defaulting to `corpus` |
 | extracted body | `<out>/bodies/<session_id>/<seq>-request.json` and `<seq>-response.json` **or** `<seq>-response.sse` |
+| `<seq>` | **Five digits, zero-padded, assigned per session in `timestamp` order, starting at `00001`.** *Defined 2026-08-26; it was undefined, and the forward review priced that as silently mis-labelling every extracted body.* **Timestamp order, not index order** — `stats.py` says the index is in **completion** order, so reading it in file order would number a session's bodies by when each call *finished* |
+| a row with no `session_id` | goes to `<out>/bodies/_no-session/`. **10 rows have one** — 8 × `/api/hello`, 1 × `/`, 1 × `/favicon.ico` — and `<out>/bodies//00001-request.json` is not a path |
 | never | **`~/.claude/projects/`** — position 12. Lossy reconstructions in the real history directory is not a reversible mistake |
 
 *The response extension is not decoration: it is **`.sse` for a streamed reply and `.json` for a
@@ -629,6 +710,73 @@ executed — it cannot also be the task that freezes a slice; **Task 7** is "Fre
 Two adjacent rows of this register are what made it visible, which is what `IDM-008` says the
 instrument is for.)*
 
+### 9 · The JSONL record shape — this phase's own output
+
+***Added 2026-08-26. `IDM-008` requires "any record or index shape — columns in order, fields, the
+schema version" and `../../README.md` repeats it, and the register carried neither — while §1 said
+`jsonl.py` "answers what the viewer will accept" and then never said what that is.* The phase's entire
+output had no row in its own register.**
+
+| Field | Value |
+|---|---|
+| `type` | ❓ — see §5. The record kinds needed, and their spellings, come out of Task 13 |
+| `uuid` | `uuid5(SYNTHETIC_UUID_NAMESPACE, "<request-blob-digest>:<record-index-within-call>")` |
+| `parentUuid` | the previous record's `uuid`; `null` on the first record of a file |
+| `sessionId` | the corpus's `session_id`, verbatim |
+| `timestamp` | the call's index `timestamp`, verbatim |
+| `message` | the reconstructed turn |
+| `cwd`, `gitBranch`, `version`, `toolUseResult` | **absent by construction** — never on the wire |
+
+**The shape is `❓` where it depends on somebody else's schema, and that is the honest state.** The
+viewer does not publish it. Task 13 settles it from **two** sources, per the owner's decision of
+2026-08-26: the viewer's own source, and **one** real session file read only far enough to learn the
+field names. **Schema knowledge at design time is not the same act as the converter reading
+`~/.claude/` at runtime** — the second is what "oracle, never input" forbids, and the plan did not
+draw that line until now.
+
+### 10 · The index shape — 26 columns, in order
+
+*Also added 2026-08-26, and also required by `IDM-008`. The extractor selects on these; nothing in the
+register named them. Verified three ways: `stats.COLUMNS` (20) + `corpus.INDEX_EXTRA_COLUMNS` (6),
+concatenated at `corpus.py:71`; every day folder's `manifest` reading `index_columns: 26`; and the
+header line on disk in all four folders.*
+
+```
+timestamp, session_id, agent_id, backend, model, path, stream,
+input_tokens, output_tokens, cache_read_input_tokens, cache_creation_input_tokens,
+stop_reason, request_bytes, response_bytes, ttfb_ms, duration_ms,
+error_status, error_code, error_message, router_version,
+request_ref, response_ref, queue_ms, store_ms, queue_bytes, request_dict_id
+```
+
+`INDEX_SCHEMA_VERSION` is **1**, and this phase does not change it — position 3 postponed the one
+thing that would have.
+
+### 11 · Sentinel values — what a `request_ref` holds instead of a digest
+
+*Added 2026-08-26. **Five sentinels, and not one appeared in either document** — `grep` for
+`too_large` over `plan.md` and `notes.md` returned nothing, while **45 rows on disk carry it**.*
+
+| Constant | Value | Means |
+|---|---|---|
+| `DROPPED` | `dropped` | the queue was over its byte bound |
+| `TOO_LARGE` | `too_large` | one body over `body_max_bytes`; **discarded, not truncated** |
+| `ABSENT` | `absent` | **the router authored the body** — not one it carried |
+| `STORE_ERROR` | **`error`** | compression or the write failed |
+| `NO_DICTIONARY` | `none` | stored with no dictionary — a **word**, not `0` |
+
+**`STORE_ERROR`'s value is `error`, not `store_error`.** The constant name and the string on disk
+differ, which is exactly the kind of thing a register exists to put in adjacent rows.
+
+**Only `too_large` is present in the corpus today**, on 45 rows. The extractor must treat all five as
+"no blob here" rather than as a digest — **a sentinel silently used as a filename is a lookup that
+fails at the filesystem**, which is a worse error than the honest one.
+
+**Two more constants the extractor needs and §6 does not list:** `FANOUT = 2` and
+`BLOB_SUFFIX = ".zst"`, which together reconstruct `<day>/<direction>/<digest[:2]>/<digest>.zst`.
+`CorpusReader` offers `directions()`, `blobs()` and `read()` and **no index reader and no
+digest→path helper**, so the extractor builds the path itself rather than "building on" the class.
+
 ## Placeholders in this file
 
 *The section that exists so these are closed out deliberately rather than found by chance —
@@ -636,10 +784,15 @@ Phase 10's worked.*
 
 1. ~~**Position 3 needs the owner's one word.**~~ **Closed 2026-08-26** — documentation only, and the
    three dictionary ideas are in `../../backlog.md` under a new `Dictionaries` section.
-2. ~~**Every `❓` in the register.**~~ **Closed 2026-08-26. The `❓` column is now empty**, which is the
-   condition Task 22 checks against the code. Nine were valued; **three of them changed shape rather
-   than merely acquiring a value** — `--day` became positional, `--verify-only` was struck as a
-   duplicate of the default, and `to-jsonl` stopped being a command.
+2. **Three `❓` remain, and they are supposed to.** *This item said "closed — the `❓` column is now
+   empty" for one day. **There is no `❓` column**, so the claim was true only because the thing it
+   described did not exist, and Task 22's check could not fail. The forward review found it.* The nine
+   original placeholders were valued on 2026-08-26 — **three changing shape rather than acquiring a
+   value**: `--day` became positional, `--verify-only` was struck as a duplicate of the default, and
+   `to-jsonl` stopped being a command. **Three new ones were then opened deliberately**, all in §5 and
+   §9, all resolved at Task 13: `JSONL_SCHEMA_NOTE`'s wording, `SYNTHETIC_UUID_NAMESPACE`'s literal,
+   and the fidelity record's `type`. **Deferring a value to a task is a plan for getting one, not a
+   value** — `IDM-008`'s rule, applied to this plan for the first time.
 3. **The Record table** below — the merge commit, which cannot exist until the merge.
 4. **Three tasks are already executed and say so — Task 1, Task 5 and Task 6.** No other task may
    claim it. Both deviations ran ahead of the plan on the owner's instruction, and both are worth
@@ -656,6 +809,25 @@ Phase 10's worked.*
 
 - Whether archiving slows a call. Failure mode 3, still open.
 - The vanishing-row race. Still parked, still needs the never-write-twice guarantee.
+- **Whether the tools actually work, in the sense `../../../CLAUDE.md` means by *exercise it*.**
+  **This is the phase's largest deliberate gap and it is stated first because of that.** The working
+  agreement says *green tests are not evidence — drive the real thing*, and **task 14 was the step that
+  did.** It is struck (position 19): the owner exercises the tools **after** the phase, having judged
+  that a ground-truth diff costs too much and settles too little before anyone has held the tool.
+  **So the phase's central question — can a captured corpus be read back out by somebody who did not
+  write it — is answered mechanically inside the phase and confirmed by hand outside it.** The closing
+  record must say so; **a phase note that reports green tests as though the question were closed would
+  be the exact failure this bullet exists to prevent.** *The one measurement this milestone has already
+  paid for twice is the one nobody took.*
+- **Error responses, `count_tokens` calls, subagent partitioning, and the second-source check.**
+  Deferred by position 20. **What the baseline does instead is mechanical and stated, not undefined:**
+  a call contributes a turn **only if its response is a message**, and the rest are skipped and
+  counted. *That rule is lossless because requests are cumulative — anything a skipped call carried
+  reappears in the next real one — and it asks "is this response a message?", never "is this call a
+  probe?", so it does not smuggle back the classification position 15 removed.*
+- **That a subagent's turns will interleave into its parent's transcript.** Known, measured — **67
+  rows carry an `agent_id` and all of them carry the parent's `session_id`** — and deliberately not
+  fixed. Position 20; the owner sees it by hand first.
 - **Anything about dictionaries beyond documenting what ships.** Response dictionaries,
   `list`/`show`/`install`, and a dicted-vs-undicted benchmark are all in `../../backlog.md` under
   `Dictionaries` — position 13, and the reason that section exists.
