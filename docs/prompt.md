@@ -7,8 +7,11 @@ and Task 11.** Whatever comes next replaces it again.*
 ---
 
 **Phase 11 is open. Tasks 1–11 are done and work resumes at Task 12.** Branch
-`feat/phase-11-corpus-tools`, **clean tree, 355 tests green.** Twelve commits landed on
-2026-08-26, the last of them this handoff.
+`feat/phase-11-corpus-tools`, **clean tree, 355 tests green.**
+
+**Fourteen commits landed on 2026-08-26** — but **derive that rather than trusting it**, because a
+count in this file is exactly the kind that goes stale between the writing and the reading:
+`git log --oneline fe37743..HEAD`. `fe37743` is where this session started.
 
 **Nothing is queued before the owner and nothing is blocked.** One question is waiting for them and it
 blocks nothing — it is in `for-the-owner.md`, described below.
@@ -34,8 +37,9 @@ The project is a **bare clone** with `main`, `to-run-server` and this phase as s
    it rather than burying an owner-facing point in `notes.md`**, and do not invent a rule or a tier
    for it — the owner asked for the file and explicitly not for a convention.
 
-**Read by section.** `grep -n '^## ' <file>` first. `plan.md` and `notes.md` are the two largest
-documents here and both grew again; neither should be read whole.
+**Read by section.** `grep -n '^## ' <file>` first. **`plan.md` is now much the largest at 953
+lines** and must not be read whole. **`notes.md` is 403** and `notes-group-a.md` **433** — the split
+means each of the rest can be read whole if you want it, which is what the split bought.
 
 ## Task 12 is next, and it is the hard core of the phase
 

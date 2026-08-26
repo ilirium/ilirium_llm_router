@@ -10,8 +10,12 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-26 — Groups A and B are complete and Task 11 with them. Twelve commits, the last being
-the handoff. Work resumes at Task 12, delta reconstruction, which is the hard core of the phase.**
+**2026-08-26 — Groups A and B are complete and Task 11 with them. Work resumes at Task 12, delta
+reconstruction, which is the hard core of the phase.**
+
+*Fourteen commits, from `fe37743`. **Derive it rather than relaying it** — `git log --oneline
+fe37743..HEAD` — because a commit count written into a file is stale by the next commit, which is the
+failure this section keeps recording about itself.*
 
 **Tasks 1–11 done.** Group A closed the documentation debts and froze the evidence slice; Group B put
 the CLI on subcommands; Task 11 built `transcript.py`. **355 tests, up from 310.**
@@ -227,7 +231,7 @@ permanent record of a phase's branch, fork point and merge commit is still its p
 
 | Branch | Purpose | Tree | Next action |
 |---|---|---|---|
-| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: `extract` with selection over one or more day folders, `verify-archive`, and a converter to Claude Code session `JSONL`. **Dictionaries are documented, not extended** — position 3, ratified 2026-08-26 | forked at `f445d6f`; **`main` merged in 2026-08-25** so the branch carries `docs/bugs/`. **The plan was ratified and revised 2026-08-26** — 14 settled positions, `❓` column empty | **start work at Task 12**, delta reconstruction. **Groups A and B and Task 11 closed 2026-08-26**, twelve commits, 355 tests. `cli.py` is on subcommands and `transcript.py` reassembles both encodings. **Task 14 is struck on the owner's decision**: the tools are exercised by hand *after* the phase, so the phase's own evidence is tests and mutation testing — and task 23's mutation check is therefore the strongest thing it produces |
+| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: `extract` with selection over one or more day folders, `verify-archive`, and a converter to Claude Code session `JSONL`. **Dictionaries are documented, not extended** — position 3, ratified 2026-08-26 | forked at `f445d6f`; **`main` merged in 2026-08-25** so the branch carries `docs/bugs/`. **The plan was ratified and revised 2026-08-26** — 14 settled positions, `❓` column empty | **start work at Task 12**, delta reconstruction. **Groups A and B and Task 11 closed 2026-08-26**, 355 tests. `cli.py` is on subcommands and `transcript.py` reassembles both encodings. **Task 14 is struck on the owner's decision**: the tools are exercised by hand *after* the phase, so the phase's own evidence is tests and mutation testing — and task 23's mutation check is therefore the strongest thing it produces |
 
 **Opened 2026-08-24, and it is the first branch worked in a git worktree** —
 `/Users/ilirium/Projects/local/ilirium_llm_router/phase-11-corpus-tools`, beside `main` and
