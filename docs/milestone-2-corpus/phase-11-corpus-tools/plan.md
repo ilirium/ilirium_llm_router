@@ -475,7 +475,7 @@ record with lossy copies**, and that is not a reversible mistake.
    `python -m ilirium_llm_router --extract <day>` and asserts on its output** — deleting the flag
    breaks it. *Named here because task 10 reads as "write new tests" and this is an existing one; the
    forward review found it, and the only other way to find it is to run `make test` and be surprised.*
-10. Tests for the surface, including that bare invocation still resolves to serve, that `--format` and
+10. **Done 2026-08-26 — 27 tests, and three mutations to show they can fail.** Tests for the surface, including that bare invocation still resolves to serve, that `--format` and
     `--out` are **required** on `extract`, and that `--project-name` without `--format jsonl` is a
     **parse error rather than a silent no-op**.
 

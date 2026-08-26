@@ -130,3 +130,36 @@ counted three executed tasks for two days and the count was wrong.**
 produced, and the closing register check confirms each exists. That is `IDM-008`'s instrument pointed at
 task records instead of at names — it would have caught this in one grep. **Not proposed as a rule
 here**, because one instance is not a pattern and this file is not where rules get made.
+
+## IDEA · `make lint`'s blindness to line width bit inside one session — opened 2026-08-26
+
+**`CLAUDE.md` warns that `make lint` cannot see column width**, because `E501` is not in ruff's default
+rule set while `pyproject.toml` sets `line-length = 100`. **It stopped being a theoretical warning
+today: a 101-character line went into task 8's commit**, passed `make lint`, and was found only because
+I checked by hand afterwards.
+
+**The fix is bounded and I measured it rather than guessing:**
+
+```
+uvx ruff@0.16.1 check --select E501 src tests   →   23 errors, 9 files
+```
+
+**Nine files, twenty-three lines, and every one I looked at is prose in a docstring** — rewraps, not
+code changes. None of them is a deliberate exception; the one that *looked* like it (`test_recording.py`
+saying *"the rule that outranks every column in the file"*) is a sentence about telemetry, not about
+formatting.
+
+**Not done, because it is a tooling change and `../../method/IDM-003-development-tooling.md` owns
+those** — and because `CLAUDE.md` says nothing bumps or extends the linter as a side effect. **It is
+one line in the `Makefile` plus twenty-three rewraps**, and the argument for it is that the warning in
+`CLAUDE.md` currently asks every session to do by hand what the tool would do for free — and this
+session, holding that warning, still missed one.
+
+## REGRET · I checked width on the diff for one commit and not the next — opened 2026-08-26
+
+For task 2 I checked added-line width deliberately and reported zero. **For task 8 I did not, and that
+is the commit with the over-width line in it.** The check was treated as a one-off rather than as
+something the absent lint rule makes necessary every time.
+
+**Recorded because the fix is not "remember harder"** — it is either the entry above, or a habit, and
+between those two the entry above is the one that survives a session ending.

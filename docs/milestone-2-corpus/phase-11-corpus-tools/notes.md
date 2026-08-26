@@ -832,3 +832,48 @@ failed. **`$?` was `tail`'s.** Re-run without the pipeline: missing folder **1**
 
 *Third instrument error in one session — the `awk` byte-count, the `1913` sha256 "secrets", and now
 this. All three were caught because the number looked wrong, and none by anything that failed.*
+
+## Task 10 — the CLI's first test file, and three mutations to prove it can fail, 2026-08-26
+
+**`tests/test_cli.py` is new, and the point worth recording is that it had to be.** The CLI had **no
+test file at all**. It was reached only sideways — two tests in `test_dictionary.py` import
+`_with_overrides`, one in `test_corpus.py` shells out — so **the surface this phase restructured had
+never been described anywhere that a change would break.** 310 → **337**.
+
+### The tests were mutated, because a test that cannot fail is this phase's own recorded defect
+
+Task 22's `❓` check *"could not fail"* and the forward review found it. **Writing 27 green tests and
+reporting the number would be the same thing one level down**, so three mutations were applied to
+`cli.py` and reverted:
+
+| Mutation | Result |
+|---|---|
+| `argparse.SUPPRESS` → an ordinary default | **1 failed**, `test_the_config_flag_wins_from_either_side_of_the_subcommand` |
+| the `--project-name` guard deleted | **1 failed**, `test_project_name_without_jsonl_is_an_error_not_a_silent_no_op` |
+| `--out` no longer `required` | **1 failed**, `test_out_and_format_are_both_required` |
+
+**Each killed by exactly one test, and `cli.py` restored byte-identically afterwards** — confirmed with
+`git diff --stat`, which came back empty. *This is not task 23: that one is mutation testing on the
+**converter**, and it is still owed.*
+
+**One test is deliberately two assertions where one would look sufficient.** The config-flag test
+checks `-c other.yaml serve` **and** `serve -c other.yaml`. **Only the first fails without
+`SUPPRESS`** — a test written with the second alone would have passed against the defect, which is the
+whole failure mode being guarded.
+
+### A 101-character line was committed in task 8 and `make lint` passed it
+
+**`CLAUDE.md` warns that `make lint` cannot see column width** — `E501` is not in ruff's default set
+while `pyproject.toml` sets `line-length = 100`. **The warning stopped being theoretical inside this
+session.** Six over-width lines across `cli.py` and `test_cli.py`, one of them already committed.
+
+*Task 2 checked added-line width on purpose and reported zero; task 8 did not, and task 8 is the one
+that leaked.* **Fixed here, and the underlying gap is in `for-the-owner.md`** with the measurement that
+makes it actionable: `--select E501` reports **23 errors in 9 files**, all prose rewraps, so the fix is
+bounded — but it is a tooling change and `IDM-003` owns those.
+
+### Two rewraps in a row pushed a *different* line over
+
+Fixing six over-width lines by rewrapping produced two new ones, because rewrapping moves words onto the
+following line. **Caught only by re-running the check after the fix.** *A fix that is not re-measured
+is a hypothesis, and this one was wrong twice before it was right.*

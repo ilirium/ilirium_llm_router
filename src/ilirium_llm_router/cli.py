@@ -4,9 +4,9 @@
 flags on one parser, most of which apply to exactly one mode: `--maxdict` is meaningless with
 `--extract`, and argparse cannot say so. A subcommand makes that structural instead of documented.
 
-**Bare `ilirium-llm-router` still starts the server**, and that is deliberate rather than a leftover.
-`make run` depends on it, so does habit, and Phase 12 makes this a `uv tool` where the bare form is
-the one people type. `serve` is the explicit spelling of the same thing.
+**Bare `ilirium-llm-router` still starts the server**, and that is deliberate rather than a
+leftover. `make run` depends on it, so does habit, and Phase 12 makes this a `uv tool` where the
+bare form is the one people type. `serve` is the explicit spelling of the same thing.
 """
 
 from __future__ import annotations
