@@ -620,8 +620,21 @@ role. The ordering now costs nothing and buys nothing, and it is left alone rath
 
 ### Group F — verify, harvest and close
 
-22. **The register check** — `../../method/IDM-008-the-register.md`'s closing task. Every row below
-    against the code, **and no `❓` left anywhere in the register.**
+22. **Done 2026-08-28.** **The register check** — `../../method/IDM-008-the-register.md`'s closing
+    task. Every row below against the code, **and no `❓` left anywhere in the register.**
+    **`evidence/register-check.py`, 89 checks, 0 failed**, and it exits 1 so it can be a gate rather
+    than a report.
+
+    ***It found something two `grep`s had missed, on its first run.*** A `❓` survived in a cell —
+    not a live placeholder but a *reference* to one, in prose reading "the `❓`'s requirement is
+    met". **Reworded rather than taught to the checker**, because a marker that sometimes means
+    "unvalued" and sometimes means "the thing formerly unvalued" is a marker whose check cannot be
+    trusted — which is the same defect as the one this task was rewritten to fix on 2026-08-26.
+
+    *The script was itself mutated four ways — a constant drifted from its stated value, a constant
+    renamed, a `❓` reopened in a cell, an SSE event dropped — and caught all four. **What it cannot
+    check is prose**, so a row whose description has drifted still passes; the closing task is the
+    script **and** a read.
 
     *This said "`❓` column empty" until 2026-08-26, and **the check could not fail**: there is no `❓`
     column. `❓` has always been a marker inside a cell, and the register's tables are
@@ -702,7 +715,7 @@ which is exactly what `--extract` does today.*
 | Name | Value |
 |---|---|
 | `JSONL_SCHEMA_NOTE` | **Valued 2026-08-28.** A format string in `jsonl.py`, carried in the note record's `content`. It names the tool and version, the generation moment, the session, the day folders, the call count, **the count that contributed no turn**, the gap count, the unconfirmed-tail count, and the five absent fields — and opens *"This is NOT a Claude Code session record"*. *The requirement list was met in full; the gap and unconfirmed counts are additions task 12 made necessary.* |
-| the fidelity record's `type` | **Valued 2026-08-28: a `system` record with `subtype = "corpus-reconstruction"` (`SCHEMA_NOTE_SUBTYPE`), `isMeta: false`.** Settled from the viewer's source, not guessed: `if msg.message_type == "system" { return !is_hidden_system_subtype(...) }`, and `HIDDEN_SYSTEM_SUBTYPES` holds exactly `stop_hook_summary` and `turn_duration` — so an unknown subtype **renders**. **The `❓`'s requirement is met:** it is not a *plain* `system` record, and the subtype distinguishes it from the three real ones observed (`turn_duration`, `away_summary`, `local_command`) and from any turn. Gaps use `corpus-gap` on the same footing |
+| the fidelity record's `type` | **Valued 2026-08-28: a `system` record with `subtype = "corpus-reconstruction"` (`SCHEMA_NOTE_SUBTYPE`), `isMeta: false`.** Settled from the viewer's source, not guessed: `if msg.message_type == "system" { return !is_hidden_system_subtype(...) }`, and `HIDDEN_SYSTEM_SUBTYPES` holds exactly `stop_hook_summary` and `turn_duration` — so an unknown subtype **renders**. **The placeholder's requirement is met:** it is not a *plain* `system` record, and the subtype distinguishes it from the three real ones observed (`turn_duration`, `away_summary`, `local_command`) and from any turn. Gaps use `corpus-gap` on the same footing |
 | SSE event names consumed | `message_start`, `content_block_start`, `content_block_delta`, `content_block_stop`, `message_delta`, `message_stop`, `error`, **`ping`** — **all eight observed**, 2026-08-26 |
 | **`content_block` types** | **Five, not three** — `text`, `tool_use`, `thinking`, **`server_tool_use`**, **`web_search_tool_result`**. *Added 2026-08-26: the register named the events and never what they carry, and the reassembler consumes these. Counts over the **whole** corpus, by reassembling every response: 552 / 654 / 461 / 4 / 4 — so **`tool_use` is the most common block here and `thinking` is not rare**. The last two are Anthropic **server-side** tools and were missed by a two-day sample, which is why the count was re-run over all four days* |
 | **`content_block_delta` types** | `text_delta`, `input_json_delta`, `thinking_delta`, **`signature_delta`** — *`input_json_delta` carries a **tool input as JSON string fragments** that must be concatenated and only then parsed, which is the one piece of real work in reassembly. 64,260 of them in two days against 2,071 `text_delta`* |
