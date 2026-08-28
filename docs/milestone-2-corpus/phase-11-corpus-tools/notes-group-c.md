@@ -3,7 +3,7 @@
 **Tasks 11–13.** Reassembly of both response encodings; delta reconstruction across a session's calls
 and across day folders; `uuid`/`parentUuid` synthesis and the viewer's record shapes.
 
-**In flight — task 11 is done, tasks 12 and 13 are not.** Tasks 14 and 15 are **struck in place** and
+**In flight — tasks 11 and 12 are done, task 13 is not.** Tasks 14 and 15 are **struck in place** and
 must not be resurrected or renumbered.
 
 **The sharp end of the phase.** The store went to some trouble never to parse a body and this group
@@ -93,3 +93,139 @@ at scale by the pass above.
 *The `data:`-split-over-several-lines test is for something Anthropic does not currently do. The SSE
 spec allows it, and a reassembler that assumed otherwise would break on the day it changed, for a
 reason no capture would ever explain.*
+
+---
+
+## Task 12 — delta reconstruction, and the corpus moved four things, 2026-08-28
+
+**The corpus was read before the code was written**, as task 11 did. It paid for itself four times:
+one of the plan's two named normalisations turns out to do nothing on its own, a **third** mechanism
+is needed that is *not* a normalisation, the obvious form of the missing-day check is unsound, and
+**the plan's stated reason for that check does not survive this design** — that last one is written
+up separately below because it contradicts a settled sentence.
+
+**378 tests, 355 → 378.** `make lint` clean, `make check` valid.
+
+### The two normalisations, measured one at a time
+
+Finding 2 named them and gave a corpus-wide figure. Measured here on one 77-call conversation, each
+applied alone:
+
+| | prefix property holds |
+|---|---|
+| raw bytes | **0 / 76** |
+| strip `cache_control` only | 46 / 76 |
+| bare string → content blocks only | **0 / 76** |
+| **both** | **65 / 76** |
+
+**The encoding fix scores zero on its own**, which is not what "two normalisations" suggests. The
+`cache_control` breakage sits earlier in the array and masks it, so a session that fixed only the
+encoding would measure no improvement at all and conclude the finding was wrong.
+
+*The marker's behaviour, seen directly: Claude Code puts it on the **last** message of each request,
+so it walks forward — call 6 marks message 12, call 7 marks 14, call 8 marks 17. The turn it leaves
+is unchanged. Every comparison breaks on a message whose content never moved.*
+
+### A `session_id` is not one conversation, and root-keying separates them without classifying
+
+**36 conversations across 9 sessions**, keyed by the normalised root message. Each session holds one
+real conversation plus a two-message classifier, a `quota` probe, title generation, and web
+search/fetch calls. Session `15b29c2a` also holds a **66-call subagent conversation** carrying the
+parent's `session_id` — finding 4, present and separated.
+
+**It separated the subagent without consulting `agent_id` at all.** That matters because the column
+is empty on all but 67 rows in the corpus, so a mechanism keyed on it would work here and nowhere
+else. Root-keying asks *"is this the same conversation?"* and never *"is this call a probe?"*, which
+is the line position 15 draws.
+
+*The `quota` probe is byte-identical in all nine sessions — one 8-hex root digest recurring nine
+times. Harmless, because `session_id` prefixes the filename, but it is why the digest alone is not a
+name.*
+
+### The third mechanism is a commit rule, not a normalisation — and the distinction is load-bearing
+
+**100 times in the corpus a message was revised by the next call**, 9 of those changing role
+outright (`user:['text']` → `assistant:['thinking','tool_use']`). A normalisation makes two
+*encodings* of one message compare equal; these are not that. The content genuinely changed — the
+client sent something and then sent something else in the same position.
+
+**So no comparison fix can address it, and looking for one is the trap.** A session told "there is a
+third normalisation" would hunt for a canonicalisation that does not exist. The fix is about *when*
+to emit: turns are taken from the conversation's **latest** state, never as first seen. A retracted
+turn then cannot reach the transcript, because it is not in the final array.
+
+*Checked before relying on it: within a conversation the array **never shrinks** — 678 pairs grew,
+143 held their length, none got shorter. `shrank` is counted anyway, because the day a client
+compacts under an unchanged root, a silent reconstruction would present the remainder as the whole.*
+
+### The assistant turn exists twice, and the difference is one field
+
+Every assistant turn is in its own response blob and, one call later, inside the next request's
+`messages`. Compared on all **631** cases where both exist: **72 identical, 559 different** — and
+the difference is a single field every time.
+
+**`tool_use` blocks carry `caller` in the response and never in the request.** Counted directly:
+**47,628** request-side `tool_use` blocks, **none** with it; **630** response blobs mention it. The
+client strips a server-side annotation before sending the turn back. Block shapes agree in 630 of
+631 cases.
+
+**So the response is the source and the request copy is the fallback**, used only when a call's own
+response was not a message. `Turn.source` records which, so this is visible per turn rather than
+assumed.
+
+### The obvious missing-day check is unsound, and it was nearly built
+
+The cheap structural form — *"a conversation whose first call is already deep did not start in the
+folders passed"* — was measured before being written. **11 of the 36 conversations legitimately open
+at two messages**, so a depth rule false-positives on a third of them. The exact set difference
+between the session's days and the days passed is the only honest form, and it needs the caller to
+have read the corpus rather than the selection.
+
+### The strongest evidence is not a test, again
+
+**`reconstruct` driven over the whole live corpus**, all four day folders, every session:
+
+| | |
+|---|---|
+| calls in / accounted for | **902 / 902** |
+| conversations | **36**, matching the independent count made before the code existed |
+| filenames | **36 distinct**, 9 marked main, one per session |
+| gaps | **45** — the `too_large` tail, all in `ad9392ae`, contiguous at calls #225–#269 of 270 |
+| shrinks | **0** |
+| skips | **93 `error` + 1 `incomplete`** |
+
+**That last row is the join worth having.** 93 and 1 are the corpus's own `http_error` and
+`client_disconnect` counts, recorded by `observe.py` at capture time from HTTP status. `reconstruct`
+reaches them through `reassemble`, from body shape, knowing nothing about the column — the same
+agreement task 11 found, now surviving a second instrument built on top of the first.
+
+*The cap is crossed once and never recrossed: `request_bytes` runs 1,043,805 → 1,047,198 →
+**1,051,096** at call #225, straight through 1 MiB. **All 45 of their responses reassemble into real
+assistant turns** — only the prompts are gone, which is why they are emitted behind a `Gap` rather
+than dropped. Settled by the owner on 2026-08-28, option (c) of three.*
+
+### The tests were mutated, because they went green on the first run
+
+**23 new tests, and all of them passed immediately** — which `CLAUDE.md` says is not evidence. Three
+mutations, each expected to break a different guarantee, plus a no-op control:
+
+| Mutation | Result |
+|---|---|
+| `cache_control` no longer stripped | **tests fail** |
+| the missing-day check disabled | **tests fail** |
+| the byte-identical-retry guard removed | **tests fail** |
+| a control edit that changes nothing | **stays green** |
+
+*The control is the half that is usually skipped. Without it, three failures only show the suite
+reacts to edits, not that it reacts to the **right** ones.*
+
+### Two instrument errors, and both were the ones already written down
+
+**`awk` counted bytes again.** It reported 13 over-width lines in `transcript.py`; measured in
+characters there were **4**, the other nine being em-dashes. This is the same error this branch
+recorded on 2026-08-26, made again by the same tool two days later — **writing a hazard down did not
+stop it recurring**, and what caught it was the count looking too high, not the note.
+
+**And rewrapping created a new violation.** Fixing the four pushed words onto the following line and
+produced a fifth at 103 characters. Also already recorded, also repeated. **Re-measure after the fix
+is not advice, it is the only thing that works.**

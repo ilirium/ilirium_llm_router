@@ -11,16 +11,27 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from ilirium_llm_router.transcript import (
+    CONVERSATION_KEY_CHARS,
+    GAP_NO_REQUEST_BODY,
     SKIP_EMPTY,
     SKIP_ERROR,
     SKIP_INCOMPLETE,
     SKIP_MALFORMED,
     SKIP_NOT_A_MESSAGE,
     SKIP_STREAM_ERROR,
+    CapturedCall,
+    Gap,
+    MissingDayError,
     NotAMessage,
     Reply,
+    Turn,
+    conversation_key,
+    normalise,
     reassemble,
+    reconstruct,
 )
 
 START = {
@@ -302,3 +313,326 @@ def test_a_json_scalar_is_malformed_rather_than_not_a_message() -> None:
     got = reassemble(b'{"a": 1}')
     assert isinstance(got, NotAMessage)
     assert got.reason == SKIP_NOT_A_MESSAGE
+
+
+# --- delta reconstruction, task 12 ----------------------------------------------------------------
+#
+# **These fixtures carry the cases the corpus cannot make on demand**, not the ones it proves. The
+# live corpus has exactly one cross-day session and never shrinks a conversation, so the missing-day
+# error and the shrink counter are exercised here or nowhere. What the corpus *does* prove — 902
+# calls in, 902 out, 36 conversations, 45 gaps, 0 shrinks — is in `notes-group-c.md`.
+
+
+def call(
+    timestamp: str,
+    messages: list[dict] | None,
+    reply: str | None = None,
+    day: str = "2026-08-25",
+) -> CapturedCall:
+    """One captured call. `messages=None` is a body that was never stored — the `too_large` case."""
+    request = None if messages is None else json.dumps({"messages": messages}).encode()
+    response = None if reply is None else text_stream(reply)
+    return CapturedCall(timestamp=timestamp, day=day, request=request, response=response)
+
+
+def user(text: str) -> dict:
+    return {"role": "user", "content": [{"type": "text", "text": text}]}
+
+
+def assistant(text: str) -> dict:
+    return {"role": "assistant", "content": [{"type": "text", "text": text}]}
+
+
+def roles(conversation) -> list[str]:
+    return [e.role if isinstance(e, Turn) else "gap" for e in conversation.entries]
+
+
+def texts(conversation) -> list[str]:
+    out = []
+    for entry in conversation.entries:
+        if isinstance(entry, Turn):
+            blocks = entry.message.get("content") or []
+            out.append("".join(b.get("text", "") for b in blocks if isinstance(b, dict)))
+    return out
+
+
+# --- the two normalisations -----------------------------------------------------------------------
+
+
+def test_a_cache_control_marker_is_stripped_wherever_it_sits() -> None:
+    marked = {
+        "role": "user",
+        "content": [{"type": "text", "text": "hi", "cache_control": {"type": "ephemeral"}}],
+        "cache_control": {"type": "ephemeral"},
+    }
+    assert normalise(marked) == user("hi")
+
+
+def test_a_bare_string_content_becomes_one_text_block() -> None:
+    assert normalise({"role": "user", "content": "hi"}) == user("hi")
+
+
+def test_the_two_encodings_of_one_message_key_the_same_conversation() -> None:
+    """The real corpus sends a session's opening message as a string, then as blocks."""
+    assert conversation_key([{"role": "user", "content": "hi"}]) == conversation_key([user("hi")])
+
+
+def test_a_marker_that_migrated_does_not_split_a_conversation() -> None:
+    """Claude Code marks the *last* message, so the marker walks forward as the session grows."""
+    plain = user("hi")
+    marked = {
+        "role": "user",
+        "content": [{"type": "text", "text": "hi", "cache_control": {"type": "ephemeral"}}],
+    }
+    result = reconstruct(
+        [call("T1", [marked], "one"), call("T2", [plain, assistant("one"), user("two")], "two")],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    assert len(result.conversations) == 1
+
+
+# --- conversations inside one session -------------------------------------------------------------
+
+
+def test_a_session_holding_two_conversations_yields_two_files() -> None:
+    """A probe sharing the `session_id` is a separate conversation, not a turn in this one."""
+    result = reconstruct(
+        [
+            call("T1", [user("real")], "a"),
+            call("T2", [user("probe")], "p"),
+            call("T3", [user("real"), assistant("a"), user("more")], "b"),
+        ],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    assert len(result.conversations) == 2
+    main, other = result.conversations
+    assert main.main and not other.main
+    assert main.filename() == "s1.jsonl"
+    assert other.filename().startswith("s1-") and other.filename().endswith(".jsonl")
+    assert "probe" not in texts(main)
+
+
+def test_the_deepest_conversation_is_the_main_one_even_with_fewer_calls() -> None:
+    """Depth, not call count — a classifier can out-call a real session, not out-deepen it."""
+    deep = [user("deep"), assistant("a"), user("x")]
+    calls = [call("T0", [user("deep")], "a"), call("T1", deep, "b")]
+    calls += [call(f"T{i + 2}", [user("shallow")], "s") for i in range(8)]
+    result = reconstruct(calls, "s1", days_passed=["2026-08-25"])
+    main = result.conversations[0]
+    assert main.calls == 2 and main.depth == 3
+    assert result.conversations[1].calls == 8
+
+
+def test_a_conversation_key_is_eight_characters_of_the_root_digest() -> None:
+    key = conversation_key([user("hi")])
+    assert len(key) == CONVERSATION_KEY_CHARS
+    assert all(c in "0123456789abcdef" for c in key)
+
+
+# --- ordering across day folders ------------------------------------------------------------------
+
+
+def test_calls_are_walked_in_timestamp_order_across_day_folders() -> None:
+    """The index is in *completion* order, so file order is not the conversation's order."""
+    grown = [user("one"), assistant("a"), user("two")]
+    late = call("2026-08-26T09:00:00Z", grown, "b", "2026-08-26")
+    early = call("2026-08-25T23:00:00Z", [user("one")], "a", "2026-08-25")
+    result = reconstruct([late, early], "s1", days_passed=["2026-08-25", "2026-08-26"])
+    main = result.conversations[0]
+    assert texts(main)[:3] == ["one", "a", "two"]
+    assert main.entries[0].timestamp == "2026-08-25T23:00:00Z"
+
+
+def test_a_session_with_calls_in_a_folder_that_was_not_passed_is_an_error() -> None:
+    """The whole defence. Without it the transcript is plausible and wrong about when."""
+    with pytest.raises(MissingDayError) as raised:
+        reconstruct(
+            [call("T1", [user("one")], "a", "2026-08-26")],
+            "s1",
+            days_passed=["2026-08-26"],
+            session_days=["2026-08-25", "2026-08-26"],
+        )
+    assert "2026-08-25" in str(raised.value)
+
+
+def test_the_error_names_every_missing_day_not_just_the_first() -> None:
+    with pytest.raises(MissingDayError) as raised:
+        reconstruct(
+            [call("T1", [user("one")], "a", "2026-08-26")],
+            "s1",
+            days_passed=["2026-08-26"],
+            session_days=["2026-08-21", "2026-08-24", "2026-08-26"],
+        )
+    assert "2026-08-21" in str(raised.value) and "2026-08-24" in str(raised.value)
+
+
+def test_a_call_from_a_day_that_was_not_passed_is_an_error() -> None:
+    with pytest.raises(MissingDayError):
+        stray = call("T1", [user("one")], "a", "2026-08-21")
+        reconstruct([stray], "s1", days_passed=["2026-08-26"])
+
+
+def test_passing_every_day_the_session_touches_is_not_an_error() -> None:
+    result = reconstruct(
+        [call("T1", [user("one")], "a", "2026-08-26")],
+        "s1",
+        days_passed=["2026-08-25", "2026-08-26"],
+        session_days=["2026-08-26"],
+    )
+    assert result.conversations[0].depth == 1
+
+
+# --- what the walk must not do --------------------------------------------------------------------
+
+
+def test_a_retracted_turn_never_reaches_the_transcript() -> None:
+    """100 times in the corpus a message was revised by the next call, 9 changing role."""
+    result = reconstruct(
+        [
+            call("T1", [user("one")], "a"),
+            call("T2", [user("one"), assistant("a"), user("typed then withdrawn")], "b"),
+            call("T3", [user("one"), assistant("a"), user("what was really sent")], "c"),
+        ],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    main = result.conversations[0]
+    assert "typed then withdrawn" not in texts(main)
+    assert "what was really sent" in texts(main)
+    assert main.revised == 1
+
+
+def test_a_byte_identical_retry_does_not_invent_a_second_turn() -> None:
+    """Finding 17 — retries produce byte-identical consecutive requests."""
+    once = [user("one")]
+    result = reconstruct(
+        [call("T1", once, "a"), call("T2", list(once), "a"), call("T3", list(once), "a")],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    main = result.conversations[0]
+    assert roles(main) == ["user", "assistant"]
+    assert main.skipped["repeat"] == 2
+
+
+def test_an_assistant_turn_is_taken_from_its_response_not_the_next_request() -> None:
+    """The response carries `caller` on `tool_use` blocks; the request never does."""
+    result = reconstruct(
+        [
+            call("T1", [user("one")], "from the response"),
+            call("T2", [user("one"), assistant("from the request"), user("two")], "b"),
+        ],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    main = result.conversations[0]
+    assert texts(main)[1] == "from the response"
+    assert main.entries[1].source == "response"
+
+
+def test_an_assistant_turn_whose_own_response_failed_falls_back_to_the_request() -> None:
+    result = reconstruct(
+        [
+            call("T1", [user("one")], None),
+            call("T2", [user("one"), assistant("recovered"), user("two")], "b"),
+        ],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    main = result.conversations[0]
+    assert texts(main)[1] == "recovered"
+    assert main.entries[1].source == "request"
+    assert main.skipped["assistant-from-request"] == 1
+
+
+def test_the_last_calls_reply_is_kept_though_no_request_carries_it() -> None:
+    last = call("T1", [user("one")], "the last word")
+    result = reconstruct([last], "s1", days_passed=["2026-08-25"])
+    main = result.conversations[0]
+    assert texts(main) == ["one", "the last word"]
+
+
+def test_a_system_role_inside_messages_is_carried_as_itself() -> None:
+    """Finding 5 — `messages` has a third role, and on 14 calls it is the last message."""
+    result = reconstruct(
+        [
+            call("T1", [user("one"), {"role": "system", "content": "note"}], "a"),
+            call("T2", [user("one"), {"role": "system", "content": "note"}, assistant("a")], "b"),
+        ],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    assert roles(result.conversations[0])[:3] == ["user", "system", "assistant"]
+
+
+# --- the bodiless tail ----------------------------------------------------------------------------
+
+
+def test_a_call_with_no_stored_request_body_becomes_a_visible_gap() -> None:
+    """Finding 1 — 45 contiguous calls at the end of the largest session, all with real replies."""
+    result = reconstruct(
+        [
+            call("T1", [user("one")], "a"),
+            call("T2", None, "reply with no prompt"),
+        ],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    main = result.conversations[0]
+    assert roles(main) == ["user", "assistant", "gap", "assistant"]
+    assert "reply with no prompt" in texts(main)
+    gap = main.entries[2]
+    assert isinstance(gap, Gap) and gap.reason == GAP_NO_REQUEST_BODY
+
+
+def test_a_bodiless_call_is_still_counted_as_a_call() -> None:
+    result = reconstruct(
+        [call("T1", [user("one")], "a"), call("T2", None, "b"), call("T3", None, "c")],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    assert result.conversations[0].calls == 3
+
+
+# --- the facts a reader needs to distrust the file ------------------------------------------------
+
+
+def test_the_unconfirmed_tail_is_counted_rather_than_hidden() -> None:
+    """No later call agrees with the final one, so its turns are reported as unconfirmed."""
+    result = reconstruct(
+        [call("T1", [user("one")], "a"), call("T2", [user("one"), assistant("a"), user("x")], "b")],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    assert result.conversations[0].unconfirmed == 2
+
+
+def test_a_conversation_that_loses_turns_is_counted_rather_than_silently_shortened() -> None:
+    """Never seen — 678 grew, 143 held, none shrank. Counted so the day it happens shows."""
+    result = reconstruct(
+        [
+            call("T1", [user("one"), assistant("a"), user("two")], "b"),
+            call("T2", [user("one")], "c"),
+        ],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    assert result.conversations[0].shrank == 1
+
+
+def test_reconstruction_is_deterministic() -> None:
+    """Task 13 tests this on bytes; here it is the walk itself that must not wander."""
+    calls = [
+        call("T1", [user("one")], "a"),
+        call("T2", [user("probe")], "p"),
+        call("T3", [user("one"), assistant("a"), user("two")], "b"),
+    ]
+    first = reconstruct(calls, "s1", days_passed=["2026-08-25"])
+    second = reconstruct(calls, "s1", days_passed=["2026-08-25"])
+    def names(result) -> list[str]:
+        return [c.filename() for c in result.conversations]
+
+    assert names(first) == names(second)
+    assert [texts(c) for c in first.conversations] == [texts(c) for c in second.conversations]

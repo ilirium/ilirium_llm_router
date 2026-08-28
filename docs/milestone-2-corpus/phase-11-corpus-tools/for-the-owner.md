@@ -169,3 +169,38 @@ something the absent lint rule makes necessary every time.
 
 **Recorded because the fix is not "remember harder"** — it is either the entry above, or a habit, and
 between those two the entry above is the one that survives a session ending.
+
+## IDEA · Every long session loses its ending, permanently, at capture time — opened 2026-08-28
+
+Finding 1 said the 45 bodiless calls were structural rather than a fluke. **Task 12 confirmed the
+mechanism and it is worse than "the largest session has a gap".**
+
+Request bodies grow monotonically, so a session crosses `body_max_bytes` **once and never comes
+back**. In `ad9392ae` the `request_bytes` column runs 1,043,805 → 1,047,198 → **1,051,096**, straight
+through 1 MiB at call #225, and every one of calls **#225–#269** — the last **45 of 270**, contiguous
+— has no stored request body. **All 45 responses are intact**; only the prompts are gone.
+
+**So the corpus is being written with a known terminal blind spot.** It is not one bad session: the
+next long one loses its tail too, and the loss always lands on the ending, which is the part a reader
+most wants. The converter now emits those turns behind a visible `Gap` rather than stopping early —
+your decision of 2026-08-28 — but that makes the hole legible, not smaller.
+
+**Not proposed here and deliberately not acted on.** Raising `body_max_bytes` is a capture-side
+change, it is outside Phase 11, and it trades disk for completeness in a way only you can price.
+Recording it because the cost is being paid silently every day the router runs, and nothing in the
+corpus announces it — the 45 rows look like an oddity of one session until you see why the number can
+only grow.
+
+## REGRET · I raised two decisions and one of them took a single query to answer — opened 2026-08-28
+
+I asked you to choose the source for assistant turns — the response blob or the next request's copy —
+and presented it as a fidelity trade-off. **It was not one.** Measuring it took one pass: the two
+agree on block shape in **630 of 631** cases, and the difference is a `caller` field that responses
+carry and requests never do (**47,628** request-side `tool_use` blocks, none with it). The response is
+strictly richer and there was nothing to trade.
+
+**Recording it because the cost lands on you, not me.** A question that looks like a judgement call
+spends your attention at the point where you are least able to tell it apart from a real one. The rule
+I should have applied is the one already in `CLAUDE.md` — *check prior evidence before planning a
+rerun* — read as: **measure the cheap thing before asking, not after.** The other decision, one file
+per conversation, was a real one and worth your time.

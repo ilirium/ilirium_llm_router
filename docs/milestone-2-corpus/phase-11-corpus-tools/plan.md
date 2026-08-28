@@ -513,11 +513,27 @@ role. The ordering now costs nothing and buys nothing, and it is left alone rath
 
     *The conclusion the old note defended does survive: both paths are needed. What does not survive
     is the impression that the second one is a third of the traffic. **It is one call in 979.***
-12. Delta reconstruction across a session's calls, **spanning day folders** (finding 5), **the two
-    normalisations without which it is wrong on real data** (finding 7), **and the error when a
-    selected session has calls in a folder that was not passed.** The error is not a nicety: without
-    it a cross-day session reconstructs into a plausible-looking transcript whose first turn silently
-    contains a day of prior conversation.
+12. **Done 2026-08-28.** Delta reconstruction across a session's calls, **spanning day folders**
+    (finding 5), **the two normalisations without which it is wrong on real data** (finding 7),
+    **and the error when a selected session has calls in a folder that was not passed.**
+
+    ***The stated reason for that error does not survive this design, and the error is kept anyway.***
+    This task said the failure mode was *"a plausible-looking transcript whose first turn silently
+    contains a day of prior conversation"*. **That cannot happen here.** Turns are taken from the
+    conversation's *latest* state rather than from per-call deltas, and requests are cumulative — so
+    the final call carries the whole conversation and the array is fully expanded whichever folders
+    were passed. Driven on the one real cross-day session, `15b29c2a`, reconstructing from the later
+    day alone: **depth 337 either way, and every message identical at every position.**
+
+    **What it actually costs was measured, and is enough to keep the error:** **26 turns are
+    misdated**, attributed to 2026-08-26 when they happened on 2026-08-25, and **12 assistant turns
+    fall back to the poorer request-side copy** — against 0 with both folders. A transcript that
+    claims a day it did not happen on is exactly the silent-and-plausible failure the original
+    sentence was reaching for; it is the *timestamps* that lie, not the turns.
+
+    **A third mechanism was needed and it is not a normalisation.** Finding 7's two make two
+    *encodings* of one message compare equal. Neither helps when the content genuinely changed — 100
+    times in the corpus, 9 of them changing role. → `notes-group-c.md`.
 13. `uuid`/`parentUuid` synthesis and the record types the viewer needs — **register §9 carries the
     shape**. **Determinism is a test, not an aspiration** — convert twice, diff, expect zero bytes of
     difference.
@@ -597,7 +613,7 @@ deliberate, all resolved at Task 13.*
 | Name | | |
 |---|---|---|
 | `src/ilirium_llm_router/extract.py` | selection over an index, output layout | new |
-| `src/ilirium_llm_router/transcript.py` | SSE + JSON reassembly, delta reconstruction | **task 11 built the reassembly half, 2026-08-26** |
+| `src/ilirium_llm_router/transcript.py` | SSE + JSON reassembly, delta reconstruction | **complete — task 11 built reassembly 2026-08-26, task 12 the reconstruction 2026-08-28** |
 | `src/ilirium_llm_router/jsonl.py` | the viewer's record shapes | new |
 | `src/ilirium_llm_router/cli.py` | restructured, not new | **modified** |
 
@@ -659,6 +675,8 @@ which is exactly what `--extract` does today.*
 | `message_delta`'s `stop_reason` | `tool_use` **626**, `end_turn` **181**, `max_tokens` **1**, over the whole corpus — so **most turns here end in a tool call**, not in text to the user |
 | **skip reasons** — `transcript.py` | `empty`, `error`, `stream-error`, `not-a-message`, `malformed`, `incomplete`. **Six, and each is a different fact about the capture**, which is why they are not one `skipped` flag. Live counts: 93 `error`, 66 `not-a-message`, 11 `empty`, **1 `incomplete`**, 0 `stream-error`, 0 `malformed` |
 | `SYNTHETIC_UUID_NAMESPACE` | **❓ — the literal is minted at Task 13.** The *mechanism* is settled and is not `❓`: `uuid5(NAMESPACE, "<request-blob-digest>:<record-index-within-call>")`, so **the same corpus produces the same file forever, on any machine.** Minted rather than borrowed so our ids cannot collide with anyone else's `uuid5` values. **Not** `uuid4` — Task 13 tests determinism by converting twice and diffing. *`<block-index>` was the spelling until 2026-08-26 and was undefined for a delta-reconstructed turn, which by construction is not a content block of any one response* |
+| `CONVERSATION_KEY_CHARS` | **8** — hex characters of the **normalised** root message's sha256 that name a non-main conversation on disk. *A digest and not an ordinal: `-02` is stable only within one run, and a growing corpus or a different day selection silently repoints it. Measured over all 36 conversations — no within-session collision. Normalised matters: one session sent its opening message as a bare string in the first call and as blocks thereafter, and hashing raw bytes would give one conversation two names.* |
+| `GAP_NO_REQUEST_BODY` | `no-request-body` — **not a skip reason.** A skip means a *response* carried no turn; this means the *request* body is not on disk to diff against. 45 rows, all `too_large` |
 | `PROJECT_NAME_DEFAULT` | `corpus` — one bucket. **`corpus-<day>` was proposed and killed by finding 5**: a session spanning two days has no single day to file under |
 
 ### 6 · Existing names this must not collide with
@@ -673,6 +691,7 @@ which is exactly what `--extract` does today.*
 |---|---|
 | output root | **whatever `--out` names.** No default — nothing is written unless a destination is given |
 | a session file | `<out>/projects/<project>/<session_id>.jsonl`, `<project>` defaulting to `corpus` |
+| a session's **other** conversations | `<out>/projects/<project>/<session_id>-<key>.jsonl`, `<key>` being `CONVERSATION_KEY_CHARS` of the root digest. **Settled 2026-08-28 by the owner**, who chose one file per conversation over emitting only the main one. **A `session_id` holds several conversations** — 36 across 9 sessions, including a 66-call subagent carrying the parent's id. The **deepest** takes the plain name; depth and call count agree in all nine sessions here, but 111-against-2 is a margin 58-against-45 is not |
 | extracted body | `<out>/bodies/<session_id>/<seq>-request.json` and `<seq>-response.json` **or** `<seq>-response.sse` |
 | `<seq>` | **Five digits, zero-padded, assigned per session in `timestamp` order, starting at `00001`.** *Defined 2026-08-26; it was undefined, and the forward review priced that as silently mis-labelling every extracted body.* **Timestamp order, not index order** — `stats.py` says the index is in **completion** order, so reading it in file order would number a session's bodies by when each call *finished* |
 | a row with no `session_id` | goes to `<out>/bodies/_no-session/`. **11 rows have one at 2026-08-26T15:16Z** — 9 × `/api/hello`, 1 × `/`, 1 × `/favicon.ico` — and `<out>/bodies//00001-request.json` is not a path. *Read **10** at 770 rows; the figure moves with the corpus and the shape does not* |
@@ -817,7 +836,7 @@ output had no row in its own register.**
 | `type` | ❓ — see §5. The record kinds needed, and their spellings, come out of Task 13 |
 | `uuid` | `uuid5(SYNTHETIC_UUID_NAMESPACE, "<request-blob-digest>:<record-index-within-call>")` |
 | `parentUuid` | the previous record's `uuid`; `null` on the first record of a file |
-| `sessionId` | the corpus's `session_id`, verbatim |
+| `sessionId` | the corpus's `session_id`, verbatim — **and one open question, added 2026-08-28.** Task 12 settled that a session yields **several files**, all of which would carry this same value. **If the viewer keys on it they merge back into the interleaved transcript that splitting just separated** — finding 4's defect, reintroduced at the record layer. Resolve at Task 13 against the viewer's source, with the other three `❓` |
 | `timestamp` | the call's index `timestamp`, verbatim |
 | `message` | the reconstructed turn |
 | `cwd`, `gitBranch`, `version`, `toolUseResult` | **absent by construction** — never on the wire |

@@ -11,6 +11,22 @@ is **one call in 979**, the rest of the non-streamed traffic being `count_tokens
 errors. **Both are still built**, because a `stream=false` success is legal and position 15 filters
 nothing.
 
+**And a captured session is not one conversation.** Requests are cumulative — request *N* carries
+turns 1..*N* — so a session is reconstructed by walking its calls in timestamp order and taking the
+difference. Three facts about the real corpus decide how that is done, and all three were measured
+before this code was written rather than assumed:
+
+* **"Cumulative" is false on raw bytes.** Two normalisations make it true — `cache_control` markers
+  migrate between calls, and the same message is serialised as a bare string in one call and as
+  content blocks in the next. On one 77-call conversation the prefix property holds **0/76** raw,
+  **46/76** with the marker stripped, **0/76** with only the encoding fixed, **65/76** with both.
+* **A `session_id` holds several conversations.** The real one, subagents carrying the parent's id,
+  and short probes — 36 conversations across 9 sessions. Separated **by their root message**,
+  which asks *"is this the same conversation?"* and never *"is this call a probe?"*
+* **The tail of a request is provisional.** 100 times in the corpus a message was revised by the
+  next call, 9 of those changing role. The conversation's turns are therefore taken from its
+  **latest** state, never as first seen — otherwise a retracted turn is written down as real.
+
 **The one mechanical rule of the baseline, and it is asked of the *response*.** A call contributes
 a turn **only if its response is a message**; everything else is skipped and counted. That is
 lossless because requests are cumulative — anything a skipped call carried reappears in the next
@@ -20,8 +36,11 @@ classification is smuggled back in.
 
 from __future__ import annotations
 
+import hashlib
 import json
-from dataclasses import dataclass
+from collections import Counter
+from collections.abc import Iterable, Mapping, Sequence
+from dataclasses import dataclass, field
 from typing import Any
 
 # **All eight are observed, not assumed** — counted across the live corpus and Phase 9's gate corpus
@@ -46,6 +65,18 @@ SKIP_STREAM_ERROR = "stream-error"
 SKIP_NOT_A_MESSAGE = "not-a-message"
 SKIP_MALFORMED = "malformed"
 SKIP_INCOMPLETE = "incomplete"
+
+# How many hex characters of the root message's digest name a conversation on disk. A session's
+# **main** conversation keeps the settled `<session_id>.jsonl`; every other one is
+# `<session_id>-<key>.jsonl`. **A digest and not an ordinal**, because `-02` is stable only within
+# one run: convert a growing corpus tomorrow, or pass a different set of day folders, and it
+# silently names a different conversation. Measured over all 36 conversations: no within-session
+# collision at 8 characters.
+CONVERSATION_KEY_CHARS = 8
+
+# Why a turn's user-side context is missing. **Not a skip reason** — a skip means a *response*
+# carried no turn, while this means the *request* body is not on disk to diff against.
+GAP_NO_REQUEST_BODY = "no-request-body"
 
 
 @dataclass(frozen=True)
@@ -236,3 +267,399 @@ def _merge_usage(message: dict[str, Any], usage: dict[str, Any] | None) -> None:
     merged = dict(message.get("usage") or {})
     merged.update(usage)
     message["usage"] = merged
+
+
+class MissingDayError(Exception):
+    """A selected session has calls in a day folder that was not passed.
+
+    **This error is the whole defence and it is deliberately not a warning.** A cross-day session
+    reconstructed from only the later folder does not look broken: it produces a plausible
+    transcript whose opening turn silently contains a day of prior conversation. Nothing downstream
+    can detect that, and a reader cannot either.
+
+    *The obvious cheaper check — "a conversation whose first call is already deep did not start
+    here" — was measured and refused. **11 of the corpus's 36 conversations legitimately open at
+    two messages**, so a depth rule false-positives on a third of them. The exact set difference is
+    the only honest form.*
+    """
+
+
+@dataclass(frozen=True)
+class CapturedCall:
+    """One call as reconstruction needs it: when, where, and the two bodies.
+
+    `request` is `None` when no body was stored — the sentinel cases of register §11, of which only
+    `too_large` occurs today. **That is not an edge case in the corpus's own terms:** request bodies
+    grow monotonically, so a long enough session always crosses the cap and **the tail is always
+    what is lost**. It is 45 contiguous calls at the end of the largest session here.
+    """
+
+    timestamp: str
+    day: str
+    request: bytes | None
+    response: bytes | None
+
+
+@dataclass(frozen=True)
+class Turn:
+    """One reconstructed turn, and which of the two sources it came from.
+
+    **`source` is not decoration.** An assistant turn exists twice — in its own response blob and,
+    one call later, inside the next request's `messages`. The two agree on block shape in 630 of 631
+    cases; where they differ it is a `caller` field that the **response** carries and the request
+    never does (47,628 request-side `tool_use` blocks, none with it). The response is therefore
+    preferred and `source` records when that was not possible.
+    """
+
+    position: int
+    role: str
+    message: dict[str, Any]
+    source: str
+    timestamp: str
+
+
+@dataclass(frozen=True)
+class Gap:
+    """A place where the user-side context is missing rather than empty.
+
+    Emitted **in-band**, because the failure this phase is organised against is a transcript that
+    reads as real while something is missing. A file that simply stopped early would be exactly
+    that; 45 assistant turns each preceded by a gap cannot be mistaken for a complete record.
+    """
+
+    position: int
+    reason: str
+    timestamp: str
+
+
+@dataclass(frozen=True)
+class Conversation:
+    """One conversation inside a session, with the facts a reader needs to distrust it.
+
+    `unconfirmed` is the count of trailing turns that **no later call confirmed**. It is never zero
+    for a live conversation: the final call's messages have nothing after them to agree, and holding
+    them back would lose the last real turn of every session. Stating the number is the honest
+    alternative to pretending the boundary is not there.
+    """
+
+    session_id: str
+    key: str
+    main: bool
+    entries: tuple[Turn | Gap, ...]
+    calls: int
+    depth: int
+    unconfirmed: int
+    revised: int
+    shrank: int
+    skipped: Mapping[str, int] = field(default_factory=dict)
+
+    def filename(self) -> str:
+        """`<session_id>.jsonl` for the main conversation, `<session_id>-<key>.jsonl` otherwise."""
+        return f"{self.session_id}.jsonl" if self.main else f"{self.session_id}-{self.key}.jsonl"
+
+
+@dataclass(frozen=True)
+class Reconstruction:
+    """Every conversation found under one `session_id`, main first."""
+
+    session_id: str
+    conversations: tuple[Conversation, ...]
+    days: tuple[str, ...]
+
+
+def normalise(message: Mapping[str, Any]) -> dict[str, Any]:
+    """One message, in the form two calls can be compared in.
+
+    **Two normalisations, and neither is optional.** `cache_control` is a caching hint that Claude
+    Code puts on the *last* message of each request, so it walks forward as the conversation grows
+    and every comparison breaks on a turn whose content never changed. And `content` is legal both
+    as a bare string and as a list of blocks, for the same message in the same session.
+
+    **Nothing said is lost either way** — that is what makes these normalisations rather than edits.
+    """
+    normalised = _strip_cache_control(dict(message))
+    content = normalised.get("content")
+    if isinstance(content, str):
+        normalised["content"] = [{"type": "text", "text": content}]
+    return normalised
+
+
+def _strip_cache_control(value: Any) -> Any:
+    """`cache_control` removed wherever it sits — it appears on blocks, not only on messages."""
+    if isinstance(value, dict):
+        return {k: _strip_cache_control(v) for k, v in value.items() if k != "cache_control"}
+    if isinstance(value, list):
+        return [_strip_cache_control(v) for v in value]
+    return value
+
+
+def conversation_key(messages: Sequence[Mapping[str, Any]]) -> str:
+    """A conversation's name, taken from its **normalised** root message.
+
+    Normalised matters and is not belt-and-braces: one session sent its opening message as a bare
+    string in the first call and as content blocks in every call after. Hashing raw bytes would give
+    one conversation two names and split its file in half.
+    """
+    return hashlib.sha256(_key(normalise(messages[0])).encode("utf-8")).hexdigest()[
+        :CONVERSATION_KEY_CHARS
+    ]
+
+
+def _key(value: Any) -> str:
+    """A stable string for equality. `sort_keys` so key order cannot fake a difference."""
+    return json.dumps(value, sort_keys=True, ensure_ascii=False)
+
+
+def reconstruct(
+    calls: Iterable[CapturedCall],
+    session_id: str,
+    *,
+    days_passed: Sequence[str],
+    session_days: Sequence[str] | None = None,
+) -> Reconstruction:
+    """Every conversation under one session, walked in timestamp order across day folders.
+
+    `session_days` is every day the session has calls in, which the caller learns by reading the
+    corpus rather than the selection. When it names a day `days_passed` does not, this raises rather
+    than reconstructing what it can — see `MissingDayError`.
+
+    **Timestamp order, not index order.** The index is written in *completion* order, so reading it
+    as it lies numbers a session's calls by when each one finished.
+    """
+    missing = sorted(set(session_days or ()) - set(days_passed))
+    if missing:
+        raise MissingDayError(
+            f"session {session_id} has calls in {', '.join(missing)}, which "
+            f"{'was' if len(missing) == 1 else 'were'} not passed. Reconstructing without "
+            f"{'it' if len(missing) == 1 else 'them'} would open the transcript part-way through a "
+            f"conversation that already had turns, with nothing in the output to say so. "
+            f"Pass {' '.join(missing)} as well."
+        )
+
+    ordered = sorted(calls, key=lambda call: (call.timestamp, call.day))
+    stray = sorted({call.day for call in ordered} - set(days_passed))
+    if stray:
+        raise MissingDayError(
+            f"session {session_id} was given calls from {', '.join(stray)}, which "
+            f"{'is' if len(stray) == 1 else 'are'} not among the day folders passed "
+            f"({', '.join(days_passed) or 'none'})."
+        )
+
+    grouped: dict[str, list[tuple[CapturedCall, list[dict[str, Any]]]]] = {}
+    orphans: list[CapturedCall] = []
+    for call in ordered:
+        messages = _messages_of(call)
+        if messages is None:
+            # No request body, so no root to key on. It belongs to whichever conversation was in
+            # flight, which here is always the one it trails — see `_attach_orphans`.
+            orphans.append(call)
+            continue
+        grouped.setdefault(conversation_key(messages), []).append((call, messages))
+
+    built = [
+        _walk(session_id, key, items) for key, items in grouped.items() if items
+    ]
+    built = _attach_orphans(built, orphans)
+    built.sort(key=lambda c: (-c.depth, -c.calls, c.key))
+    conversations = tuple(
+        _as_main(conversation, index == 0) for index, conversation in enumerate(built)
+    )
+    return Reconstruction(session_id, conversations, tuple(days_passed))
+
+
+def _messages_of(call: CapturedCall) -> list[dict[str, Any]] | None:
+    """A call's `messages`, normalised — or `None` when there is no body or no array to read."""
+    if call.request is None:
+        return None
+    try:
+        payload = json.loads(call.request)
+    except (ValueError, UnicodeDecodeError):
+        return None
+    if not isinstance(payload, dict):
+        return None
+    messages = payload.get("messages")
+    if not isinstance(messages, list) or not messages:
+        return None
+    return [normalise(m) for m in messages if isinstance(m, Mapping)]
+
+
+def _walk(
+    session_id: str,
+    key: str,
+    items: Sequence[tuple[CapturedCall, list[dict[str, Any]]]],
+) -> Conversation:
+    """One conversation, from its calls in order.
+
+    **The turns are the conversation's latest state, not its first.** Because a request's tail is
+    provisional, a turn emitted when first seen can be one the client retracted a call later. Taking
+    the newest array each time cannot emit a retraction, and the count of positions that changed
+    under us is reported as `revised` rather than being quietly right.
+    """
+    spine: list[dict[str, Any]] = []
+    first_seen: dict[int, str] = {}
+    replies: dict[int, Reply] = {}
+    confirmed = 0
+    revised = 0
+    shrank = 0
+    skipped: Counter[str] = Counter()
+
+    for call, messages in items:
+        for position in range(len(messages)):
+            if position < len(spine):
+                if _key(spine[position]) != _key(messages[position]):
+                    revised += 1
+                    first_seen[position] = call.timestamp
+            else:
+                first_seen[position] = call.timestamp
+        common = _common_prefix(spine, messages)
+        confirmed = max(confirmed, common)
+        if len(messages) < len(spine):
+            # Never observed: 678 pairs grew, 143 held their length, none shrank. Counted rather
+            # than assumed away, because the day it happens the client dropped turns and a silent
+            # reconstruction would present the remainder as the whole conversation.
+            shrank += 1
+        spine = messages
+        _record_reply(call, len(messages), replies, skipped)
+
+    entries = _entries(spine, first_seen, replies, skipped)
+    return Conversation(
+        session_id=session_id,
+        key=key,
+        main=False,
+        entries=tuple(entries),
+        calls=len(items),
+        depth=len(spine),
+        unconfirmed=max(0, len(spine) - confirmed),
+        revised=revised,
+        shrank=shrank,
+        skipped=dict(skipped),
+    )
+
+
+def _record_reply(
+    call: CapturedCall,
+    position: int,
+    replies: dict[int, Reply],
+    skipped: Counter[str],
+) -> None:
+    """The assistant turn a call produced, filed at the position it will occupy.
+
+    A reply to a request of *N* messages becomes message *N* of the next request, so the array
+    length at the time of the call **is** its position. A retry re-sends an identical request and
+    lands on a position already taken — the first reply wins and the repeat is counted, so a
+    byte-identical retry never invents a second turn.
+    """
+    if call.response is None:
+        skipped[SKIP_EMPTY] += 1
+        return
+    outcome = reassemble(call.response)
+    if not isinstance(outcome, Reply):
+        skipped[outcome.reason] += 1
+        return
+    if position in replies:
+        skipped["repeat"] += 1
+        return
+    replies[position] = outcome
+
+
+def _entries(
+    spine: Sequence[dict[str, Any]],
+    first_seen: Mapping[int, str],
+    replies: Mapping[int, Reply],
+    skipped: Counter[str],
+) -> list[Turn | Gap]:
+    """The conversation's final state, with each assistant turn taken from its own response."""
+    entries: list[Turn | Gap] = []
+    for position, message in enumerate(spine):
+        role = str(message.get("role", ""))
+        reply = replies.get(position) if role == "assistant" else None
+        timestamp = first_seen.get(position, "")
+        if reply is not None:
+            entries.append(Turn(position, role, reply.message, "response", timestamp))
+        else:
+            # An assistant turn with no usable response — its own call errored, and the only copy
+            # is the one the next request carried back. Kept, and marked as the poorer source.
+            entries.append(Turn(position, role, dict(message), "request", timestamp))
+            if role == "assistant":
+                skipped["assistant-from-request"] += 1
+    tail = replies.get(len(spine))
+    if tail is not None:
+        # The last call's reply, which no request carries yet. Without this every conversation
+        # would end one turn before it did.
+        entries.append(Turn(len(spine), "assistant", tail.message, "response", ""))
+    return entries
+
+
+def _attach_orphans(
+    built: list[Conversation],
+    orphans: Sequence[CapturedCall],
+) -> list[Conversation]:
+    """Calls with no stored request body, appended to the conversation they trail.
+
+    **They are kept, not dropped.** All 45 in the corpus reassemble into real assistant turns; only
+    the prompts are gone. Each is written as a `Gap` followed by its reply, so the hole is visible
+    and labelled rather than the transcript merely stopping 17% short of the session's end.
+    """
+    if not orphans or not built:
+        return built
+    host = max(built, key=lambda c: (c.depth, c.calls))
+    entries = list(host.entries)
+    position = host.depth
+    skipped = Counter(host.skipped)
+    for call in orphans:
+        entries.append(Gap(position, GAP_NO_REQUEST_BODY, call.timestamp))
+        position += 1
+        reply: dict[int, Reply] = {}
+        _record_reply(call, position, reply, skipped)
+        if position in reply:
+            entries.append(
+                Turn(position, "assistant", reply[position].message, "response", call.timestamp)
+            )
+            position += 1
+    replaced = Conversation(
+        session_id=host.session_id,
+        key=host.key,
+        main=host.main,
+        entries=tuple(entries),
+        calls=host.calls + len(orphans),
+        depth=position,
+        unconfirmed=host.unconfirmed + len(orphans),
+        revised=host.revised,
+        shrank=host.shrank,
+        skipped=dict(skipped),
+    )
+    return [replaced if c is host else c for c in built]
+
+
+def _as_main(conversation: Conversation, main: bool) -> Conversation:
+    """The deepest conversation gets the session's own filename; the rest get a digest suffix.
+
+    **Depth, not call count.** Both pick the same conversation in all nine sessions here and there
+    are no ties, but the margins are not comparable: 111 messages against 2, where the call counts
+    are 58 against 45. A chatty classifier could outnumber a short real session's calls; it cannot
+    out-deepen it.
+    """
+    if conversation.main == main:
+        return conversation
+    return Conversation(
+        session_id=conversation.session_id,
+        key=conversation.key,
+        main=main,
+        entries=conversation.entries,
+        calls=conversation.calls,
+        depth=conversation.depth,
+        unconfirmed=conversation.unconfirmed,
+        revised=conversation.revised,
+        shrank=conversation.shrank,
+        skipped=conversation.skipped,
+    )
+
+
+def _common_prefix(left: Sequence[Any], right: Sequence[Any]) -> int:
+    """How many leading messages two calls agree on, once both are normalised."""
+    count = 0
+    for first, second in zip(left, right):
+        if _key(first) != _key(second):
+            break
+        count += 1
+    return count
