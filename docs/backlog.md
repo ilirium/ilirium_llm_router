@@ -390,6 +390,25 @@ methodology extracted from n=1 is a guess about what generalises. Do not create 
 
 ## Instruments and housekeeping
 
+**A mutation-testing tool, rather than the hand-rolled harness Phase 11 built.** *Added 2026-08-28
+on the owner's instruction, at the moment the choice was made — option (b) of three, with (a) taken.*
+Phase 11's Task 23 needed systematic mutation coverage of the converter and had two ways to get it: a
+harness written in the phase, or a dependency (`mutmut`, `cosmic-ray`). **The harness was chosen and
+the tool is parked here rather than dropped**, because the difference between them is not the
+technique — it is who maintains it.
+
+**`../method/IDM-003-development-tooling.md` owns this decision, not a phase.** That document exists
+because `ty` was tried and refused with the refusal recorded nowhere, and its standing rule is that a
+tool arrives deliberately or not at all. *Adding one inside a phase whose subject is corpus tooling is
+exactly the sideways arrival it was written to prevent.*
+
+*Worth doing because* a hand-rolled harness mutates what its author thought to mutate, which is the
+same blind spot the tests already have — a tool's operator set is somebody else's list, and that is
+most of its value. *Parked because* Phase 11's harness answers the question the phase actually asked,
+and the harness's own survivor list is the evidence to judge a tool against later. **Read the harness
+before buying the tool:** if it found nothing, the tool is the more interesting purchase, and if it
+found real survivors, the technique is proven and only the coverage is in question.
+
 **Whether a reconstruction can be checked against the real thing — and it looks like it can.** *Added
 2026-08-26 on the owner's instruction, which asked whether the original `uuid`s could be recovered
 from local state.* **Checked the same day: yes, for any session driven on this machine.** Claude Code
