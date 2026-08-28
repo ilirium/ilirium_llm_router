@@ -341,6 +341,7 @@ sits and whatever form it takes:
 | Form | Seen as |
 |---|---|
 | A table row | `Merge commit \| not yet merged` |
+| **A bare table cell, with no marker punctuation** | `\| *(none yet)* \| Groups D, E, F \| not started \|` |
 | A section marker | `### Group C — the gate *(not started)*` |
 | A count in prose | *"Fifteen of sixteen tasks done; only the close-out and merge remain"* |
 | A status line | *"Only tasks 1–4 have been executed"* |
@@ -356,6 +357,19 @@ found that too.
 **Neither miss came from not knowing the rule. Both came from the rule naming a *row*, so the check
 was applied to rows.** A rule stated as an instance gets obeyed as an instance.
 
+***It happened a third time at Phase 11's merge, 2026-08-28, and the grep below is why it is now
+wider.*** The sweep was **not run before the merge message**, which this section says to do. The owner
+then found a row in `notes.md`'s group index reading `| *(none yet)* | Groups D, E, F | not started |`
+— **directly beneath two rows naming files for two of those three groups**, all marked complete. The
+grep as written **could not have caught it**: the target had no parentheses, and the pattern required
+them. Running the widened form afterwards found **three more** in Phase 11's own documents, including
+a `Merge commit | not yet merged` row and a `*(in flight)*` section marker in the milestone plan.
+
+**And one of the four was invisible to any grep**: a table cell reading *"evidence pending Phase 11's
+Task 7"*, three days after that task ran. **A stale statement need not contain a marker word.** The
+sweep narrows the problem; it does not close it, and the only thing that catches the rest is reading
+the phase's own documents at the merge.
+
 **So: closing out placeholders is part of the merge, not tidying afterwards.** Before writing the merge
 message, sweep the phase's own documents — the plan, the note, `../status.md`, and the milestone plan —
 for every form above.
@@ -363,7 +377,7 @@ for every form above.
 The grep, with a warning attached:
 
 ```
-grep -rniE "\(not started\)|\(in progress\)|not yet (merged|done|run|written|built|started)" docs
+grep -rniE "\(?(not started|in progress|none yet)\)?|\*\(in flight\)\*|not yet (merged|done|run|written|built|started|executed)" docs
 ```
 
 **Widen it rather than trust it.** The first sweep run against this defect used `is not started` and

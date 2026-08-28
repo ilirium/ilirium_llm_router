@@ -110,6 +110,25 @@ Then point a history viewer's Custom Claude Directory at `./dump` — **never at
 **A rewrite that drops it drops the only user-facing description the dictionary and corpus commands
 have.** The section opens with that warning so a rewrite meets it before deciding what to keep.
 
+## One thing this session got wrong at the merge, and it will bite again
+
+**`IDM-001` says to sweep the phase's documents for stale placeholders *before* writing the merge
+message. It was not done.** The owner found a row in `notes.md`'s group index reading
+`| *(none yet)* | Groups D, E, F | not started |` — sitting directly under two rows naming files for
+two of those groups, all marked complete. Sweeping afterwards found **three more**, plus a fourth
+that no grep can see: a cell reading *"evidence pending Phase 11's Task 7"*, three days after that
+task ran.
+
+**All are fixed, and `IDM-001`'s grep is widened** — its old pattern required parentheses and could
+not have matched the row that was found. **Run it at the next merge, before the message:**
+
+```
+grep -rniE "\(?(not started|in progress|none yet)\)?|\*\(in flight\)\*|not yet (merged|done|run|written|built|started|executed)" docs
+```
+
+*Expect hits that are statements **of** the rule — `IDM-001` itself, and the phase notes describing
+past instances. Those are correct.*
+
 ## The working agreement still applies
 
 `CLAUDE.md`, in full — but the three that earned their place this phase: **propose before

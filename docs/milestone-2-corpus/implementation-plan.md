@@ -185,7 +185,7 @@ than theorised — and the owner's decision was to **report the hole, not close 
 the row from elsewhere must guarantee it can never write one twice.
 
 
-### Phase 11 — the offline tools over the store *(in flight)*
+### Phase 11 — the offline tools over the store *(complete, merged 2026-08-28 at `7e53f74`)*
 
 *Added 2026-08-25. The phase opened on 2026-08-24 and this file did not learn of it for a day, which
 is the staleness described under "What is deliberately not done yet" behaving exactly as predicted.*
@@ -257,7 +257,7 @@ durable; the row and the note below say what that means.
 | Step | State |
 |---|---|
 | 1. Name the falsifiable central claim, the non-goals, and what would refute it | **deferred to Phase 9** — see above. The refuting experiment *is* Phase 9's gate |
-| 2. Capture the real input | **discharged in fact 2026-08-24 — evidence pending Phase 11's Task 7.** A real driven session produced 171 index rows across two day folders. *Read as "NOT discharged" from 2026-08-17 until 2026-08-25, on the true-at-the-time ground that `docs/captures/` held one body; see the note below* |
+| 2. Capture the real input | **discharged, and its evidence landed 2026-08-26** in Phase 11's Task 7 — a redacted 979-row slice in that phase's `evidence/`. *(This row read "evidence pending Phase 11's Task 7" until 2026-08-28, three days after the task ran; **no sweep catches a row like this**, because it names no marker phrase.)* A real driven session produced 171 index rows across two day folders. *Read as "NOT discharged" from 2026-08-17 until 2026-08-25, on the true-at-the-time ground that `docs/captures/` held one body; see the note below* |
 | 3. Spike whatever the architecture depends on | not started |
 | 4. Settle the expensive-to-reverse questions as EPD forks | **EPD-003 already is one.** Whether it needs a sibling is unknown |
 | 5. Write the spec, marking every statement measured / inferred / assumed | not started |

@@ -1054,4 +1054,4 @@ Phase 10's worked.*
 |---|---|
 | Branch | `feat/phase-11-corpus-tools` |
 | Fork point | `f445d6f` |
-| Merge commit | **not yet merged** |
+| Merge commit | **`7e53f74`**, 2026-08-28, `--no-ff`, 51 commits. Branch index regenerated after it at **`f97c4b6`** |

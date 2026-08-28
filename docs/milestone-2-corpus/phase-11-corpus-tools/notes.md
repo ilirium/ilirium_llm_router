@@ -1,6 +1,6 @@
 # Phase 11 — corpus tools: notes
 
-**Not yet merged.** *(Closed out at the merge, per `plan.md`'s "Placeholders in this file".)*
+**Merged 2026-08-28 at `7e53f74`.** *(This read "Not yet merged" until then — a placeholder catalogued in `plan.md`'s "Placeholders in this file" and closed out at the merge, which is what that catalogue exists for.)*
 
 **Branch `feat/phase-11-corpus-tools`, forked from `main` at `f445d6f`, opened 2026-08-24.** The
 first phase of this project worked in a **git worktree** rather than in the trunk checkout —
@@ -35,7 +35,17 @@ Task 1, the session boundaries, the forward review, and what was open at the end
 | `notes-group-c.md` | **Group C — the converter**, tasks 11–13 | **complete**, 2026-08-28. Tasks 14 and 15 are **struck in place** and must not be resurrected or renumbered |
 | `notes-group-d.md` | **Group D — the extractor**, tasks 16–19 | **complete**, 2026-08-28. Task 19 was discharged early, on 2026-08-26 |
 | `notes-group-f.md` | **Group F — verify, harvest and close**, tasks 22–25 | **complete**, 2026-08-28, merge included. **Group E's two tasks are recorded at the end of `notes-group-d.md`**, not in a file of their own |
-| *(none yet)* | Groups D, E, F | not started |
+
+**Five files, and Group E has none of its own** — its two documentation tasks are at the end of
+`notes-group-d.md`, because they produced no finding that outlives them and a sixth file would cost
+more to navigate than it saves. *`../../README.md`'s rule is about what a reader needs, not about
+symmetry; if Group E had grown a finding it would have got a file.*
+
+*This table carried a row reading **"`(none yet)` | Groups D, E, F | not started"** until 2026-08-28,
+by which time all three were complete and two of them had files listed in the rows directly above it.
+**It was left behind by the split that created the table** and survived every session that added a
+row above it — found by the owner, not by a check. `link-check.py` cannot see it: the row names no
+path, so there is nothing to resolve and nothing to report.*
 
 **The split happened on 2026-08-26**, at the owner's instruction, once the phase had three groups' worth
 of sections in one file. *`notes.md` was 963 lines by then. `../../README.md` says to expect this file
