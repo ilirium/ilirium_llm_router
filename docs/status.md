@@ -10,70 +10,59 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-26 — Groups A and B are complete and Task 11 with them. Work resumes at Task 12, delta
-reconstruction, which is the hard core of the phase.**
+**2026-08-28 — Phase 11 is built. Tasks 12 to 24 are done; only Task 25, the merge, is left, and it
+waits on the owner.** Branch `feat/phase-11-corpus-tools`, clean tree, **438 tests** (355 at the
+session's start).
 
-*Fourteen commits, from `fe37743`. **Derive it rather than relaying it** — `git log --oneline
-fe37743..HEAD` — because a commit count written into a file is stale by the next commit, which is the
-failure this section keeps recording about itself.*
+*Derive the commit count rather than trusting one written here — `git log --oneline 7202729..HEAD`.*
 
-**Tasks 1–11 done.** Group A closed the documentation debts and froze the evidence slice; Group B put
-the CLI on subcommands; Task 11 built `transcript.py`. **355 tests, up from 310.**
+**`extract` and `verify-archive` now run end to end.** Selection is exact on session, model, path and
+`--agent`; output is `bodies/` and `projects/` under one `--out`. **Every `❓` in the register is
+resolved** and `evidence/register-check.py` gates it at **89 checks**.
 
 **Four findings, in the order they cost:**
 
-1. **Task 11's "66 buffered assistant replies" was the `count_tokens` count.** The task had already
-   corrected that exact conflation once and then landed on 66 anyway. **The corpus holds ONE buffered
-   reply in 979 rows.** Measured by decompressing every response blob. The path is built; *"both
-   encodings are handled"* is now in "does not settle" so it is not read as coverage.
-2. **Task 5 was recorded in `plan.md` as executed and half of it had not been done.** Its settings
-   work ran on 2026-08-24; the `IDM-002` amendment its title names was never written, and was found
-   only because Task 4 went to cite it. **The forward review read past it**, because a review checks
-   what a document says and this one said something true about one half of a two-part task.
-3. **The vendor documentation contradicts this branch's `git` finding, and it is unresolved on
-   purpose.** Anthropic's built-in read-only set ends *"and read-only forms of `git`"*; seven
-   measurements here on 2026-08-25 concluded every git command prompts. **In `IDM-002` with the
-   one-observation check that settles it, and no allow rule removed.** *The hazard was written down as
-   the reason for that section and then happened inside it, within 48 hours.*
-4. **Three instrument errors, all caught because a number looked wrong and none by anything failing.**
-   `awk` counting bytes not characters; a secrets scan reporting **1913** suspect cells that were all
-   sha256 digests; `$?` after a pipe reporting `tail`'s exit code.
+1. **A systematic mutation sweep found 5 real logic defects that 23 targeted mutations could not.**
+   The targeted ones all died and none surprised — each was chosen *because* a test was expected to
+   catch it. **279 mutants, 105 survivors; after the fixes, 277 and 75.** Worst of them: `isMeta`
+   was unasserted, and `isMeta: true` **hides** the record whose job is to say the file is not a real
+   transcript.
+2. **The sweep nearly destroyed the module it measured.** Killed by a timeout, and `finally` does not
+   run on `SIGTERM` — `transcript.py` was left as `ast.unparse` output, **every comment stripped, 256
+   of 670 lines gone, suite passing 427/427.** `git status` caught it. Three restore paths now, tested
+   by killing a run deliberately.
+3. **Twelve tests compared the code to itself.** `assert len(key) == CONVERSATION_KEY_CHARS` cannot
+   fail. Nothing but a mutation sweep finds these, because they read exactly like coverage.
+4. **A settled justification stopped being true while its requirement stayed right.** The missing-day
+   error's stated failure mode cannot occur in the design that was built — measured: **depth 337
+   either way, every message identical.** What it actually costs is **26 misdated turns**. The error
+   was kept, the reason rewritten in place.
 
-**The two strongest pieces of evidence are not tests.** `verify-archive` over the whole live corpus:
-**1793 blobs, 0 failed.** And `reassemble` over every response blob, joined back to the index:
-**979 rows, 0 unresolved, 0 contradictions** against an `error_status` column written at capture time
-months earlier. *Two instruments built phases apart agreeing row for row.*
+**Three pieces of evidence that are not tests.** `reconstruct` over the whole corpus — **902 calls in,
+902 accounted for, 36 conversations** matching a count made before the code existed. The first full
+conversion — **1,615 records, 1,614 distinct ids**, one duplicate `uuid5` found by counting the output
+against itself while 378 tests passed. And **`902 + 66 + 11 = 979`**, which is what demonstrates exact
+matching rather than asserting it.
 
-**One thing waits on the owner and nothing is blocked by it:** with auto mode off, does `git --version`
-prompt? **A model cannot answer it** — a denial is a tool error and an approval is invisible.
-→ `milestone-2-corpus/phase-11-corpus-tools/for-the-owner.md`, which is **new** and holds everything
-addressed to a person rather than to a session.
+**One owner decision changed the extractor's shape:** it may read the `index.csv` of **sibling** day
+folders, which the plan forbade. Without it task 12's missing-day error can never fire from the CLI.
+*The exception is to the plan's phrasing, not to `reference/corpus.md`'s guarantee.*
 
-*The earlier 2026-08-26 entries — ratification, the forward review, Group A's own findings — are in
-that phase's `plan.md` and its **group notes**, task by task. **Fifth trim.***
+**Still waiting on the owner, and nothing is blocked by either:** does `git --version` prompt, with
+auto mode off; and **Task 25, the merge** — `--no-ff`, then the branch index *after* the merge commit.
 
-**The phase's notes were split by group on 2026-08-26**, on the owner's instruction and per
-`README.md`'s rule: `notes-group-a.md`, `-b.md`, `-c.md`, with `notes.md` going **963 → 403 lines** and
-staying the entry point. **The split surfaced two required lines that were missing** — `notes.md` now
-carries the **"Verified by"** table and says it was **written while measuring**, both of which
-`README.md` asks of every phase note and neither of which existed.
-
-**Baselines, all re-run 2026-08-26 at the close of this session, in this worktree.**
+**Baselines, re-run 2026-08-28 in this worktree.**
 
 | Check | Figure |
 |---|---|
-| `make test` | **355 passed** — 310 at the session's start, +27 CLI and +18 reassembly |
+| `make test` | **438 passed** — 355 at the session's start |
 | `make lint` / `make check` | clean at the pinned `0.16.1` / valid |
-| `link-check.py` | **86 broken, 2 roundabout** — down one: the register's forward reference to `transcript.py` now resolves |
-| `branch-index.py --check` | **current, 21 rows** |
+| `register-check.py` | **89 checks, 0 failed**; no `❓` anywhere in the register |
+| `link-check.py` | **83 broken, 2 roundabout** — down 3 as `extract.py` and `jsonl.py` references resolved |
+| `branch-index.py --check` | current, 21 rows |
 
-**`make lint` cannot see column width and it bit inside this session** — a 101-character line went
-into a commit and passed. `--select E501` reports **23 errors in 9 files**, all prose rewraps.
-Deliberately not actioned: `method/IDM-003-development-tooling.md` owns tooling changes. **Check added
-lines by hand until then.**
-
-*The file count stays out of the `link-check` row: it moves when `.venv/` does, and broken is the
-comparable figure.*
+*`make lint` still cannot see column width — `E501` is not in ruff's default set. Added lines are
+checked by hand, in **characters**, because `awk` counts bytes and said 13 where there were 4.*
 
 ## Where the project is
 
@@ -140,15 +129,20 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Execute Phase 11, starting at Task 12.** ~~Ratify position 3~~, ~~the forward review~~,
-   ~~Group A~~, ~~Group B~~ and ~~Task 11~~ — **all done 2026-08-26.** Task 12 is **delta
-   reconstruction**: the two normalisations, ordering across day folders, and the error when a
-   selected session has calls in a folder that was not passed. **It is the hard core of the phase**,
-   and `notes.md`'s "The forward review" holds the seventeen findings it must not re-derive. Twenty settled positions, and the review returned **seventeen accepted
-   findings**, all folded in. **The review's own summary is the thing to carry forward:** the plan's
-   model of a captured session was simpler than the traffic on disk, and *"every one of those is
-   visible in an hour with `csv.DictReader`, and none of them is in the plan."*
-   **Three `❓` are live and deliberate**, all resolved at Task 13.
+1. **Merge Phase 11 — Task 25, and it is the only thing left in the phase.** `--no-ff`, then
+   `procedures/branch-index.py --write` **after** the merge commit, then commit the regenerated table
+   on the trunk. **It waits on the owner** because it is the phase's one outward-facing,
+   hard-to-reverse step. *Everything before it is done: tasks 12–24, 438 tests, no `❓` left in the
+   register.* **The owner exercises the tools by hand after the merge** — task 14 was struck for
+   exactly that, so the phase ships without a ground-truth diff and knows it.
+
+   ~~**Execute Phase 11, starting at Task 12.**~~ **Done 2026-08-28**, and its detail is retired
+   here rather than kept struck: twenty settled positions, seventeen accepted review findings and the
+   task-by-task record are in that phase's `plan.md` and its **five group notes**, which is where a
+   reader needs them. *The review's summary is the one line worth carrying: the plan's model of a
+   captured session was simpler than the traffic on disk, and the difference was **visible in an hour
+   with `csv.DictReader`**.*
+
 2. **Report `BUG-001` to the two upstream issues.** They are named in
    `bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`, and both stall on exactly the
    measurement it contains — a paired control showing a streamed request **2.8× larger** to the same

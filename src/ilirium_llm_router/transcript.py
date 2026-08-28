@@ -46,6 +46,12 @@ from typing import Any
 # **All eight are observed, not assumed** — counted across the live corpus and Phase 9's gate corpus
 # on 2026-08-26. `ping` is in the list because it is a real event that carries nothing: a
 # reassembler that treats an unknown event as a failure would reject every stream Anthropic sends.
+#
+# **This is a record, not a guard, and mutation testing is what made that explicit.** Nothing below
+# reads it — `_events` takes each payload's own `type` and ignores the `event:` line entirely — so
+# **eight mutants survived the 2026-08-28 sweep** by changing names no code consults. It is kept
+# because the eight are *measured*, and `test_transcript.py` pins the literals so the record cannot
+# rot unnoticed. **Do not read it as validation:** an unlisted event is passed over, not rejected.
 SSE_EVENTS = (
     "message_start",
     "content_block_start",
@@ -609,7 +615,13 @@ def _attach_orphans(
     # position `depth` — it is the one turn that no request carries — so starting the gaps there
     # collides with it. Task 13 caught this on the live corpus as a duplicate `uuid5`, one in 1,615
     # records, because ids are derived from the position and nothing else compares them.
-    position = max((entry.position for entry in entries), default=host.depth - 1) + 1
+    #
+    # **No `default=`, deliberately.** A host conversation is chosen from `built`, and one only
+    # exists because a call carried at least one message, so `entries` is never empty. The default
+    # that used to sit here was unreachable — a survivor of the 2026-08-28 sweep — and an
+    # unreachable fallback is worse than none: if the invariant ever breaks, `max` raising beats a
+    # silently wrong position, which is exactly what produced the duplicate id above.
+    position = max(entry.position for entry in entries) + 1
     skipped = Counter(host.skipped)
     for call in orphans:
         entries.append(Gap(position, GAP_NO_REQUEST_BODY, call.timestamp))

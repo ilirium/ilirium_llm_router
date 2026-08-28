@@ -22,6 +22,7 @@ from ilirium_llm_router.transcript import (
     SKIP_MALFORMED,
     SKIP_NOT_A_MESSAGE,
     SKIP_STREAM_ERROR,
+    SSE_EVENTS,
     CapturedCall,
     Gap,
     MissingDayError,
@@ -218,6 +219,36 @@ def test_a_data_field_split_over_several_lines_is_joined() -> None:
     got = reassemble(body)
     assert isinstance(got, Reply)
     assert got.message["id"] == "msg_01"
+
+
+def test_the_six_skip_reasons_have_the_spellings_the_register_names() -> None:
+    """**Pinned to literals on purpose.** Every other assertion here compares a reason to its own
+    constant, which cannot detect the constant changing — six mutants survived the 2026-08-28 sweep
+    for exactly that reason. These strings are reported in-band to a reader of a transcript, so
+    their spelling is a contract rather than an implementation detail."""
+    assert SKIP_EMPTY == "empty"
+    assert SKIP_ERROR == "error"
+    assert SKIP_STREAM_ERROR == "stream-error"
+    assert SKIP_NOT_A_MESSAGE == "not-a-message"
+    assert SKIP_MALFORMED == "malformed"
+    assert SKIP_INCOMPLETE == "incomplete"
+
+
+def test_the_eight_sse_event_names_are_the_ones_that_were_observed() -> None:
+    """**`SSE_EVENTS` is documentation, not a guard, and the sweep is how that became explicit.**
+    Eight mutants survived because nothing in `src/` reads it: `_events` takes each payload's own
+    `type` and ignores the `event:` line entirely. It is kept because the eight are *measured* — and
+    pinned here so the record cannot rot unnoticed."""
+    assert SSE_EVENTS == (
+        "message_start",
+        "content_block_start",
+        "content_block_delta",
+        "content_block_stop",
+        "message_delta",
+        "message_stop",
+        "ping",
+        "error",
+    )
 
 
 # --- streams that are not a turn -----------------------------------------------------------------
@@ -426,8 +457,12 @@ def test_the_deepest_conversation_is_the_main_one_even_with_fewer_calls() -> Non
 
 
 def test_a_conversation_key_is_eight_characters_of_the_root_digest() -> None:
+    """**The literal, not the constant.** `len(key) == CONVERSATION_KEY_CHARS` compares the code to
+    itself and cannot fail — the mutation sweep proved it by changing 8 to 9 and surviving. A name
+    that goes on disk is a contract, and a contract is pinned to its value."""
     key = conversation_key([user("hi")])
-    assert len(key) == CONVERSATION_KEY_CHARS
+    assert len(key) == 8
+    assert CONVERSATION_KEY_CHARS == 8
     assert all(c in "0123456789abcdef" for c in key)
 
 
@@ -584,7 +619,8 @@ def test_a_call_with_no_stored_request_body_becomes_a_visible_gap() -> None:
     assert roles(main) == ["user", "assistant", "gap", "assistant"]
     assert "reply with no prompt" in texts(main)
     gap = main.entries[2]
-    assert isinstance(gap, Gap) and gap.reason == GAP_NO_REQUEST_BODY
+    assert isinstance(gap, Gap) and gap.reason == "no-request-body"
+    assert GAP_NO_REQUEST_BODY == "no-request-body"
 
 
 def test_a_bodiless_call_is_still_counted_as_a_call() -> None:
@@ -620,6 +656,79 @@ def test_a_conversation_that_loses_turns_is_counted_rather_than_silently_shorten
         days_passed=["2026-08-25"],
     )
     assert result.conversations[0].shrank == 1
+
+
+def test_a_request_whose_messages_are_empty_is_not_a_conversation() -> None:
+    """`not isinstance(messages, list) or not messages` -> `and` survived the sweep. With `and`, an
+    empty list reaches `conversation_key`, which indexes `messages[0]`."""
+    empty = CapturedCall(timestamp="T1", day="2026-08-25",
+                         request=b'{"messages": []}', response=None)
+    result = reconstruct([empty], "s1", days_passed=["2026-08-25"])
+    assert result.conversations == ()
+
+
+def test_a_request_whose_messages_are_not_a_list_is_not_a_conversation() -> None:
+    odd = CapturedCall(timestamp="T1", day="2026-08-25",
+                       request=b'{"messages": {"role": "user"}}', response=None)
+    result = reconstruct([odd], "s1", days_passed=["2026-08-25"])
+    assert result.conversations == ()
+
+
+def test_a_conversation_that_only_ever_grew_is_not_counted_as_shrinking() -> None:
+    """**The existing shrink test passed for the wrong reason.** `<` -> `>=` survived it: the first
+    call compares against an empty spine, so the mutant counted 1 there and 0 later, reaching the
+    same total by a different route. A conversation that never shrinks must read 0."""
+    result = reconstruct(
+        [
+            call("T1", [user("one")], "a"),
+            call("T2", [user("one"), assistant("a"), user("two")], "b"),
+            call("T3", [user("one"), assistant("a"), user("two"), assistant("b")], "c"),
+        ],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    assert result.conversations[0].shrank == 0
+
+
+def test_gaps_count_towards_the_unconfirmed_tail() -> None:
+    """`host.unconfirmed + len(orphans)` -> `-` survived. A bodiless call is unconfirmed by
+    construction: nothing later can agree with a request that was never stored."""
+    result = reconstruct(
+        [call("T1", [user("one")], "a"), call("T2", None, "x"), call("T3", None, "y")],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    assert result.conversations[0].unconfirmed == 3
+
+
+def test_a_stream_with_no_event_lines_is_still_read() -> None:
+    """**The module claims to ignore the `event:` line and the sweep showed it depends on one.**
+    `not line.strip()` -> `line.strip()` survived every existing test, because each `event:` line
+    happened to flush the previous payload. SSE permits a stream of bare `data:` lines, and this is
+    the only test that sends one."""
+    body = (
+        b'data: {"type":"message_start","message":{"id":"m","type":"message","role":"assistant",'
+        b'"model":"claude-opus-5","content":[],"usage":{"input_tokens":1}}}\n\n'
+        b'data: {"type":"content_block_start","index":0,'
+        b'"content_block":{"type":"text","text":""}}\n\n'
+        b'data: {"type":"content_block_delta","index":0,'
+        b'"delta":{"type":"text_delta","text":"hi"}}\n\n'
+        b'data: {"type":"content_block_stop","index":0}\n\n'
+        b'data: {"type":"message_stop"}\n\n'
+    )
+    got = reassemble(body)
+    assert isinstance(got, Reply)
+    assert got.message["content"][0]["text"] == "hi"
+
+
+def test_a_call_with_no_response_is_counted_as_an_empty_skip() -> None:
+    """`skipped[SKIP_EMPTY] += 1` -> `+= 2` survived: nothing read that counter back."""
+    result = reconstruct(
+        [call("T1", [user("one")], None), call("T2", [user("one")], None)],
+        "s1",
+        days_passed=["2026-08-25"],
+    )
+    assert result.conversations[0].skipped["empty"] == 2
 
 
 def test_reconstruction_is_deterministic() -> None:

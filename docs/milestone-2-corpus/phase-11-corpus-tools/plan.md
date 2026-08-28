@@ -642,10 +642,30 @@ role. The ordering now costs nothing and buys nothing, and it is left alone rath
     written into this file and into `status.md` and committed, and it was true only because the column
     does not exist. **A check that cannot fail is not a check** — which is the exact defect `IDM-008`
     exists to catch, found by the forward review in the section describing the instrument.*
-23. **Mutation testing on the converter.** One deliberate fault, a targeted test must fail. A
-    mutation that survives is a missing test or a dead line — find out which. **With task 14 struck,
-    this is the strongest evidence the phase produces**, so it is no longer optional polish.
-24. Harvest into `reference/lessons.md` and `reference/measurements.md`.
+23. **Done 2026-08-28.** **Mutation testing on the converter**, systematically:
+    **279 mutants, 105 survived; after the fixes, 277 mutants and 75.** `evidence/mutate.py`,
+    hand-rolled on the owner's decision — a tool is parked in `../../backlog.md` under `IDM-003`.
+
+    ***The per-task mutations were not this task and the difference is the finding.*** 23 targeted
+    mutations ran across tasks 12, 13, 16 and 17; **all died and none surprised**, each having been
+    chosen because a test was expected to catch it. **Targeted mutation tests the tests you wrote.**
+
+    **105 decomposes into four categories and only three are defects** — ~24 are the harness
+    mutating error-message wording, **parked** on the owner's decision. The rest: **twelve
+    self-referential tests** (`assert len(key) == CONVERSATION_KEY_CHARS` cannot fail), **dead code**
+    (`SSE_EVENTS` is read by nothing; an unreachable `default=`), and **twelve missing tests** —
+    including `isMeta`, whose mutation would have **hidden the record that says the file is not a
+    real transcript**. **All five real logic survivors are now dead.** → `notes-group-f.md`.
+
+    ***The first sweep nearly destroyed the module it was measuring.*** Killed by a timeout, and
+    `finally` does not run on `SIGTERM`: it left `transcript.py` as `ast.unparse` output — every
+    comment stripped, 256 of 670 lines gone, **suite passing 427/427**. `git status` caught it. The
+    harness now has three restore paths, tested by killing a run on purpose.
+24. **Done 2026-08-28.** Harvest into `reference/lessons.md` and `reference/measurements.md`.
+    Thirteen measurement rows, each with its slice. **Three additions to `lessons.md` and not one is
+    a new lesson** — §1 gains a sixth form (a *justification* going stale while the requirement stays
+    right), §7 gains the sharpest instance of its family (a test comparing the code to itself), and
+    §8 gains a third practice (targeted versus systematic mutation, with this phase's numbers).
 25. Merge `--no-ff`, then regenerate the branch index **after** the merge commit.
 
 ## The register — every name and number this phase introduces

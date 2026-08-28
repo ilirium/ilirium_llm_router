@@ -177,6 +177,29 @@ and **nothing has been accepted** — see `../epd/`.
 
 ---
 
+## The corpus, read back — Phase 11, 2026-08-28
+
+*The slice for every row below is **the live corpus at 2026-08-26T15:16Z**: 979 index rows, four day
+folders, nine sessions. Frozen in that phase's `evidence/`, and **it is a moving corpus** — the same
+figures were 770 rows four hours earlier.*
+
+| Number | What it is | Measured with | What it is for |
+|---|---|---|---|
+| **979 / 902 / 66 / 11** | index rows; `/v1/messages`; `count_tokens`; no `session_id` | `extract`'s selection over the four day indexes | **They sum: 902 + 66 + 11 = 979.** This is the arithmetic that demonstrates exact matching — a prefix match folds the 66 into the 902 and the total still looks right |
+| **36 conversations in 9 sessions** | distinct root messages sharing a `session_id` | `transcript.reconstruct` | A `session_id` is **not** one conversation. Includes a **66-call subagent** carrying its parent's id |
+| **67** | rows carrying an `agent_id`, one agent, all in one parent session | index | Confirms `observe.py:40` by measurement for the first time. A **partition key, not a filter** |
+| **0/76, 46/76, 0/76, 65/76** | the prefix property under: raw; `cache_control` stripped; encoding canonicalised; both | one 77-call conversation | **The encoding fix scores zero alone** — the marker breakage masks it, so a session applying only that one would conclude the finding was wrong |
+| **100** | messages revised by a later call, **9 changing role** | all conversations | Why turns are taken from a conversation's *latest* state. Emitting on first sight writes retracted turns down as real |
+| **678 / 143 / 0** | consecutive request pairs that grew / held length / shrank | all conversations | The message array is **append-only**, which is what makes a position stable enough to key a `uuid5` on |
+| **630 of 631** | assistant turns whose two sources agree on block shape | response blob vs the next request's copy | The difference is a `caller` field on `tool_use`: **47,628** request-side blocks carry none, **630** response blobs mention it. The response is the richer source |
+| **45** | contiguous calls with no stored request body | `ad9392ae`, calls #225–#269 of 270 | `request_bytes` crosses 1 MiB once — 1,043,805 → 1,047,198 → **1,051,096** — and never returns. **Every long session loses its ending**, and the loss is always the tail |
+| **1,615 records / 1,614 ids** | the first full conversion of the corpus | `jsonl.records` over 36 conversations | **One duplicate `uuid5`**, found by counting output against itself while 378 tests passed. The final reply and the first gap both sat at position `depth` |
+| **11 of 36** | conversations legitimately opening at two messages | all conversations | Why "a conversation that starts too deep began earlier" is **not** a sound missing-day check, and the exact day-set difference is |
+| **26 turns / 12 turns** | misdated; downgraded to the request-side copy | `15b29c2a` converted from its later day only | What omitting a day folder actually costs. **Not truncation** — depth is 337 either way and every message is identical |
+| **279 → 277** | mutants over `transcript.py` and `jsonl.py` | `evidence/mutate.py` | The two that disappeared were an unreachable `default=`, deleted as dead code — **the sweep shrank its own denominator** |
+| **105 → 75 survivors** | before and after the fixes | same | **All 5 real logic survivors are dead.** The 4 logic mutants that remain are singular/plural grammar in error text, and ~43 of the 75 are string mutants of the same kind — parked in `backlog.md`, category A |
+| **23 vs 279** | targeted mutations run per task vs the systematic sweep | both | **All 23 targeted died and none surprised**, each having been chosen because a test was expected to catch it. The sweep found 5 real logic defects the targeted run could not, by construction |
+
 ## Corrections this register made when it was assembled, 2026-08-16
 
 Filling the columns is a check, and it found things. Both were slice errors of the kind this file

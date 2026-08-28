@@ -12,11 +12,24 @@ gitignored and rotates. The source is the owner's live corpus at `to-run-server/
 
 | File | What it is |
 |---|---|
-| `freeze.py` | What produced the rest. Standard library only, so it does **not** need the project venv |
+| `freeze.py` | What produced the CSVs. Standard library only, so it does **not** need the project venv |
+| `register-check.py` | **Task 22.** The register's rows against the code — 89 checks, exits 1, so it is a gate rather than a report. *It cannot check prose: a row whose description has drifted still passes* |
+| `mutate.py` | **Task 23.** Systematic mutation of the converter. **Needs `uv run`** — it imports nothing of the project, but the suite it drives does |
 | `index-2026-08-21.csv` | 10 rows |
 | `index-2026-08-24.csv` | 317 rows |
 | `index-2026-08-25.csv` | 413 rows |
 | `index-2026-08-26.csv` | 239 rows |
+
+***Two of the three files here are instruments rather than data, added 2026-08-28.*** The CSVs are a
+frozen slice and cannot be regenerated; the two scripts are the opposite — **they are here so their
+results can be re-derived**, and both are expected to be re-run whenever the code moves.
+
+**`mutate.py` edits `src/` while it runs, and that is why it has three restore paths.** A sidecar
+written before each mutation, `SIGTERM`/`SIGINT` handlers, and a refusal to start if a stale sidecar
+is found. *`try/finally` alone was not enough: the first run was killed by a timeout and left
+`transcript.py` as `ast.unparse` output — every comment stripped, 256 of 670 lines gone, and the
+suite passing 427/427. `git status` caught it.* **If a run is interrupted, check `git status` before
+anything else.**
 
 **979 rows, 26 columns, taken 2026-08-26T15:16:22Z.** The index only. **No blobs, and there never
 will be** — captured request bodies are real prompts and real source code, response bodies are real

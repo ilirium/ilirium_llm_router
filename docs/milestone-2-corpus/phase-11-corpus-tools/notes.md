@@ -34,6 +34,7 @@ Task 1, the session boundaries, the forward review, and what was open at the end
 | `notes-group-b.md` | **Group B — the CLI restructure**, tasks 8–10 | **complete**, 2026-08-26. The first group in this phase to change `src/` |
 | `notes-group-c.md` | **Group C — the converter**, tasks 11–13 | **complete**, 2026-08-28. Tasks 14 and 15 are **struck in place** and must not be resurrected or renumbered |
 | `notes-group-d.md` | **Group D — the extractor**, tasks 16–19 | **complete**, 2026-08-28. Task 19 was discharged early, on 2026-08-26 |
+| `notes-group-f.md` | **Group F — verify, harvest and close**, tasks 22–25 | tasks 22–24 **complete**, 2026-08-28; task 25 is the merge. **Group E's two tasks are recorded at the end of `notes-group-d.md`**, not in a file of their own |
 | *(none yet)* | Groups D, E, F | not started |
 
 **The split happened on 2026-08-26**, at the owner's instruction, once the phase had three groups' worth

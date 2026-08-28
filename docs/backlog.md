@@ -390,6 +390,26 @@ methodology extracted from n=1 is a guess about what generalises. Do not create 
 
 ## Instruments and housekeeping
 
+**~24 mutation survivors are error-message wording, and they are parked rather than tested.** *Added
+2026-08-28, Phase 11 Task 23, on the owner's decision — category A of four, with B, C and D fixed in
+the phase.* The converter's mutation sweep ran **279 mutants** and **105 survived**; the survivors
+decompose into four kinds, and only three of them are defects.
+
+**These ~24 are the fourth kind: the harness mutating text nobody asserts.** They are the
+singular/plural grammar inside error messages — `"was"`/`"were"`, `"it"`/`"them"` — and similar
+wording in `MissingDayError` and the schema note. **A test for each would pin an error message's
+grammar**, which is churn dressed as coverage: the message would then be unable to improve without a
+test change, and the thing being protected is not behaviour.
+
+*Recorded rather than dropped because the number is the honest denominator.* **"105 survived" without
+this entry overstates the gap by about a quarter**, and a later reader comparing a future sweep
+against 105 needs to know what a quarter of it was. **The count also measures the harness, not only
+the code** — a mutation operator that rewrites every string constant will always produce these, and
+that is an argument for the tool parked below rather than for more tests.
+
+*Worth doing if* the schema note's wording ever becomes a contract something else parses — at that
+point the grammar stops being prose and a test is the right instrument.
+
 **A mutation-testing tool, rather than the hand-rolled harness Phase 11 built.** *Added 2026-08-28
 on the owner's instruction, at the moment the choice was made — option (b) of three, with (a) taken.*
 Phase 11's Task 23 needed systematic mutation coverage of the converter and had two ways to get it: a

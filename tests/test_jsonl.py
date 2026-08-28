@@ -94,7 +94,8 @@ def test_the_first_record_is_the_fidelity_note_and_opens_the_chain() -> None:
     first = simple()[0]
     assert first["parentUuid"] is None
     assert first["type"] == "system"
-    assert first["subtype"] == SCHEMA_NOTE_SUBTYPE
+    assert first["subtype"] == "corpus-reconstruction"
+    assert SCHEMA_NOTE_SUBTYPE == "corpus-reconstruction"
 
 
 def test_every_record_names_the_one_before_it() -> None:
@@ -158,17 +159,46 @@ def test_a_gap_never_collides_with_the_last_reply() -> None:
 def test_a_gap_is_a_visible_system_record_not_a_hidden_one() -> None:
     """`HIDDEN_SYSTEM_SUBTYPES` is exactly `stop_hook_summary` and `turn_duration`."""
     out = convert([call("T1", [user("one")], "a"), call("T2", None, "orphan")])
-    gap = next(r for r in out if r.get("subtype") == GAP_SUBTYPE)
+    gap = next(r for r in out if r.get("subtype") == "corpus-gap")
+    assert GAP_SUBTYPE == "corpus-gap"
     assert gap["subtype"] not in ("stop_hook_summary", "turn_duration")
     assert gap["isMeta"] is False
     assert "never stored" in gap["content"]
+
+
+def test_the_note_is_not_marked_meta_because_meta_hides_it() -> None:
+    """**The single most consequential thing in this file, and nothing asserted it until the
+    2026-08-28 sweep.** The viewer skips a record with `isMeta: true` — "Skip meta messages
+    (internal/command-related messages)". The note's whole job is to say *"this is NOT a Claude Code
+    session record"*, so a marker that is hidden is worse than no marker: the file then reads as a
+    real transcript with nothing to contradict it. `isMeta=False -> True` survived mutation."""
+    note = simple()[0]
+    assert note["isMeta"] is False
+
+
+def test_no_record_claims_to_be_a_sidechain() -> None:
+    """The viewer reads `isSidechain`. Each conversation is already its own file, so no record in
+    one is a sidechain *of that file*. Unasserted until the sweep; `False -> True` survived."""
+    assert all(record["isSidechain"] is False for record in simple())
+
+
+def test_the_note_counts_the_gaps_it_is_describing() -> None:
+    """`sum(1 for ...)` -> `sum(2 for ...)` survived: the gap count reaches the note and nothing
+    read it back."""
+    result = reconstruct(
+        [call("T1", [user("one")], "a"), call("T2", None, "x"), call("T3", None, "y")],
+        "s1",
+        days_passed=DAYS,
+    )
+    note = schema_note(result.conversations[0], days=DAYS, version="9.9.9", generated=WHEN)
+    assert "2 call(s) have no stored request body" in note
 
 
 def test_the_marker_is_not_a_plain_system_record() -> None:
     """A `system` role occurs inside `messages`, so a bare `system` record could not be told from
     a real turn. The subtype is what separates them."""
     note = simple()[0]
-    assert note["subtype"] == SCHEMA_NOTE_SUBTYPE
+    assert note["subtype"] == "corpus-reconstruction"
     assert note["subtype"] not in ("turn_duration", "away_summary", "local_command")
 
 
