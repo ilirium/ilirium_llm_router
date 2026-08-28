@@ -191,6 +191,16 @@ DESCRIPTIONS: dict[str, tuple[int | None, int | None, str]] = {
         "thread, dictionary training and retraining, and `reference/corpus.md`. Thirty-three tasks, "
         "`make test` 310. The largest branch in the repository at 63 commits.",
     ),
+    "feat/phase-11-corpus-tools": (
+        2,
+        11,
+        "The tools that read the archive back: `extract` and `verify-archive`, the CLI on "
+        "subcommands, and a session rebuilt into a transcript a history viewer opens. `make test` "
+        "438. **Tasks 14 and 15 are struck in place** — the owner exercises the tools by hand after "
+        "the merge. Found that a `session_id` holds several conversations, that a request's tail is "
+        "provisional, and — by systematic mutation — five logic defects that 23 targeted mutations "
+        "could not.",
+    ),
     "docs/idm-and-claude-md": (
         2,
         None,
