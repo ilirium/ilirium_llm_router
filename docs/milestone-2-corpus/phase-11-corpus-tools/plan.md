@@ -571,11 +571,25 @@ role. The ordering now costs nothing and buys nothing, and it is left alone rath
 
 ### Group D — the extractor
 
-16. Selection by session, model, path, **and `--agent`**, over one or more positional day folders.
-    **Matching is exact on all three** (position 18) — so `--path /v1/messages` does **not** sweep in
-    `/v1/messages/count_tokens`. Repeated filters of one kind are OR; different kinds are AND.
-17. Output layout — `bodies/` and `projects/` under one `--out` — and `verify-archive`.
-18. **`--agent` built against the review run's traffic.** *The contingency this task carried — file a
+16. **Done 2026-08-28.** Selection by session, model, path, **and `--agent`**, over one or more
+    positional day folders. **Matching is exact on all three** (position 18) — so `--path
+    /v1/messages` does **not** sweep in `/v1/messages/count_tokens`. Repeated filters of one kind are
+    OR; different kinds are AND. *Measured on the corpus: **902** against **66**, and 902 + 66 + 11
+    no-session rows = **979**, which is the arithmetic the exactness claim rests on.*
+
+    ***And it gained one thing the plan forbade, on the owner's decision.*** Task 12's
+    `MissingDayError` **could not fire from the CLI**: it must know a session has calls in a folder
+    that was *not* passed, and this task was specified to read "the day folders it is given and
+    nothing above them" with **no corpus-root concept**. `days_of_sessions` now reads the
+    **`index.csv` of sibling day folders and nothing else**. *The exception is to this plan's
+    phrasing, not to `../../reference/corpus.md`'s guarantee, which is about **blobs opening**
+    standalone and is untouched.* → `notes-group-d.md`.
+17. **Done 2026-08-28.** Output layout — `bodies/` and `projects/` under one `--out` — and
+    `verify-archive`. **The day check runs before anything is written**, rather than letting
+    `reconstruct` raise mid-run and leave a directory whose good files cannot be told from its
+    abandoned ones.
+18. **Done 2026-08-28.** **`--agent` built against the review run's traffic**, and it selects the
+    **67** rows exactly. *The contingency this task carried — file a
     defect against `observe.py:40` if the review left `agent_id` empty — is **dead, discharged
     positively**. The forward review's cold run produced **67 rows** carrying an `agent_id`, and
     `observe.py:40` is confirmed by measurement for the first time in this project's history.*
@@ -626,7 +640,7 @@ written against a column that does not exist, so it could not fail. ~~**Three `�
 
 | Name | | |
 |---|---|---|
-| `src/ilirium_llm_router/extract.py` | selection over an index, output layout | new |
+| `src/ilirium_llm_router/extract.py` | selection over an index, output layout | **built at tasks 16–18, 2026-08-28** |
 | `src/ilirium_llm_router/transcript.py` | SSE + JSON reassembly, delta reconstruction | **complete — task 11 built reassembly 2026-08-26, task 12 the reconstruction 2026-08-28** |
 | `src/ilirium_llm_router/jsonl.py` | the viewer's record shapes | **built at task 13, 2026-08-28** |
 | `src/ilirium_llm_router/cli.py` | restructured, not new | **modified** |
@@ -714,8 +728,12 @@ which is exactly what `--extract` does today.*
 | never | **`~/.claude/projects/`** — position 12. Lossy reconstructions in the real history directory is not a reversible mistake |
 
 *The response extension is not decoration: it is **`.sse` for a streamed reply and `.json` for a
-buffered one**, which at 105 streamed against 63 buffered is a distinction a reader meets immediately.
-The encoding is legible without opening the file.*
+buffered one**, and the encoding is legible without opening the file. **Task 17 settled how it is
+decided: off the body's own first byte, not off the index's `stream` column.** `observe.py` sets
+that column from **content-type** and the design deliberately allows the two to disagree, so the
+bytes are one source instead of two — and it is the same question `reassemble` asks, so the
+extractor and the converter cannot disagree either. **A row with no blob gets no file**, never an
+empty one: the corpus holds four genuinely empty bodies and the two would be indistinguishable.*
 
 *`projects/` sits directly under `<out>` so the viewer's Custom Claude Directory can be pointed at
 `<out>` itself; `bodies/` sits beside it and the viewer ignores it. **That is why one `--out` serves

@@ -32,7 +32,8 @@ Task 1, the session boundaries, the forward review, and what was open at the end
 |---|---|---|
 | `notes-group-a.md` | **Group A — open the phase**, tasks 1–7 | **complete.** Its first three sections predate the group structure and are Task 5's working record, written 2026-08-24 and 2026-08-25 |
 | `notes-group-b.md` | **Group B — the CLI restructure**, tasks 8–10 | **complete**, 2026-08-26. The first group in this phase to change `src/` |
-| `notes-group-c.md` | **Group C — the converter**, tasks 11–13 | **in flight** — task 11 done, 12 and 13 not. Tasks 14 and 15 are **struck in place** |
+| `notes-group-c.md` | **Group C — the converter**, tasks 11–13 | **complete**, 2026-08-28. Tasks 14 and 15 are **struck in place** and must not be resurrected or renumbered |
+| `notes-group-d.md` | **Group D — the extractor**, tasks 16–19 | **complete**, 2026-08-28. Task 19 was discharged early, on 2026-08-26 |
 | *(none yet)* | Groups D, E, F | not started |
 
 **The split happened on 2026-08-26**, at the owner's instruction, once the phase had three groups' worth
