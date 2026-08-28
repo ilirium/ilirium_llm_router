@@ -18,11 +18,11 @@ import pytest
 
 from ilirium_llm_router.extract import (
     NO_SESSION,
-    check_days,
     SEQ_DIGITS,
     ExtractError,
     Row,
     Selection,
+    check_days,
     days_of_sessions,
     read_index,
     select,
