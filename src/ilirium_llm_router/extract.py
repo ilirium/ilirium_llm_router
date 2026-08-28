@@ -26,9 +26,13 @@ decision of 2026-08-28.*
 from __future__ import annotations
 
 import csv
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
+
+# `(day folder, blob path) -> plaintext`. Passed in rather than imported so this module never has to
+# know about `zstandard`, and so a test can drive the layout without a compressor at all.
+BlobReader = Callable[[Path, Path], bytes]
 
 # The five of register §11. **All of them mean "no blob here"** and none is a digest — used as a
 # filename each fails at the filesystem, which is a worse error than the honest one.
@@ -200,3 +204,128 @@ def _candidate_folders(given: Sequence[Path]) -> list[Path]:
                 continue
             seen.setdefault(candidate.resolve(), None)
     return [Path(path) for path in seen]
+
+
+@dataclass(frozen=True)
+class Written:
+    """What a run put on disk, counted so the CLI can say it without recounting."""
+
+    bodies: int = 0
+    files: int = 0
+    conversations: int = 0
+    no_request_blob: int = 0
+    no_response_blob: int = 0
+
+
+def write_bodies(rows: Sequence[Row], out: Path, read: BlobReader) -> Written:
+    """`<out>/bodies/<session>/<seq>-request.json` and `<seq>-response.{sse,json}`.
+
+    **The response's extension is read off the body itself**, not off the index's `stream` column.
+    `observe.py` decides the column by *content-type* and the design deliberately allows the two to
+    disagree; asking the bytes is one source instead of two that could. It is the same question
+    `reassemble` asks, so the extractor and the converter cannot disagree either.
+
+    A row whose reference is a sentinel gets **no file at all** rather than an empty one. An empty
+    file is indistinguishable from a body that was genuinely empty, and the corpus holds four of
+    those.
+    """
+    numbers = sequence_numbers(rows)
+    bodies = missing_request = missing_response = 0
+    for row in rows:
+        folder = out / "bodies" / (row.session or NO_SESSION)
+        for which, suffix in (("request", ".json"), ("response", None)):
+            blob = row.blob(which)
+            if blob is None:
+                if which == "request":
+                    missing_request += 1
+                else:
+                    missing_response += 1
+                continue
+            payload = read(row.directory, blob)
+            extension = suffix if suffix is not None else _response_suffix(payload)
+            folder.mkdir(parents=True, exist_ok=True)
+            (folder / f"{numbers[id(row)]}-{which}{extension}").write_bytes(payload)
+            bodies += 1
+    return Written(
+        bodies=bodies, no_request_blob=missing_request, no_response_blob=missing_response
+    )
+
+
+def _response_suffix(payload: bytes) -> str:
+    """`.json` for a buffered reply, `.sse` for a stream — legible without opening the file.
+
+    An empty body is `.json`: it is not a stream, and calling it one would be the only reading that
+    is definitely wrong.
+    """
+    return ".json" if payload.lstrip()[:1] in (b"{", b"") else ".sse"
+
+
+def check_days(given: Sequence[Path], rows: Sequence[Row]) -> dict[str, list[str]]:
+    """Which selected sessions have calls in a folder that was not passed.
+
+    **Checked for every session before anything is written**, which is stronger than letting
+    `reconstruct` raise mid-run. A run that wrote three files and then failed would leave a
+    half-converted directory whose good files are indistinguishable from its abandoned ones.
+    """
+    passed = {Path(day).name for day in given}
+    sessions = {row.session for row in rows if row.session}
+    short: dict[str, list[str]] = {}
+    for session, days in days_of_sessions(given, sessions).items():
+        missing = sorted(days - passed)
+        if missing:
+            short[session] = missing
+    return short
+
+
+def write_jsonl(
+    rows: Sequence[Row],
+    out: Path,
+    *,
+    project: str,
+    days: Sequence[str],
+    read: BlobReader,
+    version: str,
+    generated: str,
+) -> Written:
+    """`<out>/projects/<project>/<session>.jsonl`, one file per **conversation**.
+
+    `projects/` sits at the output root so the viewer's Custom Claude Directory can be pointed at
+    `<out>` itself, with `bodies/` beside it and ignored. **Never `~/.claude/projects/`** — position
+    12, and writing lossy reconstructions into the real history directory is not reversible.
+    """
+    from .jsonl import records, render
+    from .transcript import CapturedCall, reconstruct
+
+    folder = out / "projects" / project
+    by_session: dict[str, list[Row]] = {}
+    for row in rows:
+        if row.session:
+            by_session.setdefault(row.session, []).append(row)
+
+    files = conversations = 0
+    for session, session_rows in sorted(by_session.items()):
+        calls = [
+            CapturedCall(
+                timestamp=row.timestamp,
+                day=row.day,
+                request=_maybe(read, row, "request"),
+                response=_maybe(read, row, "response"),
+            )
+            for row in session_rows
+        ]
+        result = reconstruct(calls, session, days_passed=days)
+        for conversation in result.conversations:
+            payload = render(
+                records(conversation, days=days, version=version, generated=generated)
+            )
+            folder.mkdir(parents=True, exist_ok=True)
+            (folder / conversation.filename()).write_bytes(payload)
+            files += 1
+            conversations += 1
+    return Written(files=files, conversations=conversations)
+
+
+def _maybe(read: BlobReader, row: Row, which: str) -> bytes | None:
+    """A blob's bytes, or `None` when the row has no blob to read."""
+    blob = row.blob(which)
+    return None if blob is None else read(row.directory, blob)

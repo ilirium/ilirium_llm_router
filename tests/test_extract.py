@@ -10,12 +10,15 @@ behaviour is the right one. → `notes-group-d.md`.
 from __future__ import annotations
 
 import csv
+import json
+import sys
 from pathlib import Path
 
 import pytest
 
 from ilirium_llm_router.extract import (
     NO_SESSION,
+    check_days,
     SEQ_DIGITS,
     ExtractError,
     Row,
@@ -24,6 +27,7 @@ from ilirium_llm_router.extract import (
     read_index,
     select,
     sequence_numbers,
+    write_bodies,
 )
 
 COLUMNS = ["timestamp", "session_id", "agent_id", "model", "path", "request_ref", "response_ref"]
@@ -222,3 +226,204 @@ def test_the_day_folders_name_is_carried_on_every_row(tmp_path: Path) -> None:
     folder = day(tmp_path, "2026-08-25", [entry()])
     row: Row = read_index(folder)[0]
     assert row.day == "2026-08-25"
+
+
+# --- the output layout, task 17 ---------------------------------------------------------------
+
+
+def blobs(store: dict[bytes, bytes]):
+    """A reader with no compressor in it. The layout is what is under test, not `zstandard`."""
+
+    def read(day: Path, blob: Path) -> bytes:
+        return store[blob.name.encode()]
+
+    return read
+
+
+def test_bodies_land_under_session_and_seq(tmp_path: Path) -> None:
+    folder = day(tmp_path, "2026-08-25", [entry(request_ref="ab" * 32, response_ref="cd" * 32)])
+    store = {f"{'ab' * 32}.zst".encode(): b'{"messages": []}',
+             f"{'cd' * 32}.zst".encode(): b'{"type": "message"}'}
+    written = write_bodies(read_index(folder), tmp_path / "out", blobs(store))
+    root = tmp_path / "out" / "bodies" / "s1"
+    assert (root / "00001-request.json").read_bytes() == b'{"messages": []}'
+    assert (root / "00001-response.json").exists()
+    assert written.bodies == 2
+
+
+def test_a_streamed_reply_gets_sse_and_a_buffered_one_gets_json(tmp_path: Path) -> None:
+    """The extension is read off the body, not off the index's `stream` column — one source."""
+    folder = day(
+        tmp_path,
+        "2026-08-25",
+        [
+            entry(timestamp="2026-08-25T10:00:00+00:00", response_ref="aa" * 32, request_ref=""),
+            entry(timestamp="2026-08-25T10:00:01+00:00", response_ref="bb" * 32, request_ref=""),
+        ],
+    )
+    store = {f"{'aa' * 32}.zst".encode(): b"event: message_start\ndata: {}\n\n",
+             f"{'bb' * 32}.zst".encode(): b'{"type": "message"}'}
+    write_bodies(read_index(folder), tmp_path / "out", blobs(store))
+    root = tmp_path / "out" / "bodies" / "s1"
+    assert (root / "00001-response.sse").exists()
+    assert (root / "00002-response.json").exists()
+
+
+def test_a_sentinel_row_gets_no_file_rather_than_an_empty_one(tmp_path: Path) -> None:
+    """An empty file cannot be told from a body that was genuinely empty — the corpus has four."""
+    folder = day(tmp_path, "2026-08-25", [entry(request_ref="too_large", response_ref="cd" * 32)])
+    store = {f"{'cd' * 32}.zst".encode(): b'{"type": "message"}'}
+    written = write_bodies(read_index(folder), tmp_path / "out", blobs(store))
+    root = tmp_path / "out" / "bodies" / "s1"
+    assert not (root / "00001-request.json").exists()
+    assert (root / "00001-response.json").exists()
+    assert written.no_request_blob == 1
+
+
+def test_a_row_with_no_session_writes_into_its_own_bucket(tmp_path: Path) -> None:
+    folder = day(tmp_path, "2026-08-25", [entry(session_id="", request_ref="ab" * 32,
+                                                response_ref="")])
+    store = {f"{'ab' * 32}.zst".encode(): b"{}"}
+    write_bodies(read_index(folder), tmp_path / "out", blobs(store))
+    assert (tmp_path / "out" / "bodies" / NO_SESSION / "00001-request.json").exists()
+
+
+def test_nothing_is_created_when_there_is_nothing_to_write(tmp_path: Path) -> None:
+    """A run that selected only sentinel rows must not leave an empty tree behind."""
+    folder = day(tmp_path, "2026-08-25", [entry(request_ref="dropped", response_ref="absent")])
+    write_bodies(read_index(folder), tmp_path / "out", blobs({}))
+    assert not (tmp_path / "out" / "bodies" / "s1").exists()
+
+
+# --- the day check, which runs before anything is written ---------------------------------------
+
+
+def test_a_session_short_a_day_is_named_before_any_file_appears(tmp_path: Path) -> None:
+    day(tmp_path, "2026-08-25", [entry(session_id="s1", timestamp="2026-08-25T16:00:00+00:00")])
+    later = day(tmp_path, "2026-08-26", [entry(session_id="s1",
+                                               timestamp="2026-08-26T09:00:00+00:00")])
+    short = check_days([later], read_index(later))
+    assert short == {"s1": ["2026-08-25"]}
+
+
+def test_a_complete_selection_reports_nothing_short(tmp_path: Path) -> None:
+    only = day(tmp_path, "2026-08-26", [entry(session_id="s1")])
+    assert check_days([only], read_index(only)) == {}
+
+
+def test_both_folders_passed_is_not_short_either(tmp_path: Path) -> None:
+    early = day(tmp_path, "2026-08-25", [entry(session_id="s1",
+                                               timestamp="2026-08-25T16:00:00+00:00")])
+    later = day(tmp_path, "2026-08-26", [entry(session_id="s1",
+                                               timestamp="2026-08-26T09:00:00+00:00")])
+    rows = read_index(early) + read_index(later)
+    assert check_days([early, later], rows) == {}
+
+
+# --- end to end, through the real CLI ----------------------------------------------------------
+#
+# `test_cli.py` is deliberately parser-only and says so: *"`extract`'s is Group D's"*. This is that.
+# It builds a real day folder with the real writer, so `zstandard`, the fan-out, the dictionary
+# lookup and the digest check are all in the path — the parts a hand-rolled fixture would skip.
+
+
+def corpus_day(root: Path, day_name: str, calls: list[tuple[str, str, bytes, bytes]]) -> Path:
+    """A real day folder: bodies through `CorpusWriter`, and an index naming their digests."""
+    import hashlib
+
+    from ilirium_llm_router.corpus import CorpusWriter
+
+    store = CorpusWriter(
+        directory=root, compress_level=9, body_max_bytes=1_048_576, queue_max_bytes=67_108_864
+    )
+    written = []
+    for timestamp, session, request, response in calls:
+        store.store(timestamp, "requests", request)
+        store.store(timestamp, "responses", response)
+        written.append(
+            entry(
+                timestamp=timestamp,
+                session_id=session,
+                request_ref=hashlib.sha256(request).hexdigest(),
+                response_ref=hashlib.sha256(response).hexdigest(),
+            )
+        )
+    store.close()
+    folder = root / day_name
+    with (folder / "index.csv").open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=COLUMNS)
+        writer.writeheader()
+        for row in written:
+            writer.writerow({column: row.get(column, "") for column in COLUMNS})
+    return folder
+
+
+def messages(*texts: str) -> bytes:
+    payload = [{"role": "user", "content": [{"type": "text", "text": t}]} for t in texts]
+    return json.dumps({"messages": payload}).encode()
+
+
+REPLY = (
+    b'event: message_start\ndata: {"type":"message_start","message":'
+    b'{"id":"m","type":"message","role":"assistant","model":"claude-opus-5","content":[],'
+    b'"usage":{"input_tokens":1}}}\n\n'
+    b'event: message_stop\ndata: {"type":"message_stop"}\n\n'
+)
+
+
+def run_cli(*argv: str) -> int:
+    import subprocess
+
+    finished = subprocess.run(
+        [sys.executable, "-m", "ilirium_llm_router", *argv],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    run_cli.last = finished  # type: ignore[attr-defined]
+    return finished.returncode
+
+
+def test_extract_writes_both_trees_under_one_out(tmp_path: Path) -> None:
+    folder = corpus_day(
+        tmp_path / "corpus",
+        "2026-08-25",
+        [
+            ("2026-08-25T10:00:00+00:00", "s1", messages("one"), REPLY),
+            ("2026-08-25T10:00:01+00:00", "s1", messages("one", "two"), REPLY),
+        ],
+    )
+    out = tmp_path / "out"
+    code = run_cli("extract", str(folder), "--out", str(out), "--format", "bodies",
+                   "--format", "jsonl")
+    assert code == 0, run_cli.last.stderr  # type: ignore[attr-defined]
+    assert (out / "bodies" / "s1" / "00001-request.json").exists()
+    assert (out / "bodies" / "s1" / "00001-response.sse").exists()
+    assert (out / "projects" / "corpus" / "s1.jsonl").exists()
+
+
+def test_extract_refuses_and_writes_nothing_when_a_day_is_missing(tmp_path: Path) -> None:
+    """The defence, driven through the command a person actually types."""
+    root = tmp_path / "corpus"
+    corpus_day(root, "2026-08-25", [("2026-08-25T16:00:00+00:00", "s1", messages("one"), REPLY)])
+    later = corpus_day(
+        root, "2026-08-26", [("2026-08-26T09:00:00+00:00", "s1", messages("one", "two"), REPLY)]
+    )
+    out = tmp_path / "out"
+    code = run_cli("extract", str(later), "--out", str(out), "--format", "jsonl")
+    assert code == 1
+    assert "2026-08-25" in run_cli.last.stderr  # type: ignore[attr-defined]
+    assert not out.exists()
+
+
+def test_extract_reports_rather_than_writing_an_empty_tree(tmp_path: Path) -> None:
+    folder = corpus_day(
+        tmp_path / "corpus",
+        "2026-08-25",
+        [("2026-08-25T10:00:00+00:00", "s1", messages("one"), REPLY)],
+    )
+    out = tmp_path / "out"
+    code = run_cli("extract", str(folder), "--out", str(out), "--format", "bodies",
+                   "--session", "nosuch")
+    assert code == 1
+    assert not out.exists()

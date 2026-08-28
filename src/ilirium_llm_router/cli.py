@@ -314,14 +314,84 @@ def _extract(args: argparse.Namespace) -> int:
     the CLI is settled and task 10 tests that surface: `--out` and `--format` required,
     `--project-name` a parse error without `--format jsonl`.
 
-    **It reports rather than pretending.** A command that parses and then does nothing quietly is
-    the failure this phase exists to avoid one level up.
+    **The missing-day check runs before anything is written.** A run that wrote three files and
+    then failed would leave a directory whose good files cannot be told from its abandoned ones,
+    and the whole point of that error is that a half-converted transcript reads as a whole one.
     """
-    print("error: `extract` is not implemented yet — Phase 11 group D, tasks 16-18.",
-          file=sys.stderr)
-    print(f"       parsed: {len(args.days)} day(s), formats={args.formats}, out={args.out}",
-          file=sys.stderr)
-    return 2
+    from datetime import UTC, datetime
+
+    from . import __version__
+    from .corpus import CorpusReader
+    from .extract import (
+        ExtractError,
+        Selection,
+        check_days,
+        read_index,
+        select,
+        write_bodies,
+        write_jsonl,
+    )
+
+    readers: dict[Path, CorpusReader] = {}
+
+    def read(day: Path, blob: Path) -> bytes:
+        """One reader per day folder, because each carries its own `dicts/`."""
+        if day not in readers:
+            readers[day] = CorpusReader(day)
+        return readers[day].read(blob)
+
+    selection = Selection(
+        sessions=tuple(args.sessions),
+        models=tuple(args.models),
+        agents=tuple(args.agents),
+        path=args.path,
+    )
+
+    try:
+        rows = [row for day in args.days for row in read_index(day)]
+    except ExtractError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
+    chosen = select(rows, selection)
+    print(f"{len(rows)} row(s) read, {len(chosen)} selected")
+    if not chosen:
+        print("nothing selected — no files written", file=sys.stderr)
+        return 1
+
+    if "jsonl" in args.formats:
+        short = check_days(args.days, chosen)
+        if short:
+            print("error: a selected session has calls in a day folder that was not passed.",
+                  file=sys.stderr)
+            for session, missing in sorted(short.items()):
+                print(f"  {session} also has calls in {', '.join(missing)}", file=sys.stderr)
+            print("Reconstructing without them would date part of the transcript wrongly with "
+                  "nothing in the file to say so. Pass those folders as well.", file=sys.stderr)
+            return 1
+
+    written = []
+    if "bodies" in args.formats:
+        result = write_bodies(chosen, args.out, read)
+        written.append(f"{result.bodies} body file(s)")
+        if result.no_request_blob or result.no_response_blob:
+            print(f"  {result.no_request_blob} row(s) had no stored request body and "
+                  f"{result.no_response_blob} had no response; no file was written for those")
+    if "jsonl" in args.formats:
+        generated = datetime.now(UTC).isoformat(timespec="seconds")
+        result = write_jsonl(
+            chosen,
+            args.out,
+            project=args.project_name or "corpus",
+            days=[Path(day).name for day in args.days],
+            read=read,
+            version=__version__,
+            generated=generated,
+        )
+        written.append(f"{result.files} conversation file(s)")
+
+    print(f"wrote {', '.join(written)} under {args.out}")
+    return 0
 
 
 def _train_dict(config: Config, args: argparse.Namespace) -> int:
