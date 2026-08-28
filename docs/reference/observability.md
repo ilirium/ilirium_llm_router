@@ -138,6 +138,36 @@ guarantee it can never write one **twice**, and a duplicated row is worse than a
 remains open in `../backlog.md`, and `../milestone-2-corpus/phase-10-body-store/notes.md` has the
 reproduction.
 
+## What the columns are read back by
+
+*Added 2026-08-28, when Phase 11 built the tools that consume them. Until then the columns had a
+writer and no reader, and nothing here said which of them anybody depended on.*
+
+**`extract` selects on four of them and nothing else** — `session_id`, `model`, `agent_id`, `path` —
+plus `timestamp` for ordering and `request_ref`/`response_ref` to find the bodies. Those seven are
+now load-bearing outside the recorder for the first time.
+
+**Three consequences worth knowing before changing a column:**
+
+- **`timestamp` is the ordering key, not the row order.** The index is written in **completion**
+  order, so every tool here sorts before doing anything. A column that looked cosmetic is what
+  numbers a session's extracted bodies.
+- **`agent_id` is a partition key, not a filter.** A subagent's calls carry the **parent's**
+  `session_id`, so a converter keyed on session alone splices a separate conversation into the
+  parent's transcript. **67 rows carry one**, all inside one parent session, and `observe.py:40` was
+  confirmed by measurement for the first time on 2026-08-26 when the forward review's own subagent
+  produced them.
+- **`error_status` was checked against an instrument that never saw it.** The reassembler decides
+  from the body's own shape, months later, knowing nothing about the column. Over all **979 rows**
+  they agreed: **808 `ok`/message, 93 `http_error`/error, 1 `client_disconnect`/incomplete, 0
+  contradictions.** *Nothing lines up like that by accident, and no test could have said it.*
+
+**And one column pair is read by nothing here.** `request_ref` and `response_ref` hold a digest **or
+one of five sentinels** — `dropped`, `too_large`, `absent`, `error`, `none`. **A sentinel is not a
+digest**, and used as a filename each fails at the filesystem, which is a worse error than the
+honest one. Only `too_large` has ever appeared: **45 rows**, and structurally they are the *tail* of
+a long session, because request bodies grow monotonically and cross the cap once.
+
 ## Config shape
 
 ```yaml

@@ -607,10 +607,16 @@ role. The ordering now costs nothing and buys nothing, and it is left alone rath
 
 ### Group E — documentation
 
-20. The temporary `README.md` note (position 3) — the dictionary commands and the new subcommands,
-    marked as superseded by Phase 12. **It carries the Phase 12 commitment**, which is recorded in only
-    one other place.
-21. `reference/corpus.md` and `reference/observability.md` updated for the tools.
+20. **Done 2026-08-28.** The temporary `README.md` note (position 3) — the dictionary commands and
+    the new subcommands, marked as superseded by Phase 12. **It carries the Phase 12 commitment**,
+    which is recorded in only one other place. *The section opens with the warning rather than
+    closing with it, so a rewrite meets it before deciding what to keep.*
+21. **Done 2026-08-28.** `reference/corpus.md` and `reference/observability.md` updated for the
+    tools. *`corpus.md` had a sentence saying the extraction tool "is a later phase's subject" and
+    naming a `--extract` flag that no longer exists — both replaced.* `observability.md` gains what
+    it never had: **which columns anybody reads back.** Until this phase they had a writer and no
+    reader, so nothing recorded that `timestamp`, `agent_id` and the two `*_ref` columns are now
+    load-bearing outside the recorder.
 
 ### Group F — verify, harvest and close
 

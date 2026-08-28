@@ -137,3 +137,33 @@ Task 17 was staged and committed while `make lint` was failing; the failure was 
 import out of order, fixed in its own commit. **Running a check and not reading it is
 indistinguishable from not running it**, and the only reason it cost nothing here is that the defect
 was trivial.
+
+---
+
+## Group E — the documentation, tasks 20 and 21, 2026-08-28
+
+*Filed here rather than in a `notes-group-e.md` of its own: two documentation tasks, no findings that
+outlive them, and a fifth group file would cost more to navigate than it saves. **If Group E ever
+grows a finding, it gets its own file** — `../../README.md`'s rule is about what a reader needs, not
+about symmetry.*
+
+**Task 20 — the `README.md` note.** The temporary section documenting the subcommands, the dictionary
+commands and `extract`'s output layout. **The warning opens the section rather than closing it**, so a
+Phase 12 rewrite meets it before deciding what to keep — the commitment is otherwise recorded in only
+one place, `../implementation-plan.md` under Phase 12, and a rewrite that misses it silently drops the
+only user-facing description this tooling has.
+
+**Task 21 — the two reference documents, and one of them was wrong rather than merely thin.**
+
+`reference/corpus.md` said the general extraction tool *"is **not** here; it is a later phase's
+subject"* and named a **`--extract` flag that no longer exists** — Group B deleted the old flags
+outright rather than aliasing them. **A reader following that sentence would have typed a command that
+has not existed since 2026-08-26.** Replaced with what was built, including the two decisions a reader
+cannot infer from the flags: the response extension is decided off the body's first byte, and a
+sentinel row gets no file rather than an empty one.
+
+`reference/observability.md` gains a section it never had: **which columns anybody reads back.** Until
+this phase the CSV had a writer and no reader, so nothing recorded that `timestamp`, `agent_id`,
+`path`, `session_id`, `model` and the two `*_ref` columns are now load-bearing **outside** the
+recorder. *That is the kind of fact that is obvious while it is being built and invisible six months
+later, when someone changes a column that looked cosmetic.*

@@ -48,6 +48,55 @@ one, go in `.env`. Each backend declares how its credential is obtained — `for
 Anthropic, `strip` or `inject` for a local server — so in the usual setup the router holds no secret
 at all.
 
+## The corpus tools
+
+> **This section is temporary and Phase 12 replaces it.** It documents commands that exist now, in
+> the shape they exist now, so the dictionary tooling and the corpus tools are not undocumented in
+> the meantime. **A rewrite of this file that drops it drops the only user-facing description these
+> commands have** — the commitment is recorded in
+> `docs/milestone-2-corpus/implementation-plan.md`, under Phase 12.
+
+The router can archive the bodies it relays — **off by default**, so no `logs/corpus/` is correct
+behaviour. Once it is on, these read it back:
+
+```sh
+ilirium-llm-router verify-archive logs/corpus/2026-08-25
+ilirium-llm-router extract logs/corpus/2026-08-25 --out ./dump --format bodies
+ilirium-llm-router extract logs/corpus/2026-*/ --out ./dump --format jsonl
+```
+
+| Command | What it does |
+|---|---|
+| `serve` | start the router; **a bare invocation still does this** |
+| `check` | validate the config and print what it means, without starting |
+| `extract` | select calls and write them where a person can read them |
+| `verify-archive` | read every body back and check each against the digest in its filename |
+| `train-dict` | train a compression dictionary from what has been archived |
+| `tune-dict` | try dictionary sizes against the same sample and print what each is worth |
+
+**`extract` needs `--out` and `--format`, both required** — a run always states what it produces.
+`--format` is repeatable, so `bodies` and `jsonl` can be asked for together and land under one root:
+
+```
+<out>/bodies/<session-id>/00001-request.json     the bodies as they crossed the wire
+<out>/projects/corpus/<session-id>.jsonl         the session, rebuilt for a history viewer
+```
+
+Selection is by `--session`, `--model`, `--agent` and `--path`, **matched exactly** — `--path
+/v1/messages` does not sweep in `/v1/messages/count_tokens`. Repeats of one flag are OR'd; different
+flags are AND'd.
+
+**Two things worth knowing before trusting the output.** A reconstruction is **not** a Claude Code
+session record — it is rebuilt from what crossed the wire, so `cwd`, `gitBranch`, `version`,
+`toolUseResult` and agent attribution are absent by construction; **each file says so in its first
+record.** And a session resumed the next day has calls in two day folders: **pass both, or the
+command refuses and names the one you left out** — converting half of it produces a transcript that
+reads as complete and is wrong about when part of it happened.
+
+**Point a history viewer at `<out>`, never at `~/.claude/projects/`.** Viewers that support a custom
+Claude directory will read `projects/` and ignore `bodies/`. Writing reconstructions into your real
+history directory would corrupt your own record with lossy copies.
+
 **`docs/README.md` is the entry point to the documentation**: what each tier is for and how to find
 an answer. In short — `docs/reference/` is what is true, `docs/procedures/` is what you can re-run,
 `docs/epd/` is what is still open, and `docs/status.md` is where the project is. `CLAUDE.md` is the

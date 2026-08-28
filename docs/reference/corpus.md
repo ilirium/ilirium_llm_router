@@ -115,8 +115,35 @@ because a day folder is a directory anyone can drop a file into — **a dictID i
 `zstd --train` stamps **1** on everything it produces, which is why the router derives and stamps
 its own.
 
-The CLI has `--extract`. The general extraction *tool* — selection by day, session, call or model,
-output layout, bulk verification — is **not** here; it is a later phase's subject.
+**The tools that read it back are `extract` and `verify-archive`** — built in Phase 11 on
+2026-08-28, and `--extract` no longer exists; the subcommands replaced the old flags outright rather
+than aliasing them. `verify-archive` is the read-and-check half: every blob, against the digest in
+its own filename. `extract` is selection and output.
+
+**Selection is on the index alone, and matching is exact.** `--session`, `--model`, `--agent` and
+`--path`; repeats of one flag are OR'd and different flags AND'd. **`--path /v1/messages` does not
+sweep in `/v1/messages/count_tokens`** — on the corpus that is **902** rows against **66**, and a
+prefix match would fold the second into the first while the total still looked right.
+
+**Output is two trees under one `--out`.** `bodies/<session>/<seq>-request.json` and
+`<seq>-response.sse|.json`, and `projects/<project>/<session>.jsonl` for a history viewer.
+**`<seq>` is per session in *timestamp* order** — the index is in completion order, so numbering it
+as it lies would label a session's bodies by when each call finished.
+
+**Three things about `extract` that are not obvious from its flags:**
+
+- **A response's extension is decided by the body's first byte, not by the index's `stream`
+  column.** `observe.py` sets that column from content-type and the two are deliberately allowed to
+  disagree, so the bytes are one source instead of two — and it is the same question the reassembler
+  asks, so the two tools cannot disagree either.
+- **A row whose `*_ref` is a sentinel gets no file**, never an empty one. The corpus holds four
+  genuinely empty bodies and the two would be indistinguishable. The count is reported instead.
+- **It reads one thing outside the folders it was given: the `index.csv` of their siblings.** Never
+  a blob, never a dictionary. A session resumed the next morning has calls in two day folders, and
+  without that look sideways the converter cannot tell it is missing half of one. *This is a
+  qualified exception to "the day folders it is given and nothing above them", granted by the owner
+  on 2026-08-28. **The self-containment guarantee above is untouched** — it promises a day folder's
+  blobs open standalone, and they still do.*
 
 ## The write path
 
@@ -197,6 +224,16 @@ usable validation split, so the values were chosen knowing the slice they were s
 - **Not a guarantee that every call is archived.** A call that never reaches `record()` reaches
   neither the CSV nor the corpus. That hole is real, observed, and *reported* rather than closed —
   `observability.md`.
+- **Not a Claude Code session record, when converted.** `extract --format jsonl` rebuilds a session
+  from what crossed the wire; `cwd`, `gitBranch`, `version`, `toolUseResult` and agent attribution
+  are **absent by construction** — none of them is ever in an API body. **Each file says so in its
+  own first record**, because the viewer is the only place these are read and it would not show a
+  sidecar.
+- **Not one file per `session_id`.** A session holds several conversations — subagents carrying the
+  parent's id, and short probes — **36 of them across 9 sessions** in the corpus. Each becomes its
+  own file, the deepest taking the plain `<session>.jsonl` and the rest a root-digest suffix.
+  *Safe because the viewer identifies a session by **filename**, not by the `sessionId` field, and
+  does not merge two files that share one.*
 
 ## Before quoting a ratio
 
