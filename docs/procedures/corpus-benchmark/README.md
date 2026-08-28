@@ -82,7 +82,11 @@ non-monotonicity.
 - **Whether a response dictionary pays.** Responses are timed here and sized here, and that is the
   first time they have been measured at all — but nothing trains one, so their ratio is the undicted
   number and nothing more.
-- **What happens on other hardware.** Every figure is one machine on one day. On this one `logs/`
-  sits inside a cloud-synced folder, which the fsync number is measuring whether you meant it to or
-  not — and that is the number the router would actually pay here.
+- **What happens on other hardware.** Every figure is one machine on one day. When these figures
+  were taken, `logs/` sat inside a cloud-synced folder on this machine, which the fsync number is
+  measuring whether you meant it to or not — and that was the number the router would actually pay
+  here. **That stopped being true on 2026-08-25**, when the working tree moved to
+  `~/Projects/local/`, which is not synced. *The recorded figures are not corrected — they are what
+  was measured, on the setup named. But a re-run today measures a different filesystem, so the two
+  are not comparable, and the caveat is dated rather than deleted so that stays visible.*
 - **Whether the corpus is representative of anything.** 8.8 MB from three runs. It is what exists.

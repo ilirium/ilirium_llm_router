@@ -673,13 +673,14 @@ def test_a_fresh_lock_is_not_broken(tmp_path: Path) -> None:
 
 
 def test_the_lock_age_comes_from_inside_the_file_not_its_mtime(tmp_path: Path) -> None:
-    """`logs/` sits in a cloud-synced folder here and a sync rewrites mtimes — the same reason a
-    dictionary's name leads with a UTC stamp rather than being sorted by mtime."""
+    """An mtime is filesystem metadata anything outside this program can rewrite; `since=` is a
+    fact the trainer wrote. Same reason a dictionary's name leads with a UTC stamp rather than
+    being sorted by mtime."""
     subject = trainer(tmp_path)
     subject.retrain_lock.parent.mkdir(parents=True, exist_ok=True)
     stale = time.time() - LOCK_STALE_S - 1
     subject.retrain_lock.write_text(f"pid=1 since={stale:.0f}\n", encoding="utf-8")
-    os.utime(subject.retrain_lock, None)  # a "sync" touches the mtime; the content still says stale
+    os.utime(subject.retrain_lock, None)  # something rewrites the mtime; the content says stale
 
     assert subject._acquire()
     subject._release()

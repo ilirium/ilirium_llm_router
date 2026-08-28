@@ -109,6 +109,15 @@ review — so the open half is real and its evidence is unchanged.
 document. **Phase 10 is the worked example either way**, since its register and the defects it caught
 are recorded in `milestone-2-corpus/phase-10-body-store/notes.md` and summarised in `IDM-008`.
 
+**Give every item here a stable, referencable index.** *Added 2026-08-26 on the owner's instruction.*
+Items are cited today by quoting their bold opening phrase — `status.md`'s "What is next" does it,
+and so do two phase plans. **A quoted title is not an identifier:** editing a title silently breaks
+every citation of it, nothing checks that, and the break stays invisible until a reader follows one.
+*What it would take:* an id per item, a rule for allocating one that survives items being deleted when
+done, and a decision on whether `procedures/link-check.py` learns to verify them — that last part is
+what turns this from a convention into an instrument. *Parked because* it touches every item in a
+545-line file, and an id scheme is worth deciding once rather than growing.
+
 ---
 
 ## Documentation defects found and not fixed
@@ -273,6 +282,20 @@ back nearly half the local wall clock at the price of the first special case in 
 *Weaker than it looks?* The opposite — this is the largest measured cost in the project, and the
 reason it is parked is that nobody has been willing to take the trade.
 
+**What a reconstructed session cannot contain, and the fix nobody should reach for.** *Added
+2026-08-26, from Phase 11's converter design.* The corpus holds bodies, so five things Claude Code's
+own session records carry can never be rebuilt from it: **`cwd`**, **`gitBranch`**, **`version`**,
+**`toolUseResult`** — Claude Code's enriched record of what a tool returned, where the wire carries
+only the `tool_result` content — and **agent attribution**. *Why this is an item rather than a line of
+documentation:* the obvious fix is *"capture some headers"* and **it does not work**, because none of
+the five is a header. They are client-side state that never crosses the wire in any form; at most
+`User-Agent` yields a version string. *The part that is genuinely owner-shaped:* whether the router
+should ever record context it is **told** rather than **sent**, which means a capture-time change and
+a new field on the write path. Nobody has asked for it. *Weaker than it looks?* **Yes, and this is the
+rare item that says so.** What is missing is chrome — every user turn, assistant turn, tool call and
+tool result **is** reconstructable, so a transcript comes out complete in substance and thin in
+metadata.
+
 **Three diagnostics reserved out of Phase 10, deliberately.** Named 2026-08-18 when the owner asked
 what else should be logged so that loss is diagnosable, and answered *KISS — this is a prototype meant
 to be finished and used*. **A live metrics or status endpoint**, for watching queue depth and drop
@@ -366,6 +389,61 @@ methodology extracted from n=1 is a guess about what generalises. Do not create 
 > in place instead of edited away.*
 
 ## Instruments and housekeeping
+
+**~24 mutation survivors are error-message wording, and they are parked rather than tested.** *Added
+2026-08-28, Phase 11 Task 23, on the owner's decision — category A of four, with B, C and D fixed in
+the phase.* The converter's mutation sweep ran **279 mutants** and **105 survived**; the survivors
+decompose into four kinds, and only three of them are defects.
+
+**These ~24 are the fourth kind: the harness mutating text nobody asserts.** They are the
+singular/plural grammar inside error messages — `"was"`/`"were"`, `"it"`/`"them"` — and similar
+wording in `MissingDayError` and the schema note. **A test for each would pin an error message's
+grammar**, which is churn dressed as coverage: the message would then be unable to improve without a
+test change, and the thing being protected is not behaviour.
+
+*Recorded rather than dropped because the number is the honest denominator.* **"105 survived" without
+this entry overstates the gap by about a quarter**, and a later reader comparing a future sweep
+against 105 needs to know what a quarter of it was. **The count also measures the harness, not only
+the code** — a mutation operator that rewrites every string constant will always produce these, and
+that is an argument for the tool parked below rather than for more tests.
+
+*Worth doing if* the schema note's wording ever becomes a contract something else parses — at that
+point the grammar stops being prose and a test is the right instrument.
+
+**A mutation-testing tool, rather than the hand-rolled harness Phase 11 built.** *Added 2026-08-28
+on the owner's instruction, at the moment the choice was made — option (b) of three, with (a) taken.*
+Phase 11's Task 23 needed systematic mutation coverage of the converter and had two ways to get it: a
+harness written in the phase, or a dependency (`mutmut`, `cosmic-ray`). **The harness was chosen and
+the tool is parked here rather than dropped**, because the difference between them is not the
+technique — it is who maintains it.
+
+**`method/IDM-003-development-tooling.md` owns this decision, not a phase.** That document exists
+because `ty` was tried and refused with the refusal recorded nowhere, and its standing rule is that a
+tool arrives deliberately or not at all. *Adding one inside a phase whose subject is corpus tooling is
+exactly the sideways arrival it was written to prevent.*
+
+*Worth doing because* a hand-rolled harness mutates what its author thought to mutate, which is the
+same blind spot the tests already have — a tool's operator set is somebody else's list, and that is
+most of its value. *Parked because* Phase 11's harness answers the question the phase actually asked,
+and the harness's own survivor list is the evidence to judge a tool against later. **Read the harness
+before buying the tool:** if it found nothing, the tool is the more interesting purchase, and if it
+found real survivors, the technique is proven and only the coverage is in question.
+
+**Whether a reconstruction can be checked against the real thing — and it looks like it can.** *Added
+2026-08-26 on the owner's instruction, which asked whether the original `uuid`s could be recovered
+from local state.* **Checked the same day: yes, for any session driven on this machine.** Claude Code
+keeps its own session records at `~/.claude/projects/<mangled-path>/<session-id>.jsonl`, and **all
+three session ids in the `2026-08-25` corpus index have a file there** — `15b29c2a…`, `8aa605b9…`,
+`ad9392ae…`. *(Established by listing filenames only. No session content was read.)*
+
+**There are two uses for that and only one of them is safe.** As an **oracle** it is worth more than
+the uuids ever were: a reconstruction can be **diffed against the real record** rather than eyeballed,
+which turns *"looks right"* into *"differs in exactly these fields"*. As an **input** it is a trap — a
+converter that reads real uuids out of `~/.claude/` no longer reconstructs from the corpus alone, and
+**silently stops working for a corpus copied from another machine**, which is the precise property
+Phase 11 exists to demonstrate. *Parked because* Phase 11 ships synthetic deterministic uuids and does
+not need it. *Worth doing because* the oracle is the strongest test of the converter available, and it
+already exists on disk.
 
 **Nothing runs `procedures/branch-index.py --check` automatically, so the branch index's whole
 guarantee rests on somebody remembering.** *Added 2026-08-21, the day the script was written.* The
@@ -485,13 +563,102 @@ vanishes cannot show that the mechanism caught it.
 
 ---
 
+**Record the Anthropic rate-limit response headers.** *Added 2026-08-24, and it is the reversal of an
+entry in "Not on this list, and why" below — read that first, because it holds why this was refused
+and what refuted it.*
+
+*What it needs:* `retry-after` and the `anthropic-ratelimit-*` family, read off the reply the same way
+everything else is — **on the way past, never by parsing and rebuilding.** They are already relayed
+to the client; `DROPPED_FROM_RESPONSE` in `../src/ilirium_llm_router/proxy.py` does not touch them.
+Nothing about the byte-relay premise changes; this is the recorder learning to look at a header for
+the first time.
+
+*Why it is not free, and this is the real cost:* `reference/observability.md` says the recorder reads
+**a tee of the passing bytes** and `reference/corpus.md` says the store sees **bodies only, never
+headers** — *"so the credential never reaches disk."* **A header-reading recorder walks up to that
+sentence.** Whatever is built must record a named allowlist of headers rather than a copy of them, or
+the next `authorization` header lands in `calls.csv`. That is the design question, and it is why this
+is an item rather than a patch.
+
+*What it buys, measured rather than argued:* on 2026-08-24 the router logged **66 rate-limited calls
+in one day** and could say only `rate_limit_error: Error` about all of them — which limit, and when
+it clears, were unavailable. **Two open upstream issues stall on exactly this measurement:**
+[`anthropics/claude-code#82653`](https://github.com/anthropics/claude-code/issues/82653) and
+[`BerriAI/litellm#30365`](https://github.com/BerriAI/litellm/issues/30365), the second of which says
+in as many words that nobody has distinguished an upstream 429 relayed through a proxy from one the
+proxy produced. **This router can answer that**, and did — but from timing and a streaming control,
+not from the headers, which is reconstruction rather than measurement.
+
+*Weaker than it looks?* **No, and it is stronger than when it was refused** — the refusal was
+reasonable and made a prediction, the prediction came true, and the prediction turned out not to be
+the thing that mattered.
+
+*Where it does **not** go:* `calls.csv`'s columns are a standing non-goal for Milestone 2 —
+`milestone-2-corpus/implementation-plan.md` names *"changing `calls.csv`, not its rotation, not its
+columns"*. **So this needs the non-goal overturned first, or a home that is not a CSV column**, the
+same gate the sequence column sits behind.
+
+---
+
+## Dictionaries
+
+*Added 2026-08-26 on the owner's instruction, and **it is the first section here grouped by topic
+rather than by kind**.* Under the 2026-08-19 section order the items below would file in three
+different places — one is a measurement, one is tooling, one is an instrument. Grouped anyway, because
+they are three questions about **one mechanism**, and a mechanism nobody owns is how each of them
+stayed unasked. *If that turns out to be the wrong call the fix is cheap: each item is self-contained
+and can be scattered back.*
+
+**All three were considered for Phase 11 and postponed on 2026-08-26**, when the owner settled
+position 3 of `milestone-2-corpus/phase-11-corpus-tools/plan.md`. That phase's subject is extracting
+and converting bodies so a reconstructed dialogue can be **checked by eye**; dictionary features are
+not in it.
+
+**Whether a response dictionary pays is already on this list and is deliberately not restated here.**
+It is under "Measurements left open", added 2026-08-19. This file points rather than restates, and
+that item carries an argument — that automatic retraining would make the request-only asymmetry
+permanent *by default rather than by decision* — which a summary here would lose.
+
+### Dictionary commands — `list`, `show`, `install`
+
+*Added 2026-08-26.* The dictionary machinery has no user-facing surface beyond `--train-dict` and
+`--tune-dict`. Nothing answers **which dictionaries exist**, **which one a given day's rows
+reference**, **when one was installed and what it scored against the incumbent**, or lets you
+**install a specific one**. All of those mean reading `retrain.log` and `index.csv` by hand today.
+*Parked because* the owner chose to keep Phase 11 to a single question. *Weaker than it looks?*
+**Partly, and only for one third of it** — `--extract` already prints a day folder's dictionaries, so
+`show` overlaps something that exists. `list` and `install` do not.
+
+### A benchmark: what a dictionary is worth against no dictionary
+
+*Added 2026-08-26.* Nothing can currently answer *"is the installed dictionary helping, and by how
+much"* against real stored bodies. `--tune-dict` sweeps **training parameters**, and the trainer
+scores a **candidate** on a holdout; neither measures the installed dictionary against the same bodies
+stored undicted. *Why this is more than convenience:* the two figures this project already has —
+**2.815×** from `--extract` over stored blobs and **3.317×** from the trainer's holdout — **must not be
+compared**, and `phase-11-corpus-tools/plan.md`'s register says so in as many words. A benchmark that
+takes one frozen slice and reports both encodings of **it** is the instrument that would make such a
+comparison legitimate for the first time. *Parked because* `reference/corpus.md:193` deliberately
+refuses a headline ratio, so this needs a shape that answers the question without manufacturing one.
+
+---
+
 ## Not on this list, and why
 
-**The Anthropic 429 rate-limit headers.** `anthropic-ratelimit-*` and `retry-after` are never
-recorded, because the router tees bodies and not headers. Marked **do not go looking**: the recorder
-keeps the error body's symbolic type, so the next 429 through the router writes `rate_limit_error:
-Error` into the CSV by itself — measured rather than reconstructed. Listed here so it is not
-rediscovered and filed as an omission.
+**~~The Anthropic 429 rate-limit headers.~~ Overturned 2026-08-24 — it is now a live item**, under
+"Instruments and housekeeping" above. *Kept struck rather than deleted: an entry that vanishes cannot
+show that the mechanism caught it, and this one was caught by its own stated reasoning failing.*
+
+*What it said:* `anthropic-ratelimit-*` and `retry-after` are never recorded, because the router tees
+bodies and not headers. Marked **do not go looking**, on the argument that the recorder keeps the
+error body's symbolic type, so *"the next 429 through the router writes `rate_limit_error: Error`
+into the CSV by itself — measured rather than reconstructed."*
+
+*Why that is wrong, and it is the entry's own prediction that refuted it:* **66 of them arrived on
+2026-08-24 and wrote exactly that string.** It is measured, and it is not enough — `rate_limit_error:
+Error` does not say **which** limit was hit, requests-per-minute or input-tokens-per-minute, nor when
+it resets. The entry assumed the symbolic type was the fact worth having; the first real incident
+needed the bucket and the reset, and neither is in a body.
 
 **Everything struck through in `milestone-1-core/outstanding-work.md`.** The credential shape and the
 read timeout were built in Phase 5; silent trimming below the context boundary was measured and

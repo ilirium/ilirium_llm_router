@@ -54,6 +54,22 @@ rather than the code. Phase 5's timeout options had been repeated across four do
 comment-density claim was in the review's own plan. Notes about the code drift from the code, and
 only a measurement catches it.
 
+**Phase 11 added a form none of the five had: a requirement whose *justification* stopped being
+true while the requirement stayed right.** *2026-08-28.* The plan's converter had to refuse a
+session whose day folders were not all passed, and gave the reason: otherwise it produces *"a
+plausible transcript whose opening turn silently contains a day of prior conversation"*. **That
+cannot happen in the design that was built.** Requests are cumulative and turns are taken from the
+conversation's final state, so the transcript comes out complete either way — measured on the one
+real cross-day session: **depth 337 both ways, every message identical at every position.** What the
+omission actually costs is **26 misdated turns** and 12 assistant turns falling back to a poorer
+source.
+
+**The error was kept and the reason was rewritten in place.** A transcript that is wrong about *when*
+a quarter of it happened is still the silent-and-plausible failure the original sentence was reaching
+for — but a session that inherited the old wording would have gone looking for a truncation that the
+code cannot produce, and concluded the check was pointless. **A stale justification is more dangerous
+than a stale number**, because it survives the review that a number would fail.
+
 ## 2. The two ways a number fails
 
 Both happened here, and they are opposite failures. Recorded as a pair, because either one alone
@@ -195,6 +211,19 @@ Three from Phase 7, in ascending order of how invisible they were:
   asked about path shape, answering a question about document structure by accident. That is luck,
   not coverage, and it is the reason this bullet is in a lesson rather than a changelog.
 
+**Phase 11 added two more, and the second is the sharpest form this failure takes.**
+
+- **A marker that means two things makes its own check unreadable.** The register's closing check
+  looks for `❓` in a cell. One survived — not a live placeholder but a *reference* to one, in prose
+  reading "the `❓`'s requirement is met". The wording was changed rather than the checker taught to
+  ignore it: a symbol that sometimes means *unvalued* and sometimes means *the thing formerly
+  unvalued* is a symbol whose check cannot be trusted either way.
+- **A test can compare the code to itself.** `assert len(key) == CONVERSATION_KEY_CHARS` reads like
+  coverage and cannot fail: change the constant and both sides move together. **Twelve such
+  assertions existed** — every skip reason, every on-disk subtype, the key length — and a mutation
+  sweep is what exposed them, because nothing else can. **Where a literal is the contract, the test
+  writes the literal**; importing the constant tests only that Python can compare a value to itself.
+
 **The rule: when a check passes, know which property it checked.** A green run is evidence about
 that property and about nothing else, and the defects that survive longest are the ones sitting in
 the gap between what was checked and what was meant.
@@ -236,6 +265,32 @@ turned into a question that can be asked out loud.
 **The sharpest case, and the reason these are worth keeping.** Phase 10's Task 18 found that **the
 number needed to measure a defect *was* the defect.** The instrument has lied repeatedly in this
 project and always with a plausible number, which is what makes plausibility worthless as a signal.
+
+**3 — A mutation you expect to fail proves much less than one you did not think of.** *Added
+2026-08-28 from Phase 11, which ran both kinds and can compare them.*
+
+Practice 1 above was applied per task: 23 targeted mutations across four tasks, each aimed at a
+guarantee, each with a no-op control. **All 23 died, and not one was a surprise** — every one had
+been chosen *because* a test was expected to catch it. That is a check on the suite's
+responsiveness, and it is worth running, but by construction it cannot produce a survivor.
+
+**A systematic sweep of the same code found 105 survivors out of 279.** Decomposed: about a quarter
+were the harness mutating error-message wording that nothing should assert; the rest were **dead code
+nobody had noticed, twelve self-referential tests, and a dozen genuinely untested behaviours** —
+including a field whose mutation would have hidden the very record that says *"this is not a real
+transcript"*, in the viewer, silently.
+
+**The distinction to carry: targeted mutation tests the tests you wrote; systematic mutation tests
+the tests you did not.** They answer different questions and the second is the one that surprises.
+*And it needs the honest denominator — a sweep's raw survivor count includes its own operator's
+noise, so a number like "105" overstates the gap until it is classified.*
+
+**One more thing that belongs in lesson 4 and is recorded here because it happened to this
+practice.** The first sweep was killed by a timeout, and **`finally` does not run on `SIGTERM`** — so
+it left the module it was measuring as `ast.unparse` output: behaviour identical, **every comment
+stripped, 256 of 670 lines gone, and the suite passing 427/427.** Nothing failed; `git status` caught
+it. **An instrument that edits the thing it measures needs a restore path that survives being
+killed**, which `try/finally` is not.
 
 *One caution on scope: every defect Phase 10 found was found by driving the thing or by attacking the
 tests, and **none would have failed the suite as written.** That is a statement about Phase 10, not a

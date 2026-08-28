@@ -762,9 +762,9 @@ class DictionaryTrainer:
         dead code and leave nothing to break. The cost of this choice is that a `kill -9` leaves the
         lock behind, which is exactly what the age check is for.
 
-        **The age comes from inside the file, never from its mtime** — `logs/` sits in a
-        cloud-synced folder here and a sync rewrites mtimes, which is the same reason a dictionary's
-        name leads with a UTC stamp.
+        **The age comes from inside the file, never from its mtime** — an mtime is filesystem
+        metadata that anything outside this program can rewrite, while `since=` is a fact this
+        trainer wrote. Same reason a dictionary's name leads with a UTC stamp.
         """
         self.retrain_lock.parent.mkdir(parents=True, exist_ok=True)
         try:

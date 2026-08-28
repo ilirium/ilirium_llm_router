@@ -189,6 +189,86 @@ permission strings; a scalar under `attribution` in `settings.local.json` would 
 precedence and intersect nothing. **Nothing sets one today**, and if anything ever does, this is the
 paragraph that says the check does not cover it.
 
+## The built-in read-only set, which no allowlist can extend
+
+**Added 2026-08-26**, the missing half of Phase 11's Task 5. *That task was recorded in
+`../milestone-2-corpus/phase-11-corpus-tools/plan.md` as executed. Its **settings** half was; this
+half, which is what the task's title names, had not been written when Task 4 came to point at it.*
+
+**Read this before adding an allow rule, and before assuming a command runs silently.** Everything
+below is Anthropic's, read from
+[`code.claude.com/docs/en/permissions`](https://code.claude.com/docs/en/permissions) on **2026-08-26**
+against Claude Code **2.1.231**. It is recorded the way `../wiki/` records anything learned by reading
+somebody else's software: dated, sourced, and expected to expire.
+
+**The set, verbatim:** `ls`, `cat`, `echo`, `pwd`, `head`, `tail`, `grep`, `find`, `wc`, `which`,
+`diff`, `stat`, `du`, `cd`, **and read-only forms of `git`**. *"The set is not configurable; to require
+a prompt for one of these commands, add an `ask` or `deny` rule for it."*
+
+**So an allow entry for one of these grants nothing** — it is the fossil this document's pruning exists
+to remove. That is why the set is recorded here instead of being turned into rules.
+
+### Four matching behaviours that decide whether a call is silent
+
+| | |
+|---|---|
+| **Parse failure** | *"When Claude Code can't fully parse a command, it asks for approval instead of treating the command as read-only."* **Anything over 10,000 characters always prompts**, because it exceeds what the analysis parses. This is the general rule behind `CLAUDE.md`'s *no `$(...)`* |
+| **Compound commands** | A rule must match **each subcommand independently**. Separators: `&&`, `\|\|`, `;`, `\|`, `\|&`, `&`, newlines. **Compound-ness is not itself a trigger** — `cd packages/api && ls` runs unprompted when each part qualifies. Two combinations still prompt: `cd` into a *different* directory followed by `git`, because that directory's hooks could run; and `cd` with a redirect whose target cannot be resolved |
+| **Wrappers** | Stripped before matching: `timeout`, `time`, `nice`, `nohup`, `stdbuf`, the builtins `command` and `builtin`, and zsh's `noglob` — so `Bash(npm test *)` also matches `timeout 30 npm test`. **Not** stripped: `command -v`, `nocorrect`. A leading assignment of a *known-safe* env var is also stripped for allow rules; any other assignment defeats an allow rule but not a deny rule |
+| **Unquoted globs** | Permitted for commands whose every flag is read-only, so `ls *.ts` runs. **`find`, `sort`, `sed` and `git` prompt on an unquoted glob**, because it could expand to a flag like `-delete` |
+
+### The one row this repository's own measurement disputes — unresolved, do not paper over it
+
+**The vendor doc says read-only `git` is in the built-in set. Seven measurements in this repository on
+2026-08-25 said the opposite**, the decisive one being that **`git --version` prompted** — a command
+that touches no repository, which ruled out both explanations then on offer (worktree layout, index
+refresh). The conclusion drawn was *"every git command prompts unless an allow rule matches."*
+
+**Both cannot be true of the same day, and this document does not pick a winner by reasoning.** Two
+readings survive:
+
+1. **The behaviour changed.** The clause *"and read-only forms of `git`"* may postdate 2026-08-25.
+2. **`git --version` is not a "read-only form of `git`"** to the classifier, which may enumerate
+   `status`/`log`/`diff` rather than reason about the flag.
+
+***This is exactly the hazard that was written down as the reason for this section, and it arrived
+within 48 hours of being written.*** The stated cost of recording a vendor fact here was that it is
+**Anthropic's to change, and would then disagree with reality silently.** It now does, in the section
+that predicted it. Left visible rather than resolved, because a resolution invented from the two
+sources would be a third claim with no measurement under it.
+
+**The check that settles it, with its positive result named first** — per the instrument lesson this
+milestone keeps re-learning: **with auto mode off, run `git --version` and have the owner say whether a
+prompt appeared.** There is no allow rule matching it (`git status`, `git log`, `git diff`, `git show`,
+`git rev-parse`, `git branch` are each spelled out; `--version` is not) and no deny rule touching it.
+**A prompt means reading 2 is live and the 2026-08-25 measurement stands. Silence means reading 1 and
+the ~20 git allow entries in the tracked file are fossils.**
+
+**No git allow rule is removed on the strength of this.** Deleting twenty entries on an unverified
+reading is the expensive direction of the mistake; keeping a redundant entry costs nothing.
+
+### Why a model cannot run that check alone
+
+**A model sees a denial as a tool error and cannot see an approval at all.** A silent run and an
+approved-after-prompt run are **the same observation from the inside**, so every claim in this section
+about what prompts is either the vendor's or the owner's — never a session's own impression. **Auto
+mode removes the prompt entirely**, so a probe run with it on measures nothing about the allowlist.
+
+*This is why the 2026-08-25 measurements needed the owner, and why the old claim survived so long
+unchallenged: whoever wrote it had no instrument that could contradict it.*
+
+### One more thing the documentation and this machine disagree about
+
+**Where an auto-saved approval lands.** Anthropic documents that it goes to `.claude/settings.local.json`
+*"at the root of the git repository, resolved through worktrees to the main checkout"*, from v2.1.211.
+**Observed here at v2.1.231: it does not.** All three worktrees hold their own `settings.local.json`
+with **different contents** — this branch's written 2026-08-26, `main`'s untouched since 2026-08-24.
+
+***Hypothesis, not a measurement:*** a **bare clone has no main checkout** to resolve to, so the
+fallback is the worktree. → `IDM-001-git-branching.md`, "Worktrees are the standing practice". **The
+consequence if it holds is the one this document cares about:** approvals accumulate in a *per-worktree*
+local file, so the local half this split wants kept empty refills three times over instead of once.
+
 ## Two harness tools, and which file each belongs to
 
 **`/fewer-permission-prompts` writes into the wrong file.** It scans transcripts for common tool calls

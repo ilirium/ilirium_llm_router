@@ -185,6 +185,59 @@ than theorised — and the owner's decision was to **report the hole, not close 
 the row from elsewhere must guarantee it can never write one twice.
 
 
+### Phase 11 — the offline tools over the store *(in flight)*
+
+*Added 2026-08-25. The phase opened on 2026-08-24 and this file did not learn of it for a day, which
+is the staleness described under "What is deliberately not done yet" behaving exactly as predicted.*
+
+**The store exists and nothing offline reads it well.** Phase 11 builds the tools over Phase 10's
+output: `extract` with selection, the dictionary commands documented rather than extended, and a
+converter from archived bodies to Claude Code session `JSONL` for an external history viewer. **The
+CLI becomes subcommands on one entry point** — owner's decision, 2026-08-24 — because four flags on
+one command had already stopped scaling.
+
+The plan is `phase-11-corpus-tools/plan.md` and **it is not approved**; two positions in its settled
+table were still open when this entry was written. Nothing here should be read as ratifying it.
+
+### Phase 12 — the installer and the `README.md` rewrite
+
+*Owner's decision, 2026-08-24.* Installation via `uv tool`, and the `README.md` rewritten around it.
+
+**Phase 12 inherits a commitment made in Phase 11, and it is written down in only one other place.**
+Phase 11 documents the existing dictionary commands with a user-facing note in the top-level
+`README.md`, **explicitly temporary until this phase reworks it**. A Phase 12 that rewrites the
+`README.md` without knowing that will silently drop the only user-facing description the dictionary
+tooling has.
+
+### Phase 13 — the Anthropic rate-limit response headers
+
+*Number allocated 2026-08-25 on the owner's instruction.* The work itself is a live item in
+`../backlog.md`, added 2026-08-24 as the reversal of an entry that had refused it; read that entry
+first, because it holds why the refusal was reasonable and what refuted it.
+
+**What it needs:** `retry-after` and the `anthropic-ratelimit-*` family, read off the reply **on the
+way past, never by parsing and rebuilding**. They are already relayed to the client untouched. The
+byte-relay premise does not change; this is the recorder learning to look at a header for the first
+time.
+
+**Why it is worth a phase rather than a patch.** On 2026-08-24 the router logged **66 rate-limited
+calls in one day** and could say only `rate_limit_error: Error` about every one of them — not which
+limit was hit, not when it clears. Two open upstream issues stall on exactly that measurement, and
+this router is positioned to take it.
+
+**It arrives carrying a collision with this file's own non-goal, and allocating a number does not
+clear it.** *"Changing `calls.csv`. Not its rotation, not its columns"* is named above as a
+Milestone 2 non-goal. Phase 13 needs a home for the headers, so one of two things has to happen
+first: **the non-goal is overturned**, or **the headers go somewhere that is not a `calls.csv`
+column** — the corpus day index and a sidecar are the visible candidates. **Neither is chosen here,
+and Phase 13's plan cannot skip the question.**
+
+**A named allowlist, never a copy — this is the design constraint, not a detail.**
+`../reference/corpus.md` says the store sees bodies only and never headers, *"so the credential never
+reaches disk."* A header-reading recorder walks straight up to that sentence. Whatever Phase 13
+builds must record an **explicit list of header names**; a blanket copy of the response headers puts
+the next `authorization` header into a file that is not supposed to be capable of holding one.
+
 ### The closing review phase — *unnamed, number unallocated*
 
 Every milestone closes with one, specified as measurement rather than removal; the checklist is in
@@ -196,13 +249,15 @@ is not known.
 
 ## What is deliberately not done yet
 
-The opening playbook has seven steps. **Steps 1–6 are not run**, and this section exists so that a
-later session does not read their absence as an oversight.
+The opening playbook has seven steps. **Steps 1 and 3–6 are not run**, and this section exists so
+that a later session does not read their absence as an oversight. **Step 2 is no longer among them —
+it was discharged in fact on 2026-08-24** and waits only on Phase 11's Task 7 to make its evidence
+durable; the row and the note below say what that means.
 
 | Step | State |
 |---|---|
 | 1. Name the falsifiable central claim, the non-goals, and what would refute it | **deferred to Phase 9** — see above. The refuting experiment *is* Phase 9's gate |
-| 2. Capture the real input | **NOT discharged** — settled 2026-08-17 by Phase 9's re-derivation. `docs/captures/` holds **one** body, and one body cannot exercise a cross-body dictionary. Phase 9's Group B spends it |
+| 2. Capture the real input | **discharged in fact 2026-08-24 — evidence pending Phase 11's Task 7.** A real driven session produced 171 index rows across two day folders. *Read as "NOT discharged" from 2026-08-17 until 2026-08-25, on the true-at-the-time ground that `docs/captures/` held one body; see the note below* |
 | 3. Spike whatever the architecture depends on | not started |
 | 4. Settle the expensive-to-reverse questions as EPD forks | **EPD-003 already is one.** Whether it needs a sibling is unknown |
 | 5. Write the spec, marking every statement measured / inferred / assumed | not started |
@@ -222,6 +277,31 @@ capture *changed* the architecture rather than informing it.
 holds one 119 KB request; the frozen CSV holds body lengths and no bodies; the probe bodies are
 synthetic and under a kilobyte. **The consequence is that the gate is not the twenty-minute measurement
 this plan and `EPD-003` both call it** — it is a live capture session plus twenty minutes of `zstd`.*
+
+**Discharged in fact 2026-08-24; the paragraph above is kept exactly as written because its reasoning
+was right.** It predicted the gate would cost a live capture session plus twenty minutes of `zstd`,
+and that is what it cost. The session ran, and the corpus in the `to-run-server` worktree now holds
+**171 index rows and roughly 280 blobs across two day folders** — enough material to exercise a
+cross-body dictionary, which one body never could.
+
+**What is not discharged is the evidence, and that is why the row says *pending Task 7*.** The
+capture lives in a **gitignored** logs folder, in one worktree, on one machine; no commit contains a
+byte of it. Phase 11's Task 7 freezes a slice, and until it runs there is nothing a later reader can
+check. **A capture that exists only on the laptop that made it discharges nothing** — which is the
+same class of failure this whole section was written to prevent, arriving from the opposite
+direction.
+
+*Two things about that material a session should not misread, both measured 2026-08-24.* It is
+**undicted** — `request_dict_id` is `none` on every row and the retrain log says `too-few-samples`,
+which is **not** the dictionary corruption `../reference/corpus.md` warns about, because the blobs
+name no dictionary for one to be missing. And it is **Anthropic-only**: `backend` is `anthropic` on
+all 171 rows, so every tool built over this store has been exercised against one backend's material.
+
+*Corrected 2026-08-25, the same day it was written. That paragraph first said no LM Studio traffic
+**had ever been captured**, which overreached the evidence it cited: the 171 rows are the **corpus**,
+and telemetry is a wider net. `calls.csv` holds **15 LM Studio calls on 2026-08-21**, before the
+corpus covered those days. The corpus claim was right; the "ever" was not, and the two populations are
+easy to conflate because one is a subset of the other.*
 
 ---
 

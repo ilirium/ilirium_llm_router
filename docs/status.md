@@ -10,56 +10,59 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-21 — `docs/branch-index` merged as `3233fb7`, and the session's work is in five permanent
-homes rather than here.** The branch carried two bodies of work: the **branch index** —
-`reference/branches.md`, generated from git by `procedures/branch-index.py`, which `IDM-001` had
-refused as a hand-maintained list and now admits as a derived one — and **four method items on the
-owner's instruction**: `IDM-007` (raising a concern where it will be read), `IDM-008` (the register),
-the read-by-section rule in `CLAUDE.md`, and the forward-only `notes.md` split in `README.md`.
+**2026-08-28 — Phase 11 is built. Tasks 12 to 24 are done; only Task 25, the merge, is left, and it
+waits on the owner.** Branch `feat/phase-11-corpus-tools`, clean tree, **438 tests** (355 at the
+session's start).
 
-**Read the merge message `3233fb7` for what the branch decided.** It carries no phase number, so per
-`IDM-001`'s third row that message *is* its record and it was written as the phase note it does not
-have.
+*Derive the commit count rather than trusting one written here — `git log --oneline 7202729..HEAD`.*
 
-**Two things this session established that are worth arriving knowing.** **Checking before writing
-changed two of the four items** — `IDM-008` turned out to be Phase 10's register, instructed on
-2026-08-19, so it is written from that instance and carries its four findings as argument rather than
-assertion; the reading rule turned out to be a wiki page's lever 2 needing a *trigger* rather than a
-home. And **enumerating refs found `docs/add-claude-md`**, the repository's first branch, unrecorded
-in any document for twenty-five days — no rule was broken, there was simply nowhere to record a
-fast-forwarded branch belonging to no phase.
+**`extract` and `verify-archive` now run end to end.** Selection is exact on session, model, path and
+`--agent`; output is `bodies/` and `projects/` under one `--out`. **Every `❓` in the register is
+resolved** and `evidence/register-check.py` gates it at **89 checks**.
 
-**The count sweep fired on its first use, and that is the thing to trust the mechanism for.**
-Regenerating the index after the merge took the table from 18 rows to 19 and made four sentences in
-three live documents stale in the same instant. They were re-derived from the table, not incremented:
-**eight of nineteen** branches carry no phase number. `f445d6f` records it.
+**Four findings, in the order they cost:**
 
-**`prompt.md` was rewritten, not deleted** (`665722d`), after harvesting the two things that lived
-only in it — the mutation-testing and passing-check practices into `reference/lessons.md` **§8**, and
-the on-disk inventory into this file. One claim in it was **dropped rather than carried**: `logs/` is
-gitignored, so its `git add -A` warning named a hazard that does not exist.
+1. **A systematic mutation sweep found 5 real logic defects that 23 targeted mutations could not.**
+   The targeted ones all died and none surprised — each was chosen *because* a test was expected to
+   catch it. **279 mutants, 105 survivors; after the fixes, 277 and 75.** Worst of them: `isMeta`
+   was unasserted, and `isMeta: true` **hides** the record whose job is to say the file is not a real
+   transcript.
+2. **The sweep nearly destroyed the module it measured.** Killed by a timeout, and `finally` does not
+   run on `SIGTERM` — `transcript.py` was left as `ast.unparse` output, **every comment stripped, 256
+   of 670 lines gone, suite passing 427/427.** `git status` caught it. Three restore paths now, tested
+   by killing a run deliberately.
+3. **Twelve tests compared the code to itself.** `assert len(key) == CONVERSATION_KEY_CHARS` cannot
+   fail. Nothing but a mutation sweep finds these, because they read exactly like coverage.
+4. **A settled justification stopped being true while its requirement stayed right.** The missing-day
+   error's stated failure mode cannot occur in the design that was built — measured: **depth 337
+   either way, every message identical.** What it actually costs is **26 misdated turns**. The error
+   was kept, the reason rewritten in place.
 
-**`CLAUDE.md` is 297 lines, up from 260**, accepted deliberately by the owner against upstream's ~200
-guidance; the measurement of what it could lose is in `backlog.md` as a review-phase item, which is
-the condition it was accepted under.
+**Three pieces of evidence that are not tests.** `reconstruct` over the whole corpus — **902 calls in,
+902 accounted for, 36 conversations** matching a count made before the code existed. The first full
+conversion — **1,615 records, 1,614 distinct ids**, one duplicate `uuid5` found by counting the output
+against itself while 378 tests passed. And **`902 + 66 + 11 = 979`**, which is what demonstrates exact
+matching rather than asserting it.
 
-**Phase 10 remains the last phase, merged `32c26bb`.** What it does and does not claim is in
-`milestone-2-corpus/implementation-plan.md` and `backlog.md` rather than here — failure mode 3
-undischarged, a call can still vanish, and no headline compression ratio.
+**One owner decision changed the extractor's shape:** it may read the `index.csv` of **sibling** day
+folders, which the plan forbade. Without it task 12's missing-day error can never fire from the CLI.
+*The exception is to the plan's phrasing, not to `reference/corpus.md`'s guarantee.*
 
-**Baselines, run not predicted 2026-08-21 at the close of this session: `make test` **310**,
-`make lint` clean, `make check` valid, `branch-index.py --check` current at **19 rows**,
-`link-check.py` **44 files / 3 broken / 0 roundabout** over the live tiers — the three are `EPD-001`
-and `EPD-004`'s known deliberate absences, listed in `procedures/link-check.py`'s docstring.**
-*(A whole-repository run reports 91 / 76 / 2, most of it the frozen restructure archive; the absolute
-count also depends on untracked files, so compare deltas rather than absolutes. `make test` is ~2 s
-warm; a **first** run after the cloud folder evicts the virtualenv takes two to three minutes on
-hydration alone — slow, not stuck.)*
+**Still waiting on the owner, and nothing is blocked by either:** does `git --version` prompt, with
+auto mode off; and **Task 25, the merge** — `--no-ff`, then the branch index *after* the merge commit.
 
-*Trimmed from 90 lines to this at the close of 2026-08-21, per this section's own ~30-line rule and
-for a second reason: its baseline line still read `link-check.py` **86 files, 75 broken** from before
-this branch, which is the staleness the rule exists to prevent. **Nothing was lost** — Phase 10's
-entry is `phase-10-body-store/notes.md` as frozen-primary, and this session's is `3233fb7`.*
+**Baselines, re-run 2026-08-28 in this worktree.**
+
+| Check | Figure |
+|---|---|
+| `make test` | **438 passed** — 355 at the session's start |
+| `make lint` / `make check` | clean at the pinned `0.16.1` / valid |
+| `register-check.py` | **89 checks, 0 failed**; no `❓` anywhere in the register |
+| `link-check.py` | **83 broken, 2 roundabout** — down 3 as `extract.py` and `jsonl.py` references resolved |
+| `branch-index.py --check` | current, 21 rows |
+
+*`make lint` still cannot see column width — `E501` is not in ruff's default set. Added lines are
+checked by hand, in **characters**, because `awk` counts bytes and said 13 where there were 4.*
 
 ## Where the project is
 
@@ -126,53 +129,92 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Exercise the corpus by hand — the owner's, and it comes before Phase 11 opens.** The store has
-   been driven by Phase 10's own checks and never by its owner in ordinary use. **It is off by
-   default**, so turning it on is the first step and no `logs/corpus/` until then is correct
-   behaviour; `reference/corpus.md` is the spec and names what else a session gets wrong from the
-   name alone. **`logs/telemetry/` does not exist yet either** — the router creates it on its next
-   start, and the old `logs/calls.csv` and `logs/router.log` were deliberately left where they are.
-   *(This item read "Execute Phase 10 — the body store, from Task 16 (Group E)" until 2026-08-21,
-   eight tasks after it stopped being true, and was then the merge until the merge happened. It is
-   the defect this file's own milestone-table entry describes: prose that undercounts goes stale
-   invisibly, where a missing row would not.)*
-2. **Plan Phase 11 — and its subject is deliberately not chosen here.** The candidates are in
-   `backlog.md`, which is the full inventory; picking one is a planning decision, not something the
-   next session inherits from this file. **`EPD-003`'s open questions 3–6 are not among them** — they
-   were closed in `EPD-003` itself on 2026-08-20 at Task 20, three answered and retention marked out
-   of scope for Milestone 2 on the owner's decision rather than answered.
+1. **Merge Phase 11 — Task 25, and it is the only thing left in the phase.** `--no-ff`, then
+   `procedures/branch-index.py --write` **after** the merge commit, then commit the regenerated table
+   on the trunk. **It waits on the owner** because it is the phase's one outward-facing,
+   hard-to-reverse step. *Everything before it is done: tasks 12–24, 438 tests, no `❓` left in the
+   register.* **The owner exercises the tools by hand after the merge** — task 14 was struck for
+   exactly that, so the phase ships without a ground-truth diff and knows it.
+
+   ~~**Execute Phase 11, starting at Task 12.**~~ **Done 2026-08-28**, and its detail is retired
+   here rather than kept struck: twenty settled positions, seventeen accepted review findings and the
+   task-by-task record are in that phase's `plan.md` and its **five group notes**, which is where a
+   reader needs them. *The review's summary is the one line worth carrying: the plan's model of a
+   captured session was simpler than the traffic on disk, and the difference was **visible in an hour
+   with `csv.DictReader`**.*
+
+2. **Report `BUG-001` to the two upstream issues.** They are named in
+   `bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`, and both stall on exactly the
+   measurement it contains — a paired control showing a streamed request **2.8× larger** to the same
+   model accepted **0.6 s** after a non-streamed one was rejected. **The document says this is an
+   action, not a finished thing.** It is the only open item here that is not blocked on a decision.
+   *(This item replaced **"settle whether a tracked permission change takes effect before it
+   merges"**, answered 2026-08-25: settings are **session-cached**, inert until restart rather than
+   until merge, and the worktree-resolution explanation is dead. Before that, items 1 and 2 replaced
+   **"exercise the corpus by hand"** and **"plan Phase 11"**, both spent. The corpus figures that
+   entry quoted — two day folders, 171 rows, **undicted** — are all superseded; see "Where we
+   stopped".)*
 3. **Decide `EPD-001` or `002`.** Both are blocked on a person rather than on work, and both are argued
    on a case Phase 4 measurably weakened — see `backlog.md`, "Decisions waiting on a person". Deciding
    one is cheaper than any measurement in the list, and neither decision waits on Phase 11.
    (`EPD-003` is no longer among them — decided 2026-08-17 by Phase 9.)
 
 *The measurement items are both in `backlog.md` under "Measurements left open" and neither is listed
-here as next, because the owner has not chosen Phase 11's subject and this file is not the inventory.
-Whether Claude Code shows LM Studio's context error was already there. **Whether archiving slows a
-call was added there on 2026-08-21** — until then it lived only in `prompt.md`, which is the one file
-allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table.*
+here as next, because Phase 11 is chosen and running and this file is not the inventory. Whether
+Claude Code shows LM Studio's context error was already there. **Whether archiving slows a call was
+added there on 2026-08-21** — until then it lived only in `prompt.md`, which is the one file allowed
+to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table. *(This sentence gave as its
+reason that "the owner has not chosen Phase 11's subject" until 2026-08-25, which stopped being true
+on 2026-08-24 — the conclusion held, the reason for it did not.)**
 
 ## What is on disk and not in git
 
-*Harvested here 2026-08-21 from `prompt.md`, which was the only place it was written down and which
-expires by design. **Verified by looking**, not relayed. This is working-copy state, so it belongs in
-this file and it goes stale — re-check before trusting a line of it.*
+*Harvested from `prompt.md` on 2026-08-21, which was the only place it was written down and which
+expires by design. **Re-verified by looking on 2026-08-25**, not relayed — and it had gone stale in
+three ways, which is what this section warns about happening to itself. This is working-copy state.
+Re-check before trusting a line of it.*
 
-`logs/` is gitignored whole (`.gitignore:228`), so none of this can be committed by accident.
+**`logs/` is gitignored whole (`.gitignore:228`), so none of this can be committed by accident.**
+**And it is now per-worktree** — there are three checkouts of this repository and the layout below
+differs in each. That is new since this section was written.
+
+**`to-run-server/logs/` — the live one, 93 MB**
 
 | Path | What it is |
 |---|---|
-| `logs/corpus/dicts/req-2026-08-20T110338Z-0e4d84d1.dict` | **The first real dictionary**, 262,144 bytes exactly. **Do not delete it.** `measurements.md` cites the `0e4d84d1` ID as evidence that the same parameters reproduce the same dictionary byte for byte |
-| `logs/corpus-gate/` | Phase 9's corpus, **8.8 MB**. Task 15 trained the dictionary above from it, and `measurements.md` names it as the slice behind four rows. It stays |
-| `logs/calls.csv`, `logs/router.log` | The router's history to 2026-08-20. **Deliberately left** where they are when the config moved to `logs/telemetry/` — owner's decision, in `milestone-2-corpus/phase-10-body-store/plan.md`'s settled table |
-| `logs/telemetry/` | **Does not exist yet.** The router creates it on its next start. Its absence is correct |
-| `docs/procedures/dying-backend/runs/` | Task 18's driving check. Disposable — an instrument's `runs/` is overwritten by the next run |
+| `logs/corpus/2026-08-21/`, `2026-08-24/`, `2026-08-25/` | **Three** day folders. Every document that says "two" was written on 2026-08-24 and has not been re-counted |
+| `logs/corpus/dicts/req-2026-08-25T103250Z-9dd33823.dict` | **The corpus is no longer undicted.** Installed 2026-08-25T10:32:50Z, 262,144 bytes. All 320 rows in that day's index reference it |
+| `logs/corpus/retrain.log` | Three verdicts: `no-complete-day`, then `too-few-samples`, then **`installed`** |
+| `logs/telemetry/calls.csv`, `router.log` | **Exists.** This section said *"does not exist yet"* until 2026-08-25; the router created it on 2026-08-21 |
 
-**One warning was dropped rather than carried across.** `prompt.md` said *"stage with explicit paths,
-never `git add -A`."* The stated reason was that `logs/` holds uncommittable things — and `logs/` is
-gitignored, so `git add -A` cannot stage any of it. The advice may still be worth following for other
-reasons, but **the reason given for it was not a real hazard**, and repeating it would have preserved
-a rule whose justification does not hold.
+**`main/logs/` — historical, 260 KB of corpus plus Phase 9's**
+
+| Path | What it is |
+|---|---|
+| `logs/corpus/dicts/req-2026-08-20T110338Z-0e4d84d1.dict` | **The first real dictionary**, 262,144 bytes exactly. **Do not delete it.** `reference/measurements.md` cites the `0e4d84d1` ID as evidence that the same parameters reproduce the same dictionary byte for byte |
+| `logs/corpus-gate/` | Phase 9's corpus, **8.8 MB** — re-measured 2026-08-25, unchanged. `measurements.md` names it as the slice behind four rows. It stays |
+| `logs/calls.csv`, `logs/router.log` | The router's history to 2026-08-20. **Deliberately left** where they are when the config moved to `logs/telemetry/` — owner's decision, in `milestone-2-corpus/phase-10-body-store/plan.md`'s settled table |
+
+**`phase-11-corpus-tools/logs/` — still does not exist. `.venv/` does, and `evidence/` is now
+committed.** *`logs/`'s continued absence is still evidence rather than trivia: `make test`, `make
+lint` and `make check` have all run here and none of them created it.*
+
+*Both halves changed meaning on 2026-08-26 and the entry is rewritten rather than patched.* The venv
+was created **by the owner**, so `uv run python` works here and anything importing `zstandard` can be
+run in this worktree. *(This file briefly recorded that a review subagent created it. It did not; that
+claim is retracted in `milestone-2-corpus/phase-11-corpus-tools/notes.md`.)*
+
+**`logs/`'s absence has stopped being trivial and become evidence.** It used to be correct because
+nothing had ever run here. **Three `make` targets have now run — `test`, `lint` and `check` — and the
+folder still does not exist**, which is `cli.py`'s documented promise that `--check` configures no
+logging demonstrated rather than asserted. **This worktree's config also reports `Corpus: off`**, so
+nothing done here can write to the corpus.
+
+**One warning was dropped rather than carried across, and it stays dropped.** `prompt.md` said
+*"stage with explicit paths, never `git add -A`."* The stated reason was that `logs/` holds
+uncommittable things — and `logs/` is gitignored, so `git add -A` cannot stage any of it. **The advice
+survives on other grounds** — there is now a deny rule that fires — **but the reason originally given
+was not a real hazard**, and repeating it would preserve a rule whose justification does not hold.
 
 ## In-flight branches
 
@@ -181,30 +223,32 @@ a rule whose justification does not hold.
 `method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-**None. The table is empty as of 2026-08-21**, when `docs/branch-index` merged as **`3233fb7`** and
-its row went with it — forked at `5352d0d`, six commits, documentation only. **Phase 11 still has no
-branch because its subject is not chosen** — the plan opens the phase branch, so there is nothing to
-list until one is.
+| Branch | Purpose | Tree | Next action |
+|---|---|---|---|
+| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: `extract` with selection over one or more day folders, `verify-archive`, and a converter to Claude Code session `JSONL`. **Dictionaries are documented, not extended** — position 3, ratified 2026-08-26 | forked at `f445d6f`; **`main` merged in 2026-08-25** so the branch carries `docs/bugs/`. **The plan was ratified and revised 2026-08-26** — 14 settled positions, `❓` column empty | **start work at Task 12**, delta reconstruction. **Groups A and B and Task 11 closed 2026-08-26**, 355 tests. `cli.py` is on subcommands and `transcript.py` reassembles both encodings. **Task 14 is struck on the owner's decision**: the tools are exercised by hand *after* the phase, so the phase's own evidence is tests and mutation testing — and task 23's mutation check is therefore the strongest thing it produces |
 
-*What that branch was is no longer this file's job to remember, and that is the point of it.* It
-carried no phase number, so it has no phase note; its permanent record is **its merge commit
-message**, which `IDM-001`'s third row added on the day it was needed, plus **its row in
-`reference/branches.md`**, which the fourth row added the same day. The branch that exposed both gaps
-is the first to be recorded by both.
+**Opened 2026-08-24, and it is the first branch worked in a git worktree** —
+`/Users/ilirium/Projects/local/ilirium_llm_router/phase-11-corpus-tools`, beside `main` and
+`to-run-server` under a bare clone. Recording the practice is Task 3 on the branch itself.
 
-*It was empty in exactly this way once before: `docs/phase-9-corpus-gate` merged as **`b29d502`** on
-2026-08-17 and nothing replaced it until Phase 10 opened. The permanent record of both — branch, fork
-point and merge commit — is in the phase notes, which is where `method/IDM-001-git-branching.md` puts
-it and why this section may go empty without losing anything.*
+*This section read **"None. The table is empty as of 2026-08-21"** until 2026-08-24, which was true
+when written and false the moment the branch opened. It is the defect this file's own milestone-table
+entry describes, in the section that exists to prevent it.*
 
-**It was a `docs/` branch although the phase was about the router**, because no `src/` change survived
-it: Task 6 patched `proxy.py` and restored it, and `git diff main -- src/` was empty at the merge.
-`method/IDM-001-git-branching.md` is what makes that the right prefix — the prefix says what kind of
-work it is, and `phase-N-` says it is numbered work. **Phase 10 is the opposite case**, and it is: `feat/phase-10-body-store`,
-opened 2026-08-18. *(This sentence read "will be" until then.)*
+**`docs/bugs-tier` merged 2026-08-25 and is not listed above**, because it is done. It carried no
+phase number, so its permanent record is **its merge commit message** plus **its row in
+`reference/branches.md`** — `IDM-001`'s third and fourth rows, both added the day they were needed.
 
-`docs/phase-8-method-and-guardrails` was the first branch to **carry a phase number on a `docs/`
-prefix** — the form it settled: the prefix says what kind of work it is, `phase-N-` says it is a phase.
-`method/IDM-001-git-branching.md` now states that as the rule, with Phase 7 as the old form and Phase 8
-as the new one. `main` is ahead of `origin/main` and nothing has been pushed;
-`docs/milestone-boundary-restructure` and `docs/phase-8-method-and-guardrails` both still exist locally.
+**Everything is pushed as of 2026-08-25, and `main` diverged before it was.** `git push --all`
+rejected `main` because `origin` held two commits from 2026-08-21 that this bare clone never
+received; both are merged in now. *(This paragraph read "`main` is ahead of `origin/main` and nothing
+has been pushed" until then — true when written, and the reason the divergence came as a surprise.)*
+
+**Merged branches are kept, not deleted, and the tooling enforces it.** `branch-index.py` refuses to
+render when a description names a branch that no longer exists, so deleting one breaks the next
+merge's regeneration. Found on 2026-08-25 by deleting `docs/bugs-tier` and restoring it.
+
+*Trimmed 2026-08-25: four paragraphs of commentary on **merged** branches — `docs/phase-9-corpus-gate`,
+`docs/phase-8-method-and-guardrails`, `docs/branch-index` and Phase 10's prefix — were cut. This
+section's own opening rule says merged branches are not listed here, and it had accumulated 22 lines
+of them. All of it is in `reference/branches.md` and the phase notes.*

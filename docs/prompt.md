@@ -1,74 +1,193 @@
 # The next session's prompt
 
-*The one file in `docs/` allowed to go stale, per `docs/README.md` — which is why it is rewritten at each
-handoff rather than left. **It names what to read and what to distrust; it never summarises what
-those documents say.** Check `docs/status.md` before trusting a word of it.*
-
-**Rewritten 2026-08-21, and shortened from 111 lines to this.** The version it replaces had expired:
-it opened Phase 10, which merged as `32c26bb`. It had also drifted into being a summary — five
-sections restating what `docs/reference/lessons.md`, `docs/status.md`, `docs/reference/corpus.md` and the phase notes already
-held, which is the one thing this file is not for. Two things in it existed nowhere else and were
-**harvested before it was cut**, named at the bottom.
+*The one file in `docs/` allowed to go stale, per `README.md` — which is why it is rewritten at each
+handoff rather than left. **Replaced 2026-08-26, at the close of the session that ran Groups A and B
+and Task 11.** Whatever comes next replaces it again.*
 
 ---
 
-## No phase is open
+**Phase 11 is open. Tasks 1–11 are done and work resumes at Task 12.** Branch
+`feat/phase-11-corpus-tools`, **clean tree, 355 tests green.**
 
-**Phase 10 merged on 2026-08-21. Phase 11's subject is not chosen**, and choosing it is a planning
-decision that is not inherited from this file. **So there is nothing here to execute.** A session
-starting now is picking up work, not resuming it.
+**Fourteen commits landed on 2026-08-26** — but **derive that rather than trusting it**, because a
+count in this file is exactly the kind that goes stale between the writing and the reading:
+`git log --oneline fe37743..HEAD`. `fe37743` is where this session started.
 
-## Read these, in this order
+**Nothing is queued before the owner and nothing is blocked.** One question is waiting for them and it
+blocks nothing — it is in `for-the-owner.md`, described below.
 
-1. **`docs/status.md`** — where the project is, what is on disk, what is next. It is the only file
-   here that is *state*, and everything below defers to it.
-2. **`docs/backlog.md`** — the inventory Phase 11's subject gets picked from. `docs/status.md`'s "What is
-   next" names three candidates and is deliberately not the full list.
-3. **Whichever `docs/reference/` file the work touches.** `docs/reference/README.md` is the index and
-   names the trigger for each — the moment you would open *that* file rather than its neighbour.
+**Work in the worktree.** `/Users/ilirium/Projects/local/ilirium_llm_router/phase-11-corpus-tools`.
+The project is a **bare clone** with `main`, `to-run-server` and this phase as sibling worktrees.
+**A session started in `main` sees none of Phase 11**, and editing one worktree does not edit another.
 
-**Read them by section.** `CLAUDE.md`'s "Reading" section says how and why, and points at the wiki
-page that ranks the levers. This matters most for a phase's `plan.md` and `notes.md`.
+## What to read, and in what order
 
-## What to distrust
+1. **`docs/status.md`** — first, every session.
+2. **`docs/milestone-2-corpus/phase-11-corpus-tools/plan.md`** — the settled table (twenty positions),
+   then the task group you are about to run, then the register section covering it.
+3. **That phase's `notes.md`, section "The forward review"** — **before writing any converter code.**
+   Seventeen findings with their evidence. **Do not re-derive them.**
+4. **`notes-group-c.md` — the group you are working in.** *The phase's notes were **split by group on
+   2026-08-26**, per `docs/README.md`'s rule. **`notes.md` is still the entry point** and keeps what
+   belongs to no group — the re-derivation, the session boundaries, the forward review, the "Verified
+   by" line, and what was open at the end of a group. **Task work goes in the group file**, and
+   `notes.md`'s index lists them in written order.*
+5. **`for-the-owner.md`, in the same folder — this is new.** Everything addressed to a person rather
+   than to a session: **three `ASK`, four `IDEA`, two `REGRET`**, each marked so they skim. **Add to
+   it rather than burying an owner-facing point in `notes.md`**, and do not invent a rule or a tier
+   for it — the owner asked for the file and explicitly not for a convention.
 
-- **This file, first.** It is the one document allowed to be wrong. `docs/status.md` wins every
-  disagreement.
-- **Any count in prose.** This repository's signature failure is a sentence that undercounts going
-  stale where a missing table row would have been visible — `docs/status.md` records it happening twice to
-  itself, and once more on 2026-08-21 when regenerating `docs/reference/branches.md` made four sentences
-  stale at once. **Re-derive a number from its table or its instrument; never relay it.**
-- **An `EPD-NNN` document.** Nothing in one is implemented unless it names an acceptance date.
-  `IDM-NNN` documents are the opposite — in force, and to be acted on.
-- **A green check.** `docs/reference/lessons.md` §3, §4, §7 and §8 are four different ways this project has
-  been wrong about a passing result. §8 is the one that says what to *do* about it.
+**Read by section.** `grep -n '^## ' <file>` first. **`plan.md` is now much the largest at 953
+lines** and must not be read whole. **`notes.md` is 403** and `notes-group-a.md` **433** — the split
+means each of the rest can be read whole if you want it, which is what the split bought.
 
-## Before opening a phase
+## Task 12 is next, and it is the hard core of the phase
 
-→ **`docs/method/IDM-008-the-register.md`** before writing `plan.md`, and
-→ **`docs/method/IDM-005-opening-a-milestone.md`** only if a *milestone* is opening, which it is not.
+**Delta reconstruction.** Requests are cumulative — request *N* carries turns 1..*N* — so walk a
+session's calls in **timestamp** order and emit only the new user-side entries, then the assistant
+turn from that call's response.
 
-Milestone 2 is open with three phases done. `docs/milestone-2-corpus/implementation-plan.md` is its live
-plan until it closes.
+Three things it must do, all settled and none optional:
 
-## What the owner has not done yet
+1. **The two normalisations, without which "requests are cumulative" is false on raw bytes.**
+   `cache_control` markers migrate between calls, and the same message is serialised as a bare string
+   in one call and as content blocks in the next. **Raw: 9 prefix / 84 not. Normalised: 85 / 8.**
+   → review finding 2.
+2. **Order across day folders**, so the diff for the first call after midnight is taken against the
+   last call of the previous day rather than against nothing.
+3. **Error when a selected session has calls in a folder that was not passed.** *That error is the
+   whole defence.* Without it a cross-day session reconstructs into a plausible transcript whose
+   opening turn silently contains a day of prior conversation — which reads as real.
 
-**Exercising the corpus by hand comes before Phase 11 opens** — `docs/status.md`'s first "What is next"
-item, and it is the owner's, not a session's. The store has been driven by Phase 10's own checks and
-never in ordinary use. **It is off by default**, so no `logs/corpus/` from a fresh start is correct
-behaviour rather than a fault.
+**Also known and not yet handled:** retries produce **byte-identical consecutive requests**, and delta
+reconstruction has no defined behaviour for a zero delta (finding 17). And `messages` carries a
+**third role, `system`** — on 14 calls the *last* message is one (finding 5).
 
----
+## What exists now that did not this morning
 
-*What was harvested out of the previous version, so nothing was lost in the cut:*
+| | |
+|---|---|
+| `cli.py` | **subcommands**: `serve`, `check`, `train-dict`, `tune-dict`, `extract`, `verify-archive`. Bare still serves. **Old flags deleted, not aliased** |
+| `transcript.py` | **reassembly only.** `reassemble(body) -> Reply \| NotAMessage`, both encodings, six skip reasons. **Delta reconstruction is task 12 and goes in this file** |
+| `tests/test_cli.py` | new — the CLI had **no test file at all** before |
+| `tests/test_transcript.py` | new |
+| `evidence/` | **the frozen slice — 979 rows, four days, redacted**, with `freeze.py` beside it |
+| `for-the-owner.md` | new |
+| `notes-group-a.md`, `-b.md`, `-c.md` | **new — the notes are split by group.** `notes.md` went 963 → 403 lines and stays the entry point. **Write task notes into the group file** |
+| `extract.py`, `jsonl.py` | **do not exist yet.** Groups C and D |
 
-- **Two testing practices** — mutation testing as a matter of course, and interrogating a passing
-  check — are now `docs/reference/lessons.md` **§8**, beside the three lessons they operationalise. They
-  had no home outside this file.
-- **The on-disk inventory** — the trained dictionary, Phase 9's corpus, the pre-move telemetry files
-  — is now `docs/status.md`'s "What is on disk and not in git", verified by looking rather than relayed.
-  **One warning in it was dropped rather than carried**, and `docs/status.md` says why.
+**`extract` parses its full flag surface and returns 2**, naming the tasks that will build it. That is
+deliberate, not an oversight.
 
-*Everything else the previous version said was already in `docs/status.md`, `docs/reference/lessons.md`,
-`docs/reference/corpus.md`, `docs/reference/measurements.md`, `CLAUDE.md` or the Phase 10 notes. It was cut as
-duplication, not discarded as wrong.*
+## Two things that are evidence, and neither is a test
+
+- **`verify-archive` over the whole live corpus: 1793 blobs, 0 failed.** Phase 10's round-trip promise
+  driven at scale for the first time. **This discharged task 19 ahead of its group.**
+- **`reassemble` over every response blob, joined back to the index: 979 rows, 0 unresolved, 0
+  contradictions** against an `error_status` column written at capture time months earlier.
+
+**`CLAUDE.md` says green tests are not evidence, and this phase has to keep producing the other kind**
+— task 14 is struck, so the owner exercises the tools **by hand after the phase**. **Task 23's mutation
+testing is the strongest evidence the phase produces**, not optional polish.
+
+## Numbers this session established — use these, not the older ones
+
+- **979 index rows**, four day folders, frozen at **2026-08-26T15:16:22Z**. The corpus was at 770 four
+  hours earlier. **It is live and it moves.**
+- **One buffered assistant reply in the whole corpus.** Not 66 — that is the `count_tokens` count, and
+  `plan.md` carried it as the buffered count until this session.
+- **808 SSE, 93 error JSON, 47 `count_tokens`, 4 zero-length, 1 buffered.**
+- **Five `content_block` types**: `text`, `tool_use`, `thinking`, `server_tool_use`,
+  `web_search_tool_result`. *The last two are invisible in a two-day sample.*
+- **64,260 `input_json_delta` against 2,071 `text_delta`** — the deltas are overwhelmingly tool
+  arguments, not prose.
+- **`verify-archive` ratios**: `2026-08-21` 3.140×, `2026-08-24` **2.553×**, `2026-08-25` 3.120×,
+  `2026-08-26` 3.056×, all four **2.927×**.
+- **45 `too_large` rows**, all in one 292-call session. **Four of the five sentinels have never been
+  observed** — `dropped`, `absent`, `error`, and `none` as a response ref.
+- **67 `agent_id` rows, one agent, all inside one parent session.** A **partition key**, not a filter.
+- **A session spanning two day folders is now 276 calls**, up from 39 + 19 when finding 5 was written.
+
+**`2026-08-24` read 2.815× at 280 blobs mid-day and 2.553× complete.** Same folder, same command, no
+dictionary either time. **A ratio goes stale exactly like a count and never looks it.**
+
+## Things a session gets wrong about this code
+
+- **`python3` here is 3.14; the venv is 3.13.** Anything importing `zstandard` must run under
+  `uv run python`.
+- **`make lint` cannot see column width.** `E501` is not in ruff's default set while `pyproject.toml`
+  sets `line-length = 100`. **A 101-character line was committed this session and lint passed it.**
+  **Check added lines by hand.** The fix is measured and parked in `for-the-owner.md`.
+- **Rewrapping an over-width line pushes words onto the next line and creates a new one.** It happened
+  twice. **Re-measure after the fix; a fix that is not re-measured is a hypothesis.**
+- **The corpus is live and grows while you read it**, and this session's own traffic is *not* in it —
+  the owner ran it **bypassing the router**.
+- **Stage with explicit paths, never `git add -A`** — there is a deny rule and it fires.
+- **`git checkout` prompts every time — use `git switch`.** And `git merge` cannot read its message
+  from stdin; write it to a temp file.
+- **A sentinel is not a digest.** All five must read as "no blob here"; used as a filename they fail at
+  the filesystem, which is a worse error than the honest one.
+- **The index is in completion order.** Sort before analysing.
+
+## Three instrument errors this session, and none was caught by anything failing
+
+**All three were caught because a number looked wrong.** `awk` counting **bytes** not characters and
+reporting eleven over-width lines that were em-dashes; a secrets scan reporting **1913** suspect cells
+that were every one a **sha256 digest**; and `$?` after a pipe into `tail` reporting **0** for a run
+that had failed.
+
+**`CLAUDE.md`: when a check comes back negative, fix the instrument before believing the result.** The
+corollary this session adds: **a rule that fires on everything is indistinguishable from one that fires
+on nothing**, so a clean result is only worth having once the check has been made capable of returning
+a dirty one.
+
+## The one question waiting on the owner
+
+**Does `git --version` prompt?** Anthropic's documented built-in read-only set ends *"and read-only
+forms of `git`"*; seven measurements on this branch on 2026-08-25 concluded the opposite. There is no
+blanket `ask`/`deny` on git in the tracked settings, so that is not the explanation. **Recorded
+unresolved in `IDM-002` with the check named, and no allow rule removed.**
+
+**A model cannot run this check.** A denial arrives as a tool error and **an approval is invisible**,
+so silence and approved-after-prompt are the same observation from the inside. **Auto mode removes the
+prompt entirely.** It needs the owner, with auto mode off.
+
+## Still open, and not attached to Phase 11
+
+- **`BUG-001` has not been reported to either upstream issue** — and this session found it can go from
+  one paired control to **93 of 94**: every 429 in the corpus is a **non-streamed `POST /v1/messages`**,
+  zero streamed requests were ever rate-limited, and all 66 non-streamed `count_tokens` succeeded.
+  **The corpus cannot show the router's part** — every row went through it, so there is no control, and
+  a session run direct produces no rows at all. **Not done here: it belongs on its own branch.**
+  → `for-the-owner.md`.
+- **`Bash(uvx ruff *)`** permits an unpinned ruff. Raised in every recent phase, owned by nobody, and
+  now in two files.
+- **Failure mode 3 is still not discharged** — whether archiving *slows* a call is unmeasured.
+- **A call can still vanish**, and closing it needs a guarantee a row can never be written twice.
+
+## Three `❓` are live and deliberate, all resolved at Task 13
+
+`JSONL_SCHEMA_NOTE`'s wording, `SYNTHETIC_UUID_NAMESPACE`'s literal, and **the fidelity record's
+`type` — which must not be a plain `system` record**, because a real `system` role occurs inside
+`messages` and would be indistinguishable from the marker announcing *"this is not a real record."*
+
+**Task 13 settles the viewer's schema from two sources — position 17, the owner's:** the viewer's own
+source, and **one** real session file read only far enough to learn field names. **Schema knowledge at
+design time is not the same act as the converter reading `~/.claude/` at runtime**, which is what
+*"oracle, never input"* forbids.
+
+## Do not widen the phase
+
+**Position 20, the owner's words: *"step by step, not leaps by leaps."*** Deferred and **not to be
+built**: error responses, `count_tokens` calls, subagent partitioning, the `corpus-gate` second-source
+check, and all dictionary work. **Tasks 14 and 15 are struck in place, not renumbered** — do not
+resurrect them and do not renumber the rest.
+
+**When a task turns out to be larger than it was written, ask rather than widening it.** Task 2 named
+two files; the dead justification in one of them had **eight homes across seven files**, seven of them
+outside the task and two of those in `src/`. **The owner was asked and said fix all seven**, and the
+extra work went in **its own commit** so the task's boundary stayed visible in the history.
+
+Follow the working agreement in `CLAUDE.md`. **Propose before implementing, ask before touching the
+machine and say what it is for, and exercise the real thing before committing** — noting that for this
+phase the owner has taken the final exercising step for themselves, afterwards.

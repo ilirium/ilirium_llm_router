@@ -1,8 +1,9 @@
 # IDM-001 — Git branches, and where a branch is recorded
 
-**In force 2026-08-17, amended twice on 2026-08-21** — "Where a branch is recorded" gained its third
-row, and then a fourth: `../reference/branches.md`, which reverses this document's refusal of a list
-of merged branches on the ground that made the refusal right. This is the one home for the branching
+**In force 2026-08-17, amended twice on 2026-08-21 and once on 2026-08-26** — "Where a branch is
+recorded" gained its third row, and then a fourth: `../reference/branches.md`, which reverses this
+document's refusal of a list of merged branches on the ground that made the refusal right. The
+2026-08-26 amendment adds "Worktrees are the standing practice, and one branch is not work". This is the one home for the branching
 rules. `CLAUDE.md` restates a small part of it — see "The one
 accepted duplication" — and `../README.md` points here.
 
@@ -37,6 +38,72 @@ branch stayed unrecorded for twenty-five days without any rule being broken.
 **`git merge` cannot read its message from stdin.** `-F -` works for `git commit` and fails for
 `git merge`, so write the message to a temporary file. This is here because it is a branching fact and
 it is also in `CLAUDE.md` because a session writes `git merge -F -` confidently and wrongly.
+
+## Worktrees are the standing practice, and one branch is not work
+
+**Amended 2026-08-26.** Owner's decision of 2026-08-24, recorded here because it changes what a branch
+*is* on this machine: a branch is now usually **a directory you can stand in**, not a thing you switch
+to.
+
+```
+~/Projects/local/ilirium_llm_router/
+    .bare/                      the repository — no working tree
+    main/                       worktree, branch `main`
+    to-run-server/              worktree, branch `temp/to-run-server`
+    phase-11-corpus-tools/      worktree, branch `feat/phase-11-corpus-tools`
+```
+
+**One branch is checked out in exactly one worktree, and git enforces that.** It refuses to check out
+a branch that another worktree already holds. **That refusal is the whole reason `temp/to-run-server`
+exists** — the router has to be *run* against a stable tree while a phase branch holds the editable
+one, and "check `main` out twice" is not available. So a branch was created to be pinned, and it is
+the only branch in this repository that is not work.
+
+**`temp/` is not a fifth row of the table above, and must not be added to it.** That table answers
+*what kind of work this is*; `temp/to-run-server` is not work. It carries **no commits of its own**,
+it **never merges**, and its slug names a *purpose for a directory* rather than a change.
+
+| | A work branch | `temp/to-run-server` |
+|---|---|---|
+| commits of its own | yes | **none, ever** |
+| ends by | merging `--no-ff` | **it does not end** |
+| fork point | recorded | **lost, and that is acceptable** |
+| a phase folder | maybe | **never** |
+
+**Its tip sits on the trunk by construction, so `../procedures/branch-index.py` tables it as *merged*
+rather than reporting it in flight.** That is not a defect in the script and it is not to be fixed
+there: the script asks git a factual question and git's answer is right. **It is why a branch that is
+not work still needs a row** — the row's last column is the only place that can say so, which is
+precisely the argument in "A derived index is not the hand-maintained list this document refused". The
+row exists; do not remove it as noise.
+
+### What the layout changes, and it is more than convenience
+
+- **`logs/` is per-worktree.** A router run in `to-run-server/` writes to `to-run-server/logs/`. There
+  is no shared one, and a document naming "the corpus" has to say which tree's.
+- **A session started in `main` sees none of an open phase** — not its plan, not its notes, not its
+  code. Handoffs must name the worktree, and `../prompt.md` does.
+- **Tracked settings are read from the worktree the session started in, once, at session start.**
+  Measured 2026-08-25. So a permission added on a phase branch is live **in that worktree after a
+  restart** and reaches the other two **only at the merge**. → `IDM-002-harness-configuration.md`.
+
+  ***The competing explanation is dead for the tracked half, and it is named so it is not
+  re-proposed.*** It was believed for a day that tracked settings resolve *through* a worktree to the
+  main checkout, which would have made a permission inert until it **merged**. They do not. Settings
+  are **session-cached**: inert until the session **restarts**. The two predictions differ by days and
+  by what you would do about it, and only measurement separated them.
+
+  **The *local* half is a separate question, and the answer here is not the documented one.** Anthropic
+  documents that an auto-saved approval lands in `.claude/settings.local.json` *"at the root of the git
+  repository, resolved through worktrees to the main checkout"*, since v2.1.211. **On this machine, at
+  v2.1.231, it does not**: all three worktrees hold their own `settings.local.json` with **different
+  contents**, and this branch's was written on 2026-08-26 while `main`'s had not changed since
+  2026-08-24. *The likely reason — **unverified, and stated as a hypothesis** — is that **a bare clone
+  has no main checkout to resolve to**, so the fallback is the worktree. The check that would settle
+  it: grant one approval here and see which file grows.* → `IDM-002-harness-configuration.md`.
+
+*Why this is in `IDM-001` and not only in `../status.md`: the layout outlives the phase that adopted
+it, and the `temp/` rule is a branching rule. `status.md` holds which worktrees exist right now.*
 
 ## The phase number is orthogonal to the prefix
 

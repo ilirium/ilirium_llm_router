@@ -20,8 +20,17 @@ above as the current count; it is Milestone 1's, and it is dated for that reason
 read it first, every session, for where the project is, what is on disk and what is next.
 How Milestone 1 got there is in `docs/milestone-1-core/`.
 
-Note: `/Users/ilirium/Projects/code-2026/ilirium_llm_router` and the OneDrive path are the *same
-directory* (identical inode), not two checkouts. Editing either edits both.
+**The repository is a bare clone with sibling worktrees**, at
+`~/Projects/local/ilirium_llm_router` — `main`, `to-run-server` and the phase branch,
+**one branch checked out each**. Editing one **does not** edit another, `logs/` is per-worktree, and a
+session started in `main` sees none of the open phase.
+
+*This note said the opposite until 2026-08-26 — that `~/Projects/code-2026/ilirium_llm_router` and the
+OneDrive path were the **same directory** (identical inode) and "editing either edits both". **The
+symlink half is still true and the checkout is gone**: `~/Projects/code-2026` still resolves into
+OneDrive, but the working tree under it was archived to `ilirium_llm_router.zip` on 2026-08-25, and
+`~/Projects/local/` is not synced at all. The note was not merely stale — it told a session that two
+paths were one directory at the moment the project acquired three that genuinely are not.*
 
 ## Working agreement
 
@@ -137,10 +146,18 @@ CSV column. The recorder's rule is unchanged.)*
 
 → `docs/reference/corpus.md` — **read it before storing, reading or retraining against the corpus**:
 before adding an index column, before changing where a blob or a dictionary lives, before assuming a
-day folder needs anything outside itself, and **before quoting a compression ratio**. Three things a
+day folder needs anything outside itself, and **before quoting a compression ratio**. Four things a
 session gets wrong from the name alone: the store is **off by default**, so no `logs/corpus/` is
-correct behaviour; **there are three compression levels, not one**; and **there is deliberately no
-headline ratio** — every figure is a small-sample confirmation that the mechanism works.
+correct behaviour; **there are three compression levels, not one**; **there is deliberately no
+headline ratio** — every figure is a small-sample confirmation that the mechanism works; and **the
+store holds bodies only, never headers.**
+
+**That last one has two reasons and a session that carries only the first will propose the wrong
+fix.** The one people expect: **a credential never reaches disk** — no `Authorization`, no OAuth
+token, no API key, because nothing header-shaped is ever written. The one they do not: the store is
+attached to a **tee of the body bytes and never sees a header at all**, so capturing headers is not a
+policy switch but a **write-path change**. And the header-derived facts that matter are already
+columns — `session_id` and `agent_id`, read at `observe.py:316`. *Added 2026-08-26.*
 
 ## Anthropic models
 
@@ -229,7 +246,10 @@ plan, or before recording where a branch went.** It holds the folder⇄branch sl
 check, what happens to a rejected plan (merged and marked, not deleted — the phase number is spent),
 and the **four** homes where a branch is recorded — `docs/status.md` while it is in flight,
 `docs/reference/branches.md` once it lands, the phase note permanently, and **the merge commit message
-for a branch carrying no phase number**, which has no phase note to put it in.
+for a branch carrying no phase number**, which has no phase note to put it in. **Amended 2026-08-26
+with the worktree layout and the one branch here that is not work**: `temp/to-run-server` is `main`
+pinned into a worktree because git will not check a branch out twice — it carries no commits, never
+merges, and `temp/` is deliberately **not** a fifth row of the prefix table above.
 
 → `docs/reference/branches.md` — **read it to find out what a branch or a merge hash was**, and before
 hand-typing any table of merge hashes: `IDM-001` refused one, and this file is the derived answer that
@@ -264,9 +284,22 @@ config key only look wrong when they sit in adjacent rows.
 
 ## Shell
 
-**Keep bash commands statically analyzable — no `$(...)`.** Command substitution defeats the
-guardrails firewall even for otherwise-approved commands, so it turns a silent call into a prompt.
-Use absolute paths, and prefer the Read/Grep/Glob tools over shelling out to `cat`/`grep`/`find`.
+**Keep bash commands statically analyzable — no `$(...)`.** The general rule, which is the documented
+one: **a command Claude Code cannot fully parse asks for approval instead of being treated as
+read-only**, and **anything over 10,000 characters always prompts** because it exceeds what the
+analysis parses. Command substitution is the instance met here, so it turns a silent call into a
+prompt even for an otherwise-approved command. Use absolute paths, and prefer the Read/Grep/Glob tools
+over shelling out to `cat`/`grep`/`find`.
+
+**Compound commands are *not* the trigger.** `cd packages/api && ls` runs unprompted when each part
+qualifies on its own; a rule must match **each subcommand** independently. The one exception worth
+carrying, because git is constant here: **`cd` into a different directory followed by `git` prompts**,
+since that directory's hooks could run. *The "compound commands prompt" claim came from a user-filed
+issue and was repeated here on 2026-08-24 without checking; corrected 2026-08-26 against the source.*
+
+→ `docs/method/IDM-002-harness-configuration.md` — **read it before adding an allow rule, and before
+assuming a command is silent.** It holds the built-in read-only set that no allowlist can extend, the
+wrappers that get stripped before matching, and why `git` is not in that set.
 
 ## Opening and closing a milestone
 
