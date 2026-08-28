@@ -397,7 +397,7 @@ harness written in the phase, or a dependency (`mutmut`, `cosmic-ray`). **The ha
 the tool is parked here rather than dropped**, because the difference between them is not the
 technique — it is who maintains it.
 
-**`../method/IDM-003-development-tooling.md` owns this decision, not a phase.** That document exists
+**`method/IDM-003-development-tooling.md` owns this decision, not a phase.** That document exists
 because `ty` was tried and refused with the refusal recorded nowhere, and its standing rule is that a
 tool arrives deliberately or not at all. *Adding one inside a phase whose subject is corpus tooling is
 exactly the sideways arrival it was written to prevent.*
