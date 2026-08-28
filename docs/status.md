@@ -10,59 +10,47 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-08-28 — Phase 11 is built. Tasks 12 to 24 are done; only Task 25, the merge, is left, and it
-waits on the owner.** Branch `feat/phase-11-corpus-tools`, clean tree, **438 tests** (355 at the
-session's start).
+**2026-08-28 — Phase 11 is complete and merged. Milestone 2 is four phases in.** Merge `7e53f74`,
+51 commits; branch index regenerated at `f97c4b6`, 22 rows. **438 tests**, from 310 when the phase
+opened.
 
-*Derive the commit count rather than trusting one written here — `git log --oneline 7202729..HEAD`.*
+**`extract` and `verify-archive` read the archive back.** Selection is exact on session, model, path
+and `--agent`; output is `bodies/` and `projects/` under one `--out`, and a session is rebuilt into a
+transcript a history viewer opens. **No `❓` remains anywhere in the phase register**, and
+`evidence/register-check.py` gates it at 89 checks.
 
-**`extract` and `verify-archive` now run end to end.** Selection is exact on session, model, path and
-`--agent`; output is `bodies/` and `projects/` under one `--out`. **Every `❓` in the register is
-resolved** and `evidence/register-check.py` gates it at **89 checks**.
+**The one thing this phase deliberately did not do: nobody has driven the tools by hand.** Task 14
+was struck on the owner's decision — a ground-truth diff was judged too early to be worth its cost —
+so the evidence is mechanical throughout. **Do not read "Phase 11 is merged" as "the tools were
+tried".** That step is the owner's, next.
 
-**Four findings, in the order they cost:**
+**Four findings worth carrying out of the phase:**
 
-1. **A systematic mutation sweep found 5 real logic defects that 23 targeted mutations could not.**
-   The targeted ones all died and none surprised — each was chosen *because* a test was expected to
-   catch it. **279 mutants, 105 survivors; after the fixes, 277 and 75.** Worst of them: `isMeta`
-   was unasserted, and `isMeta: true` **hides** the record whose job is to say the file is not a real
-   transcript.
-2. **The sweep nearly destroyed the module it measured.** Killed by a timeout, and `finally` does not
-   run on `SIGTERM` — `transcript.py` was left as `ast.unparse` output, **every comment stripped, 256
-   of 670 lines gone, suite passing 427/427.** `git status` caught it. Three restore paths now, tested
-   by killing a run deliberately.
-3. **Twelve tests compared the code to itself.** `assert len(key) == CONVERSATION_KEY_CHARS` cannot
-   fail. Nothing but a mutation sweep finds these, because they read exactly like coverage.
+1. **A `session_id` is not one conversation** — 36 across 9 sessions, including a 66-call subagent
+   under its parent's id. And **a request's tail is provisional**: 100 messages were revised by a
+   later call, 9 changing role.
+2. **A systematic mutation sweep found 5 real logic defects that 23 targeted mutations could not**,
+   because every targeted one had been chosen expecting it to fail. It also found **twelve tests
+   comparing the code to itself**, which nothing else can find.
+3. **The sweep nearly destroyed the module it measured.** `finally` does not run on `SIGTERM`:
+   `transcript.py` was left comment-stripped, 256 of 670 lines gone, **suite passing 427/427**.
+   `git status` caught it.
 4. **A settled justification stopped being true while its requirement stayed right.** The missing-day
-   error's stated failure mode cannot occur in the design that was built — measured: **depth 337
-   either way, every message identical.** What it actually costs is **26 misdated turns**. The error
-   was kept, the reason rewritten in place.
+   error's stated failure mode cannot occur in the design that was built. The error was kept and the
+   reason rewritten in place.
 
-**Three pieces of evidence that are not tests.** `reconstruct` over the whole corpus — **902 calls in,
-902 accounted for, 36 conversations** matching a count made before the code existed. The first full
-conversion — **1,615 records, 1,614 distinct ids**, one duplicate `uuid5` found by counting the output
-against itself while 378 tests passed. And **`902 + 66 + 11 = 979`**, which is what demonstrates exact
-matching rather than asserting it.
-
-**One owner decision changed the extractor's shape:** it may read the `index.csv` of **sibling** day
-folders, which the plan forbade. Without it task 12's missing-day error can never fire from the CLI.
-*The exception is to the plan's phrasing, not to `reference/corpus.md`'s guarantee.*
-
-**Still waiting on the owner, and nothing is blocked by either:** does `git --version` prompt, with
-auto mode off; and **Task 25, the merge** — `--no-ff`, then the branch index *after* the merge commit.
-
-**Baselines, re-run 2026-08-28 in this worktree.**
+**Baselines, on the merged trunk.**
 
 | Check | Figure |
 |---|---|
-| `make test` | **438 passed** — 355 at the session's start |
+| `make test` | **438 passed** |
 | `make lint` / `make check` | clean at the pinned `0.16.1` / valid |
-| `register-check.py` | **89 checks, 0 failed**; no `❓` anywhere in the register |
-| `link-check.py` | **83 broken, 2 roundabout** — down 3 as `extract.py` and `jsonl.py` references resolved |
-| `branch-index.py --check` | current, 21 rows |
+| `register-check.py` | 89 checks, 0 failed |
+| `link-check.py` | **83 broken, 2 roundabout** |
+| `branch-index.py --check` | current, **22 rows** |
 
-*`make lint` still cannot see column width — `E501` is not in ruff's default set. Added lines are
-checked by hand, in **characters**, because `awk` counts bytes and said 13 where there were 4.*
+*`make lint` still cannot see column width — `E501` is not in ruff's default set. Check added lines
+by hand, in **characters**: `awk` counts bytes and reported 13 where there were 4.*
 
 ## Where the project is
 
@@ -129,19 +117,18 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Merge Phase 11 — Task 25, and it is the only thing left in the phase.** `--no-ff`, then
-   `procedures/branch-index.py --write` **after** the merge commit, then commit the regenerated table
-   on the trunk. **It waits on the owner** because it is the phase's one outward-facing,
-   hard-to-reverse step. *Everything before it is done: tasks 12–24, 438 tests, no `❓` left in the
-   register.* **The owner exercises the tools by hand after the merge** — task 14 was struck for
-   exactly that, so the phase ships without a ground-truth diff and knows it.
+1. **Exercise the corpus tools by hand.** *The owner's, and the phase was shaped around it: task 14
+   was struck so this would happen after the merge rather than inside it.* Nothing has driven
+   `extract` against the real corpus except the author's own scripts.
 
-   ~~**Execute Phase 11, starting at Task 12.**~~ **Done 2026-08-28**, and its detail is retired
-   here rather than kept struck: twenty settled positions, seventeen accepted review findings and the
-   task-by-task record are in that phase's `plan.md` and its **five group notes**, which is where a
-   reader needs them. *The review's summary is the one line worth carrying: the plan's model of a
-   captured session was simpler than the traffic on disk, and the difference was **visible in an hour
-   with `csv.DictReader`**.*
+   ```sh
+   ilirium-llm-router extract logs/corpus/2026-*/ --out ./dump --format jsonl --format bodies
+   ```
+
+   Then point a history viewer's Custom Claude Directory at `./dump` — **never at
+   `~/.claude/projects/`**, which position 12 forbids and which is not a reversible mistake. **What
+   to look at first:** whether the fidelity note renders at all, whether a session's several files
+   read as separate conversations, and whether the 45 gaps in the largest session look like gaps.
 
 2. **Report `BUG-001` to the two upstream issues.** They are named in
    `bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`, and both stall on exactly the
@@ -223,26 +210,28 @@ was not a real hazard**, and repeating it would preserve a rule whose justificat
 `method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-| Branch | Purpose | Tree | Next action |
-|---|---|---|---|
-| `feat/phase-11-corpus-tools` | Phase 11 — the offline corpus tools: `extract` with selection over one or more day folders, `verify-archive`, and a converter to Claude Code session `JSONL`. **Dictionaries are documented, not extended** — position 3, ratified 2026-08-26 | forked at `f445d6f`; **`main` merged in 2026-08-25** so the branch carries `docs/bugs/`. **The plan was ratified and revised 2026-08-26** — 14 settled positions, `❓` column empty | **start work at Task 12**, delta reconstruction. **Groups A and B and Task 11 closed 2026-08-26**, 355 tests. `cli.py` is on subcommands and `transcript.py` reassembles both encodings. **Task 14 is struck on the owner's decision**: the tools are exercised by hand *after* the phase, so the phase's own evidence is tests and mutation testing — and task 23's mutation check is therefore the strongest thing it produces |
+**None. `feat/phase-11-corpus-tools` merged 2026-08-28** at `7e53f74`, and merged branches are not
+listed here. Its permanent record is its phase note and its row in `reference/branches.md`.
 
-**Opened 2026-08-24, and it is the first branch worked in a git worktree** —
-`/Users/ilirium/Projects/local/ilirium_llm_router/phase-11-corpus-tools`, beside `main` and
-`to-run-server` under a bare clone. Recording the practice is Task 3 on the branch itself.
+**Its worktree at `…/phase-11-corpus-tools` still exists and is spent.** Harmless, but **the next
+phase gets a new branch and a new worktree** rather than reusing it — and the branch itself must not
+be deleted, for the reason two paragraphs down.
 
-*This section read **"None. The table is empty as of 2026-08-21"** until 2026-08-24, which was true
-when written and false the moment the branch opened. It is the defect this file's own milestone-table
-entry describes, in the section that exists to prevent it.*
+*This section listed Phase 11 as in flight from 2026-08-24 until the merge. It read **"None. The
+table is empty as of 2026-08-21"** before that, which was true when written and false the moment the
+branch opened — the defect this file's own milestone-table entry describes, in the section that
+exists to prevent it.*
 
 **`docs/bugs-tier` merged 2026-08-25 and is not listed above**, because it is done. It carried no
 phase number, so its permanent record is **its merge commit message** plus **its row in
 `reference/branches.md`** — `IDM-001`'s third and fourth rows, both added the day they were needed.
 
-**Everything is pushed as of 2026-08-25, and `main` diverged before it was.** `git push --all`
-rejected `main` because `origin` held two commits from 2026-08-21 that this bare clone never
-received; both are merged in now. *(This paragraph read "`main` is ahead of `origin/main` and nothing
-has been pushed" until then — true when written, and the reason the divergence came as a surprise.)*
+**Everything is pushed as of 2026-08-28**, on the owner's word at the close of that session; this
+was **not** verified against `origin` and is recorded as reported rather than as checked. *Before
+that, on 2026-08-25, `git push --all` rejected `main` because `origin` held two commits from
+2026-08-21 that this bare clone never received; both are merged in now. That paragraph read "`main`
+is ahead of `origin/main` and nothing has been pushed" until then — true when written, and the reason
+the divergence came as a surprise.*
 
 **Merged branches are kept, not deleted, and the tooling enforces it.** `branch-index.py` refuses to
 render when a description names a branch that no longer exists, so deleting one breaks the next

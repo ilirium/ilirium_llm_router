@@ -150,3 +150,36 @@ something already written down — which is either evidence the file is complete
 writing a hazard down does not stop it recurring. **Both readings are supported by this phase**, and
 the second one is recorded in `notes-group-d.md` where three hazards repeated within 48 hours of
 being logged.*
+
+---
+
+## Task 25 — the merge, and the index refused before it wrote, 2026-08-28
+
+**Merged `--no-ff` at `7e53f74`**, 51 commits, into a `main` that was at `4a4e1ae`. **The branch
+index was regenerated afterwards at `f97c4b6`** — 22 rows — and committed separately.
+
+**The order is not a preference and this run demonstrated why.** The new row records the merge hash
+`7e53f74`. Writing the row first is impossible because the hash does not exist yet, and amending it
+into the merge commit afterwards would change the very hash the row had just recorded. *`IDM-001`
+states this; a session that has not met it reads it as bookkeeping pedantry.*
+
+***`branch-index.py` refused to write.*** `feat/phase-11-corpus-tools` had no entry in its
+`DESCRIPTIONS` table, so it reported the branch and exited 1 rather than inventing a description or
+silently omitting the row.
+
+**That refusal is the whole guarantee working.** `reference/branches.md` was admitted to `reference/`
+over `IDM-001`'s objection to a hand-maintained table, on the argument that **a derived table cannot
+drift**. A script that quietly emitted a row with an empty description, or skipped the branch, would
+have made that argument false on the first branch nobody described. *It is also the answer to the
+standing backlog concern that nothing runs `--check` automatically: the `--write` path fails closed,
+so the person doing the merge cannot skip the step by accident — only by choosing to.*
+
+**Every gate re-run on the merged trunk**, not only on the branch: `make test` **438**, `make lint`
+clean at the pinned `0.16.1`, `make check` valid, `link-check` **83 broken / 2 roundabout**,
+`branch-index.py --check` current at 22 rows, `register-check.py` **89 checks, 0 failed**.
+
+**What ships un-exercised, and deliberately.** The tools have never been driven against the corpus by
+a person. Task 14 was struck for that reason — the owner judged a ground-truth diff too early to be
+worth its cost — so **this phase's evidence is mechanical throughout**: code, tests, the corpus
+drives, and the mutation sweep. *A later session must not read "Phase 11 is merged" as "the tools
+were tried".*

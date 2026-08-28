@@ -666,7 +666,18 @@ role. The ordering now costs nothing and buys nothing, and it is left alone rath
     a new lesson** — §1 gains a sixth form (a *justification* going stale while the requirement stays
     right), §7 gains the sharpest instance of its family (a test comparing the code to itself), and
     §8 gains a third practice (targeted versus systematic mutation, with this phase's numbers).
-25. Merge `--no-ff`, then regenerate the branch index **after** the merge commit.
+25. **Done 2026-08-28.** Merge `--no-ff` (**`7e53f74`**, 51 commits), then regenerate the branch
+    index **after** the merge commit (**`f97c4b6`**, 22 rows). *The order is not a preference: the
+    new row records `7e53f74`, so writing it first is impossible and amending afterwards would
+    change the hash the row had just recorded.*
+
+    ***`branch-index.py` refused before it wrote***, because `feat/phase-11-corpus-tools` had no
+    entry in its `DESCRIPTIONS` — reported, exit 1, rather than inventing a description or dropping
+    the row. **That refusal is the guarantee working**: a landed branch with no row is the defect
+    `--check` exists to catch. The entry was added, then the table regenerated.
+
+    **Phase 11 is closed.** Tasks 14 and 15 remain struck in place. The owner exercises the tools by
+    hand **after** this merge, which is what striking task 14 bought.
 
 ## The register — every name and number this phase introduces
 
