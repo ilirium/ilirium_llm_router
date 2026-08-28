@@ -497,7 +497,7 @@ def _walk(
     """
     spine: list[dict[str, Any]] = []
     first_seen: dict[int, str] = {}
-    replies: dict[int, Reply] = {}
+    replies: dict[int, tuple[Reply, str]] = {}
     confirmed = 0
     revised = 0
     shrank = 0
@@ -539,7 +539,7 @@ def _walk(
 def _record_reply(
     call: CapturedCall,
     position: int,
-    replies: dict[int, Reply],
+    replies: dict[int, tuple[Reply, str]],
     skipped: Counter[str],
 ) -> None:
     """The assistant turn a call produced, filed at the position it will occupy.
@@ -559,13 +559,13 @@ def _record_reply(
     if position in replies:
         skipped["repeat"] += 1
         return
-    replies[position] = outcome
+    replies[position] = (outcome, call.timestamp)
 
 
 def _entries(
     spine: Sequence[dict[str, Any]],
     first_seen: Mapping[int, str],
-    replies: Mapping[int, Reply],
+    replies: Mapping[int, tuple[Reply, str]],
     skipped: Counter[str],
 ) -> list[Turn | Gap]:
     """The conversation's final state, with each assistant turn taken from its own response."""
@@ -575,7 +575,7 @@ def _entries(
         reply = replies.get(position) if role == "assistant" else None
         timestamp = first_seen.get(position, "")
         if reply is not None:
-            entries.append(Turn(position, role, reply.message, "response", timestamp))
+            entries.append(Turn(position, role, reply[0].message, "response", timestamp))
         else:
             # An assistant turn with no usable response — its own call errored, and the only copy
             # is the one the next request carried back. Kept, and marked as the poorer source.
@@ -585,8 +585,9 @@ def _entries(
     tail = replies.get(len(spine))
     if tail is not None:
         # The last call's reply, which no request carries yet. Without this every conversation
-        # would end one turn before it did.
-        entries.append(Turn(len(spine), "assistant", tail.message, "response", ""))
+        # would end one turn before it did. It carries its own call's timestamp: it is the only
+        # turn with no position in any request, so nothing else would date it.
+        entries.append(Turn(len(spine), "assistant", tail[0].message, "response", tail[1]))
     return entries
 
 
@@ -604,16 +605,20 @@ def _attach_orphans(
         return built
     host = max(built, key=lambda c: (c.depth, c.calls))
     entries = list(host.entries)
-    position = host.depth
+    # **After the last entry, not after the last message.** The final call's reply already occupies
+    # position `depth` — it is the one turn that no request carries — so starting the gaps there
+    # collides with it. Task 13 caught this on the live corpus as a duplicate `uuid5`, one in 1,615
+    # records, because ids are derived from the position and nothing else compares them.
+    position = max((entry.position for entry in entries), default=host.depth - 1) + 1
     skipped = Counter(host.skipped)
     for call in orphans:
         entries.append(Gap(position, GAP_NO_REQUEST_BODY, call.timestamp))
         position += 1
-        reply: dict[int, Reply] = {}
+        reply: dict[int, tuple[Reply, str]] = {}
         _record_reply(call, position, reply, skipped)
         if position in reply:
             entries.append(
-                Turn(position, "assistant", reply[position].message, "response", call.timestamp)
+                Turn(position, "assistant", reply[position][0].message, "response", call.timestamp)
             )
             position += 1
     replaced = Conversation(

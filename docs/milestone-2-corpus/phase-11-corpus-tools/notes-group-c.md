@@ -229,3 +229,96 @@ stop it recurring**, and what caught it was the count looking too high, not the 
 **And rewrapping created a new violation.** Fixing the four pushed words onto the following line and
 produced a fifth at 103 characters. Also already recorded, also repeated. **Re-measure after the fix
 is not advice, it is the only thing that works.**
+
+---
+
+## Task 13 — the viewer's records, and a defect only the corpus could find, 2026-08-28
+
+**394 tests, 378 → 394.** `jsonl.py` built; **all four `❓` resolved**; `make lint` clean;
+`link-check` **85 broken, down one** — the register's forward reference to `jsonl.py` now resolves.
+
+**Group C is complete.** Tasks 14 and 15 remain struck in place.
+
+### The schema was read, not guessed — and it moved four things
+
+Position 17's two sources, with the owner's go-ahead on the day: the viewer's own source, and **one**
+real session file read only far enough to learn field names. *The file happened to be `ad9392ae`, the
+same session as the corpus's largest — **task 14 is struck, so no ground-truth diff was made**, and
+nothing beyond field names and enumerations was read.*
+
+**1 · A session is identified by its *filename*, not by `sessionId`.** The loader sets
+`session_id: file_path_str`, and **two files carrying the same `sessionId` are not merged.** This
+closes the question task 12 opened: one file per conversation is safe, and `sessionId` stays verbatim
+in all six of `15b29c2a`'s files. *Had it been the other way, the split would have been undone at the
+record layer and the interleaving would have come back.*
+
+**2 · There are ten record types in a real file, not three** — `mode`, `permission-mode`,
+`file-history-snapshot`, `user`, `attachment`, `ai-title`, `assistant`, `last-prompt`, `system`,
+`file-history-delta`. **Only four carry `uuid`/`parentUuid`**; the rest are session-level sidecars
+outside the chain. In that file: **863 chained records, exactly one root, zero dangling parents.**
+
+**3 · A `system` record renders unless its subtype is hidden, and the hidden list has two entries.**
+
+```rust
+if msg.message_type == "system" { return !is_hidden_system_subtype(msg.subtype.as_deref()); }
+const HIDDEN_SYSTEM_SUBTYPES: [&str; 2] = ["stop_hook_summary", "turn_duration"];
+```
+
+**That is what settles the fidelity marker**, and it settles it *better* than the fallback the plan
+had ready. The `❓` said the marker must not be a *plain* `system` record because a real `system` role
+occurs inside `messages`; a subtype of our own is both **shown** and **machine-distinguishable** from
+the three real subtypes observed. The planned fallback — a `user` record carrying the same text — is
+not needed and was not used.
+
+**4 · `type` is the only field the loader strictly requires**, and `message` needs `role` and
+`content`. So the fields the corpus cannot supply are simply **absent**, never faked. *Worth knowing
+that they are conspicuous: `cwd`, `gitBranch`, `version` and `toolUseResult` are on every `user` and
+`assistant` record in a real file, so their absence is visible to anyone comparing — which is why the
+note names all five rather than letting them be discovered.*
+
+### The `uuid` recipe had to change, and the register says so rather than the code drifting
+
+Register §9 specified `uuid5(NS, "<request-blob-digest>:<record-index-within-call>")`. **Task 12's
+design cannot supply it.** A turn is taken from the conversation's *latest* state, so it belongs to no
+single call and has no one request blob — **the same objection that retired `<block-index>` on
+2026-08-26, one level further up, and the register did not notice it applied twice.**
+
+It is now `uuid5(NS, "<session_id>:<conversation-key>:<slot>")`. Session, conversation and position
+are what a turn actually has, and all three are stable: the message array is append-only, so a
+position never shifts under a growing corpus.
+
+### The defect the tests did not find
+
+**Emitting all 36 conversations produced 1,615 records and 1,614 distinct `uuid5` values.** One
+collision, and **378 tests passed throughout.**
+
+The final call's reply sits at position `depth` — it is the one turn that appears in no request, so
+nothing else occupies that slot — and `_attach_orphans` began numbering the `too_large` gaps at
+`depth` as well. Only `ad9392ae` has both a tail reply and gaps, so exactly one collision existed in
+the whole corpus.
+
+**Nothing failed. No exception, no malformed output, no test.** Two records would simply have carried
+the same id into the viewer, which is the kind of thing that surfaces as *"the history viewer is
+behaving oddly"* weeks later. **It was found by counting the output against itself** — records against
+distinct ids — which cost one line in the drive script.
+
+*This is the third time in this phase that the evidence which is not a test has been the evidence that
+mattered, and the first time it caught something rather than confirming something.*
+
+### The tests were mutated again
+
+**16 new tests, green on the first run.** Six mutations, each aimed at a different guarantee, plus a
+control:
+
+| Mutation | Result |
+|---|---|
+| `parentUuid` chain broken | **fails** |
+| `uuid4` instead of `uuid5` | **fails** |
+| the marker given a hidden subtype | **fails** |
+| a `system` role flattened to `user` | **fails** |
+| `sort_keys` removed from the writer | **fails** |
+| **the collision fix reverted** | **fails** |
+| a control edit that changes nothing | stays green |
+
+*The sixth is the one worth having: it proves the regression test earns its place rather than merely
+describing the bug after the fact.*

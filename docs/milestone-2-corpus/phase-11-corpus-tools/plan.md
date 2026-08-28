@@ -534,9 +534,24 @@ role. The ordering now costs nothing and buys nothing, and it is left alone rath
     **A third mechanism was needed and it is not a normalisation.** Finding 7's two make two
     *encodings* of one message compare equal. Neither helps when the content genuinely changed — 100
     times in the corpus, 9 of them changing role. → `notes-group-c.md`.
-13. `uuid`/`parentUuid` synthesis and the record types the viewer needs — **register §9 carries the
-    shape**. **Determinism is a test, not an aspiration** — convert twice, diff, expect zero bytes of
-    difference.
+13. **Done 2026-08-28.** `uuid`/`parentUuid` synthesis and the record types the viewer needs —
+    **register §9 carries the shape**. **Determinism is a test, not an aspiration** — convert twice,
+    diff, expect zero bytes of difference.
+
+    **All four `❓` are resolved** — three planned, plus `sessionId` which task 12 opened. Settled
+    from the two sources position 17 names, **with the owner's go-ahead on the day**: the viewer's
+    source, and one real session file read only far enough to learn field names.
+
+    ***The `uuid` recipe had to change and that is a register edit, not an implementation detail.***
+    `<request-blob-digest>` cannot be supplied by task 12's design — a turn comes from the
+    conversation's latest state, so it belongs to no single call. Session, conversation and position
+    are what a turn actually has. → §5.
+
+    ***And the corpus found a defect the tests did not.*** Emitting all 36 conversations produced
+    **1,615 records and 1,614 distinct `uuid5` values**. The final call's reply sits at position
+    `depth` — the one turn no request carries — and the `too_large` gaps began numbering at `depth`
+    too. **378 tests passed throughout.** Fixed in `transcript.py`, with the regression test the
+    mutation run confirms can fail.
 14. ~~**Drive it against the real corpus, diff it against the real session record, then open it in the
     viewer.**~~ **Struck 2026-08-26 on the owner's decision, and struck whole rather than narrowed.**
     The owner tests by hand **after the phase is finished**, having said plainly why: the ground-truth
@@ -605,8 +620,7 @@ role. The ordering now costs nothing and buys nothing, and it is left alone rath
 *Per `../../method/IDM-008-the-register.md`. **Authoritative for the value; the prose above holds the
 why.** `❓` marks something named and never valued. **It is a marker inside a cell, not a column** —
 this section said "that column is the instrument" until 2026-08-26, and Task 22's closing check was
-written against a column that does not exist, so it could not fail. **Three `❓` are live**, all
-deliberate, all resolved at Task 13.*
+written against a column that does not exist, so it could not fail. ~~**Three `❓` are live**~~ — **all resolved at Task 13 on 2026-08-28, and there were four by then**: task 12 added `sessionId`. **None is left.** Task 22's closing check now has something to check.*
 
 ### 1 · New modules
 
@@ -614,7 +628,7 @@ deliberate, all resolved at Task 13.*
 |---|---|---|
 | `src/ilirium_llm_router/extract.py` | selection over an index, output layout | new |
 | `src/ilirium_llm_router/transcript.py` | SSE + JSON reassembly, delta reconstruction | **complete — task 11 built reassembly 2026-08-26, task 12 the reconstruction 2026-08-28** |
-| `src/ilirium_llm_router/jsonl.py` | the viewer's record shapes | new |
+| `src/ilirium_llm_router/jsonl.py` | the viewer's record shapes | **built at task 13, 2026-08-28** |
 | `src/ilirium_llm_router/cli.py` | restructured, not new | **modified** |
 
 **Three, settled 2026-08-26.** This plan proposed folding `jsonl.py` into `transcript.py` on the
@@ -667,14 +681,16 @@ which is exactly what `--extract` does today.*
 
 | Name | Value |
 |---|---|
-| `JSONL_SCHEMA_NOTE` | **❓ — wording deferred to Task 13.** *Marked `❓` rather than left blank on 2026-08-26: `IDM-008`'s rule is that anything named and never valued is `❓`, and **deferring a value to a task is a plan for getting one, not a value**.* What it must contain is settled: the tool, the source days and session, the call count, **the count of calls skipped because their response was not a message**, the generation moment, and the five fields absent by construction — `cwd`, `gitBranch`, `version`, `toolUseResult`, agent attribution |
-| the fidelity record's `type` | **❓ — must not be plain `system`.** A real `system` role occurs *inside* `messages` and reaches the transcript, so a `system` record announcing *"this is not a real record"* is **indistinguishable from a real turn**. Settled at Q4/N3 as "a `system` record at the head of the file" before that was known. Resolve at Task 13 |
+| `JSONL_SCHEMA_NOTE` | **Valued 2026-08-28.** A format string in `jsonl.py`, carried in the note record's `content`. It names the tool and version, the generation moment, the session, the day folders, the call count, **the count that contributed no turn**, the gap count, the unconfirmed-tail count, and the five absent fields — and opens *"This is NOT a Claude Code session record"*. *The requirement list was met in full; the gap and unconfirmed counts are additions task 12 made necessary.* |
+| the fidelity record's `type` | **Valued 2026-08-28: a `system` record with `subtype = "corpus-reconstruction"` (`SCHEMA_NOTE_SUBTYPE`), `isMeta: false`.** Settled from the viewer's source, not guessed: `if msg.message_type == "system" { return !is_hidden_system_subtype(...) }`, and `HIDDEN_SYSTEM_SUBTYPES` holds exactly `stop_hook_summary` and `turn_duration` — so an unknown subtype **renders**. **The `❓`'s requirement is met:** it is not a *plain* `system` record, and the subtype distinguishes it from the three real ones observed (`turn_duration`, `away_summary`, `local_command`) and from any turn. Gaps use `corpus-gap` on the same footing |
 | SSE event names consumed | `message_start`, `content_block_start`, `content_block_delta`, `content_block_stop`, `message_delta`, `message_stop`, `error`, **`ping`** — **all eight observed**, 2026-08-26 |
 | **`content_block` types** | **Five, not three** — `text`, `tool_use`, `thinking`, **`server_tool_use`**, **`web_search_tool_result`**. *Added 2026-08-26: the register named the events and never what they carry, and the reassembler consumes these. Counts over the **whole** corpus, by reassembling every response: 552 / 654 / 461 / 4 / 4 — so **`tool_use` is the most common block here and `thinking` is not rare**. The last two are Anthropic **server-side** tools and were missed by a two-day sample, which is why the count was re-run over all four days* |
 | **`content_block_delta` types** | `text_delta`, `input_json_delta`, `thinking_delta`, **`signature_delta`** — *`input_json_delta` carries a **tool input as JSON string fragments** that must be concatenated and only then parsed, which is the one piece of real work in reassembly. 64,260 of them in two days against 2,071 `text_delta`* |
 | `message_delta`'s `stop_reason` | `tool_use` **626**, `end_turn` **181**, `max_tokens` **1**, over the whole corpus — so **most turns here end in a tool call**, not in text to the user |
 | **skip reasons** — `transcript.py` | `empty`, `error`, `stream-error`, `not-a-message`, `malformed`, `incomplete`. **Six, and each is a different fact about the capture**, which is why they are not one `skipped` flag. Live counts: 93 `error`, 66 `not-a-message`, 11 `empty`, **1 `incomplete`**, 0 `stream-error`, 0 `malformed` |
-| `SYNTHETIC_UUID_NAMESPACE` | **❓ — the literal is minted at Task 13.** The *mechanism* is settled and is not `❓`: `uuid5(NAMESPACE, "<request-blob-digest>:<record-index-within-call>")`, so **the same corpus produces the same file forever, on any machine.** Minted rather than borrowed so our ids cannot collide with anyone else's `uuid5` values. **Not** `uuid4` — Task 13 tests determinism by converting twice and diffing. *`<block-index>` was the spelling until 2026-08-26 and was undefined for a delta-reconstructed turn, which by construction is not a content block of any one response* |
+| `SYNTHETIC_UUID_NAMESPACE` | **Minted 2026-08-28: `5791f885-4f45-4b01-bbd1-5ac2631bf167`.** **And the recipe changed with it, which is the more important half.** It was `uuid5(NS, "<request-blob-digest>:<record-index-within-call>")`; it is now `uuid5(NS, "<session_id>:<conversation-key>:<slot>")`. *Task 12's design cannot supply the old one: a turn is taken from the conversation's **latest** state, so it belongs to no single call and has no one request blob — the same objection that retired `<block-index>` on 2026-08-26, one level further up. Conversation and position are what a turn actually has, and both are stable because the message array is append-only (678 grew, 143 held, **0 shrank**).* |
+| `SCHEMA_NOTE_SUBTYPE` / `GAP_SUBTYPE` | `corpus-reconstruction` / `corpus-gap` |
+| `ABSENT_BY_CONSTRUCTION` | `cwd`, `gitBranch`, `version`, `toolUseResult`, `agent attribution` — the five named in the note |
 | `CONVERSATION_KEY_CHARS` | **8** — hex characters of the **normalised** root message's sha256 that name a non-main conversation on disk. *A digest and not an ordinal: `-02` is stable only within one run, and a growing corpus or a different day selection silently repoints it. Measured over all 36 conversations — no within-session collision. Normalised matters: one session sent its opening message as a bare string in the first call and as blocks thereafter, and hashing raw bytes would give one conversation two names.* |
 | `GAP_NO_REQUEST_BODY` | `no-request-body` — **not a skip reason.** A skip means a *response* carried no turn; this means the *request* body is not on disk to diff against. 45 rows, all `too_large` |
 | `PROJECT_NAME_DEFAULT` | `corpus` — one bucket. **`corpus-<day>` was proposed and killed by finding 5**: a session spanning two days has no single day to file under |
@@ -833,17 +849,18 @@ output had no row in its own register.**
 
 | Field | Value |
 |---|---|
-| `type` | ❓ — see §5. The record kinds needed, and their spellings, come out of Task 13 |
-| `uuid` | `uuid5(SYNTHETIC_UUID_NAMESPACE, "<request-blob-digest>:<record-index-within-call>")` |
+| `type` | **Valued 2026-08-28. Three kinds are emitted**: `user` (user- and system-role turns), `assistant`, and `system` (the note and the gaps, each with a subtype). *Read from the viewer: **only four types carry `uuid`/`parentUuid`** — `user`, `assistant`, `system`, `attachment` — and the six others in a real file are session-level sidecars outside the chain. `EXCLUDED_MESSAGE_TYPES` is `progress`, `queue-operation`, `file-history-snapshot`, `last-prompt`, `pr-link`, `agent-name`, and none of ours is in it.* |
+| `uuid` | `uuid5(SYNTHETIC_UUID_NAMESPACE, "<session_id>:<conversation-key>:<slot>")` — **changed at task 13, see §5 for why the digest form could not be built** |
 | `parentUuid` | the previous record's `uuid`; `null` on the first record of a file |
-| `sessionId` | the corpus's `session_id`, verbatim — **and one open question, added 2026-08-28.** Task 12 settled that a session yields **several files**, all of which would carry this same value. **If the viewer keys on it they merge back into the interleaved transcript that splitting just separated** — finding 4's defect, reintroduced at the record layer. Resolve at Task 13 against the viewer's source, with the other three `❓` |
+| `sessionId` | the corpus's `session_id`, **verbatim in every file — the question task 12 opened is closed, 2026-08-28.** The viewer identifies a session by its **filename**, not by this field (`session_id: file_path_str`), and **two files carrying the same `sessionId` are not merged**. So one-file-per-conversation is safe and the value stays true |
 | `timestamp` | the call's index `timestamp`, verbatim |
 | `message` | the reconstructed turn |
-| `cwd`, `gitBranch`, `version`, `toolUseResult` | **absent by construction** — never on the wire |
+| `cwd`, `gitBranch`, `version`, `toolUseResult` | **absent by construction** — never on the wire. *Confirmed against a real file: all four are present on every `user` and `assistant` record there, so their absence is visible to anyone comparing, which is why the note names them* |
+| `isSidechain` | `false` on every record. **Not a guess and not nothing**: the viewer reads it, and the corpus's one subagent conversation is already a separate file, so no record here is a sidechain *of its own file*. Revisit if subagent partitioning is ever built — position 20 |
 
-**The shape is `❓` where it depends on somebody else's schema, and that is the honest state.** The
-viewer does not publish it. Task 13 settles it from **two** sources, per the owner's decision of
-2026-08-26: the viewer's own source, and **one** real session file read only far enough to learn the
+~~**The shape is `❓` where it depends on somebody else's schema.**~~ **Settled 2026-08-28.** The
+viewer does not publish it, so task 13 read it from **two** sources, per the owner's decision of
+2026-08-26 and with their go-ahead on the day: the viewer's own source, and **one** real session file read only far enough to learn the
 field names. **Schema knowledge at design time is not the same act as the converter reading
 `~/.claude/` at runtime** — the second is what "oracle, never input" forbids, and the plan did not
 draw that line until now.
@@ -898,7 +915,7 @@ Phase 10's worked.*
 
 1. ~~**Position 3 needs the owner's one word.**~~ **Closed 2026-08-26** — documentation only, and the
    three dictionary ideas are in `../../backlog.md` under a new `Dictionaries` section.
-2. **Three `❓` remain, and they are supposed to.** *This item said "closed — the `❓` column is now
+2. ~~**Three `❓` remain, and they are supposed to.**~~ **None remains — all resolved 2026-08-28 at Task 13, and there were four by then:** task 12 opened `sessionId` and task 13 closed it with the other three. *This item said "closed — the `❓` column is now
    empty" for one day. **There is no `❓` column**, so the claim was true only because the thing it
    described did not exist, and Task 22's check could not fail. The forward review found it.* The nine
    original placeholders were valued on 2026-08-26 — **three changing shape rather than acquiring a
