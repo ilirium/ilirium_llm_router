@@ -206,7 +206,7 @@ table were still open when this entry was written. Nothing here should be read a
 **The router installs and runs without the repository.** `uv tool install <path>` yields a working
 binary; a new `init` subcommand writes `config.yaml` and `.env.example` into the working directory;
 `check` accepts them unmodified; `serve` creates `logs/telemetry/` there. All of it driven from
-directories that have never held this checkout. The `README.md` is ten sections, 133 lines to 304.
+directories that have never held this checkout. The `README.md` is ten sections, 133 lines to 310.
 
 **Two of its four `src/` changes are defects rather than planned work**, both found by the forward
 review before task 1 ran. **`load_dotenv()` never read the working directory** — it walks up from
@@ -226,8 +226,8 @@ because it was framing; nothing it protected was dropped, and a 38-element sweep
 checked that rather than assuming it.
 
 **Two things it did not settle, both raised for the owner.** The `uv_build` pin was bumped to
-`<0.13` with no rule in `IDM-003` covering build backends, checked instead against 23 wheel entries
-byte for byte. And `status.md`'s Milestone 2 phase count went stale for the **third** time; the
+`<0.13` with no rule in `IDM-003` covering build backends, checked instead against **22** wheel
+entries byte for byte — the listing has 23, and `env-template` was added after the comparison. And `status.md`'s Milestone 2 phase count went stale for the **third** time; the
 count was fixed and the mechanism filed in `../backlog.md` rather than chosen, since choosing one
 changes what `status.md` is.
 

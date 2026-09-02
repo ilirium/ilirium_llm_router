@@ -69,6 +69,27 @@ It also carries the two things the phase did not settle — the `uv_build` pin b
 covering build backends, and `status.md`'s phase count going stale a third time — because an entry
 that records only what was finished is the kind of document this repository keeps finding wrong.
 
+## The plan's "Done when", walked
+
+*Added after the review of the finished work, which found that the six exit criteria had never been
+checked as a list. **They are all met** — but nothing had said so, and `register-check.py` covers
+only some of them, incidentally rather than by design.*
+
+| Criterion | Where it was discharged |
+|---|---|
+| `uv tool install` from a local path yields a binary that `serve`s, `check`s, `init`s, `extract`s and `verify-archive`s from a directory that is not the repository | `notes-group-b.md` tasks 3–5 (`serve`, `check`, `extract`, `verify-archive`) and `notes-group-c.md` "Driven, not only tested" (`init`, `--version`, `check`) |
+| The template is proven to ship inside the wheel | `evidence/wheel-contents.md`, by building and reading the archive |
+| `init` produces a `config.yaml` that `check` accepts with no edits | `tests/test_cli_init.py::test_written_config_passes_check_unmodified`, and driven in Group C |
+| `.env` in the working directory is read by an installed router, and `--version` prints and exits 0 with no config | `evidence/env-discovery-probe.md`; `test_dotenv_is_read_from_beside_the_config`; `test_version_prints_and_exits_zero_with_no_config` |
+| `README.md` carries the ten sections, the brief is in `captures/` and indexed, no `❓` remains | `register-check.py`, checks 18–20 and 28 |
+| `make test` passes, and the count is recorded rather than predicted | **448**, run rather than relayed, at every commit since Group D |
+
+**One is weaker than it reads, and it is worth naming.** The first criterion says *"from a directory
+that is not the repository"*. Every driven run satisfied that. **None of them ran on a machine
+without this repository**, which the plan itself acknowledged when it wrote the second criterion —
+*"since a machine without this repository is not available to test on"*. The distinction is real:
+the corpus tools were shown to need no `config.yaml`, not to need no checkout.
+
 ## Task 17 — the sweep, and the merge
 
 **The placeholder sweep runs before the merge message, not after.** `IDM-001` says so, and Phase

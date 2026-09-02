@@ -108,11 +108,16 @@ archived body, and that a long session's later calls go **unstored** past `body_
 labelled as a whole body is worse than a hole"*. A README that said bodies are cut short would
 describe a design the project deliberately refused.
 
-**A fifth caveat rides in the same section without being one of the four**: a caller that
-disconnects before the response generator's first step leaves no CSV row and no corpus entry. It is
-named because a user reading a caveats section is exactly the reader who should know a call can
-vanish, and it is written as *observed once, deliberately, and reported rather than closed* — which
-is what the owner decided on 2026-08-20.
+**A fifth caveat was written into the same section**: a caller that disconnects before the response
+generator's first step leaves no CSV row and no corpus entry. It was named because a user reading a
+caveats section is exactly the reader who should know a call can vanish, and it is written as
+*observed once, deliberately, and reported rather than closed* — which is what the owner decided on
+2026-08-20.
+
+**Group E moved it out.** Settled row 6 fixes the section at four items, and the fifth was this
+session's own judgement. It is now a bullet in "What it does, and what it does not". *This paragraph
+said the fifth "rides in the same section" until the review of the finished work found it still
+saying so, two groups after it had stopped being true.*
 
 ## Task 14 — the sweep, and what it found
 

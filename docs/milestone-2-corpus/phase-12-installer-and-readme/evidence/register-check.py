@@ -4,9 +4,9 @@
 `method/IDM-008-the-register.md` makes this the phase's closing task: every name and number the plan
 introduces is checked against what was actually built, and the `❓` column is expected to be empty.
 
-**Run it from anywhere; it locates the repository root from its own path.** It reads only, prints one
-line per check, and exits 1 if any fails -- so it can be re-run on the trunk after the merge, which
-is the point of freezing it rather than doing the check by hand once.
+**Run it from anywhere; it locates the repository root from its own path.** It reads only, prints
+one line per check, and exits 1 if any fails -- so it can be re-run on the trunk after the merge,
+which is the point of freezing it rather than doing the check by hand once.
 
     python3 docs/milestone-2-corpus/phase-12-installer-and-readme/evidence/register-check.py
 
@@ -57,23 +57,35 @@ def checks() -> list[tuple[str, bool]]:
         ("ENV_EXAMPLE", 'ENV_EXAMPLE = ".env.example"' in cli),
         ("DEFAULT_CONFIG_PATH unchanged", 'DEFAULT_CONFIG_PATH = Path("config.yaml")' in cli),
         (".env is read beside the config", 'load_dotenv(args.config.parent / ".env")' in cli),
-        ("init refuses rather than overwriting", "refusing to overwrite it" in cli),
+        # The register row names the exit code, not the message, so check both. As written this
+        # tested only the string and would have passed on a `return 0` after printing it.
+        (
+            "init refuses rather than overwriting, with exit code 1",
+            "refusing to overwrite it" in cli and "        return 1\n" in cli,
+        ),
         # names that go on disk
         ("config template ships", (ROOT / "src/ilirium_llm_router/config-template.yaml").is_file()),
         ("env template ships", (ROOT / "src/ilirium_llm_router/env-template").is_file()),
         (
             "config template is config.yaml byte for byte",
-            read(ROOT / "src/ilirium_llm_router/config-template.yaml") == read(ROOT / "config.yaml"),
+            read(ROOT / "src/ilirium_llm_router/config-template.yaml")
+            == read(ROOT / "config.yaml"),
         ),
         (
             "env template is .env.example byte for byte",
             read(ROOT / "src/ilirium_llm_router/env-template") == read(ROOT / ".env.example"),
         ),
-        ("no uv build-backend section", "tool.uv.build-backend" not in read(ROOT / "pyproject.toml")),
+        (
+            "no uv build-backend section",
+            "tool.uv.build-backend" not in read(ROOT / "pyproject.toml"),
+        ),
         ("no MANIFEST.in", not (ROOT / "MANIFEST.in").exists()),
         ("tests/test_cli_init.py", (ROOT / "tests/test_cli_init.py").is_file()),
         # the documents
-        ("the brief is in captures/", (ROOT / "docs/captures/original-project-description.md").is_file()),
+        (
+            "the brief is in captures/",
+            (ROOT / "docs/captures/original-project-description.md").is_file(),
+        ),
         (
             "the brief is indexed there",
             "original-project-description.md" in read(ROOT / "docs/captures/README.md"),
@@ -84,7 +96,24 @@ def checks() -> list[tuple[str, bool]]:
         ("README says four Milestone 2 phases", "four phases in" in readme),
         ("README test count is 448", "448 tests" in readme),
         ("README no longer says 158", "158 tests" not in readme),
-        ("README quotes the shipped --help", "sweep maxdict x k and print the whole surface" in readme),
+        # Six lines rather than one. The review of the finished work found this checking a single
+        # phrase from `tune-dict`'s help, so any drift in the usage line, the options block or the
+        # other six subcommands passed. Still not the whole block -- that would mean running the
+        # CLI from a file-reading check -- but it now fails if any of the six moves.
+        (
+            "README quotes the shipped --help",
+            all(
+                s in readme
+                for s in (
+                    "usage: ilirium-llm-router [-h] [-c CONFIG] [--version] COMMAND ...",
+                    "start the server (the same thing a bare invocation",
+                    "write a starter config.yaml into the current directory,",
+                    "sweep maxdict x k and print the whole surface; never",
+                    "verify each against the digest in its own filename, and",
+                    "-c, --config CONFIG  path to the YAML config file (default: config.yaml)",
+                )
+            ),
+        ),
         ("install line carries no --force", "uv tool install --force" not in readme),
         # the register itself
         ("no unvalued register rows", unvalued_rows() == 0),

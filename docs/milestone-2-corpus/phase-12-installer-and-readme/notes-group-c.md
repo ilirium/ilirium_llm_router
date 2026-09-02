@@ -7,12 +7,20 @@ four changes are defects the forward review found rather than planned work.***
 
 | | |
 |---|---|
-| `init` | writes a starter `config.yaml` into the working directory; refuses if one is there |
+| `init` | writes a starter `config.yaml` **and `.env.example`** into the working directory; refuses whole if either is there |
 | `--version` | an argparse action, so it answers before anything can fail |
 | the `.env` fix | read from beside the config file, not from wherever python-dotenv guesses |
 | `config-template.yaml` | the starter, shipped inside the package |
+| `env-template` | the second starter, shipped the same way, written out as `.env.example` |
 
-**`make test` 438 → 445. Lint clean at the pinned `0.16.1`, `make check` valid.**
+*This table had **four** rows and described `init` as writing one file, until the review of the
+finished work found it. `env-template` and the second write arrived later in this same group, at
+`bf0dd46`, and the table was not revisited. **The "two of four" in the sentence above is now "two of
+five" by this table's own count** — the two defects are unchanged; the denominator is what moved.*
+
+**`make test` 438 → 445. Lint clean at the pinned `0.16.1`, `make check` valid.** *445 was true at
+`73d846b`; the group ended at **448**, because `bf0dd46` added three more tests with
+`.env.example`.*
 
 ## Task 6 — `init`, and where it had to sit
 
@@ -92,6 +100,9 @@ longer read an environment file none of them uses.
 ## Task 10 — tests, and whether they test anything
 
 **Seven tests in `tests/test_cli_init.py`. Then they were mutated, because green is not evidence.**
+*Seven at the moment of the mutation run; **ten by the end of this group**, and the three that
+arrived with `.env.example` were never part of it. The review of the finished work mutated those
+three — see `notes-review-jobs-done.md`.*
 
 Three mutations applied at once — the old `load_dotenv()`, the `--version` action deleted, and
 `init`'s early return removed:
@@ -146,7 +157,7 @@ uv pip install --python venv-t/bin/python /tmp/whl3/*.whl
 *Group C's earlier `uvx --from` results were re-run this way and held. But the earlier ones were
 taken on trust, and one of them could as easily have been stale.*
 
-## One thing found and deliberately not acted on
+## One thing found, raised, and then acted on
 
 **`uv build` warns that the pinned build backend excludes the installed uv:**
 
@@ -155,7 +166,15 @@ warning: `build_system.requires = ["uv-build>=0.11.32,<0.12.0"]`
          does not contain the current uv version 0.12.5
 ```
 
-**It builds and installs anyway**, and every result above was produced through it. **Not bumped**,
-because `../../method/IDM-003-development-tooling.md`'s standing rule is that a pin moves
-deliberately and in its own commit — the ruff pin has the same rule and `CLAUDE.md` says never to
-move it as a side effect. *Raised for the owner; it is not this phase's decision.*
+**It builds and installs anyway**, and every result above was produced through it.
+
+**It was then bumped, in its own commit — `8e9e08c`, `<0.12.0` → `<0.13.0`** — and checked against
+the built wheel rather than assumed, per `../../method/IDM-003-development-tooling.md`'s standing
+rule that a pin moves deliberately and in its own commit. `IDM-003` has no rule for a *build
+backend*, only for the formatter, and that gap is filed in `../../backlog.md` as an owner decision.
+
+*This section said **"Not bumped … Raised for the owner; it is not this phase's decision"** until
+the review of the finished work found it — a heading reading "deliberately not acted on" above an
+account of the thing being acted on, in the same group, one commit later.
+`../implementation-plan.md` and `notes-group-e.md` both recorded the bump correctly; this file did
+not.*

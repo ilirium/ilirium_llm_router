@@ -26,6 +26,21 @@ things here turned out to be of that kind**, and both are listed above.
 
 *If neither happens, this file is the record that neither happened.*
 
+**`wheel-contents.md` no longer re-derives in two of its 23 rows, and it is not edited.** The review
+of the finished work rebuilt the wheel at the merge and found `METADATA` and `RECORD` differing from
+the frozen listing — 16853 against 7112 bytes, and 1823 against 1822. **Every other row matches
+byte for byte, including both template rows, which are the ones the file exists to prove.**
+
+*The cause is exact and it is not a defect in the wheel.* `pyproject.toml:5` sets
+`readme = "README.md"`, so the README is copied into `METADATA`; task 13 grew the README from 6534
+to 16275 bytes, and `METADATA` grew by the same 9741. `RECORD` moved one byte because it records
+`METADATA`'s new length.
+
+**The listing is a capture and captures are never edited** — `../../../README.md`'s rule, which says
+the fix for a stale transcript is a line in the evidence directory's own `README.md`. This is that
+line. *It also means the file's claim — "it is re-derivable: build a wheel and read its archive" —
+is true, and re-deriving it is now how you learn that the README is inside the metadata.*
+
 **`register-check.py` is the third and it is a different kind.** The two above are *records* — a
 listing and a probe, frozen because they cannot be re-derived. This one is an *instrument*: it reads
 the code and the documents and re-checks the register's 28 rows on demand, which is what makes it

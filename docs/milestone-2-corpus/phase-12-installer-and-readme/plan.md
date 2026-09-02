@@ -7,8 +7,15 @@
 without the repository, and does the `README.md` say so?
 
 **Revised 2026-09-02 after the forward review.** The first version is commit `80914a0`; what the
-review found and what was accepted is in `notes.md`. **Three of its findings were defects in `src/`
-rather than in the plan**, which is why this version has tasks the first did not.
+review found and what was accepted is in `notes-review-plan.md`. **Three of its findings changed
+`src/` rather than the plan** — two were defects in code that existed (`load_dotenv` never reading
+the working directory, and no `--version` at all), and the third decided *where* new code had to sit
+(`init` must return before `load_config`, in the empty directory it exists to serve). That is why
+this version has tasks the first did not.
+
+*This paragraph said "three of its findings were defects in `src/`" until the review of the finished
+work pointed out that `init` did not exist to be defective. The count of three is right; what the
+third one was is not what "defect" describes.*
 
 ---
 

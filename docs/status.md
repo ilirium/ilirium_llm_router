@@ -14,7 +14,7 @@ the session that wrote it, it has become a document and gets its own file.*
 merge.** `feat/phase-12-installer-and-readme`, **448 tests** from 438, `register-check.py` 28 of 28.
 **The owner asked to be waited for before the merge runs.**
 
-**The `README.md` is ten sections, 133 lines to 304**, the brief is a capture, and the count that
+**The `README.md` is ten sections, 133 lines to 310**, the brief is a capture, and the count that
 had gone stale in `status.md` is fixed. Phase 11's inherited commitment is discharged: its temporary
 corpus-tools section is now "Commands", checked by a 38-element sweep of the old file rather than by
 rereading it.
@@ -35,9 +35,10 @@ binary; `init` writes `config.yaml` and `.env.example` into the working director
 them unmodified; `serve` creates `logs/telemetry/` there and shuts down reporting `0 arrived, 0
 recorded, 0 lost`. All of it driven from directories that have never held this checkout.
 
-**The forward review under `IDM-004` earned its cost before task 1 ran.** It found **three defects
-in `src/`** that no test would have caught, two of which the author had stated to the owner as
-fact.
+**The forward review under `IDM-004` earned its cost before task 1 ran.** It found **three things
+that changed `src/`** and that no test would have caught — **two defects in existing code**, both of
+which the author had stated to the owner as fact, and one finding that decided where new code had to
+sit.
 The largest: **`load_dotenv()` never read the working directory** — it walks up from `cli.py`, which
 in a checkout reaches the repository root by accident and in an installed tool reaches `$HOME`. A
 `.env` beside the config was invisible while the error told the user to set the variable in it.

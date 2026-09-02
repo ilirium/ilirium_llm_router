@@ -259,9 +259,20 @@ open — Q2 asked whether it was closed at all, and the owner closed it. And Q5 
 when it belongs to no phase — was answered **for that file only**, by filing it in the archive at the
 milestone root; as a general rule for `README.md` it is still open, inside the file with the rest.
 
-**`status.md` states the open milestone's phase count in three places, and it has gone stale three
-times.** *Added 2026-09-02 by Phase 12's task 12, which was chartered to fix the count and found
-that fixing it is the third instance rather than the end of it.*
+**The open milestone's phase count is stated in four places across two files, and it has gone stale
+three times.** *Added 2026-09-02 by Phase 12's task 12, which was chartered to fix the count and
+found that fixing it is the third instance rather than the end of it. **Widened the same day**, when
+the review of the finished work found a fourth copy — and the worst one.*
+
+**The fourth is `CLAUDE.md`**, which said *"three phases in, last merged 2026-08-21"* — naming
+Phase 10's merge where `status.md` names Phase 11's, so it was stale by a whole phase. **`CLAUDE.md`
+is the canon tier and the only file loaded into every session automatically**, and this item's first
+version did not mention it. *Fixed on Phase 12's branch, under settled row 12's decision to fix the
+count inside the phase rather than on a `fix-slop-docs/` branch.*
+
+**That changes which candidate fix survives.** Of the three below, only *deriving the count* works
+across two files; "the table row alone" and "check three copies" were both written as though
+`status.md` were the whole problem.
 
 *What happened, each time in the same file:* the "Where we stopped" entry is written at the merge
 and is right; the milestone table row and the prose paragraph below it are not touched, and they
@@ -280,7 +291,10 @@ number. **Or leave three copies and check them**, which is `branch-index.py`'s b
 need a checker nobody has asked for.
 
 *Weaker than it looks?* **No, and its own history is the argument.** The paragraph that undercounts
-is the paragraph that **describes prose going stale**, and it has now done it twice. That is not a
+is the paragraph that **describes prose going stale**, and it has now done it twice — *the
+paragraph itself twice, which is the third instance of the defect once the milestone table row is
+counted; the two figures count different things and the review of the finished work found them
+ambiguous.* That is not a
 writing failure a more careful session avoids — two sessions and two reviews read past it. **But it
 is smaller than the count suggests**: a reader is misled about a number, never about which phases
 exist, since the phases are named beside the count every time.
@@ -289,6 +303,23 @@ exist, since the phases are named beside the count every time.
 stale in exactly the same edit as the prose. The 2026-08-17 item that settled `status.md`'s shape
 concluded that the axis is **what goes stale invisibly**, and both of these are invisible for the
 same reason: nothing re-reads them at a merge.
+
+**Phase 11 records its largest corpus session as both 292 calls and 270.** *Added 2026-09-02 by
+Phase 12's review of its finished work, which found it while checking a number Phase 12 published.*
+
+`milestone-2-corpus/phase-11-corpus-tools/for-the-owner.md` says *"the last **45 of 270**"*; that
+phase's `notes.md` calls the same session *"the corpus's largest at 292 calls"*. **Both cannot be
+the session's call count.**
+
+*Why it is filed rather than fixed:* it is **Phase 11's defect, found by Phase 12**, and work
+belonging to another phase does not ride on this branch. It also needs the corpus index to settle —
+the day folders live only in `to-run-server/logs/corpus/`, so whichever number is right is a
+measurement rather than a reading.
+
+*Weaker than it looks?* **Partly.** The top-level `README.md` inherits only the **45**, which is
+consistent with both, so nothing user-facing is wrong today. What is wrong is that a later session
+mining Phase 11 for a denominator will pick one of two numbers with nothing to choose between them.
+**It belongs on a `fix-slop-docs/` branch**, which is the prefix that exists to count exactly this.
 
 ## Decisions waiting on a person
 

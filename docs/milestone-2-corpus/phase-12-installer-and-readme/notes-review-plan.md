@@ -4,7 +4,8 @@
 one file could no longer be called "the review". Its charter is `review-charter.md` beside it; the
 review of the executed work is `notes-review-jobs-done.md`.*
 
-**This diverges from Phases 10 and 11, which kept both reviews inside `notes.md`.** Owner's decision,
+**This diverges from Phases 10 and 11, which kept both reviews inside `notes.md`.** Owner's
+decision,
 2026-09-02: with two reviews in one phase, two distinguishable names beat one file and a section
 heading. *`review-charter.md` keeps its plain name, because Phase 10 already settled that question
 the other way — its second charter is `review-charter-retraining.md`, "named by subject so a third
@@ -52,7 +53,7 @@ than inconsistencies.
 after the cold run reported it, per `IDM-004`'s rule that a refutation is re-checked before it is
 accepted.
 
-`dotenv/main.py:418` calls `find_dotenv()` with no arguments. `find_dotenv` uses `os.getcwd()`
+`dotenv/main.py:419` calls `find_dotenv()` with no arguments. `find_dotenv` uses `os.getcwd()`
 **only** when `usecwd or _is_interactive() or _is_debugger() or sys.frozen` — none of which holds
 for an installed console script. Otherwise it walks `sys._getframe()` back to the **caller's** file,
 takes that file's directory, and `_walk_to_root` climbs from there to `/`.
@@ -110,7 +111,8 @@ filed and a real one the cold reader passed over.
   cap are **discarded, not truncated** — `corpus.py:130`: *"a prefix labelled as a whole body is
   worse than a hole"*. So the README must say that a long session's later calls go **unstored**,
   never that bodies are cut short. The cold reader filed this as a question and did not resolve it
-  by inference, which was right; the source settles it. - **Milestone 2 is four phases in.**
+  by inference, which was right; the source settles it.
+- **Milestone 2 is four phases in.**
   `status.md:35` says four, `status.md:87` and `:117` say three — the latter two written before
   Phase 11 merged. Four is correct: 8, 9, 10, 11. *The contradiction in `status.md` is executed work
   and out of this review's scope; it is raised for the owner separately.*

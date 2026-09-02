@@ -76,11 +76,11 @@ built. Their charters are `review-charter.md` and `review-charter-jobs-done.md`,
 | Review | Subject | Charter | Findings |
 |---|---|---|---|
 | Forward, before task 1 | `plan.md` at `80914a0`, unexecuted | `review-charter.md` | `notes-review-plan.md` |
+| Of the executed work, before the merge | the phase as built, at `0c5ce2d` | `review-charter-jobs-done.md` | `notes-review-jobs-done.md` |
 
-**One row, and the second review's row is deliberately absent until its file exists** — the rule
-this file already applies to the group notes above. A row naming a document nobody has written is a
-placeholder waiting to go stale, and at Phase 11's merge that is exactly what the owner found here.
-*The sentence above names the second review instead, where nothing can rot.*
+*The second row was deliberately absent until its file existed* — the rule this file applies to the
+group notes above, and the defect the owner found here at Phase 11's merge. It was added when the
+review's record was written, not when the review was planned.
 
 *The forward review's account lived in this file until 2026-09-02 and was moved out whole, on the
 owner's decision, when a second review made "the review" ambiguous. That diverges from Phases 10 and
