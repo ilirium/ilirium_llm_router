@@ -236,7 +236,20 @@ was not a real hazard**, and repeating it would preserve a rule whose justificat
 `method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-**None. `fix-slop-docs/opening-playbook-not-run-table` merged 2026-09-02**, and merged branches are
+**`feat/phase-12-installer-and-readme`, opened 2026-09-02 from `5cdc1c9`**, worktree at
+`…/phase-12-installer-and-readme`. **The installer and the `README.md` rewrite** — seventeen tasks
+in five groups, plan approved and forward-reviewed under `IDM-004` before its first task. Its
+permanent record will be its phase note, per `IDM-001`.
+
+*`feat/`, because the phase touches `src/`: an `init` subcommand, a fix to the `.env` search, and a
+`--version` flag. **The last two are defects the forward review found**, not planned work — and
+without them the branch would have been `docs/`.*
+
+*Entered here at the phase's task 1, which exists because the review found this section saying
+"None" while the branch was already open. That is the defect this section's own closing paragraph
+describes, and it had happened again.*
+
+**`fix-slop-docs/opening-playbook-not-run-table` merged 2026-09-02**, and merged branches are
 not listed here. It carried no phase number, so its permanent record is its **merge commit message**
 and its row in `reference/branches.md` — `IDM-001`'s third and fourth homes, the pair
 `docs/bugs-tier` used. *It was listed in flight here earlier the same day and closed out before the

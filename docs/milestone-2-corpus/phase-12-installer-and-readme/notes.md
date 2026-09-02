@@ -36,7 +36,8 @@ what belongs to no group and stays the entry point. The plan has five groups —
 
 | File | Covers | Written |
 |---|---|---|
-| *(this table gains a row when a group file is written)* | | |
+| `notes-group-a.md` | Group A — open the phase | 2026-09-02 |
+| `notes-group-b.md` | Group B — establish what already works | 2026-09-02 |
 
 **Deliberately no placeholder rows, and this is not tidiness.** At Phase 11's merge this index
 carried `| *(none yet)* | Groups D, E, F | not started |` **directly beneath two rows naming files
