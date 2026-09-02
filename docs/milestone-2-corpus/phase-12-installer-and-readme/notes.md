@@ -5,12 +5,16 @@
 *Entry point for the phase. Group notes split out as `notes-group-<letter>.md` once groups have work
 in them, per `../../README.md`.*
 
-**Where execution stopped: groups A, B and C are done. Group D is one task in — task 11 is done,
-12 to 14 are not — and Group E has not started.** *This line replaced "Nothing has been executed
-yet" on 2026-09-02, which was true when the file was created and false after task 1 — **in the
-phase's entry point, the first thing the next session reads.** It was found by the owner asking
-whether anything needed checking before the session closed, not by the sweep: the grep looks for
-markers of work *not* done, and this was a claim that *nothing* was done.*
+**Where execution stopped: groups A, B, C and D are done; Group E has not started.** *One thing in
+Group D is finished but unverified, and it is in `notes-group-d.md`: Quick start's re-install and
+uninstall lines are written from `uv`'s `--help` and have not been driven, because doing so installs
+software on the owner's machine.*
+
+*This line replaced "Nothing has been executed yet" on 2026-09-02, which was true when the file was
+created and false after task 1 — **in the phase's entry point, the first thing the next session
+reads.** It was found by the owner asking whether anything needed checking before the session
+closed, not by the sweep: the grep looks for markers of work *not* done, and this was a claim that
+*nothing* was done.*
 
 ## Why this branch changes `backlog.md` and `IDM-001`
 

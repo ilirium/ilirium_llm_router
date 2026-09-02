@@ -111,7 +111,7 @@ checked before it is built on.
     matters. *It works only because the template uses `forward`/`strip`; an `inject` template would
     fail `_check_api_keys` for a reason that has nothing to do with `init`.*
 
-### Group D — the documents
+### Group D — the documents *(complete, 2026-09-02)*
 
 11. **Extract the brief** to `../../captures/original-project-description.md`, kept as written, with
     a header saying what it is and that it is not edited. **Add its row to
