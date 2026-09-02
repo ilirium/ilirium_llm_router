@@ -63,7 +63,7 @@ content.*
 `--version` and the `.env` fix, and task 12's tests can still change their shape. **The phase
 therefore looks untouched on its most visible artefact until late, and that is deliberate.**
 
-### Group A — open the phase
+### Group A — open the phase *(complete, 2026-09-02)*
 
 1. **Record the branch in `../../status.md`'s "In-flight branches".** *The review found it missing —
    `status.md` says "None" while this branch is open, which that section's own text records as a
@@ -71,7 +71,7 @@ therefore looks untouched on its most visible artefact until late, and that is d
 2. **`evidence/README.md`** — what this phase freezes, or a statement that it freezes nothing, which
    is itself the record.
 
-### Group B — establish what already works
+### Group B — establish what already works *(complete, 2026-09-02)*
 
 **Nothing here changes a file.** The phase's premise is that installation is nearly free; five of
 seven Milestone 1 phases found their premise wrong (`../../reference/lessons.md:19`), so it is
@@ -91,7 +91,7 @@ checked before it is built on.
    per-worktree and this worktree has none.* `extract` returns 1 when nothing is selected, so this
    needs real rows.
 
-### Group C — the installer
+### Group C — the installer *(complete, 2026-09-02)*
 
 6. **`init`, and it must return before `load_config`.** *The review's sharpest finding: `main()` has
    exactly two early returns, so an ordinary subcommand would fail with `Config file not found` in

@@ -596,6 +596,32 @@ The cost measured in `milestone-2-corpus/phase-8-method-and-guardrails/notes.md`
 > 2026-08-16, ahead of the rest, because commit 13 produced two live instances of the defect rather than
 > a hypothetical one. See decision 21's second half.
 
+**`IDM-003` governs the formatter pin and says nothing about the build backend.** *Added
+2026-09-02, from Phase 12 bumping `uv_build` and finding no rule to follow.*
+
+*What happened:* `uv build` warned that `uv_build>=0.11.32,<0.12.0` did not contain the installed uv
+`0.12.5`. The owner asked for `<0.13`. **`method/IDM-003-development-tooling.md` is titled for the
+formatter pin and the type checker that was refused, and the build backend is a third pinned tool it
+does not mention.**
+
+*What the bump did instead:* followed `IDM-003` **by analogy**, on the one sentence of it that
+generalises — *"the diff it produces is the argument, not the changelog and not the version
+number."* For a formatter that diff is reformatted source compared by AST; for a build backend it is
+the artefact. So a wheel was built under each range and all **22 entries hashed and diffed**:
+identical, byte for byte, and the warning gone. Own commit, nothing else in it.
+
+*Why it is an item rather than a fix:* extending a method document is not a `feat/` branch's
+business, and there is a real choice. **Either `IDM-003` grows a section** — the pin, why the range
+has an upper bound at all, and that an artefact comparison is the check — **or the rule stays
+formatter-specific** and the build backend is declared not worth a written rule. *Both are
+defensible; the current state, where a session invents the procedure from an analogy, is not.*
+
+*Weaker than it looks?* **Partly.** The analogy held and the check was cheap, so nothing went wrong
+this time. What makes it worth recording is that **nothing would have gone visibly wrong if it had
+not held** — a build backend that silently changed what it packages produces a wheel that installs
+and misbehaves later, and the only reason anyone compared the wheels is that the ruff pin taught the
+habit.
+
 **Static analysis beyond ruff.** Other type checkers, AST-level linters, a language server — over a CLI
 or over MCP. `ruff` is all this project runs today; `method/IDM-003-development-tooling.md` records the
 pin and what it does and does not catch. *Parked because* nothing depends on it: the code is small, typed

@@ -10,6 +10,27 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-09-02 (later the same day) — Phase 12 is open and three of its five groups are done.**
+`feat/phase-12-installer-and-readme`, nine commits, **448 tests** from 438. **Groups D and E remain:
+the brief extraction, the `status.md` count fix and the `README.md` rewrite, then the close.**
+
+**The router installs and runs without the repository.** `uv tool install <path>` yields a working
+binary; `init` writes `config.yaml` and `.env.example` into the working directory; `check` accepts
+them unmodified; `serve` creates `logs/telemetry/` there and shuts down reporting `0 arrived, 0
+recorded, 0 lost`. All of it driven from directories that have never held this checkout.
+
+**The forward review under `IDM-004` earned its cost before task 1 ran.** It found **three defects
+in `src/`** that no test would have caught, two of which the author had stated to the owner as
+fact.
+The largest: **`load_dotenv()` never read the working directory** — it walks up from `cli.py`, which
+in a checkout reaches the repository root by accident and in an installed tool reaches `$HOME`. A
+`.env` beside the config was invisible while the error told the user to set the variable in it.
+
+**Two instruments produced results that were wrong and did not fail.** `uvx --from <path>` served a
+**stale build** — `--refresh` did not help — so a driven test exited 0 for a feature that had not
+shipped; caught only because a printed message was wrong. And `$?` after a pipe reported 0 for a run
+that had exited 1. **Both are recorded in `prompt.md`'s instruments list.**
+
 **2026-09-02 — `fix-slop-docs/opening-playbook-not-run-table` merged. A new prefix pair, and five
 documents corrected.** Four commits, **no `src/` or `tests/` change**, so the 438 below stands. The
 branch exists because the owner named a defect class: documentation wrong *for a reason* — a

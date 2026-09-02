@@ -1,137 +1,116 @@
 # The next session's prompt
 
 *The one file in `docs/` allowed to go stale, per `README.md` — which is why it is rewritten at each
-handoff rather than left. **Replaced 2026-08-28, at the close of the session that ran Tasks 12–25 and
-merged Phase 11.** Whatever comes next replaces it again.*
+handoff rather than left. **Replaced 2026-09-02**, at the close of the session that merged
+`fix-slop-docs/opening-playbook-not-run-table` and took Phase 12 through Group C. Whatever comes
+next replaces it again.*
 
 ---
 
-**Phase 11 is complete and merged. Nothing is in flight.** Merge `7e53f74`, branch index `f97c4b6`,
-**438 tests**, `main` clean. **Milestone 2 is four phases in.**
+**Phase 12 is open and unfinished. Groups A, B and C are done; D and E are not.** Branch
+`feat/phase-12-installer-and-readme`, worktree `…/phase-12-installer-and-readme`, nine commits,
+**448 tests**, tree clean. `main` is at `5cdc1c9`.
 
-**Start in `main`**, at `/Users/ilirium/Projects/local/ilirium_llm_router/main`. There is **no open
-phase branch**; whatever you do next opens its own. *The `phase-11-corpus-tools` worktree was
-removed after the merge. **Do not delete the branch**: `branch-index.py` refuses to render when a
-description names a branch that no longer exists, so deleting a merged one breaks the next merge.*
-
-**Nothing is queued and nothing is blocked.** Three things wait on the owner and none of them blocks
-work — they are in `milestone-2-corpus/phase-11-corpus-tools/for-the-owner.md`.
+**Start in the phase worktree**, at
+`/Users/ilirium/Projects/local/ilirium_llm_router/phase-12-installer-and-readme`. Not in `main` —
+`main` has none of this work, and `logs/` is per-worktree.
 
 ## Read these, in this order
 
-1. **`docs/status.md`** — first, every session. It is the only file that holds state.
-2. **`docs/backlog.md`** — the inventory. `status.md` lifts two or three items from it and is not a
-   substitute for it.
-3. Only then, whatever the chosen work needs. **Grep headings first** — `grep -n '^## ' <file>`.
+1. **`docs/status.md`** — first, every session. The only file that holds state.
+2. **`docs/milestone-2-corpus/phase-12-installer-and-readme/plan.md`** — 17 tasks in five groups,
+   the settled table, and the register. **Groups A–C carry a completion marker; D and E carry none,
+   which is deliberate** — a "not started" marker is the defect this repository keeps finding.
+3. **`notes.md` in that folder, then `notes-group-c.md`** — C is where the `src/` work is.
+4. `docs/backlog.md` when choosing work, not before.
 
-**Do not read Phase 11's `plan.md` or group notes unless you are working on the corpus tools.** They
-are large and the phase is closed. If you do need them: `plan.md` is the settled table plus the
-register; `notes.md` is the entry point and the five `notes-group-*.md` hold the task work.
+**Do not read the `review-charter.md` unless you are running another review.** It is spent.
 
-## The first thing to do, and it is the owner's
+## What is left: tasks 11–17
 
-**Nobody has driven the corpus tools by hand.** Task 14 was struck on the owner's decision precisely
-so this would happen after the merge, which means **Phase 11's evidence is mechanical throughout** —
-code, tests, corpus drives and a mutation sweep. **Do not read "Phase 11 is merged" as "the tools
-were tried."**
+**Group D — the documents.** Extract the brief from `README.md` to
+`docs/captures/original-project-description.md` **and add its row to `docs/captures/README.md`'s
+index table**. Fix `docs/status.md`'s Milestone 2 count — line 35 says four, two other places
+say three; **four is right**. Then **rewrite `README.md` to the ten sections** the plan lists, and
+sweep the old `README.md` for anything no planned section inherits.
 
-```sh
-ilirium-llm-router extract logs/corpus/2026-*/ --out ./dump --format jsonl --format bodies
-```
+**Group E — close.** Register check, update `milestone-2-corpus/implementation-plan.md`'s Phase 12
+entry, sweep placeholders, close out `status.md`, merge `--no-ff`, **then** regenerate the branch
+index.
 
-Then point a history viewer's Custom Claude Directory at `./dump` — **never at
-`~/.claude/projects/`**, which is position 12 and is not a reversible mistake.
+## Four things about the README rewrite that are already decided
 
-## What Phase 11 built
+- **Ten sections**, listed in the plan with a note each. Section 6 (Commands) is where Phase 11's
+  temporary corpus-tools block lands, which is the commitment Phase 12 inherited.
+- **Quote the shipped `--help` rather than paraphrase it**, so the two cannot drift.
+- **Milestone 1 was seven phases; the file says six.** Milestone 2 is four phases in. The test count
+  in the file reads **158**, which is Milestone 1's — it must become whatever `make test` reports at
+  the merge.
+- **The `body_max_bytes` caveat says calls go *unstored*, never that bodies are truncated.**
+  `corpus.py:130`: *"a prefix labelled as a whole body is worse than a hole."*
+- **Quick start must carry `uv tool update-shell`.** The owner hit `command not found` where this
+  session did not, because `~/.local/bin` was already on its `PATH` — the environment that makes a
+  step unnecessary makes it invisible to whoever writes the instructions.
+
+## What Group C built, and the one thing to know about each
 
 | | |
 |---|---|
-| `transcript.py` | reassembly (SSE + buffered), **delta reconstruction**, cross-day ordering |
-| `jsonl.py` | the viewer's record shapes, `uuid5` chaining, the in-band fidelity note |
-| `extract.py` | selection over an index, output layout, the sibling-day scan |
-| `cli.py` | subcommands: `serve`, `check`, `train-dict`, `tune-dict`, `extract`, `verify-archive` |
-| `evidence/` | the frozen slice, plus **`register-check.py`** and **`mutate.py`**, both re-runnable |
+| `init` | writes `config.yaml` **and** `.env.example` beside the config; **returns before `load_config`**, or it would need the file it exists to create |
+| `--version` | an argparse `action="version"`, so it answers in a directory holding nothing |
+| the `.env` fix | `load_dotenv(args.config.parent / ".env")` — see below, this is the phase's largest finding |
+| two templates | `config-template.yaml` and `env-template`, package data, **byte-identical to the repo's copies and pinned by tests** |
 
-## Five things a session will get wrong about this code
+**`uv_build` ships non-Python package data with no configuration** — verified by building a wheel
+and reading it, not assumed. There is no `[tool.uv.build-backend]` section and no `MANIFEST.in`.
 
-- **A `session_id` is not one conversation.** 36 across 9 sessions, including a **66-call subagent
-  carrying its parent's id**. They are separated by **root message**, which never asks "is this a
-  probe?" — one file per conversation, the deepest taking the plain `<session>.jsonl`.
-- **"Requests are cumulative" is false on raw bytes.** Two normalisations fix it and **one scores
-  0/76 alone**, because the other's breakage masks it. And a **third mechanism is not a
-  normalisation**: a request's tail is provisional — 100 messages were revised by a later call, 9
-  changing role — so turns come from a conversation's *latest* state.
-- **Every long session loses its ending, permanently, at capture time.** Request bodies grow
-  monotonically and cross `body_max_bytes` once; 45 contiguous calls at the end of the largest
-  session have no stored request. **Raising the cap is unactioned and is in `for-the-owner.md`.**
-- **`SSE_EVENTS` is a record, not a guard.** Nothing in `src/` reads it. An unlisted event is passed
-  over, not rejected.
-- **`python3` here is 3.14; the venv is 3.13.** Anything importing `zstandard` needs `uv run python`.
+## Five things a session will get wrong here
 
-## Instruments, and the two that bite
+- **`load_dotenv()` never read the working directory.** It walks up from `cli.py` — in a
+  checkout that reaches the repo root **by accident**, in an installed tool it reaches `$HOME`.
+  Fixed, and `evidence/env-discovery-probe.md` holds the driven proof with its control.
+- **`uvx --from <path>` serves a stale build and `--refresh` does not fix it.** It produced a run
+  that **exited 0 for a feature that had not shipped**. Build a wheel and install it into a
+  throwaway venv instead: `uv build --wheel -o /tmp/w && uv venv v && uv pip install --python
+  v/bin/python /tmp/w/*.whl`.
+- **`$?` after a pipe is the last command's status.** It reported 0 for a run that exited 1 — again,
+  in this session, having been warned in the previous handoff. Redirect when the code matters.
+- **A paragraph rewrapper will silently join numbered list items into prose.** It ate seven blocks
+  across three files here. Fix width by explicit replacement, and **re-measure after every fix** —
+  fixing over-width lines created new ones **five times** this session.
+- **`make lint` cannot see column width.** `E501` is not in ruff's default set. Count characters by
+  hand, and exclude table rows: they legitimately run past 100.
 
-- **`make lint` cannot see column width.** `E501` is not in ruff's default set while `pyproject.toml`
-  sets `line-length = 100`. **Check added lines by hand — in *characters*.** `awk` counts bytes and
-  reported 13 over-width lines where there were 4. **And re-measure after fixing**: rewrapping pushes
-  words onto the next line and creates new ones. Both happened again this session, both already
-  written down.
-- **`$?` after a pipe reports the last command's status.** It said `0` for a run that had failed,
-  again, while checking an exit code. Redirect instead of piping when the code matters.
-- **`evidence/mutate.py` edits `src/` while it runs.** It has three restore paths because
-  `try/finally` was not enough: a timeout killed the first run and left `transcript.py` as
-  `ast.unparse` output — **every comment stripped, 256 of 670 lines gone, suite passing 427/427**.
-  **If a sweep is interrupted, check `git status` before anything else.**
+## Instruments
+
+- `make test` **448**, `make lint` clean at the pinned `0.16.1`, `make check` valid.
+- **`link-check.py`'s count is worthless without naming the worktree** — 83 in `main`, 102 in a
+  clean checkout, because `.claude/settings.local.json` is untracked by policy. Recorded in
+  `backlog.md`. Compare against a run in the *same* tree or not at all.
+- **A phase plan legitimately cites files it will create**, so `link-check` reports them broken.
+  Read the hits; do not chase the number.
 - **Stage with explicit paths, never `git add -A`** — there is a deny rule and it fires.
 - **`git checkout` prompts; use `git switch`.** `git merge` cannot read its message from stdin.
 
 ## Open, and none of it blocks
 
-- **`BUG-001` has still not been reported** to either upstream issue, and it is now much stronger:
-  **93 of 94** — every 429 in the corpus is a non-streamed `POST /v1/messages`, zero streamed
-  requests were ever rate-limited, and all 66 non-streamed `count_tokens` succeeded. **The corpus
-  cannot show the router's part** — every row went through it, so there is no control. It belongs on
-  its own `docs/` or `fix/` branch.
-- **Does `git --version` prompt?** With auto mode off. **A model cannot run this check**: a denial is
-  a tool error and an approval is invisible. Recorded unresolved in `IDM-002`.
-- **`Bash(uvx ruff *)` permits an unpinned ruff.** Raised in every recent phase, owned by nobody.
-- **Failure mode 3 is undischarged** — whether archiving *slows* a call is unmeasured.
-- **A call can still vanish**, and closing it needs a guarantee a row can never be written twice.
-- **~24 mutation survivors are parked** in `backlog.md` as error-message wording, with the reasoning
-  and the honest denominator: **"105 survived" overstates the real gap by about a quarter.**
-- **A mutation-testing tool** is parked under `IDM-003`, with the test for judging it later.
-
-## What the next phase probably is
-
-**Phase 12 — the installer and the `README.md` rewrite**, per `milestone-2-corpus/implementation-plan.md`.
-
-**It inherits a commitment and the commitment is written in only two places.** Phase 11 added a
-**temporary** corpus-tools section to the top-level `README.md`, explicitly superseded by Phase 12.
-**A rewrite that drops it drops the only user-facing description the dictionary and corpus commands
-have.** The section opens with that warning so a rewrite meets it before deciding what to keep.
-
-## One thing this session got wrong at the merge, and it will bite again
-
-**`IDM-001` says to sweep the phase's documents for stale placeholders *before* writing the merge
-message. It was not done.** The owner found a row in `notes.md`'s group index reading
-`| *(none yet)* | Groups D, E, F | not started |` — sitting directly under two rows naming files for
-two of those groups, all marked complete. Sweeping afterwards found **three more**, plus a fourth
-that no grep can see: a cell reading *"evidence pending Phase 11's Task 7"*, three days after that
-task ran.
-
-**All are fixed, and `IDM-001`'s grep is widened** — its old pattern required parentheses and could
-not have matched the row that was found. **Run it at the next merge, before the message:**
-
-```
-grep -rniE "\(?(not started|in progress|none yet)\)?|\*\(in flight\)\*|not yet (merged|done|run|written|built|started|executed)" docs
-```
-
-*Expect hits that are statements **of** the rule — `IDM-001` itself, and the phase notes describing
-past instances. Those are correct.*
+- **`IDM-003` has no rule for the build backend**, only the formatter pin. The `uv_build` bump to
+  `<0.13` followed it by analogy and checked 22 wheel entries byte for byte. **In `backlog.md`, and
+  it is the one open decision this session left.**
+- **`BUG-001` is still unreported** to either upstream issue.
+- **Failure mode 3 is undischarged** — whether archiving *slows* a call.
+- **A call can still vanish**, and closing it needs a guarantee a row is never written twice.
+- **The group-notes rule is invisible when it applies** — in `backlog.md`, four candidate homes,
+  none chosen.
+- **`status.md`'s "Where we stopped" is well past its own ~30-line limit**, at which point its own
+  preamble says it has become a document and should get its own file. Not acted on.
 
 ## The working agreement still applies
 
-`CLAUDE.md`, in full — but the three that earned their place this phase: **propose before
-implementing**; **ask before touching the machine and say what it is for**; and **exercise the real
-thing before committing**, because green tests are not evidence. To which this phase adds one:
-**a targeted mutation tests the tests you wrote; a systematic sweep tests the ones you did not.**
-→ `reference/lessons.md` §8.
+`CLAUDE.md`, in full. Three earned their place this session: **propose before implementing**;
+**ask before touching the machine** — the owner's go-ahead was taken separately for the install and
+again for `serve`; and **exercise the real thing before committing**, which is what caught the
+stale `uvx` build.
+
+To which this phase adds one: **a green test proves the code you ran, not the code you shipped.**
+Two instruments returned success for something untrue here, and neither reported an error.
