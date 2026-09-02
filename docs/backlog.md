@@ -491,6 +491,33 @@ reading its output requires a human holding a number from a comment.
 - **Every phase plan legitimately cites files it will create.** Phase 8's added 23, all correct, all
   reported as breakage. That is a recurring false-positive class rather than drift.
 
+**A fifth piece of evidence, and it is not Phase 8's: the headline count is a property of the
+worktree, not of the repository.** *Added 2026-09-02, found while checking that an unrelated edit
+had broken no links.* On `main` the tool reports **83 broken**; on a worktree created from the same
+commit it reports **101**. The entire 18-link delta is citations of `.claude/settings.local.json`,
+which `method/IDM-002-harness-configuration.md` keeps deliberately **untracked** — so the path
+exists in a tree where a session has granted an approval, and in no fresh checkout. The scanned-file
+counts differ too, 104 against 91, because `.venv/` and `.pytest_cache/` are walked as **sources**.
+
+*Why this is worse than one more stale number.* The docstring's counts were at least re-derivable by
+running the tool. **This one has no single right answer** — the result depends on which untracked
+artefacts happen to sit beside the tracked ones. So `status.md`'s baseline row records **a tree**
+rather than a repository, and a session that re-runs the tool in a new worktree reads 101 as a
+regression it just caused. **That is the failure mode: not a wrong number, a number that cannot be
+compared to itself.**
+
+*What it changes about the redesign this item defers to Milestone 2's close:* an expected-failures
+mechanism must decide whether a path that is untracked **by policy** is a permanent expected hit or
+excluded from the walk entirely — and the same decision settles whether `.venv/` is a source file.
+Neither question is answerable from the docstring's prose, and both are cheap to get wrong in a way
+that makes the tool quieter rather than more correct. **This entry demonstrates it:** naming the
+path above added one more hit to the count in every tree but `main`, so the figure drifts upward as
+the documentation about it grows.
+
+*Deliberately not folded into the "four pieces of evidence" above, and not renumbered to five.* That
+sentence is scoped to Phase 8 and is true; this is from a different session and a different
+mechanism, and a count in a heading is what the rest of this item is complaining about.
+
 **Two narrower gaps ride along**, and they are what this item used to be *about* rather than what it is
 for. **Heading anchors** are stripped in `candidates()` although `README.md`'s naming table says findings
 are "linked by anchor", and **`file.py:N` line citations** are skipped by `is_candidate` for containing
