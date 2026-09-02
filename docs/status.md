@@ -105,7 +105,7 @@ belong to the phase note, and each milestone's own index reads its phases in ord
 | | Subject | Phases | State | Read it in |
 |---|---|---|---|---|
 | **1** | The core router — dispatch, byte-relay, observability, failure handling | 1–7 | **complete** 2026-08-07 | `milestone-1-core/README.md`, which carries every branch and merge hash with what each phase settled |
-| **2** | The corpus — capturing bodies for analysis | 8– | **open**, three phases in — 8, 9 and 10, the last merged 2026-08-21 | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
+| **2** | The corpus — capturing bodies for analysis | 8– | **open**, four phases in — 8, 9, 10 and 11, the last merged 2026-08-28 | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
 
 *Changed 2026-08-17 from a per-phase table of Milestone 1's merge commits, per the `backlog.md` item
 that proposed it. **The hashes are not lost** — each one keeps two to six homes, the fewest being
@@ -135,14 +135,21 @@ settled the storage-infrastructure half; **Phase 10 settled that archiving canno
 a day folder, unpack it elsewhere, and every blob opens and verifies against the digest in its own
 filename. **Whether archiving slows a call is untested**, and is parked in `backlog.md`.
 
-**Three phases done. The first two touched no `src/`** — Phase 8 built the method tier and the
+**Four phases done. The first two touched no `src/`** — Phase 8 built the method tier and the
 guardrails, Phase 9 decided `EPD-003` and ran the gate that named the claim above — **and Phase 10 is
-the first of this milestone that did**, merging 2026-08-21 as `32c26bb`.
-*(Both sentences above were stale between Phase 10's close and this edit: they said two phases and
-that Phase 10 had the opaque half still to test. **That is the paragraph below happening again, to
-the paragraph that describes it** — prose that undercounts goes stale where a missing table row would
-be visible. Recorded rather than quietly fixed, because it is now the second instance.)*
-`milestone-2-corpus/implementation-plan.md` describes all three; **their merge
+the first of this milestone that did**, merging 2026-08-21 as `32c26bb`; Phase 11 built the offline
+tools over the store, merging 2026-08-28 as `7e53f74`.
+*(Both sentences above were stale between Phase 10's close and the 2026-08-21 edit: they said two
+phases and that Phase 10 had the opaque half still to test. **That is the paragraph below happening
+again, to the paragraph that describes it** — prose that undercounts goes stale where a missing
+table row would be visible. Recorded rather than quietly fixed, because it was the second instance.*
+**And it happened a third time.** *This paragraph and the milestone row above both said **three**
+from Phase 11's merge on 2026-08-28 until Phase 12's task 12 fixed them on 2026-09-02, while
+"Where we stopped" said four on the day of that merge — so the file disagreed with itself for five
+days. Three instances of one defect in one file is no longer evidence about prose; it is the
+argument for the count living in exactly one place. **Filed in `backlog.md` rather than fixed
+here**, because choosing that place is a change to what this file is.)*
+`milestone-2-corpus/implementation-plan.md` describes all four; **their merge
 hashes are in their phase notes**, which is where `method/IDM-001-git-branching.md` puts the permanent
 record. *(This sentence first said the plan indexes both hashes. It carries Phase 8's and not Phase 9's
 — the plan's Record table records the branch **that file** was created on, which was Phase 8's.)*

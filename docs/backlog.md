@@ -259,6 +259,37 @@ open — Q2 asked whether it was closed at all, and the owner closed it. And Q5 
 when it belongs to no phase — was answered **for that file only**, by filing it in the archive at the
 milestone root; as a general rule for `README.md` it is still open, inside the file with the rest.
 
+**`status.md` states the open milestone's phase count in three places, and it has gone stale three
+times.** *Added 2026-09-02 by Phase 12's task 12, which was chartered to fix the count and found
+that fixing it is the third instance rather than the end of it.*
+
+*What happened, each time in the same file:* the "Where we stopped" entry is written at the merge
+and is right; the milestone table row and the prose paragraph below it are not touched, and they
+undercount until somebody notices. **Phase 10's merge produced the first two instances**, both
+recorded in place in that paragraph. **Phase 11's merge produced the third** — from 2026-08-28 to
+2026-09-02 the file said *four* at line 56 and *three* at lines 108 and 138, disagreeing with itself
+for five days, and the plan for this phase had to name the line numbers because a reader cannot tell
+which one is current.
+
+*Why it is an item and not a fix:* the fix that works is **one place**, and choosing it changes what
+`status.md` is. Three candidates, none free. **The table row alone**, with the paragraph rewritten
+to point at it — cheapest, and it loses the prose that explains *what the phases did*, which is the
+thing the row cannot carry. **Derive it**, from `milestone-2-corpus/implementation-plan.md`'s
+`### Phase N` headings — accurate by construction, and it makes `status.md` a generated file for one
+number. **Or leave three copies and check them**, which is `branch-index.py`'s bargain and would
+need a checker nobody has asked for.
+
+*Weaker than it looks?* **No, and its own history is the argument.** The paragraph that undercounts
+is the paragraph that **describes prose going stale**, and it has now done it twice. That is not a
+writing failure a more careful session avoids — two sessions and two reviews read past it. **But it
+is smaller than the count suggests**: a reader is misled about a number, never about which phases
+exist, since the phases are named beside the count every time.
+
+*One thing it is not.* This is **not** an argument for preferring tables — the milestone row went
+stale in exactly the same edit as the prose. The 2026-08-17 item that settled `status.md`'s shape
+concluded that the axis is **what goes stale invisibly**, and both of these are invisible for the
+same reason: nothing re-reads them at a merge.
+
 ## Decisions waiting on a person
 
 None of these is blocked on work. Each is blocked on somebody deciding, and each is argued in full in
@@ -576,6 +607,21 @@ the documentation about it grows.
 *Deliberately not folded into the "four pieces of evidence" above, and not renumbered to five.* That
 sentence is scoped to Phase 8 and is true; this is from a different session and a different
 mechanism, and a count in a heading is what the rest of this item is complaining about.
+
+**And a sixth, found by writing the `README.md` on 2026-09-02: the runtime exemption is keyed on a
+path's first segment, so `./logs/` is reported broken where `logs/` is not.** `RUNTIME = {"logs"}`
+at
+`procedures/link-check.py:145` exists because `logs/` is written by running the router and is
+legitimately absent from a fresh clone; `resolves()` tests `candidate.split("/")[0]`, which is `.`
+for a path written `./logs/`. **The two spellings mean the same directory** and the tool disagrees
+about them. The same line also made `./config.yaml` a *roundabout* hit against the repository's own
+`config.yaml`, which is a different file from the one the sentence was about — the reader's, in
+their own working directory. **Worked around by rewording rather than fixed**, which is the wrong
+way round and is why it is recorded here: prose about where an *installed* tool writes at runtime
+is not prose about paths in this repository, and the checker has no way to tell. *(Writing this
+paragraph added **three** hits of its own, at the two lines above that spell the paths out. Naming
+them once more here added two further hits before that clause was reworded to stop. The entry two
+paragraphs up predicted exactly this for one path.)*
 
 **Two narrower gaps ride along**, and they are what this item used to be *about* rather than what it is
 for. **Heading anchors** are stripped in `candidates()` although `README.md`'s naming table says findings
