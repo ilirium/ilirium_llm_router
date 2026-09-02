@@ -194,6 +194,34 @@ that phase's own branch and nothing earlier — `7f68d02` on `feat/phase-4-lmstu
 spec commits were moved off the Phase 1 branch for exactly this reason. The consequence is that a
 branch may sit holding only an unapproved plan — which is the next section.
 
+**Adding an item to `../backlog.md` is not that, and does not open a branch.** *Amended 2026-09-02
+on the owner's instruction, after this rule was applied to a backlog addition and a branch was
+created for one item.*
+
+**The reasoning, which is the owner's and is the load-bearing part:** adding a backlog item is **how
+a phase declines scope**. It is the mechanism by which a session says *this is real, it is not this
+phase's, and it will not be lost* — so it happens **during** a phase, **because of** that phase, and
+it is the phase's own act. Filing it elsewhere separates the record from the moment that produced
+it.
+
+**And the cost of the alternative is not neutral.** A branch per backlog item means a worktree, a
+merge, a `branch-index.py` description and a row in `../reference/branches.md`, for a paragraph.
+That is *"chaos, friction, bureaucracy, and logistical overhead"* — the owner's words — spent on the
+cheapest kind of change this repository has.
+
+**The line between the two, and it is the whole of the rule.** The paragraph above is about **work
+a later phase will do**, which must not be pre-empted on an earlier branch. **A backlog item is a
+record that work is *not* being done**, which is the opposite thing. If the branch would carry the
+work, it belongs to that work's own phase; if it carries only the note that the work exists, it
+belongs where the note was written.
+
+*What happened:* `docs/group-notes-visibility` was created on 2026-09-02 for a single
+`backlog.md` item, on this section's authority, and was **deleted unmerged** the same day with its
+content moved to `feat/phase-12-installer-and-readme` where it was written. It carried one commit
+and never reached `../reference/branches.md`. **A branch may be deleted only in this shape** —
+unmerged, undescribed, and never rendered into the index; see "A derived index is not the
+hand-maintained list this document refused" for why a *merged* branch may never be.
+
 ## A rejected plan is merged and marked, not deleted
 
 **Reversed 2026-08-17.** `EPD-004` decision 14 ended *"if the plan is rejected the branch is deleted,

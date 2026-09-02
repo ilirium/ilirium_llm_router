@@ -5,6 +5,29 @@
 *Entry point for the phase. Group notes split out as `notes-group-<letter>.md` once groups have work
 in them, per `../../README.md`. Nothing has been executed yet.*
 
+## Why this branch changes `backlog.md` and `IDM-001`
+
+**2026-09-02, on the owner's instruction, and it is a rule change rather than phase work.**
+
+The phase's planning produced a backlog item — that the group-notes rule is invisible at the moment
+it applies. It was filed on a new `docs/` branch, on `IDM-001`'s authority that work not belonging
+to a phase does not ride on that phase's branch.
+
+**The owner reversed that, and the reasoning is now in `IDM-001`:** adding a backlog item is **how a
+phase declines scope**, so it belongs on the branch that declined it. The rule being applied was
+about *pre-empting a later phase's work*; a backlog item is the record that work is **not** being
+done, which is the opposite thing.
+
+`docs/group-notes-visibility` was deleted unmerged, its one commit's content moved here. It was
+never described in `branch-index.py` and never reached `reference/branches.md`, which is the only
+shape in which a branch here may be deleted at all.
+
+*Recorded in this phase's notes because a reader will otherwise ask why a `feat/` branch amended the
+method tier. The rule itself lives in `../../method/IDM-001-git-branching.md` and is not restated
+here.*
+
+---
+
 ## The group notes
 
 **Each task group's notes go to `notes-group-<letter>.md`**, per `../../README.md`; this file keeps

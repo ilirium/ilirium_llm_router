@@ -4,6 +4,12 @@
 here says when anything happens. An item lands in `status.md`'s "What is next" when it is picked up,
 and is deleted from here when it is done.
 
+**Adding an item here goes on whatever branch you are already on, and never opens one of its own.**
+*Owner's instruction, 2026-09-02.* Filing a backlog item is **how a phase declines scope** — it
+happens during a phase and because of it — so a branch per item spends a worktree, a merge and an
+index row on a paragraph. → `method/IDM-001-git-branching.md`, "The plan opens the phase branch",
+which is canonical and holds the line between this and pre-empting a later phase's work.
+
 **Every item names why it is parked, and several name why the question is weaker than it looks.**
 That column is the point of this file. An item that has lost its reason has become a to-do, and a
 to-do nobody has justified in six months cannot be told apart from one nobody wants.
@@ -108,6 +114,59 @@ review — so the open half is real and its evidence is unchanged.
 *Why it is parked:* method work does not belong on a `feat/` branch, and this is one amendment to one
 document. **Phase 10 is the worked example either way**, since its register and the defects it caught
 are recorded in `milestone-2-corpus/phase-10-body-store/notes.md` and summarised in `IDM-008`.
+
+**The one-notes-file-per-task-group rule is invisible at the moment it applies.** *Added
+2026-09-02, on the owner's instruction, from Phase 12's planning that same day.*
+
+*What happened:* Phase 12's `plan.md` was written with five task groups, reviewed under
+`method/IDM-004-reviewing-unexecuted-work.md` by **two runs**, revised against that review, and at
+no point did anything mention `notes-group-<letter>.md`. **The owner supplied the rule
+mid-session.**
+Until then the phase had a `notes.md` with no group index and no group files planned.
+
+*Where the rule lives:* `README.md`, "The phase template" — *"Each task group's notes go to
+`notes-group-<letter>.md`"*, adopted 2026-08-21 on the owner's instruction. It is correct, it is
+argued, and it is in the right file. **Nothing brings it to a session at the moment a plan is being
+written.**
+
+*Why it is a method item rather than a slip:* **`CLAUDE.md`'s "Planning a phase" section points at
+`IDM-008` for the register and says nothing about group notes.** That section is the one thing a
+session reads before writing a plan, and it names one of the two phase-template obligations. The
+admission test in `README.md` is whether a session would act *confidently and wrongly* **without
+being told** — and one did, in the presence of both review passes.
+
+*The part that makes it the third of a family:* **neither `IDM-004` run flagged it.** The author run
+asks *is this consistent with what was decided*, the cold run asks *could you execute this from the
+document alone* — and a plan with no group files is executable and internally consistent. **Nothing
+asked either reviewer whether the plan satisfies the phase template.** That is the same shape as the
+two items above: an instrument that exists, and nothing telling the reviewer to use it.
+
+*Four places the fix could land, and this item deliberately does not choose:*
+
+- **A line in `CLAUDE.md`'s "Planning a phase"**, beside the `IDM-008` pointer. Cheapest, and it
+  meets the admission test on the evidence above. **Cost:** a seventh restated fact, and
+  `IDM-001`'s "one accepted duplication" already argues carefully about the sixth.
+- **A charter requirement in `IDM-004`** — every forward review checks the plan against the phase
+  template. **Merges naturally with the two items above**, which both propose amendments to the same
+  document about what a review must *find*.
+- **A closing-task check**, as `IDM-008` does for the register. **Catches it late**, at the merge,
+  which is after the group files would have been useful.
+- **Structural, and it is the only option that cannot be forgotten:** the plan's group headings
+  carry their notes file, so a group without one is *visible in the plan* rather than absent from
+  it.
+  Phase 12 does a weaker version — `notes.md` names the five groups in prose and the index gains a
+  row when a file appears.
+
+*Parked because* it is one amendment whose home is a judgement between four options, three of which
+belong to documents that other open items in this section also propose amending — **so it should be
+decided together with them, not one at a time.** Phase 12 is executing, and method work does not
+belong on a `feat/` branch.
+
+*Weaker than it looks?* **Partly, and in one specific way.** The failure is loud once anyone reads
+the phase folder — a phase with groups and one notes file is obvious on `ls`. What it costs is not
+correctness but *when*: group notes exist to be written **as a group runs**, and a rule that fires
+at the merge produces them by reconstruction, which is the thing the whole notes tier exists to
+prevent.
 
 **Give every item here a stable, referencable index.** *Added 2026-08-26 on the owner's instruction.*
 Items are cited today by quoting their bold opening phrase — `status.md`'s "What is next" does it,
