@@ -223,6 +223,11 @@ look anything up; it is a second copy of a fact, and that is the risk it carries
 | `docs/<slug>` | documentation work |
 | `fix/<slug>` | a defect |
 | `chore/<slug>` | tooling, dependencies, formatter bumps |
+| `fix-slop-docs/<slug>` | a documentation defect whose cause is LLM slop |
+| `fix-slop-code/<slug>` | the same, in `src/` |
+
+**The last two name a cause rather than a kind of work** — a defect a model put there — and are kept
+separate so that the branch log counts how often it happens without anyone keeping a tally.
 
 **Any prefix may carry a phase number: `<prefix>/phase-N-<slug>`.** The prefix says what kind of work
 it is; `phase-N-` says it is numbered work with a plan and a record.
