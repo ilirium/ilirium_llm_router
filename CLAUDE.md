@@ -21,7 +21,7 @@ read it first, every session, for where the project is, what is on disk and what
 How Milestone 1 got there is in `docs/milestone-1-core/`.
 
 **The repository is a bare clone with sibling worktrees**, at
-`~/Projects/local/ilirium_llm_router` — `main`, `to-run-server` and the phase branch,
+`~/Projects/local/ilirium_llm_router` — `main`, `to-run-server` and one per open branch,
 **one branch checked out each**. Editing one **does not** edit another, `logs/` is per-worktree, and a
 session started in `main` sees none of the open phase.
 

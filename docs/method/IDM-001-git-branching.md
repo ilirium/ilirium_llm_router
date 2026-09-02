@@ -71,8 +71,15 @@ to.
     .bare/                      the repository — no working tree
     main/                       worktree, branch `main`
     to-run-server/              worktree, branch `temp/to-run-server`
-    phase-11-corpus-tools/      worktree, branch `feat/phase-11-corpus-tools`
+    <slug>/                     worktree, branch `<prefix>/<slug>` — one per open branch
 ```
+
+**The first three rows are standing; the fourth is whatever is open, and there may be none.**
+*Amended 2026-09-02.* The diagram named `phase-11-corpus-tools/` as a concrete fourth row until
+then, and that worktree was removed once the phase merged — **a layout diagram naming a particular
+transient tree goes stale every time a branch lands**, which is the one thing this document already
+knows about hand-maintained lists. `git worktree list` is the answer to what exists right now;
+`../status.md` holds it for the current session.
 
 **One branch is checked out in exactly one worktree, and git enforces that.** It refuses to check out
 a branch that another worktree already holds. **That refusal is the whole reason `temp/to-run-server`
