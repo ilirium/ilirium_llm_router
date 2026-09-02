@@ -10,6 +10,22 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-09-02 — `fix-slop-docs/opening-playbook-not-run-table` merged. A new prefix pair, and five
+documents corrected.** Four commits, **no `src/` or `tests/` change**, so the 438 below stands. The
+branch exists because the owner named a defect class: documentation wrong *for a reason* — a
+sentence summarising a table it has stopped matching, a count nobody re-ran, a directory described
+in the present tense after deletion. **`fix-slop-docs/` and `fix-slop-code/` are now rows in
+`IDM-001`'s prefix table and in `CLAUDE.md`**, and they name a *cause* rather than a kind of
+artefact, which breaks that table's heading on purpose.
+
+**What it found while fixing what it was sent to fix — which is the argument for the prefix.**
+`IDM-001`'s own accepted-duplication section said *"each of those five"* beside a list of six.
+`to-run-server/logs/` is **153 MB**, not the 93 recorded on 2026-08-25. And **`link-check.py`'s
+headline count is a property of the worktree, not of the repository** — 83 on `main`, 101 in a clean
+checkout — so the baseline row below records *a tree*, and a session re-running it elsewhere will
+read the difference as a regression it caused. That one is in `backlog.md`, under the existing
+`link-check.py` item.
+
 **2026-08-28 — Phase 11 is complete and merged. Milestone 2 is four phases in.** Merge `7e53f74`,
 51 commits; branch index regenerated at `f97c4b6`, 22 rows. **438 tests**, from 310 when the phase
 opened.
@@ -214,10 +230,11 @@ was not a real hazard**, and repeating it would preserve a rule whose justificat
 `method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-**`fix-slop-docs/opening-playbook-not-run-table`, opened 2026-09-02 from `318b6c8`**, worktree at
-`…/opening-playbook-not-run-table`. It carries no phase number, so its permanent record will be its
-merge commit message and its row in `reference/branches.md` — `IDM-001`'s third and fourth homes,
-the pair `docs/bugs-tier` used. *This section read **"None"** from the Phase 11 merge until then.*
+**None. `fix-slop-docs/opening-playbook-not-run-table` merged 2026-09-02**, and merged branches are
+not listed here. It carried no phase number, so its permanent record is its **merge commit message**
+and its row in `reference/branches.md` — `IDM-001`'s third and fourth homes, the pair
+`docs/bugs-tier` used. *It was listed in flight here earlier the same day and closed out before the
+merge message, which is what `IDM-001` asks for and what the previous merge did not do.*
 
 **`feat/phase-11-corpus-tools` merged 2026-08-28** at `7e53f74` and is not listed here, because
 merged branches are not. Its permanent record is its phase note and its row in
