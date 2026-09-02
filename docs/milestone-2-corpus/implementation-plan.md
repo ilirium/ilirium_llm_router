@@ -208,13 +208,16 @@ binary; a new `init` subcommand writes `config.yaml` and `.env.example` into the
 `check` accepts them unmodified; `serve` creates `logs/telemetry/` there. All of it driven from
 directories that have never held this checkout. The `README.md` is ten sections, 133 lines to 304.
 
-**Three of its five changes to `src/` are defects rather than planned work**, all found by the
-forward review before task 1 ran. **`load_dotenv()` never read the working directory** — it walks up
-from `cli.py`, reaching the repository root by accident in a checkout and `$HOME` in an installed
-tool, so a `.env` beside the config was invisible while the error told the user to set the variable
-in it. There was **no `--version`**, so no invocation printed a version and exited 0 on a fresh
-machine. And **`init` as an ordinary subcommand would have failed before it ran**, requiring the
-config file it exists to create.
+**Two of its four `src/` changes are defects rather than planned work**, both found by the forward
+review before task 1 ran. **`load_dotenv()` never read the working directory** — it walks up from
+`cli.py`, reaching the repository root by accident in a checkout and `$HOME` in an installed tool,
+so a `.env` beside the config was invisible while the error told the user to set the variable in it.
+And there was **no `--version`**, so no invocation printed a version and exited 0 on a fresh
+machine.
+
+**A third review finding decided how the planned work was built rather than adding to it.** `init`
+as an ordinary subcommand would have failed before it ran, requiring the config file it exists to
+create; it returns above `load_config` for the opposite reason to `extract` and `verify-archive`.
 
 **The inherited commitment is discharged.** Phase 11's temporary corpus-tools section is now
 `README.md`'s "Commands", with the dictionary commands, `extract`'s selection and output layout, and
