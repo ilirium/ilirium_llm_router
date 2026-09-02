@@ -18,6 +18,12 @@ in the present tense after deletion. **`fix-slop-docs/` and `fix-slop-code/` are
 `IDM-001`'s prefix table and in `CLAUDE.md`**, and they name a *cause* rather than a kind of
 artefact, which breaks that table's heading on purpose.
 
+**Baselines re-run on the merged trunk.** `make test` **438 passed**; `make lint` clean at the
+pinned `0.16.1`; `make check` valid; `branch-index.py --check` current at **23 rows**;
+`link-check.py` **83 broken, 2 roundabout** — *unchanged by the merge, which is what the finding
+above predicts*: the new citation of the untracked path resolves in `main` and would not in a clean
+checkout.
+
 **What it found while fixing what it was sent to fix — which is the argument for the prefix.**
 `IDM-001`'s own accepted-duplication section said *"each of those five"* beside a list of six.
 `to-run-server/logs/` is **153 MB**, not the 93 recorded on 2026-08-25. And **`link-check.py`'s
