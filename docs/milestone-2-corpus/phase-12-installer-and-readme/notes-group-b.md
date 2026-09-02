@@ -103,9 +103,32 @@ from an empty selection; it came from a better reason.
 *The day folders live only in `to-run-server/logs/corpus/`, as the plan warned — `logs/` is
 per-worktree and neither `main` nor this worktree has the 2026-08-2x folders.*
 
+### `serve`, driven — the write happens where the resolution said it would
+
+**Done 2026-09-02 on the owner's separate go-ahead**, which `CLAUDE.md`'s working agreement requires
+for a long-running local server. Port moved to **8799** so the run could not collide with anything
+the owner had listening.
+
+An empty directory, one `config.yaml`, and `ilirium-llm-router serve`:
+
+```
+./config.yaml
+./logs/telemetry/calls.csv      ← created
+./logs/telemetry/router.log     ← created
+```
+
+**`HEAD /` returned 200.** `router.log` carries the whole life of the process — startup, both
+probes, and shutdown — and `calls.csv` was created carrying its header row and nothing else, which
+is correct: the probe route is not a call.
+
+**The shutdown line is the part worth keeping.** `calls: 0 arrived, 0 recorded, 0 lost` — Phase 10's
+arrived-against-recorded counter pair, emitted by an installed binary in a directory that has never
+seen this repository. *That instrument exists because a call can vanish without leaving a row; it is
+the thing that would make the loss visible. It works outside the repo.*
+
+**So task 4 is closed on both halves:** the paths *resolve* into the working directory, and the
+router *writes* there.
+
 ## What is not done in this group
 
-**The `serve` half of task 4.** Starting a long-running local server is named in `CLAUDE.md`'s
-working agreement as something to ask about separately, and the owner's go-ahead covered the
-install. **What it would add:** proof that `logs/telemetry/` is *created* in the working directory
-rather than only *resolved* to it. The path resolution is established above; the write is not.
+*Nothing. Tasks 3, 4 and 5 are complete.*
