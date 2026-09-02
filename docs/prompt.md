@@ -25,8 +25,9 @@ description names a branch that is gone.
    need. `notes-group-c.md` is the `src/` work; `notes-group-e.md` is the close.
 3. `docs/backlog.md` when choosing work, not before.
 
-**Do not read Phase 12's `plan.md` or `review-charter.md` unless you are re-opening the phase.** The
-plan is the settled table plus the register; the charter is spent.
+**Do not read Phase 12's `plan.md` or either `review-charter*` unless you are re-opening the phase.**
+The plan is the settled table plus the register; both charters are spent. **The phase was reviewed
+twice** — `notes.md` names both and where each one's record lives.
 
 ## What Phase 12 built
 

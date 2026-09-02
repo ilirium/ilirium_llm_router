@@ -194,7 +194,7 @@ eight documents the phase edited outside it.
 **Out of scope:** Phases 1–11 as executed; how any settled decision was reached; and the `README.md`
 the phase replaced, except where a claim is made about it.
 
-1. **Write the charter** — `review-charter-executed.md` beside this file, handed to the cold reader
+1. **Write the charter** — `review-charter-jobs-done.md` beside this file, handed to the cold reader
    verbatim. From the sections above: scope, the two questions, what a finding looks like *in
    executed work*, the claims to re-verify by reading the source, **the instruments to test for
    vacuity**, the known false positives, the rules copied in rather than cited, the output shape,
@@ -206,8 +206,8 @@ the phase replaced, except where a claim is made about it.
 3. **Reconcile.** Verify every refutation before accepting it; a disagreement between the runs is
    itself a finding. **The author run declares its gap on Groups A–C** rather than reporting on them
    as though it had been there.
-4. **Write `notes-review.md`** — the merged work list, what was accepted, what was refused and why,
-   and the executability-turned-reproducibility section.
+4. **Write `notes-review-jobs-done.md`** — the merged work list, what was accepted, what was refused
+   and why, and the executability-turned-reproducibility section.
 5. **Record the four measurements named above**, so the `IDM` can be written from cost rather than
    from intention. *The list lives in one place — §7 — deliberately; a count restated here is the
    second copy this repository keeps finding wrong.*
@@ -229,7 +229,7 @@ Positions the review does not get to revisit — the same rule `plan.md`'s settl
 | 2 | **Scope includes all eight documents edited outside the phase folder** | Not only the four a later session acts on. The `README.md` was in scope regardless — it is the deliverable |
 | 3 | **One author run, over the whole phase, with the gap declared** | First-hand for Groups D–E; for A–C only what the notes and commit messages record. **For A–C it is a warm read rather than an author run**, so the author/cold split is weaker exactly there — recorded as a measurement, not hidden |
 | 4 | **One cold run** | As `IDM-004` does. The two-narrow-charters alternative is untested and doubles the cost, and `n = 1` is not enough to choose it |
-| 5 | **The output goes in `notes-review.md`**, beside the group notes | Naming left to this session. It joins the `notes*` family so a reader scanning the folder finds it, rather than pairing with the two review *inputs* — `review-charter.md` and this file |
+| 5 | **The output goes in `notes-review-jobs-done.md`**, beside the group notes | Names settled by the owner on 2026-09-02, after this table was first written: two reviews in one phase need two distinguishable names, so the forward review's record moved out of `notes.md` to `notes-review-plan.md` at the same time. **`review-charter.md` keeps its plain name** — Phase 10 settled that the other way, and `IDM-004` cites it |
 
 **Nothing else in this document is settled.** The seven additions and three removals below are its
 argument, and the charter written from them is the first thing the run produces — at which point
