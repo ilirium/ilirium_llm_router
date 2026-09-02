@@ -231,6 +231,18 @@ Positions the review does not get to revisit — the same rule `plan.md`'s settl
 | 4 | **One cold run** | As `IDM-004` does. The two-narrow-charters alternative is untested and doubles the cost, and `n = 1` is not enough to choose it |
 | 5 | **The output goes in `notes-review-jobs-done.md`**, beside the group notes | Names settled by the owner on 2026-09-02, after this table was first written: two reviews in one phase need two distinguishable names, so the forward review's record moved out of `notes.md` to `notes-review-plan.md` at the same time. **`review-charter.md` keeps its plain name** — Phase 10 settled that the other way, and `IDM-004` cites it |
 
+**Four more were settled on 2026-09-02, when the owner set the task list that runs this review.**
+
+| | Settled | Note |
+|---|---|---|
+| 6 | **A finding becomes a *question* — not a fix — when acting on it would reverse or narrow an owner decision or a settled row, change anything in `../../method/`, need the machine, or grow the work beyond a small documentation or code fix** | The boundary that decides whether the phase merges or hands off. Deliberately conservative: **one method-tier or settled-row finding stops the merge**, however clean everything else is |
+| 7 | **A finding may be refused, with the reason recorded**, and the review still proceeds | `IDM-004` rule 4 makes refusals first-class. **A review that fixes everything it found has no refusals by construction**, which is a warning sign rather than a clean result. A refusal is a judgement recorded in writing, not a question |
+| 8 | **The merge is three steps** | `--no-ff`, then fill `plan.md`'s `Merge commit:` line, then `branch-index.py --write` on the trunk and commit it. **Stopping after the merge leaves a landed branch with no index row** — a defect `--check` finds and a reader does not. The branch is not deleted |
+| 9 | **The pre-review save is a resumable checkpoint, not a handoff** | The documents are true as of the checkpoint and all checks green, so nothing is lost if the session stops mid-review — but no handoff narrative is written that the review's outcome would immediately replace |
+
+**One thing assumed rather than asked, because settled row 4 already implies it:** the cold run is
+**one fresh-context agent**, given `review-charter-jobs-done.md` and nothing else.
+
 **Nothing else in this document is settled.** The seven additions and three removals below are its
 argument, and the charter written from them is the first thing the run produces — at which point
 they stop being a proposal and become what the reviewer was told.
