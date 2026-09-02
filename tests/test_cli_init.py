@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 
 from ilirium_llm_router import __version__
-from ilirium_llm_router.cli import CONFIG_TEMPLATE, _init, main
+from ilirium_llm_router.cli import CONFIG_TEMPLATE, ENV_EXAMPLE, ENV_TEMPLATE, _init, main
 from ilirium_llm_router.config import load_config
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -34,10 +34,42 @@ def run(*argv: str) -> int:
         sys.argv = original
 
 
-def test_init_writes_a_config_into_an_empty_directory(tmp_path: Path) -> None:
+def test_init_writes_both_files_into_an_empty_directory(tmp_path: Path) -> None:
     target = tmp_path / "config.yaml"
     assert _init(target) == 0
     assert target.exists()
+    assert (tmp_path / ENV_EXAMPLE).exists(), "the .env.example was not written"
+
+
+def test_env_example_lands_beside_the_config_not_in_the_cwd(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`init -c sub/other.yaml` puts `.env.example` in `sub/`, because that is where `.env` is read.
+
+    The two have to agree. `main()` reads `args.config.parent / ".env"`, so an `.env.example`
+    written to the working directory instead would sit where nothing looks for it.
+    """
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "sub").mkdir()
+
+    assert _init(Path("sub/other.yaml")) == 0
+    assert (tmp_path / "sub" / ENV_EXAMPLE).exists()
+    assert not (tmp_path / ENV_EXAMPLE).exists(), "it landed in the cwd instead"
+
+
+def test_an_existing_env_example_refuses_the_whole_command(tmp_path: Path) -> None:
+    """One existing target refuses both writes, rather than filling in the gap.
+
+    **Deliberate, and the friendlier alternative was considered.** Writing what is missing would
+    leave a directory half-populated by two different runs, with nothing saying which file came
+    from where. Refusing whole is what "it refuses rather than overwriting" predicts.
+    """
+    (tmp_path / ENV_EXAMPLE).write_text("theirs\n", encoding="utf-8")
+    target = tmp_path / "config.yaml"
+
+    assert _init(target) == 1
+    assert not target.exists(), "it wrote the config despite refusing"
+    assert (tmp_path / ENV_EXAMPLE).read_text(encoding="utf-8") == "theirs\n"
 
 
 def test_init_refuses_rather_than_overwriting(tmp_path: Path) -> None:
@@ -71,6 +103,19 @@ def test_template_matches_the_repository_config(tmp_path: Path) -> None:
     """
     shipped = (REPO_ROOT / "src" / "ilirium_llm_router" / CONFIG_TEMPLATE).read_bytes()
     ours = (REPO_ROOT / "config.yaml").read_bytes()
+    assert shipped == ours
+
+
+def test_env_template_matches_the_repository_env_example() -> None:
+    """Same rule for the second template, and it is the one with a foot-gun.
+
+    `.env.example` cites a path under `docs/`, which an installed user does not have. The wording
+    was changed to say "in the project repository" so that a byte-identical copy is honest for both
+    readers -- an installed tool telling somebody to open a file they cannot have is the same defect
+    as the `.env` error message this phase fixed.
+    """
+    shipped = (REPO_ROOT / "src" / "ilirium_llm_router" / ENV_TEMPLATE).read_bytes()
+    ours = (REPO_ROOT / ENV_EXAMPLE).read_bytes()
     assert shipped == ours
 
 

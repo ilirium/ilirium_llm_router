@@ -280,6 +280,17 @@ runs. A Python string holding YAML would ship just as reliably and would have to
 hand, which is the second copy this project's documentation rules exist to prevent.
 """
 
+ENV_TEMPLATE = "env-template"
+"""The starter `.env.example`, on the same terms: `.env.example` byte for byte, pinned by a test."""
+
+ENV_EXAMPLE = ".env.example"
+"""What `ENV_TEMPLATE` is written out as, beside the config.
+
+**`.env.example`, never `.env`.** The written file is a commented example a reader copies; writing
+`.env` would create a file the router actually reads, in a directory where somebody may already
+have one, and no amount of refusing-to-overwrite makes that the right default.
+"""
+
 
 def _init(path: Path) -> int:
     """Write a starter config next to where the router would look for one.
@@ -293,21 +304,36 @@ def _init(path: Path) -> int:
     invented here: `-c` already names the file every other command reads, and having `init` write
     somewhere else would make the flag mean two things.
     """
-    if path.exists():
-        print(f"error: {path} already exists; refusing to overwrite it", file=sys.stderr)
+    env_example = path.parent / ENV_EXAMPLE
+
+    # **Both targets are checked before either is written, and one existing file refuses the whole
+    # command.** Writing what is missing and skipping what is not would be friendlier and would
+    # leave a directory in a state neither `init` nor the user chose -- half-written, with no
+    # message saying which half. Refusing whole is the behaviour a reader can predict from the
+    # sentence "it refuses rather than overwriting".
+    existing = [target for target in (path, env_example) if target.exists()]
+    if existing:
+        for target in existing:
+            print(f"error: {target} already exists; refusing to overwrite it", file=sys.stderr)
         return 1
 
     from importlib import resources
 
-    template = resources.files(__package__).joinpath(CONFIG_TEMPLATE).read_text(encoding="utf-8")
-    try:
-        path.write_text(template, encoding="utf-8")
-    except OSError as exc:  # a missing parent directory, or a read-only one
-        print(f"error: could not write {path}: {exc}", file=sys.stderr)
-        return 1
+    files = resources.files(__package__)
+    written = {
+        path: files.joinpath(CONFIG_TEMPLATE).read_text(encoding="utf-8"),
+        env_example: files.joinpath(ENV_TEMPLATE).read_text(encoding="utf-8"),
+    }
+    for target, text in written.items():
+        try:
+            target.write_text(text, encoding="utf-8")
+        except OSError as exc:  # a missing parent directory, or a read-only one
+            print(f"error: could not write {target}: {exc}", file=sys.stderr)
+            return 1
 
-    print(f"Wrote {path}")
-    print("Edit it, then run `ilirium-llm-router check` to validate it.")
+    for target in written:
+        print(f"Wrote {target}")
+    print("Edit them, then run `ilirium-llm-router check` to validate the config.")
     return 0
 
 

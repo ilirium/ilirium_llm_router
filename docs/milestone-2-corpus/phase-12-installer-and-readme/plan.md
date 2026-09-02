@@ -156,7 +156,10 @@ checked before it is built on.
 | the template's location | package data path | `src/ilirium_llm_router/config-template.yaml` |
 | the template's content | a copy, a subset, or newly written | **`config.yaml` byte for byte**, pinned by a test |
 | `uv_build` package-data configuration | `pyproject.toml` section | **none** — verified by building the wheel and reading it |
-| `.env.example` | on-disk name, maybe written by `init` | **not written** — the template's backends need no key |
+| `.env.example` | on-disk name written by `init` | **written**, beside the config — owner's decision, reversing this phase's own |
+| `ENV_TEMPLATE` | module constant in `cli.py` | `"env-template"` |
+| `ENV_EXAMPLE` | module constant in `cli.py` | `".env.example"` |
+| the env template's location | package data path | `src/ilirium_llm_router/env-template` |
 | `config.yaml` | on-disk name written by `init` | unchanged from the repo's name |
 | `original-project-description.md` | on-disk name, in `../../captures/` | fixed |
 | the test file | on-disk name, in `tests/` | `tests/test_cli_init.py` |

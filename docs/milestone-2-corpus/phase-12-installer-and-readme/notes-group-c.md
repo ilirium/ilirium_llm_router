@@ -49,17 +49,37 @@ string holding YAML — ships just as reliably and would have to be kept in step
 second copy this project's documentation rules exist to prevent, so it is a comparison a test can
 make instead of a discipline a person has to keep.
 
-**`.env.example` is not written, and that is a decision rather than an omission.** In the setup the
-template ships, every backend is `forward` or `strip`, so **no key is needed at all** and the file
-would be noise a new user has to work out they can ignore. The template's own comments name
-`api_key_env` where it matters. *The register carried this as `❓`; it is now valued as "not
-written".*
+**`.env.example` is written. This reverses a decision this session made and the owner overturned**
+on 2026-09-02. The argument for not writing it was that the shipped backends are `forward` and
+`strip`, so no key is needed and the file is noise. **The argument against is stronger and it is
+the owner's:** a template you did not get is not discoverable, and the cost of an unneeded commented
+file is a reader spending ten seconds on it.
+
+**It ships as `env-template` and is written as `.env.example`, never `.env`.** The written file is
+an example a reader copies; writing `.env` would create a file the router actually *reads*, in a
+directory where somebody may already have one, and no amount of refusing-to-overwrite makes that a
+sound default.
+
+**It lands beside the config, not in the working directory**, because `main()` reads
+`args.config.parent / ".env"`. The two have to agree or `init -c sub/other.yaml` would leave the
+example where nothing looks for it. A test pins it.
+
+**One existing target refuses the whole command.** Writing what is missing would be friendlier and
+would leave a directory half-populated by two runs with nothing saying which file came from where.
+Refusing whole is what *"it refuses rather than overwriting"* predicts, and it is what a reader can
+act on.
+
+**And the repository's own `.env.example` was reworded to make byte-identity honest.** It cited
+`docs/procedures/anthropic-auth-check.md` — a path an installed user does not have. Shipping that
+unchanged would repeat, in the file `init` writes, exactly the defect this phase fixed in the `.env`
+error message: advice the reader cannot act on. The line now says *"in the project repository"*,
+which is true for both audiences.
 
 ## Tasks 8 and 9 — the two defects
 
 **`.env` is now read from `args.config.parent / ".env"`** — beside the config it serves, which is
-the rule `config.py` already uses for log, stats and corpus paths. With the default `./config.yaml` that
-is the working directory, so settled row 1 holds; with `-c /elsewhere/config.yaml` it is
+the rule `config.py` already uses for log, stats and corpus paths. With the default `./config.yaml`
+that is the working directory, so settled row 1 holds; with `-c /elsewhere/config.yaml` it is
 `/elsewhere/.env`, which the plain-cwd version would have got wrong.
 
 **`--version` is `action="version"`,** so it prints and exits during parsing — before the config is
@@ -102,6 +122,29 @@ installed tool was left alone:
 | `check` on that file, unmodified | exit **0**, `Configuration is valid.` |
 | `init` again | exit **1**, `config.yaml already exists; refusing to overwrite it` |
 | `check` with a `.env` beside the config and an `inject` backend | exit **0** — *the same probe returned 1 before this group* |
+
+## An instrument that produced a false pass, caught by reading the output
+
+**`uvx --from <path>` served a stale build, and `--refresh` did not fix it.** After `init` was
+changed to write two files, `uvx --from` ran the *previous* code: one file written, and the old
+"Edit it" message rather than the new "Edit them". The wheel and the source both already had the
+new code — checked directly, by reading `cli.py` out of the freshly built archive.
+
+**Nothing failed. That is what makes it dangerous:** the run exited 0, and taken at face value it
+was a passing test of a feature that had not shipped. It was caught because the *message* was wrong,
+not because anything reported an error.
+
+**The reliable route is a wheel installed into a throwaway venv**, and that is how every driven
+result in this section was produced after the discovery:
+
+```
+uv build --wheel -o /tmp/whl3
+uv venv venv-t --python 3.13
+uv pip install --python venv-t/bin/python /tmp/whl3/*.whl
+```
+
+*Group C's earlier `uvx --from` results were re-run this way and held. But the earlier ones were
+taken on trust, and one of them could as easily have been stale.*
 
 ## One thing found and deliberately not acted on
 
