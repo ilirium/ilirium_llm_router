@@ -148,13 +148,15 @@ checked before it is built on.
 | `init` | CLI subcommand | `ilirium-llm-router init` |
 | `--version` | CLI flag | `--version`, no short form |
 | `--force` on `init` | CLI flag | **none — declined**, settled row 11 |
-| `_init` | function in `cli.py` | ❓ — name and home decided in task 6 |
+| `_init` | function in `cli.py` | `_init(path: Path) -> int`, in `cli.py` |
+| `CONFIG_TEMPLATE` | module constant in `cli.py` | `"config-template.yaml"` |
+| `.env` search path | where `load_dotenv` looks | `args.config.parent / ".env"` |
 | `init`'s refusal exit code | integer | `1`, matching the config-error path at `cli.py:49` |
-| the template's file name | on-disk name inside the package | ❓ — task 7 |
-| the template's location | package data path | ❓ — task 7 |
-| the template's content | a copy, a subset, or newly written | ❓ — task 7 |
-| `uv_build` package-data configuration | `pyproject.toml` section | ❓ — task 7; may be none |
-| `.env.example` | on-disk name, maybe written by `init` | ❓ — task 6 |
+| the template's file name | on-disk name inside the package | `config-template.yaml` |
+| the template's location | package data path | `src/ilirium_llm_router/config-template.yaml` |
+| the template's content | a copy, a subset, or newly written | **`config.yaml` byte for byte**, pinned by a test |
+| `uv_build` package-data configuration | `pyproject.toml` section | **none** — verified by building the wheel and reading it |
+| `.env.example` | on-disk name, maybe written by `init` | **not written** — the template's backends need no key |
 | `config.yaml` | on-disk name written by `init` | unchanged from the repo's name |
 | `original-project-description.md` | on-disk name, in `../../captures/` | fixed |
 | the test file | on-disk name, in `tests/` | `tests/test_cli_init.py` |
