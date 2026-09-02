@@ -17,6 +17,27 @@ accepted duplication" — and `../README.md` points here.
 | `docs/<slug>` | documentation work |
 | `fix/<slug>` | a defect |
 | `chore/<slug>` | tooling, dependencies, formatter bumps |
+| `fix-slop-docs/<slug>` | a documentation defect whose cause is LLM slop |
+| `fix-slop-code/<slug>` | the same, in `src/` |
+
+**The last two name a *cause* rather than a kind of artefact, and that breaks this section's own
+heading on purpose.** *Added 2026-09-02 on the owner's decision.* Everything above answers *what
+kind of work is this*; these two answer *what put the defect there* — a sentence that summarises a
+table it has stopped matching, a number nobody re-derived, a paragraph plausible enough that two
+reviews read past it. By the artefact axis they are ordinary `docs/` and `fix/` work, **and that is
+exactly what makes the mechanic invisible**: a `docs/<slug>` branch repairing model-written drift is
+indistinguishable in the log from one adding a section.
+
+**What the split buys is a count nobody has to keep.** `../reference/branches.md` is generated from
+git, so how often this bites — and whether it bites `docs/` harder than `src/`, which is the
+interesting question — becomes a property of the branch log rather than a tally somebody maintains.
+That is the same argument that admitted a derived index over the hand-maintained list this document
+refused, and it is why **neither row states whether it has been used yet**: a sentence saying so
+would be a hand-maintained fact about a question the index already answers, and it would go stale
+silently.
+
+**Both take a phase number like any other prefix** — the rule below is not narrowed for them, though
+numbered slop work would be unusual.
 
 **Any of them may carry a phase number:**
 
@@ -50,8 +71,15 @@ to.
     .bare/                      the repository — no working tree
     main/                       worktree, branch `main`
     to-run-server/              worktree, branch `temp/to-run-server`
-    phase-11-corpus-tools/      worktree, branch `feat/phase-11-corpus-tools`
+    <slug>/                     worktree, branch `<prefix>/<slug>` — one per open branch
 ```
+
+**The first three rows are standing; the fourth is whatever is open, and there may be none.**
+*Amended 2026-09-02.* The diagram named `phase-11-corpus-tools/` as a concrete fourth row until
+then, and that worktree was removed once the phase merged — **a layout diagram naming a particular
+transient tree goes stale every time a branch lands**, which is the one thing this document already
+knows about hand-maintained lists. `git worktree list` is the answer to what exists right now;
+`../status.md` holds it for the current session.
 
 **One branch is checked out in exactly one worktree, and git enforces that.** It refuses to check out
 a branch that another worktree already holds. **That refusal is the whole reason `temp/to-run-server`
@@ -407,8 +435,19 @@ the record.**
 the branch index before writing the merge message*. **That is a fact with two homes, which
 is the thing this tier exists to stop.**
 
+*"Each of those five" read five until 2026-09-02, having not been counted again when the sixth was
+admitted on 2026-08-21 — in the paragraph directly below a list of six and above a heading beginning
+"The sixth was admitted". A count in prose beside the list it counts, going stale where the list
+could not: the same shape as the two corrections this branch carries.*
+
+*The prefix table grew two rows on 2026-09-02, and its restatement carries a one-sentence gloss —
+that `fix-slop-docs/` and `fix-slop-code/` name a cause rather than a kind of work. **Counted as
+part of the table rather than as a seventh fact**, because the row is unusable without it: a session
+that reads the prefix and not the reason files the next one under `docs/`, which is the outcome the
+split exists to prevent.*
+
 It is accepted because the auto-load admission test demands it. `CLAUDE.md` is the only file loaded
-into every session, and each of those five is a thing a session acts on **confidently and wrongly**
+into every session, and each of those six is a thing a session acts on **confidently and wrongly**
 with no reason to look anything up first — `git merge -F -` most of all. `EPD-004` decision 16 makes
 exactly this argument for exactly this fact.
 
@@ -434,13 +473,16 @@ the way a rule can, which is the same defence `../README.md`'s design-decisions 
 lists titles only.
 
 **"Closing out a status placeholder" was considered for `CLAUDE.md` on 2026-08-17 and refused.**
-Recorded because the argument for adding it looks strong and is wrong. `../README.md`'s admission test
-is whether a session would act *confidently and wrongly* **without being told** — and Phase 9 failed
-this rule twice having **already read this document during the phase**. It did not fail from ignorance;
-it failed because the rule was scoped to a row. **The repair is scope, not location**, and it has been
-made above. Copying it into `CLAUDE.md` would grow the accepted duplication to six facts to fix a
-defect that a sixth copy would not have prevented. The existing pointer already names the trigger —
-*read it before recording where a branch went* — and that is the moment this rule applies.
+Recorded because the argument for adding it looks strong and is wrong. `../README.md`'s admission
+test is whether a session would act *confidently and wrongly* **without being told** — and Phase 9
+failed this rule twice having **already read this document during the phase**. It did not fail from
+ignorance; it failed because the rule was scoped to a row. **The repair is scope, not location**,
+and it has been made above. Copying it into `CLAUDE.md` would grow the accepted duplication to six
+facts to fix a defect that a sixth copy would not have prevented. *(Six was the count on that date.
+The branch-index fact was admitted four days later, so the same copy would make seven today — the
+argument is unaffected and the arithmetic is left as it was made.)* The existing pointer already
+names the trigger — *read it before recording where a branch went* — and that is the moment this
+rule applies.
 
 ## Provenance
 

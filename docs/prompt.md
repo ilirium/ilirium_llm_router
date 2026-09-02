@@ -10,10 +10,9 @@ merged Phase 11.** Whatever comes next replaces it again.*
 **438 tests**, `main` clean. **Milestone 2 is four phases in.**
 
 **Start in `main`**, at `/Users/ilirium/Projects/local/ilirium_llm_router/main`. There is **no open
-phase branch**; whatever you do next opens its own. *The `phase-11-corpus-tools` worktree still
-exists and is spent — do not work in it, and **do not delete the branch**: `branch-index.py` refuses
-to render when a description names a branch that no longer exists, so deleting a merged one breaks
-the next merge.*
+phase branch**; whatever you do next opens its own. *The `phase-11-corpus-tools` worktree was
+removed after the merge. **Do not delete the branch**: `branch-index.py` refuses to render when a
+description names a branch that no longer exists, so deleting a merged one breaks the next merge.*
 
 **Nothing is queued and nothing is blocked.** Three things wait on the owner and none of them blocks
 work — they are in `milestone-2-corpus/phase-11-corpus-tools/for-the-owner.md`.

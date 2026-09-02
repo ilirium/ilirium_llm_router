@@ -228,6 +228,20 @@ DESCRIPTIONS: dict[str, tuple[int | None, int | None, str]] = {
         "close it. `BUG-001` is Anthropic rejecting non-streamed `/v1/messages` with 429 while a "
         "streamed request **2.8× larger** to the same model succeeds 0.6 s later.",
     ),
+    "fix-slop-docs/opening-playbook-not-run-table": (
+        2,
+        None,
+        "**The first `fix-slop-docs/` branch, and the prefix arrives with it** — a defect class "
+        "named by cause rather than by artefact: documentation that is wrong because a model wrote "
+        "it. Two sentences that had outlived the tables they introduce, both corrected in place: "
+        "`milestone-2-corpus/implementation-plan.md` counted opening-playbook step 1 as unrun 230 "
+        "lines below the claim that discharged it, and `IDM-005` warned that the same table was "
+        "stale twelve days after it had been repointed. Also `IDM-001` reading *five* beside a "
+        "list of six, four documents describing a worktree that had been deleted, and the finding "
+        "that "
+        "`link-check.py`'s headline count is a property of the **worktree** rather than of the "
+        "repository — 83 on `main`, 101 in a clean checkout, the whole delta one untracked path.",
+    ),
     "temp/to-run-server": (
         None,
         None,

@@ -106,10 +106,17 @@ sharp end of that, and is the one rule this document has already had to give up.
 
 **Milestone 2's opening did not run it either, deliberately and on the record.** Every step but the
 last was declared not-run in `../milestone-2-corpus/implementation-plan.md`, with a table saying which
-and why, so that a later session would not read their absence as an oversight. **That table is keyed to
-the eight-step numbering and is stale from 2026-08-21** — it is Milestone 2's document, being written
-concurrently, and it is repointed when this branch merges. The capture step was the one re-read before
-Phase 9, and re-reading it paid.
+and why, so that a later session would not read their absence as an oversight. **That table was
+keyed to the eight-step numbering and was repointed on 2026-08-21**, the day this document folded
+step 2 into step 1; it carries seven rows and records the renumbering in place. The capture step was
+the one re-read before Phase 9, and re-reading it paid.
+
+*That sentence read **"that table … is stale from 2026-08-21 … and it is repointed when this branch
+merges"** until 2026-09-02. The repointing happened on the day the sentence named, and the sentence
+predicting it was never closed out — **a warning that outlived the defect it warned about**, which
+is what `IDM-001-git-branching.md`'s "Closing out a status placeholder is part of the merge" exists
+to prevent. No grep finds this one: it names no marker phrase, and its own subject is a document
+that had already been corrected.*
 
 **So the first genuine test of this document is Milestone 3.** Rewrite it then, from what that opening
 costs — appending below the line rather than replacing the steps above it.

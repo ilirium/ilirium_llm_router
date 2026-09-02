@@ -10,6 +10,22 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-09-02 — `fix-slop-docs/opening-playbook-not-run-table` merged. A new prefix pair, and five
+documents corrected.** Four commits, **no `src/` or `tests/` change**, so the 438 below stands. The
+branch exists because the owner named a defect class: documentation wrong *for a reason* — a
+sentence summarising a table it has stopped matching, a count nobody re-ran, a directory described
+in the present tense after deletion. **`fix-slop-docs/` and `fix-slop-code/` are now rows in
+`IDM-001`'s prefix table and in `CLAUDE.md`**, and they name a *cause* rather than a kind of
+artefact, which breaks that table's heading on purpose.
+
+**What it found while fixing what it was sent to fix — which is the argument for the prefix.**
+`IDM-001`'s own accepted-duplication section said *"each of those five"* beside a list of six.
+`to-run-server/logs/` is **153 MB**, not the 93 recorded on 2026-08-25. And **`link-check.py`'s
+headline count is a property of the worktree, not of the repository** — 83 on `main`, 101 in a clean
+checkout — so the baseline row below records *a tree*, and a session re-running it elsewhere will
+read the difference as a regression it caused. That one is in `backlog.md`, under the existing
+`link-check.py` item.
+
 **2026-08-28 — Phase 11 is complete and merged. Milestone 2 is four phases in.** Merge `7e53f74`,
 51 commits; branch index regenerated at `f97c4b6`, 22 rows. **438 tests**, from 310 when the phase
 opened.
@@ -162,10 +178,14 @@ three ways, which is what this section warns about happening to itself. This is 
 Re-check before trusting a line of it.*
 
 **`logs/` is gitignored whole (`.gitignore:228`), so none of this can be committed by accident.**
-**And it is now per-worktree** — there are three checkouts of this repository and the layout below
-differs in each. That is new since this section was written.
+**And it is now per-worktree** — the layout below differs in each, and **`git worktree list` is the
+count** rather than a number written here. That is new since this section was written. *This
+sentence said "there are three checkouts" until 2026-09-02, when it was two: the phase-11 worktree
+had been removed and nothing that said three was re-run. It is three again today, for a different
+reason, which is exactly why the number does not belong in prose.*
 
-**`to-run-server/logs/` — the live one, 93 MB**
+**`to-run-server/logs/` — the live one, 153 MB** *(re-measured 2026-09-02; it read 93 MB, taken
+2026-08-25)*
 
 | Path | What it is |
 |---|---|
@@ -182,20 +202,20 @@ differs in each. That is new since this section was written.
 | `logs/corpus-gate/` | Phase 9's corpus, **8.8 MB** — re-measured 2026-08-25, unchanged. `measurements.md` names it as the slice behind four rows. It stays |
 | `logs/calls.csv`, `logs/router.log` | The router's history to 2026-08-20. **Deliberately left** where they are when the config moved to `logs/telemetry/` — owner's decision, in `milestone-2-corpus/phase-10-body-store/plan.md`'s settled table |
 
-**`phase-11-corpus-tools/logs/` — still does not exist. `.venv/` does, and `evidence/` is now
-committed.** *`logs/`'s continued absence is still evidence rather than trivia: `make test`, `make
-lint` and `make check` have all run here and none of them created it.*
+**`phase-11-corpus-tools/` — the worktree is gone, removed after the merge. The finding it carried
+is kept, because the tree was only ever the instrument.** *Rewritten 2026-09-02; it described a live
+directory in the present tense, and had done since the tree was deleted.*
 
-*Both halves changed meaning on 2026-08-26 and the entry is rewritten rather than patched.* The venv
-was created **by the owner**, so `uv run python` works here and anything importing `zstandard` can be
-run in this worktree. *(This file briefly recorded that a review subagent created it. It did not; that
-claim is retracted in `milestone-2-corpus/phase-11-corpus-tools/notes.md`.)*
+**`make test`, `make lint` and `make check` all ran there and none of them created `logs/`** — which
+is `cli.py`'s documented promise that `--check` configures no logging, demonstrated rather than
+asserted. That worktree's config also reported `Corpus: off`, so nothing done in it could reach the
+corpus. Its `.venv/` was created **by the owner**, which is why `uv run python` worked there. *(This
+file briefly recorded that a review subagent created it. It did not; that claim is retracted in
+`milestone-2-corpus/phase-11-corpus-tools/notes.md`.)*
 
-**`logs/`'s absence has stopped being trivial and become evidence.** It used to be correct because
-nothing had ever run here. **Three `make` targets have now run — `test`, `lint` and `check` — and the
-folder still does not exist**, which is `cli.py`'s documented promise that `--check` configures no
-logging demonstrated rather than asserted. **This worktree's config also reports `Corpus: off`**, so
-nothing done here can write to the corpus.
+**A fresh worktree starts with neither, and `…/opening-playbook-not-run-table` has neither —
+checked 2026-09-02.** So `uv run python` does **not** work in a new tree until a venv is made there,
+and anything importing `zstandard` needs one.
 
 **One warning was dropped rather than carried across, and it stays dropped.** `prompt.md` said
 *"stage with explicit paths, never `git add -A`."* The stated reason was that `logs/` holds
@@ -210,12 +230,18 @@ was not a real hazard**, and repeating it would preserve a rule whose justificat
 `method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-**None. `feat/phase-11-corpus-tools` merged 2026-08-28** at `7e53f74`, and merged branches are not
-listed here. Its permanent record is its phase note and its row in `reference/branches.md`.
+**None. `fix-slop-docs/opening-playbook-not-run-table` merged 2026-09-02**, and merged branches are
+not listed here. It carried no phase number, so its permanent record is its **merge commit message**
+and its row in `reference/branches.md` — `IDM-001`'s third and fourth homes, the pair
+`docs/bugs-tier` used. *It was listed in flight here earlier the same day and closed out before the
+merge message, which is what `IDM-001` asks for and what the previous merge did not do.*
 
-**Its worktree at `…/phase-11-corpus-tools` still exists and is spent.** Harmless, but **the next
-phase gets a new branch and a new worktree** rather than reusing it — and the branch itself must not
-be deleted, for the reason two paragraphs down.
+**`feat/phase-11-corpus-tools` merged 2026-08-28** at `7e53f74` and is not listed here, because
+merged branches are not. Its permanent record is its phase note and its row in
+`reference/branches.md`. **Its worktree was removed after the merge**, which is harmless — the next
+branch gets its own. **The branch must not be deleted**, for the reason two paragraphs down:
+removing a worktree is safe and deleting a merged branch is not. *This paragraph said the worktree
+"still exists and is spent" until 2026-09-02.*
 
 *This section listed Phase 11 as in flight from 2026-08-24 until the merge. It read **"None. The
 table is empty as of 2026-08-21"** before that, which was true when written and false the moment the
