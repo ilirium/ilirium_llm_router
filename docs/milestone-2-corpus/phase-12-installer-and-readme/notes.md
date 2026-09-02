@@ -5,10 +5,9 @@
 *Entry point for the phase. Group notes split out as `notes-group-<letter>.md` once groups have work
 in them, per `../../README.md`.*
 
-**Where execution stopped: groups A, B, C and D are done; Group E has not started.** *One thing in
-Group D is finished but unverified, and it is in `notes-group-d.md`: Quick start's re-install and
-uninstall lines are written from `uv`'s `--help` and have not been driven, because doing so installs
-software on the owner's machine.*
+**Where execution stopped: groups A, B, C and D are done; Group E has not started.** *Quick start's
+re-install and uninstall lines were driven on the owner's go-ahead after the group was first marked
+complete, and **both were wrong** — see `notes-group-d.md`. The `README.md` is corrected.*
 
 *This line replaced "Nothing has been executed yet" on 2026-09-02, which was true when the file was
 created and false after task 1 — **in the phase's entry point, the first thing the next session

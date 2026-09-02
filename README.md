@@ -91,9 +91,9 @@ ilirium-llm-router serve          # starts on 127.0.0.1:8787
 ```
 
 **The working directory is the root.** The router reads the `config.yaml` it finds there and writes
-`logs/` beside it — no XDG paths, no `~/.ilirium-llm-router/`, no environment variable. Run it from wherever you
-want its logs to live, or pass `-c /path/to/config.yaml` and everything resolves against that file's
-directory instead.
+`logs/` beside it — no XDG paths, no `~/.ilirium-llm-router/`, no environment variable. Run it from
+wherever you want its logs to live, or pass `-c /path/to/config.yaml` and everything resolves
+against that file's directory instead.
 
 **Point Claude Code at it**, in another shell:
 
@@ -107,13 +107,20 @@ Pick a model with `/model`. Anything starting with `claude-` goes to Anthropic; 
 to whatever LM Studio has loaded.
 
 **Re-installing and removing.** The install is a snapshot, so after pulling new commits — or after
-merging your own — install again over it:
+merging your own — run the same install command again. It rebuilds and replaces what is there; no
+`--force` is needed, and it picks up changed code even when the version number has not moved.
 
 ```sh
 cd /path/to/ilirium_llm_router && git pull
-uv tool install --force .            # replaces the installed snapshot
+uv tool install .                    # rebuilds and replaces the installed snapshot
 uv tool uninstall ilirium-llm-router # removes it entirely
 ```
+
+*`uv tool upgrade ilirium-llm-router` also works and is not what it looks like.* It **does** rebuild
+from the path it recorded at install time — but when the version string in `pyproject.toml` has not
+changed it reports **"Nothing to upgrade"** while installing your new code anyway. The summary line
+compares version numbers, not builds. Prefer the plain install above, whose output names what it
+replaced.
 
 ## Commands
 

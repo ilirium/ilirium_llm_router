@@ -132,16 +132,55 @@ all five are deliberate:**
 pointer lands twice, because it sits at the tail of the block task 13 moved wholesale. It appears
 **once**, in section 10. Counted, not eyeballed.
 
-## The two lines in Quick start that are not driven
+## The re-install and uninstall lines, driven — and the README was wrong
 
-**`uv tool install --force .` and `uv tool uninstall ilirium-llm-router` are written from `uv`'s own
-`--help` and have not been run.** Everything else in Quick start was driven in Group B or C.
+**Done 2026-09-02 on the owner's explicit go-ahead**, which `CLAUDE.md` requires because it installs
+software. **Both lines as first written were wrong, in opposite directions.**
 
-**The router is not currently installed as a `uv` tool** — `uv tool list` shows only `claude-swap`,
-so Group B's install has since been removed. Driving these two would install software on the owner's
-machine, which the plan required an explicit go-ahead for at task 3 and which is not a thing a
-session arranges for itself.
+**Driven against a scratch copy rather than a worktree**, so nothing the owner keeps was touched:
+`git archive HEAD | tar -x` into the scratchpad, then installed from that path. The version string
+and one `--help` line were changed between runs as markers, because *"did the install pick up my
+change"* cannot be answered by an exit code — Group C already lost a run to a build that exited 0
+for code that had not shipped.
 
-**Raised for the owner rather than quietly shipped.** They are the two most likely lines in the file
-to be wrong, because a path install is a snapshot and `uv tool upgrade` — the command a reader would
-reach for first — is documented against a version specifier rather than a path.
+| Run | Command | What it did |
+|---|---|---|
+| 1 | `uv tool install ./probe-src` | installed `0.1.0`, 24 packages, one executable |
+| 2 | version bumped to `0.1.1`, then plain `uv tool install` | rebuilt, `0.1.0` → `0.1.1` |
+| 3 | source changed, **version left alone**, plain `uv tool install` | rebuilt; `--help` showed the new marker |
+| 4 | source changed, `uv tool upgrade ilirium-llm-router` | rebuilt and installed the new marker, while printing **"Nothing to upgrade"** |
+| 5 | source changed **and** version bumped, `uv tool upgrade` | `Updated v0.1.1 -> v0.1.2`, new marker |
+| 6 | `uv tool install --force ./probe-src` | works too; nothing it added was needed |
+| 7 | `uv tool uninstall ilirium-llm-router` | removed; the path 127s, `uv tool list` back to what it held before |
+
+### The first error: `--force` was in the README and is not needed
+
+Run 3 is the one that matters. **A plain `uv tool install <path>` rebuilds and replaces even when
+the version number has not moved** — which is the real case, since pulling commits rarely bumps a
+version. The README told the reader to pass `--force` for a reason that does not exist.
+
+*Why it was written that way:* by analogy with `pip install -e` and with `uvx --from`, which Group C
+had just caught serving a stale build. **A trap in one tool was assumed to hold in a neighbouring
+one**, and the analogy was never tested.
+
+### The second error: `uv tool upgrade` says "Nothing to upgrade" while upgrading
+
+Run 4 is a genuine trap and the README now carries it. `uv tool upgrade` **does** rebuild from the
+path recorded at install time, and **does** install the changed code — and when the version string
+is unchanged its summary line reads `Nothing to upgrade`. The comparison behind that message is
+between **version numbers**, not between builds.
+
+**The README's first draft had this backwards**, guessing that `upgrade` would be inert for a path
+install and steering the reader away from it. It is not inert; it is quiet. Those need different
+sentences, and only one of them is honest about what the tool does.
+
+*This is the third instrument in two groups to report something untrue without failing* — after
+`uvx --from`'s stale build and `$?` after a pipe. All three exited 0. **The pattern is not that the
+tools are unreliable; it is that an exit code answers a different question from the one being
+asked**, and only reading the output distinguishes them.
+
+### What the machine looks like afterwards
+
+**Nothing left behind.** `uv tool list` holds what it held before, `~/.local/bin` is back to four
+entries, and invoking the removed path returns 127. The scratch source stays in the session's
+scratchpad and is not part of the repository.
