@@ -201,6 +201,18 @@ DESCRIPTIONS: dict[str, tuple[int | None, int | None, str]] = {
         "provisional, and — by systematic mutation — five logic defects that 23 targeted mutations "
         "could not.",
     ),
+    "feat/phase-12-installer-and-readme": (
+        2,
+        12,
+        "The installer and the `README.md` rewrite: an `init` subcommand writing `config.yaml` and "
+        "`.env.example`, a `--version` flag, a fix to the `.env` search, two templates shipped as "
+        "package data, and ten sections replacing 133 lines. `make test` 448. **Three of its five "
+        "`src/` changes came from the forward review**, the largest being that `load_dotenv()` "
+        "never read the working directory. **Reviewed a second time against the finished work "
+        "before the merge** — the first such review here, at 11% overlap between its two runs "
+        "against `IDM-004`'s forward 18%, and it found a fourth stale copy of the phase count in "
+        "`CLAUDE.md`.",
+    ),
     "docs/idm-and-claude-md": (
         2,
         None,

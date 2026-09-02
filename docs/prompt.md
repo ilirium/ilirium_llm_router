@@ -60,8 +60,9 @@ reviewed twice** — `notes.md` names both and where each one's record lives.
   has not moved. The README said otherwise until it was driven.
 - **`link-check.py`'s runtime exemption keys on a path's first segment**, so `./logs/` is reported
   broken where `logs/` is not. Its count is also a property of the worktree — compare against a run
-  in the *same* tree or not at all. **109 broken, 2 roundabout here**; three of those are the
-  backlog paragraph that describes the defect.
+  in the *same* tree or not at all. **91 broken, 2 roundabout on `main`**, against 111 in the phase
+  worktree — the same 20-link delta the backlog item records, and three of the 91 are the backlog
+  paragraph that describes the defect.
 - **`make lint` cannot see column width.** `E501` is not in ruff's default set. Count characters by
   hand, exclude table rows, and **re-measure after every fix** — fixing over-width lines created new
   ones three times this session.

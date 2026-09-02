@@ -199,7 +199,7 @@ one command had already stopped scaling.
 The plan is `phase-11-corpus-tools/plan.md` and **it is not approved**; two positions in its settled
 table were still open when this entry was written. Nothing here should be read as ratifying it.
 
-### Phase 12 — the installer and the `README.md` rewrite *(executed 2026-09-02)*
+### Phase 12 — the installer and the README rewrite *(complete, merged 2026-09-02 at `6c75997`)*
 
 *Owner's decision, 2026-08-24.* Installation via `uv tool`, and the `README.md` rewritten around it.
 

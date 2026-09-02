@@ -1,7 +1,7 @@
 # Phase 12 — the installer and the `README.md` rewrite
 
 **Branch:** `feat/phase-12-installer-and-readme`, forked from `main` at `5cdc1c9`.
-**Merge commit:** *(to be filled at the merge)*
+**Merge commit:** `6c75997`, 2026-09-02.
 
 **The question it exists to close:** can the router and its corpus tools be installed and used
 without the repository, and does the `README.md` say so?

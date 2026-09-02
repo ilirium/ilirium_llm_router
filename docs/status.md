@@ -10,7 +10,20 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-02 (later still) — Phase 12 is executed, reviewed twice, and merged.** The review of the
+**2026-09-02 (later still) — Phase 12 is complete and merged.** Merge `6c75997`; branch index
+regenerated, **24 rows**. **Milestone 2 is five phases in.**
+
+**Baselines, on the merged trunk.**
+
+| Check | Figure |
+|---|---|
+| `make test` | **448 passed** |
+| `make lint` / `make check` | clean at the pinned `0.16.1` / valid |
+| `register-check.py` | 28 checks, 0 failed |
+| `link-check.py` | **91 broken, 2 roundabout** — *on `main`; the phase worktree reported 111, and the 20-link delta is the untracked-by-policy path the `backlog.md` item describes* |
+| `branch-index.py --check` | current, **24 rows** |
+
+**Phase 12 was reviewed twice, and the second review is new.** The review of the
 finished work — the first this repository has run against executed work — returned **18 distinct
 findings at 11% overlap** between its two runs, against `IDM-004`'s forward figure of 18%. **All are
 fixed, refused with a reason, or filed**, and the one question it raised was put to the owner and
@@ -148,7 +161,7 @@ belong to the phase note, and each milestone's own index reads its phases in ord
 | | Subject | Phases | State | Read it in |
 |---|---|---|---|---|
 | **1** | The core router — dispatch, byte-relay, observability, failure handling | 1–7 | **complete** 2026-08-07 | `milestone-1-core/README.md`, which carries every branch and merge hash with what each phase settled |
-| **2** | The corpus — capturing bodies for analysis | 8– | **open**, four phases in — 8, 9, 10 and 11, the last merged 2026-08-28 | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
+| **2** | The corpus — capturing bodies for analysis | 8– | **open**, five phases in — 8 through 12, the last merged 2026-09-02 | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
 
 *Changed 2026-08-17 from a per-phase table of Milestone 1's merge commits, per the `backlog.md` item
 that proposed it. **The hashes are not lost** — each one keeps two to six homes, the fewest being
@@ -178,10 +191,16 @@ settled the storage-infrastructure half; **Phase 10 settled that archiving canno
 a day folder, unpack it elsewhere, and every blob opens and verifies against the digest in its own
 filename. **Whether archiving slows a call is untested**, and is parked in `backlog.md`.
 
-**Four phases done. The first two touched no `src/`** — Phase 8 built the method tier and the
+**Five phases done. The first two touched no `src/`** — Phase 8 built the method tier and the
 guardrails, Phase 9 decided `EPD-003` and ran the gate that named the claim above — **and Phase 10 is
 the first of this milestone that did**, merging 2026-08-21 as `32c26bb`; Phase 11 built the offline
-tools over the store, merging 2026-08-28 as `7e53f74`.
+tools over the store, merging 2026-08-28 as `7e53f74`; Phase 12 made it installable, merging
+2026-09-02 as `6c75997`.
+
+**And the merge that closed Phase 12 made this paragraph stale for a fourth time, within minutes of
+the phase that existed to fix it.** *Written down rather than quietly corrected, because it is the
+strongest evidence the `backlog.md` item has: the count went stale **because a phase landed**, which
+is the one moment nobody is reading prose. A derived count would not have moved.*
 *(Both sentences above were stale between Phase 10's close and the 2026-08-21 edit: they said two
 phases and that Phase 10 had the opaque half still to test. **That is the paragraph below happening
 again, to the paragraph that describes it** — prose that undercounts goes stale where a missing
