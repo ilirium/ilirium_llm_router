@@ -124,7 +124,7 @@ refusals by construction, which is a warning sign rather than a clean result.*
 
 ---
 
-## The question for the owner — and it is why this branch is not merged
+## The question for the owner — asked, and answered
 
 **Settled row 6 makes a finding a *question* when acting on it would reverse or narrow an owner
 decision. There is exactly one, and the review did not create it — it confirmed one this session had
@@ -144,6 +144,22 @@ was meant to prevent.
 
 **It is one line, either direction, and it is the owner's.** Everything else in this review is
 fixed, refused with a reason, or filed.
+
+### Answered 2026-09-02: **restore it as a fifth caveat**
+
+**The owner changed the row rather than the README.** Settled row 6 now reads *five items*, the
+fact is a caveat again, and the bullet is gone from "What it does, and what it does not". The
+register row and `register-check.py`'s `caveat_count` moved 4 → 5 with it.
+
+**So the decision was for *the reader*, not for the number** — which is the reading the review could
+not settle from the text and the reason it was a question rather than a finding. *A defect-shaped
+fact belongs where somebody looks for defects; four was a description of the section at the time it
+was settled, not a budget.*
+
+**This is what makes the finding worth its cost even though the fix is one line.** The register
+check enforced a count and could not see that the count had stopped describing the intent. **No
+mechanical check could have** — the question is what the four was protecting, and only the person
+who chose it knows.
 
 ---
 

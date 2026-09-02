@@ -32,7 +32,7 @@ authority".*
 | 3 | **Install is `uv tool install <local path>`, a snapshot** — not editable, not git-over-SSH, not PyPI | Owner, 2026-09-02 |
 | 4 | **The original brief moves to `../../captures/original-project-description.md`**, not to `reference/historical/` | Owner, 2026-09-02, after the tier objection was raised |
 | 5 | **The `README.md` carries ten sections** — listed below | Owner, 2026-09-02, in two passes |
-| 6 | **The caveats section is four items** — `BUG-001`, corpus off by default, nothing is ever deleted, and long sessions go unstored past `body_max_bytes` | Owner, 2026-09-02 |
+| 6 | **The caveats section is five items** — `BUG-001`, corpus off by default, nothing is ever deleted, long sessions go unstored past `body_max_bytes`, and **a call can vanish without leaving a row** | Owner, 2026-09-02; **the fifth added the same day**, after the review of the finished work put the question. *It was four when the phase was planned; the fifth was written anyway, moved out by Group E for breaking this row, and restored here on the owner's answer — the row changed rather than the README* |
 | 7 | **The phase is scoped to the installer and a basic `README.md`.** Mixing subjects produced bloat before | Owner, 2026-09-02 |
 | 8 | **Phase 12 inherits Phase 11's commitment**: the temporary corpus-tools section may not be dropped without its content landing somewhere | `../implementation-plan.md`, Phase 12 entry |
 | 9 | **The `.env` search is fixed in this phase.** It is a `src/` defect the review found, and the `README.md` cannot honestly describe where secrets go until it is fixed | Owner, 2026-09-02, after the review |
@@ -173,7 +173,7 @@ checked before it is built on.
 | `DEFAULT_CONFIG_PATH` | existing constant, unchanged | `Path("config.yaml")` — `cli.py:30` |
 | install command | documented string | `uv tool install .` from a checkout — **no `--force`**, which the first draft had and task 17's drive disproved |
 | `README.md` sections | count | 10 |
-| caveats listed | count | 4 |
+| caveats listed | count | **5** — 4 when the register was written; the owner added the fifth on 2026-09-02 |
 | Milestone 1 phases, in `README.md` | corrected number | **7** (it reads 6 today) |
 | Milestone 2 phases, in `README.md` and `status.md` | corrected number | **4** (`status.md` says both 4 and 3) |
 | test count in `README.md` | number | whatever `make test` reports at the merge — **it reads 158 today**, which is Milestone 1's |

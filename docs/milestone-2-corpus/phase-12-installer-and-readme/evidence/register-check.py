@@ -35,7 +35,12 @@ def read(path: Path) -> str:
 
 
 def caveat_count() -> int:
-    """Paragraphs in the README's caveats section. Settled row 6 fixes this at four."""
+    """Paragraphs in the README's caveats section. Settled row 6 fixes this at five.
+
+    It said four until 2026-09-02. The fifth -- a call vanishing without a row -- was written into
+    the section, moved out for breaking the row, and put to the owner by the review of the finished
+    work; they changed the row rather than the README.
+    """
     section = read(README).split("## Bugs and caveats")[1].split("## Roadmap")[0]
     return len([p for p in section.strip().split("\n\n") if p.strip()])
 
@@ -91,7 +96,7 @@ def checks() -> list[tuple[str, bool]]:
             "original-project-description.md" in read(ROOT / "docs/captures/README.md"),
         ),
         ("README has ten sections", readme.count("\n## ") + readme.startswith("## ") == 10),
-        ("README caveats are four", caveat_count() == 4),
+        ("README caveats are five", caveat_count() == 5),
         ("README says seven Milestone 1 phases", "seven phases" in readme),
         ("README says four Milestone 2 phases", "four phases in" in readme),
         ("README test count is 448", "448 tests" in readme),

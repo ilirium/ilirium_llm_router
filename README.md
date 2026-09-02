@@ -35,10 +35,6 @@ analysing.
   is a separate opt-in thing described below.
 - **Not multi-process.** The log, CSV and corpus writers are single-process designs; running several
   workers over one directory would corrupt them.
-- **Not a guarantee that every call is recorded.** A caller that disconnects before the response
-  generator's first step leaves no CSV row and no corpus entry. It has been observed once,
-  deliberately, and is *reported* rather than closed — the shutdown line counts calls arrived
-  against calls recorded, so the loss is visible rather than silent.
 
 ## Status
 
@@ -262,6 +258,11 @@ through a conversation, and once one crosses `body_max_bytes` (1 MiB by default)
 stored without its request** — the body is not truncated, because a prefix labelled as a whole body
 is worse than a hole. In the largest session captured so far, 45 contiguous calls at the end have no
 stored request.
+
+**And one hole worth naming: a call can vanish without leaving a row.** A caller that disconnects
+before the response generator's first step leaves no row in `calls.csv` and no corpus entry. It has
+been observed once, deliberately, and is **reported rather than closed** — the shutdown line counts
+calls arrived against calls recorded, so the loss is visible rather than silent.
 
 ## Roadmap
 

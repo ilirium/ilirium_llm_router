@@ -2,30 +2,31 @@
 
 *The one file in `docs/` allowed to go stale, per `README.md` — which is why it is rewritten at each
 handoff rather than left. **Replaced 2026-09-02**, at the close of the session that finished Phase
-12's Groups D and E. Whatever comes next replaces it again.*
+12 and merged it. Whatever comes next replaces it again.*
 
 ---
 
-**Phase 12 is executed and reviewed twice. It is handed off unmerged, on exactly one question.**
-Branch `feat/phase-12-installer-and-readme`, worktree `…/phase-12-installer-and-readme`, **448
-tests**, `register-check.py` 28 of 28, tree clean. `main` is at `5cdc1c9` and has none of this.
+**Phase 12 is complete and merged. Nothing is in flight.** **448 tests**, `register-check.py` 28 of
+28, `main` clean. **Milestone 2 is five phases in.**
 
-**The question is in `milestone-2-corpus/phase-12-installer-and-readme/notes-review-jobs-done.md`,
-under "The question for the owner".** It is one line of `README.md`, either direction: settled row 6
-fixes the caveats section at four items, a fifth was written, and Group E moved it one section up
-rather than deleting it. Both states honour the letter of the decision. **The merge was authorised
-only if the review left no question; it left this one.**
+**Start in `main`**, at `/Users/ilirium/Projects/local/ilirium_llm_router/main`. There is **no open
+phase branch**; whatever you do next opens its own. *The `phase-12-installer-and-readme` worktree
+can be removed. **Do not delete the branch**: `branch-index.py` refuses to render when a description
+names a branch that no longer exists.*
 
-*Everything else the review found is fixed, refused with a reason, or filed — 18 distinct findings,
-11% overlap between the two runs against `IDM-004`'s forward 18%.*
+**The router installs and runs without the repository.** `uv tool install <path>` yields a working
+binary; `init` writes `config.yaml` and `.env.example` into the working directory; `check` accepts
+them unmodified; `serve` creates `logs/telemetry/` there. The `README.md` is ten sections and
+describes all of it.
 
-**Answer the question first, then merge.** Once it is answered — either way — the order is fixed and
-it is not the obvious one: merge
-`--no-ff` from `main` (write the message to a temp file — `git merge` cannot read stdin), then fill
-`plan.md`'s `Merge commit:` line, then `python3 docs/procedures/branch-index.py --write` on the
-trunk and commit the regenerated table. **The index row names the merge hash, so it cannot go inside
-the merge commit.** Do not delete the branch afterwards: `branch-index.py` refuses to render when a
-description names a branch that is gone.
+**Phase 12 was reviewed twice — and the second review is new.** The forward review ran against the
+unexecuted plan, as `IDM-004` specifies. **The second ran against the finished work, before the
+merge, and this repository had no protocol for that.** What `IDM-004` needed in order to review
+executed work is argued in
+`milestone-2-corpus/phase-12-installer-and-readme/review-plan-jobs-done.md`, and **the owner intends
+an `IDM` written from what it cost.** That document, its charter and
+`notes-review-jobs-done.md` are the inputs; **writing the `IDM` is the obvious next piece of method
+work.**
 
 ## Read these, in this order
 
@@ -46,7 +47,7 @@ reviewed twice** — `notes.md` names both and where each one's record lives.
 | `--version` | an argparse `action="version"`, so it answers in a directory holding nothing |
 | the `.env` fix | `load_dotenv(args.config.parent / ".env")` — the phase's largest finding |
 | two templates | `config-template.yaml` and `env-template`, package data, byte-identical to the repo's copies and pinned by tests |
-| `README.md` | ten sections, 133 lines to 310, with the `--help` quoted from the shipped binary |
+| `README.md` | ten sections, 133 lines to 311, with the `--help` quoted from the shipped binary |
 | `evidence/register-check.py` | 28 assertions over the register, re-runnable on the trunk |
 
 ## Six things a session will get wrong here
@@ -72,9 +73,7 @@ reviewed twice** — `notes.md` names both and where each one's record lives.
   unvalued-rows test failed on its first run against the two sentences stating the rule. It reads
   table rows only. `IDM-001`'s placeholder sweep has the same false positive.
 
-## Open — one of these blocks, the rest do not
-
-**Blocking: the caveats question above.** It is the only thing between this branch and `main`.
+## Open, and none of it blocks
 
 - **The `uv_build` pin bump to `<0.13` has no rule behind it.** `IDM-003` covers the formatter pin
   only. In `backlog.md`, and it is an owner decision.

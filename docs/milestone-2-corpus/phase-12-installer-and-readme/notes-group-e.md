@@ -27,6 +27,11 @@ not guarantee, where it costs the caveats section nothing.
 *Raised here rather than buried: if the owner would rather it were a fifth caveat, that is a
 one-line move and the argument for it is above.*
 
+**They would, and it is.** Asked at the close of the review of the finished work and answered the
+same day: **settled row 6 now reads five items** and the fact is a caveat again. **The row moved,
+not the README's judgement** — which means Group E was right to raise it and wrong to assume the
+count was the thing being protected. *`notes-review-jobs-done.md` holds the reasoning.*
+
 ### Two register rows were corrected rather than checked
 
 **`init`'s refusal exit code cited `cli.py:49`** for the config-error path it matches. That path is

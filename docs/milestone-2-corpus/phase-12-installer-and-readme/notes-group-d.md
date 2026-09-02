@@ -80,7 +80,10 @@ are invisible for the same reason — nothing re-reads them at a merge.
 
 ## Task 13 — the `README.md` rewrite
 
-**Done 2026-09-02. Ten sections, in the settled order**, 133 lines to 304.
+**Done 2026-09-02. Ten sections, in the settled order**, 133 lines to 304 — **311 by the merge**,
+after Group E moved a caveat, the install commands were corrected, and the owner moved that
+caveat back. *The 304 was true at commit `c282a19` and had reached three other documents before
+it stopped being true; the review of the finished work found it in all four.*
 
 **`## TL;DR` is an explicit heading rather than a lead paragraph**, so the register's *"`README.md`
 sections | count | 10"* is checkable by grep at task 15 instead of resting on whether a reader
@@ -114,10 +117,13 @@ caveats section is exactly the reader who should know a call can vanish, and it 
 *observed once, deliberately, and reported rather than closed* — which is what the owner decided on
 2026-08-20.
 
-**Group E moved it out.** Settled row 6 fixes the section at four items, and the fifth was this
-session's own judgement. It is now a bullet in "What it does, and what it does not". *This paragraph
-said the fifth "rides in the same section" until the review of the finished work found it still
-saying so, two groups after it had stopped being true.*
+**Group E moved it out, and the owner moved it back.** Settled row 6 fixed the section at four
+items, so Group E made the fifth a bullet in "What it does, and what it does not". The review of the
+finished work put the question to the owner, who **changed the row to five** — so the fact is a
+caveat again, where a reader looking for what might bite them will find it.
+
+*This paragraph said the fifth "rides in the same section" until the review found it still saying
+so, two groups after it had stopped being true — and it was true again two hours later.*
 
 ## Task 14 — the sweep, and what it found
 

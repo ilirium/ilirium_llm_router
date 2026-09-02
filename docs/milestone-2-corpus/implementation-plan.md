@@ -206,7 +206,7 @@ table were still open when this entry was written. Nothing here should be read a
 **The router installs and runs without the repository.** `uv tool install <path>` yields a working
 binary; a new `init` subcommand writes `config.yaml` and `.env.example` into the working directory;
 `check` accepts them unmodified; `serve` creates `logs/telemetry/` there. All of it driven from
-directories that have never held this checkout. The `README.md` is ten sections, 133 lines to 310.
+directories that have never held this checkout. The `README.md` is ten sections, 133 lines to 311.
 
 **Two of its four `src/` changes are defects rather than planned work**, both found by the forward
 review before task 1 ran. **`load_dotenv()` never read the working directory** — it walks up from

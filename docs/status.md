@@ -10,18 +10,17 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-02 (later still) — Phase 12 is executed and reviewed twice. It is handed off unmerged,
-on one question.** The review of the finished work — the first this repository has run against
-executed work — returned **18 distinct findings at 11% overlap** between its two runs, against
-`IDM-004`'s forward figure of 18%. **All are fixed, refused with a reason, or filed**, except one
-that reverses an owner decision and therefore stops the merge by the rule the owner set.
+**2026-09-02 (later still) — Phase 12 is executed, reviewed twice, and merged.** The review of the
+finished work — the first this repository has run against executed work — returned **18 distinct
+findings at 11% overlap** between its two runs, against `IDM-004`'s forward figure of 18%. **All are
+fixed, refused with a reason, or filed**, and the one question it raised was put to the owner and
+answered the same day.
 
-**The question: the `README.md`'s caveats section.** Settled row 6 fixes it at four items; a fifth
-was written, and Group E moved it to "What it does, and what it does not" rather than deleting it.
-**Both states honour the letter of the decision.** If four caveats meant *do not bury the reader*,
-the current state is right; if it meant *these four facts are the caveats*, a fifth caveat-shaped
-fact one section up is what the row was meant to prevent. One line, either direction.
-`milestone-2-corpus/phase-12-installer-and-readme/notes-review-jobs-done.md` holds it.
+**The question was the `README.md`'s caveats section**, which settled row 6 fixed at four items
+while a fifth had been written and moved out. **The owner changed the row, not the README**: it now
+reads five, the fact is a caveat again, and the register moved 4 → 5 with it. *The decision was
+about the reader rather than the number — which no mechanical check could have settled, because the
+question was what the four was protecting.*
 
 **The finding that justified the review: `CLAUDE.md` said Milestone 2 was "three phases in".** A
 **fourth** copy of the count Phase 12's task 12 was chartered to fix, in the one file loaded into
@@ -41,7 +40,7 @@ one: the first mutation redirected `init` to the working directory, a test then 
 entry said the merge waited on the owner unconditionally; the task list of the same day authorises
 it conditionally, and the review above is the condition.*
 
-**The `README.md` is ten sections, 133 lines to 310**, the brief is a capture, and the count that
+**The `README.md` is ten sections, 133 lines to 311**, the brief is a capture, and the count that
 had gone stale in `status.md` is fixed. Phase 11's inherited commitment is discharged: its temporary
 corpus-tools section is now "Commands", checked by a 38-element sweep of the old file rather than by
 rereading it.
@@ -313,8 +312,9 @@ permanent record of a phase's branch, fork point and merge commit is still its p
 in five groups, plan approved and forward-reviewed under `IDM-004` before its first task. Its
 permanent record will be its phase note, per `IDM-001`.
 
-**All seventeen tasks are executed and the branch waits on the merge**, which the owner asked to be
-consulted before. *Closed out here **before** the merge message rather than after it — `IDM-001`
+**All seventeen tasks are executed, both reviews are closed, and the branch merged on 2026-09-02.**
+Merged branches are not listed here; its permanent record is its phase note and its row in
+`reference/branches.md`. *Closed out **before** the merge message rather than after it — `IDM-001`
 asks for that order, and Phase 11's merge is why it asks in those words.*
 
 *`feat/`, because the phase touches `src/`: an `init` subcommand, a fix to the `.env` search, and a
