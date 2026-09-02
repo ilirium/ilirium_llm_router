@@ -3,7 +3,14 @@
 **Branch:** `feat/phase-12-installer-and-readme`, forked from `main` at `5cdc1c9`.
 
 *Entry point for the phase. Group notes split out as `notes-group-<letter>.md` once groups have work
-in them, per `../../README.md`. Nothing has been executed yet.*
+in them, per `../../README.md`.*
+
+**Where execution stopped: groups A, B and C are done; D and E are not started.** *This line
+replaced "Nothing has been executed yet" on 2026-09-02, which was true when the file was created and
+false
+after task 1 — **in the phase's entry point, the first thing the next session reads.** It was found
+by the owner asking whether anything needed checking before the session closed, not by the sweep:
+the grep looks for markers of work *not* done, and this was a claim that *nothing* was done.*
 
 ## Why this branch changes `backlog.md` and `IDM-001`
 

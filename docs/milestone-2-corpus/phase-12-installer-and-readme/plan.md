@@ -67,7 +67,7 @@ therefore looks untouched on its most visible artefact until late, and that is d
 
 1. **Record the branch in `../../status.md`'s "In-flight branches".** *The review found it missing —
    `status.md` says "None" while this branch is open, which that section's own text records as a
-   defect that has happened before.* Fork point `5cdc1c9`, no phase note yet, `feat/` prefix.
+   defect that has happened before.* Fork point `5cdc1c9`, `feat/` prefix.
 2. **`evidence/README.md`** — what this phase freezes, or a statement that it freezes nothing, which
    is itself the record.
 
