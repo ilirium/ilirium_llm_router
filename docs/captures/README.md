@@ -1,10 +1,16 @@
 # Captures — raw artefacts other documents are derived from
 
-Input, not results. Nobody edits what is in here; several documents cite it, and the probes replay it.
+Input, not results. Nobody edits what is in here, and several documents are derived from it — the
+probes replay the captured request, and the brief is what the built thing is measured against.
 
 | File | What it is |
 |---|---|
 | `log-the-whole-request.txt` | One real Claude Code request, captured 2026-07-28 against a listener on port 1234 |
+| `original-project-description.md` | The brief the project started from, written 2026-07-27 before any code existed |
+
+**Each file explains itself in its own header.** What follows is the detail that would not fit in
+one — today that is the request capture only; `original-project-description.md` needs none, and a
+section here restating its header would be the second copy that drifts.
 
 ## `log-the-whole-request.txt`
 

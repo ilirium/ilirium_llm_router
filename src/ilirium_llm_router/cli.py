@@ -32,15 +32,31 @@ DEFAULT_CONFIG_PATH = Path("config.yaml")
 
 def main() -> int:
     args = _parse_args()
-    load_dotenv()
 
     # **Before the config is loaded, deliberately.** Reading day folders back needs the folders and
     # nothing else, which is the self-containment rule these two exist to demonstrate: `tar` a day,
-    # unpack it on a machine that has no `config.yaml`, and point this at it.
+    # unpack it on a machine that has no `config.yaml`, and point this at it. `init` is here for the
+    # opposite reason and it is the stronger one: it exists to *create* the config, so requiring one
+    # would make it useless in the only directory anybody runs it in.
+    if args.command == "init":
+        return _init(args.config)
     if args.command == "verify-archive":
         return _verify_archive(args.days)
     if args.command == "extract":
         return _extract(args)
+
+    # **`.env` is read from beside the config file, not from wherever python-dotenv guesses.**
+    # `load_dotenv()` with no argument walks from *this file* upward to the filesystem root, so an
+    # installed router searched uv's tool directory and `$HOME` and never looked at the working
+    # directory at all. In a checkout it happened to work, because walking up from
+    # `src/ilirium_llm_router/` reaches the repository root on the third step -- which is why five
+    # phases never noticed. Phase 12 measured it: a `.env` in the working directory was invisible
+    # while the error told the user to "set it in your .env file".
+    #
+    # Beside the config rather than in the working directory, so that `-c /elsewhere/config.yaml`
+    # picks up `/elsewhere/.env` -- the same rule `config.py` already uses for log, stats and corpus
+    # paths. With the default `./config.yaml` the two are the same directory.
+    load_dotenv(args.config.parent / ".env")
 
     try:
         config = load_config(args.config)
@@ -154,6 +170,19 @@ def _parse_args() -> argparse.Namespace:
     )
     _config_flag(parser, top_level=True)
 
+    # **`--version` is an argparse action, so it prints and exits during parsing** -- before the
+    # config is looked for, before `.env` is read, before any subcommand dispatch. That is the whole
+    # point: "did the install work?" is the first question a reader asks, and it has to be
+    # answerable in a directory that holds nothing. There was no such invocation until Phase 12; the
+    # only version output ran *after* `load_config` succeeded, so on a fresh machine nothing printed
+    # a version and exited 0.
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"ilirium-llm-router {__version__}",
+        help="print the version and exit",
+    )
+
     # `dest="command"` leaves `None` for the bare invocation, which `main` reads as "serve". The
     # subparsers are deliberately **not** `required=True`: bare must keep working.
     commands = parser.add_subparsers(dest="command", metavar="COMMAND")
@@ -164,6 +193,14 @@ def _parse_args() -> argparse.Namespace:
         description="Start the router. This is what a bare `ilirium-llm-router` does.",
     )
     _config_flag(serve, top_level=False)
+
+    init = commands.add_parser(
+        "init",
+        help="write a starter config.yaml into the current directory, and exit",
+        description="Write a starter config.yaml into the current directory. Refuses if one is "
+        "already there.",
+    )
+    _config_flag(init, top_level=False)
 
     check = commands.add_parser(
         "check",
@@ -232,6 +269,72 @@ def _parse_args() -> argparse.Namespace:
     if args.command == "extract" and args.project_name is not None and "jsonl" not in args.formats:
         extract.error("--project-name is meaningless without --format jsonl")
     return args
+
+
+CONFIG_TEMPLATE = "config-template.yaml"
+"""The starter config shipped inside the wheel, written by `init`.
+
+**A data file in the package, not a string in a module.** It is `config.yaml` byte for byte, and a
+test pins that -- so the file a new user starts from cannot drift away from the one this repository
+runs. A Python string holding YAML would ship just as reliably and would have to be kept in step by
+hand, which is the second copy this project's documentation rules exist to prevent.
+"""
+
+ENV_TEMPLATE = "env-template"
+"""The starter `.env.example`, on the same terms: `.env.example` byte for byte, pinned by a test."""
+
+ENV_EXAMPLE = ".env.example"
+"""What `ENV_TEMPLATE` is written out as, beside the config.
+
+**`.env.example`, never `.env`.** The written file is a commented example a reader copies; writing
+`.env` would create a file the router actually reads, in a directory where somebody may already
+have one, and no amount of refusing-to-overwrite makes that the right default.
+"""
+
+
+def _init(path: Path) -> int:
+    """Write a starter config next to where the router would look for one.
+
+    **It refuses rather than overwriting, and there is no `--force`** -- owner's decision on
+    2026-09-02, when the option was offered. A config is the one file in a working directory that
+    may hold hours of somebody's tuning; `rm config.yaml` is not a hardship, an accidental
+    `--force` is.
+
+    **The path comes from `-c`, so `init -c other.yaml` writes `other.yaml`.** Not a feature
+    invented here: `-c` already names the file every other command reads, and having `init` write
+    somewhere else would make the flag mean two things.
+    """
+    env_example = path.parent / ENV_EXAMPLE
+
+    # **Both targets are checked before either is written, and one existing file refuses the whole
+    # command.** Writing what is missing and skipping what is not would be friendlier and would
+    # leave a directory in a state neither `init` nor the user chose -- half-written, with no
+    # message saying which half. Refusing whole is the behaviour a reader can predict from the
+    # sentence "it refuses rather than overwriting".
+    existing = [target for target in (path, env_example) if target.exists()]
+    if existing:
+        for target in existing:
+            print(f"error: {target} already exists; refusing to overwrite it", file=sys.stderr)
+        return 1
+
+    from importlib import resources
+
+    files = resources.files(__package__)
+    written = {
+        path: files.joinpath(CONFIG_TEMPLATE).read_text(encoding="utf-8"),
+        env_example: files.joinpath(ENV_TEMPLATE).read_text(encoding="utf-8"),
+    }
+    for target, text in written.items():
+        try:
+            target.write_text(text, encoding="utf-8")
+        except OSError as exc:  # a missing parent directory, or a read-only one
+            print(f"error: could not write {target}: {exc}", file=sys.stderr)
+            return 1
+
+    for target in written:
+        print(f"Wrote {target}")
+    print("Edit them, then run `ilirium-llm-router check` to validate the config.")
+    return 0
 
 
 def _verify_archive(days: list[Path]) -> int:

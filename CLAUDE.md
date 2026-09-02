@@ -13,7 +13,7 @@ adding a document or moving one.
 dispatches, relays and records; the central claim is settled, that **no protocol translation is
 needed and a local model can drive a real coding session through the router.**
 
-**Milestone 2 is open — the corpus, three phases in, last merged 2026-08-21.** Do not read the 158
+**Milestone 2 is open — the corpus, four phases in, last merged 2026-08-28.** Do not read the 158
 above as the current count; it is Milestone 1's, and it is dated for that reason.
 
 **No number here is current by construction. `docs/status.md` is the only file that holds state** —

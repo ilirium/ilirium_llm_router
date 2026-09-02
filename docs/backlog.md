@@ -4,6 +4,12 @@
 here says when anything happens. An item lands in `status.md`'s "What is next" when it is picked up,
 and is deleted from here when it is done.
 
+**Adding an item here goes on whatever branch you are already on, and never opens one of its own.**
+*Owner's instruction, 2026-09-02.* Filing a backlog item is **how a phase declines scope** — it
+happens during a phase and because of it — so a branch per item spends a worktree, a merge and an
+index row on a paragraph. → `method/IDM-001-git-branching.md`, "The plan opens the phase branch",
+which is canonical and holds the line between this and pre-empting a later phase's work.
+
 **Every item names why it is parked, and several name why the question is weaker than it looks.**
 That column is the point of this file. An item that has lost its reason has become a to-do, and a
 to-do nobody has justified in six months cannot be told apart from one nobody wants.
@@ -109,6 +115,59 @@ review — so the open half is real and its evidence is unchanged.
 document. **Phase 10 is the worked example either way**, since its register and the defects it caught
 are recorded in `milestone-2-corpus/phase-10-body-store/notes.md` and summarised in `IDM-008`.
 
+**The one-notes-file-per-task-group rule is invisible at the moment it applies.** *Added
+2026-09-02, on the owner's instruction, from Phase 12's planning that same day.*
+
+*What happened:* Phase 12's `plan.md` was written with five task groups, reviewed under
+`method/IDM-004-reviewing-unexecuted-work.md` by **two runs**, revised against that review, and at
+no point did anything mention `notes-group-<letter>.md`. **The owner supplied the rule
+mid-session.**
+Until then the phase had a `notes.md` with no group index and no group files planned.
+
+*Where the rule lives:* `README.md`, "The phase template" — *"Each task group's notes go to
+`notes-group-<letter>.md`"*, adopted 2026-08-21 on the owner's instruction. It is correct, it is
+argued, and it is in the right file. **Nothing brings it to a session at the moment a plan is being
+written.**
+
+*Why it is a method item rather than a slip:* **`CLAUDE.md`'s "Planning a phase" section points at
+`IDM-008` for the register and says nothing about group notes.** That section is the one thing a
+session reads before writing a plan, and it names one of the two phase-template obligations. The
+admission test in `README.md` is whether a session would act *confidently and wrongly* **without
+being told** — and one did, in the presence of both review passes.
+
+*The part that makes it the third of a family:* **neither `IDM-004` run flagged it.** The author run
+asks *is this consistent with what was decided*, the cold run asks *could you execute this from the
+document alone* — and a plan with no group files is executable and internally consistent. **Nothing
+asked either reviewer whether the plan satisfies the phase template.** That is the same shape as the
+two items above: an instrument that exists, and nothing telling the reviewer to use it.
+
+*Four places the fix could land, and this item deliberately does not choose:*
+
+- **A line in `CLAUDE.md`'s "Planning a phase"**, beside the `IDM-008` pointer. Cheapest, and it
+  meets the admission test on the evidence above. **Cost:** a seventh restated fact, and
+  `IDM-001`'s "one accepted duplication" already argues carefully about the sixth.
+- **A charter requirement in `IDM-004`** — every forward review checks the plan against the phase
+  template. **Merges naturally with the two items above**, which both propose amendments to the same
+  document about what a review must *find*.
+- **A closing-task check**, as `IDM-008` does for the register. **Catches it late**, at the merge,
+  which is after the group files would have been useful.
+- **Structural, and it is the only option that cannot be forgotten:** the plan's group headings
+  carry their notes file, so a group without one is *visible in the plan* rather than absent from
+  it.
+  Phase 12 does a weaker version — `notes.md` names the five groups in prose and the index gains a
+  row when a file appears.
+
+*Parked because* it is one amendment whose home is a judgement between four options, three of which
+belong to documents that other open items in this section also propose amending — **so it should be
+decided together with them, not one at a time.** Phase 12 is executing, and method work does not
+belong on a `feat/` branch.
+
+*Weaker than it looks?* **Partly, and in one specific way.** The failure is loud once anyone reads
+the phase folder — a phase with groups and one notes file is obvious on `ls`. What it costs is not
+correctness but *when*: group notes exist to be written **as a group runs**, and a rule that fires
+at the merge produces them by reconstruction, which is the thing the whole notes tier exists to
+prevent.
+
 **Give every item here a stable, referencable index.** *Added 2026-08-26 on the owner's instruction.*
 Items are cited today by quoting their bold opening phrase — `status.md`'s "What is next" does it,
 and so do two phase plans. **A quoted title is not an identifier:** editing a title silently breaks
@@ -199,6 +258,68 @@ exists to prevent, and the file is far too long to live in an inventory.
 open — Q2 asked whether it was closed at all, and the owner closed it. And Q5 — where a finding goes
 when it belongs to no phase — was answered **for that file only**, by filing it in the archive at the
 milestone root; as a general rule for `README.md` it is still open, inside the file with the rest.
+
+**The open milestone's phase count is stated in four places across two files, and it has gone stale
+three times.** *Added 2026-09-02 by Phase 12's task 12, which was chartered to fix the count and
+found that fixing it is the third instance rather than the end of it. **Widened the same day**, when
+the review of the finished work found a fourth copy — and the worst one.*
+
+**The fourth is `CLAUDE.md`**, which said *"three phases in, last merged 2026-08-21"* — naming
+Phase 10's merge where `status.md` names Phase 11's, so it was stale by a whole phase. **`CLAUDE.md`
+is the canon tier and the only file loaded into every session automatically**, and this item's first
+version did not mention it. *Fixed on Phase 12's branch, under settled row 12's decision to fix the
+count inside the phase rather than on a `fix-slop-docs/` branch.*
+
+**That changes which candidate fix survives.** Of the three below, only *deriving the count* works
+across two files; "the table row alone" and "check three copies" were both written as though
+`status.md` were the whole problem.
+
+*What happened, each time in the same file:* the "Where we stopped" entry is written at the merge
+and is right; the milestone table row and the prose paragraph below it are not touched, and they
+undercount until somebody notices. **Phase 10's merge produced the first two instances**, both
+recorded in place in that paragraph. **Phase 11's merge produced the third** — from 2026-08-28 to
+2026-09-02 the file said *four* at line 56 and *three* at lines 108 and 138, disagreeing with itself
+for five days, and the plan for this phase had to name the line numbers because a reader cannot tell
+which one is current.
+
+*Why it is an item and not a fix:* the fix that works is **one place**, and choosing it changes what
+`status.md` is. Three candidates, none free. **The table row alone**, with the paragraph rewritten
+to point at it — cheapest, and it loses the prose that explains *what the phases did*, which is the
+thing the row cannot carry. **Derive it**, from `milestone-2-corpus/implementation-plan.md`'s
+`### Phase N` headings — accurate by construction, and it makes `status.md` a generated file for one
+number. **Or leave three copies and check them**, which is `branch-index.py`'s bargain and would
+need a checker nobody has asked for.
+
+*Weaker than it looks?* **No, and its own history is the argument.** The paragraph that undercounts
+is the paragraph that **describes prose going stale**, and it has now done it twice — *the
+paragraph itself twice, which is the third instance of the defect once the milestone table row is
+counted; the two figures count different things and the review of the finished work found them
+ambiguous.* That is not a
+writing failure a more careful session avoids — two sessions and two reviews read past it. **But it
+is smaller than the count suggests**: a reader is misled about a number, never about which phases
+exist, since the phases are named beside the count every time.
+
+*One thing it is not.* This is **not** an argument for preferring tables — the milestone row went
+stale in exactly the same edit as the prose. The 2026-08-17 item that settled `status.md`'s shape
+concluded that the axis is **what goes stale invisibly**, and both of these are invisible for the
+same reason: nothing re-reads them at a merge.
+
+**Phase 11 records its largest corpus session as both 292 calls and 270.** *Added 2026-09-02 by
+Phase 12's review of its finished work, which found it while checking a number Phase 12 published.*
+
+`milestone-2-corpus/phase-11-corpus-tools/for-the-owner.md` says *"the last **45 of 270**"*; that
+phase's `notes.md` calls the same session *"the corpus's largest at 292 calls"*. **Both cannot be
+the session's call count.**
+
+*Why it is filed rather than fixed:* it is **Phase 11's defect, found by Phase 12**, and work
+belonging to another phase does not ride on this branch. It also needs the corpus index to settle —
+the day folders live only in `to-run-server/logs/corpus/`, so whichever number is right is a
+measurement rather than a reading.
+
+*Weaker than it looks?* **Partly.** The top-level `README.md` inherits only the **45**, which is
+consistent with both, so nothing user-facing is wrong today. What is wrong is that a later session
+mining Phase 11 for a denominator will pick one of two numbers with nothing to choose between them.
+**It belongs on a `fix-slop-docs/` branch**, which is the prefix that exists to count exactly this.
 
 ## Decisions waiting on a person
 
@@ -518,6 +639,21 @@ the documentation about it grows.
 sentence is scoped to Phase 8 and is true; this is from a different session and a different
 mechanism, and a count in a heading is what the rest of this item is complaining about.
 
+**And a sixth, found by writing the `README.md` on 2026-09-02: the runtime exemption is keyed on a
+path's first segment, so `./logs/` is reported broken where `logs/` is not.** `RUNTIME = {"logs"}`
+at
+`procedures/link-check.py:145` exists because `logs/` is written by running the router and is
+legitimately absent from a fresh clone; `resolves()` tests `candidate.split("/")[0]`, which is `.`
+for a path written `./logs/`. **The two spellings mean the same directory** and the tool disagrees
+about them. The same line also made `./config.yaml` a *roundabout* hit against the repository's own
+`config.yaml`, which is a different file from the one the sentence was about — the reader's, in
+their own working directory. **Worked around by rewording rather than fixed**, which is the wrong
+way round and is why it is recorded here: prose about where an *installed* tool writes at runtime
+is not prose about paths in this repository, and the checker has no way to tell. *(Writing this
+paragraph added **three** hits of its own, at the two lines above that spell the paths out. Naming
+them once more here added two further hits before that clause was reworded to stop. The entry two
+paragraphs up predicted exactly this for one path.)*
+
 **Two narrower gaps ride along**, and they are what this item used to be *about* rather than what it is
 for. **Heading anchors** are stripped in `candidates()` although `README.md`'s naming table says findings
 are "linked by anchor", and **`file.py:N` line citations** are skipped by `is_candidate` for containing
@@ -536,6 +672,32 @@ The cost measured in `milestone-2-corpus/phase-8-method-and-guardrails/notes.md`
 > **The roundabout gap this item once listed is closed.** A roundabout-path check was added on
 > 2026-08-16, ahead of the rest, because commit 13 produced two live instances of the defect rather than
 > a hypothetical one. See decision 21's second half.
+
+**`IDM-003` governs the formatter pin and says nothing about the build backend.** *Added
+2026-09-02, from Phase 12 bumping `uv_build` and finding no rule to follow.*
+
+*What happened:* `uv build` warned that `uv_build>=0.11.32,<0.12.0` did not contain the installed uv
+`0.12.5`. The owner asked for `<0.13`. **`method/IDM-003-development-tooling.md` is titled for the
+formatter pin and the type checker that was refused, and the build backend is a third pinned tool it
+does not mention.**
+
+*What the bump did instead:* followed `IDM-003` **by analogy**, on the one sentence of it that
+generalises — *"the diff it produces is the argument, not the changelog and not the version
+number."* For a formatter that diff is reformatted source compared by AST; for a build backend it is
+the artefact. So a wheel was built under each range and all **22 entries hashed and diffed**:
+identical, byte for byte, and the warning gone. Own commit, nothing else in it.
+
+*Why it is an item rather than a fix:* extending a method document is not a `feat/` branch's
+business, and there is a real choice. **Either `IDM-003` grows a section** — the pin, why the range
+has an upper bound at all, and that an artefact comparison is the check — **or the rule stays
+formatter-specific** and the build backend is declared not worth a written rule. *Both are
+defensible; the current state, where a session invents the procedure from an analogy, is not.*
+
+*Weaker than it looks?* **Partly.** The analogy held and the check was cheap, so nothing went wrong
+this time. What makes it worth recording is that **nothing would have gone visibly wrong if it had
+not held** — a build backend that silently changed what it packages produces a wheel that installs
+and misbehaves later, and the only reason anyone compared the wheels is that the ruff pin taught the
+habit.
 
 **Static analysis beyond ruff.** Other type checkers, AST-level linters, a language server — over a CLI
 or over MCP. `ruff` is all this project runs today; `method/IDM-003-development-tooling.md` records the

@@ -1,0 +1,88 @@
+# Configuration for ilirium_llm_router.
+#
+# There is deliberately no model list here. Routing is a rule in code: a model named `claude-…`
+# goes to Anthropic, anything else goes to LM Studio. New models on either side need no change here.
+#
+# Relative paths below are resolved against the directory holding this file.
+
+server:
+  host: 127.0.0.1
+  port: 8787
+
+backends:
+  # `credential` is the only knob, and it has three modes:
+  #
+  #   forward   pass the credential arriving from the caller through untouched
+  #   strip     remove it
+  #   inject    remove it and send the key named by `api_key_env` instead
+  #
+  # `api_key_env` is required by `inject` and forbidden by the other two. Both contradictions are
+  # refused at startup rather than resolved silently.
+
+  # `read_timeout` is how long a backend may stay *silent* before the call is abandoned. It is not
+  # a budget for the whole reply: every chunk that arrives restarts it, measured 2026-08-07 in
+  # docs/milestone-1-core/phase-5-config-and-timeouts/evidence/. So it bounds silence, never
+  # duration.
+
+  # Models named `claude-…`.
+  anthropic:
+    base_url: https://api.anthropic.com
+    # The arriving credential is the real one and Anthropic accepts it, so the router holds no key
+    # of its own. See docs/procedures/anthropic-auth-check.md.
+    credential: forward
+    # Measured median time to first byte is 1426 ms — over successful streamed /v1/messages calls,
+    # which is the slice that number means — so ten minutes of silence already means something is
+    # wrong rather than slow.
+    read_timeout: 600
+
+  # Every other model.
+  lmstudio:
+    base_url: http://localhost:1234
+    # A real Anthropic token is of no use to a local server and should not be handed to something
+    # that might write it to a log.
+    credential: strip
+    # Prefilling a large prompt is silent while it works: 27924 tokens took 197 s, and a ~41000-token
+    # request was still going when the old shared 600 s killed it
+    # (docs/milestone-1-core/phase-4-lmstudio-parity/notes.md).
+    read_timeout: 1800
+    # If LM Studio's "Require Authentication" is switched on, this takes two lines: change the mode
+    # above to `inject` and name the variable holding the key here.
+    # api_key_env: LMSTUDIO_API_KEY
+
+logging:
+  level: INFO
+  file: logs/telemetry/router.log
+  max_bytes: 10485760   # 10 MiB
+  backup_count: 5
+
+stats:
+  file: logs/telemetry/calls.csv
+  max_bytes: 5242880    # 5 MiB
+  backup_count: 10
+
+# The body store. Opt-in, off by default, and nothing under `dir` is created until it is on.
+#
+# `calls.csv` above is always on because it is cheap and holds nothing sensitive. Neither is true
+# here: bodies hold source code, file contents and anything typed. So this is one switch, and off.
+corpus:
+  enabled: false
+  dir: logs/corpus
+  # The level bodies are stored at -- AND the level the trainer scores a candidate dictionary
+  # against the incumbent at, so the comparison cannot drift from what is actually stored. It is
+  # NOT the level a dictionary is trained at; that is TRAIN_LEVEL = 3, measured to move the ratio
+  # by 0.03%. 9 was measured by Task 6: 94% of level 19's dicted ratio for an eighth of the cost.
+  compress_level_zstd: 9
+  # Two limits, because they are checked at two different moments and neither can cover the other.
+  # This one bounds peak memory for ONE body, on every chunk while the call runs.
+  body_max_bytes: 1048576     # 1 MiB
+  # And this one bounds memory for ALL WAITING bodies, once at submit. A thousand ordinary 100 KB
+  # bodies are each far under the ceiling and together are 100 MB in the queue.
+  queue_max_bytes: 67108864   # 64 MiB
+  # Everything below runs offline, in its own thread, and never in the path of a call.
+  retrain:
+    window_days: 1            # a MINIMUM; 0 disables automatic retraining entirely
+    sample_min_bytes: 1024
+    # Both provisional rather than measured-optimal: the corpus has no usable validation split, so
+    # these were chosen knowing the slice they were scored on. Training is non-monotonic in both.
+    maxdict: 262144
+    k: 8000

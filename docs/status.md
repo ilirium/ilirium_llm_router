@@ -10,6 +10,70 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-09-02 (later still) — Phase 12 is executed, reviewed twice, and merged.** The review of the
+finished work — the first this repository has run against executed work — returned **18 distinct
+findings at 11% overlap** between its two runs, against `IDM-004`'s forward figure of 18%. **All are
+fixed, refused with a reason, or filed**, and the one question it raised was put to the owner and
+answered the same day.
+
+**The question was the `README.md`'s caveats section**, which settled row 6 fixed at four items
+while a fifth had been written and moved out. **The owner changed the row, not the README**: it now
+reads five, the fact is a caveat again, and the register moved 4 → 5 with it. *The decision was
+about the reader rather than the number — which no mechanical check could have settled, because the
+question was what the four was protecting.*
+
+**The finding that justified the review: `CLAUDE.md` said Milestone 2 was "three phases in".** A
+**fourth** copy of the count Phase 12's task 12 was chartered to fix, in the one file loaded into
+every session, naming Phase 10's merge date. The phase never opened it, and **the author could not
+have found it** — this session wrote the `backlog.md` item saying the count lives in "three places",
+having just fixed the two it knew about. Fixed, and the item is widened to four places across two
+files, which kills two of its three candidate fixes.
+
+**And a finding about a method rather than a document.** Re-running the mutation check on three
+tests that had never had one, the phase's own batch-of-three method reported a survivor that was not
+one: the first mutation redirected `init` to the working directory, a test then wrote
+`.env.example` over the repository's own, and the third mutation's comparison became trivially true.
+**A batch of mutations can mask a member of the batch.** Isolated, all three kill their tests.
+
+**2026-09-02 (earlier the same day) — Phase 12 is executed, all five groups.**
+`feat/phase-12-installer-and-readme`, **448 tests** from 438, `register-check.py` 28 of 28. *This
+entry said the merge waited on the owner unconditionally; the task list of the same day authorises
+it conditionally, and the review above is the condition.*
+
+**The `README.md` is ten sections, 133 lines to 311**, the brief is a capture, and the count that
+had gone stale in `status.md` is fixed. Phase 11's inherited commitment is discharged: its temporary
+corpus-tools section is now "Commands", checked by a 38-element sweep of the old file rather than by
+rereading it.
+
+**Three instruments reported something untrue without failing, across two groups.** `uvx --from`
+served a stale build that exited 0 for code that had not shipped; `$?` after a pipe reported the
+wrong command's status; and **`uv tool upgrade` installs changed code while printing "Nothing to
+upgrade"**, because its summary compares version numbers rather than builds. All three exited 0.
+*Both Quick start lines nobody had driven turned out to be wrong — `--force` was unnecessary, and
+`upgrade` was described as inert when it is merely quiet.*
+
+**The register check found the `README.md` carrying five caveats where settled row 6 says four.**
+The fifth was this session's own judgement and the fact was moved rather than dropped. **A plan's
+settled table is not overridden by the plan being executed**, which is the rule that decided it.
+
+**The router installs and runs without the repository.** `uv tool install <path>` yields a working
+binary; `init` writes `config.yaml` and `.env.example` into the working directory; `check` accepts
+them unmodified; `serve` creates `logs/telemetry/` there and shuts down reporting `0 arrived, 0
+recorded, 0 lost`. All of it driven from directories that have never held this checkout.
+
+**The forward review under `IDM-004` earned its cost before task 1 ran.** It found **three things
+that changed `src/`** and that no test would have caught — **two defects in existing code**, both of
+which the author had stated to the owner as fact, and one finding that decided where new code had to
+sit.
+The largest: **`load_dotenv()` never read the working directory** — it walks up from `cli.py`, which
+in a checkout reaches the repository root by accident and in an installed tool reaches `$HOME`. A
+`.env` beside the config was invisible while the error told the user to set the variable in it.
+
+**Two instruments produced results that were wrong and did not fail.** `uvx --from <path>` served a
+**stale build** — `--refresh` did not help — so a driven test exited 0 for a feature that had not
+shipped; caught only because a printed message was wrong. And `$?` after a pipe reported 0 for a run
+that had exited 1. **Both are recorded in `prompt.md`'s instruments list.**
+
 **2026-09-02 — `fix-slop-docs/opening-playbook-not-run-table` merged. A new prefix pair, and five
 documents corrected.** Four commits, **no `src/` or `tests/` change**, so the 438 below stands. The
 branch exists because the owner named a defect class: documentation wrong *for a reason* — a
@@ -84,7 +148,7 @@ belong to the phase note, and each milestone's own index reads its phases in ord
 | | Subject | Phases | State | Read it in |
 |---|---|---|---|---|
 | **1** | The core router — dispatch, byte-relay, observability, failure handling | 1–7 | **complete** 2026-08-07 | `milestone-1-core/README.md`, which carries every branch and merge hash with what each phase settled |
-| **2** | The corpus — capturing bodies for analysis | 8– | **open**, three phases in — 8, 9 and 10, the last merged 2026-08-21 | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
+| **2** | The corpus — capturing bodies for analysis | 8– | **open**, four phases in — 8, 9, 10 and 11, the last merged 2026-08-28 | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
 
 *Changed 2026-08-17 from a per-phase table of Milestone 1's merge commits, per the `backlog.md` item
 that proposed it. **The hashes are not lost** — each one keeps two to six homes, the fewest being
@@ -114,14 +178,21 @@ settled the storage-infrastructure half; **Phase 10 settled that archiving canno
 a day folder, unpack it elsewhere, and every blob opens and verifies against the digest in its own
 filename. **Whether archiving slows a call is untested**, and is parked in `backlog.md`.
 
-**Three phases done. The first two touched no `src/`** — Phase 8 built the method tier and the
+**Four phases done. The first two touched no `src/`** — Phase 8 built the method tier and the
 guardrails, Phase 9 decided `EPD-003` and ran the gate that named the claim above — **and Phase 10 is
-the first of this milestone that did**, merging 2026-08-21 as `32c26bb`.
-*(Both sentences above were stale between Phase 10's close and this edit: they said two phases and
-that Phase 10 had the opaque half still to test. **That is the paragraph below happening again, to
-the paragraph that describes it** — prose that undercounts goes stale where a missing table row would
-be visible. Recorded rather than quietly fixed, because it is now the second instance.)*
-`milestone-2-corpus/implementation-plan.md` describes all three; **their merge
+the first of this milestone that did**, merging 2026-08-21 as `32c26bb`; Phase 11 built the offline
+tools over the store, merging 2026-08-28 as `7e53f74`.
+*(Both sentences above were stale between Phase 10's close and the 2026-08-21 edit: they said two
+phases and that Phase 10 had the opaque half still to test. **That is the paragraph below happening
+again, to the paragraph that describes it** — prose that undercounts goes stale where a missing
+table row would be visible. Recorded rather than quietly fixed, because it was the second instance.*
+**And it happened a third time.** *This paragraph and the milestone row above both said **three**
+from Phase 11's merge on 2026-08-28 until Phase 12's task 12 fixed them on 2026-09-02, while
+"Where we stopped" said four on the day of that merge — so the file disagreed with itself for five
+days. Three instances of one defect in one file is no longer evidence about prose; it is the
+argument for the count living in exactly one place. **Filed in `backlog.md` rather than fixed
+here**, because choosing that place is a change to what this file is.)*
+`milestone-2-corpus/implementation-plan.md` describes all four; **their merge
 hashes are in their phase notes**, which is where `method/IDM-001-git-branching.md` puts the permanent
 record. *(This sentence first said the plan indexes both hashes. It carries Phase 8's and not Phase 9's
 — the plan's Record table records the branch **that file** was created on, which was Phase 8's.)*
@@ -236,7 +307,25 @@ was not a real hazard**, and repeating it would preserve a rule whose justificat
 `method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-**None. `fix-slop-docs/opening-playbook-not-run-table` merged 2026-09-02**, and merged branches are
+**`feat/phase-12-installer-and-readme`, opened 2026-09-02 from `5cdc1c9`**, worktree at
+`…/phase-12-installer-and-readme`. **The installer and the `README.md` rewrite** — seventeen tasks
+in five groups, plan approved and forward-reviewed under `IDM-004` before its first task. Its
+permanent record will be its phase note, per `IDM-001`.
+
+**All seventeen tasks are executed, both reviews are closed, and the branch merged on 2026-09-02.**
+Merged branches are not listed here; its permanent record is its phase note and its row in
+`reference/branches.md`. *Closed out **before** the merge message rather than after it — `IDM-001`
+asks for that order, and Phase 11's merge is why it asks in those words.*
+
+*`feat/`, because the phase touches `src/`: an `init` subcommand, a fix to the `.env` search, and a
+`--version` flag. **The last two are defects the forward review found**, not planned work — and
+without them the branch would have been `docs/`.*
+
+*Entered here at the phase's task 1, which exists because the review found this section saying
+"None" while the branch was already open. That is the defect this section's own closing paragraph
+describes, and it had happened again.*
+
+**`fix-slop-docs/opening-playbook-not-run-table` merged 2026-09-02**, and merged branches are
 not listed here. It carried no phase number, so its permanent record is its **merge commit message**
 and its row in `reference/branches.md` — `IDM-001`'s third and fourth homes, the pair
 `docs/bugs-tier` used. *It was listed in flight here earlier the same day and closed out before the
