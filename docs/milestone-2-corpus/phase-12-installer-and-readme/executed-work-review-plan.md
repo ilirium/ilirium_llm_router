@@ -194,39 +194,46 @@ eight documents the phase edited outside it.
 **Out of scope:** Phases 1–11 as executed; how any settled decision was reached; and the `README.md`
 the phase replaced, except where a claim is made about it.
 
-1. **Write the charter**, from the sections above, as a file handed to the cold reader verbatim —
-   scope, the two questions, what a finding looks like *in executed work*, the claims to re-verify
-   by reading the source, the instruments to test for vacuity, the known false positives, the rules,
-   the output shape, and a reading budget.
-2. **Run both, in parallel, read-only.** The author records findings while the cold run is in flight
-   and fixes nothing.
-3. **Reconcile**, as `IDM-004` specifies: verify every refutation before accepting it, and treat a
-   disagreement between the runs as itself a finding.
-4. **Record the merged work list**, with what was accepted, what was refused, and why.
-5. **Record the four measurements above**, so the `IDM` can be written from cost.
+1. **Write the charter** — `review-charter-executed.md` beside this file, handed to the cold reader
+   verbatim. From the sections above: scope, the two questions, what a finding looks like *in
+   executed work*, the claims to re-verify by reading the source, **the instruments to test for
+   vacuity**, the known false positives, the rules copied in rather than cited, the output shape,
+   and a reading budget. *A second charter file rather than a section here, because a thing you hand
+   over should be a file — `IDM-004`'s reason, unchanged.*
+2. **Run both, in parallel, read-only.** One author run over all five groups, one cold run. The
+   author records findings while the cold run is in flight and **fixes nothing**. Anything either
+   run executes leaves the tree and the machine as it found them, and `git status` is read after.
+3. **Reconcile.** Verify every refutation before accepting it; a disagreement between the runs is
+   itself a finding. **The author run declares its gap on Groups A–C** rather than reporting on them
+   as though it had been there.
+4. **Write `notes-review.md`** — the merged work list, what was accepted, what was refused and why,
+   and the executability-turned-reproducibility section.
+5. **Record the four measurements named above**, so the `IDM` can be written from cost rather than
+   from intention. *The list lives in one place — §7 — deliberately; a count restated here is the
+   second copy this repository keeps finding wrong.*
 
-**Then decide what to fix before the merge and what becomes a backlog item** — which is a decision,
-not a review outcome, and belongs to the owner.
+**Then decide what to fix before the merge and what becomes a backlog item** — a decision, not a
+review outcome, and the owner's. **Fixes land as ordinary commits on this branch**, since the review
+runs before the merge and the branch is still open.
 
 ---
 
-## Open questions for the owner
+## What is settled, and by whom
 
-1. **Before the merge, or after?** This document argues **before**, on the grounds that the merge
-   message is an artefact the review should cover and that a later fix costs a branch. Against it:
-   the branch is finished and green, and the review will find things, which means the phase stays
-   open longer.
-2. **Does the scope include the seven documents edited outside the phase folder?** This document
-   argues **yes**, because that is where a wrong claim propagates. It roughly doubles the reading.
-3. **What is the author run, given the phase spans two sessions?** Options: a partial-author run
-   scoped to Groups D–E only; treating A–C as cold and running a third pass; or accepting that the
-   notes are the shared record and running one author pass over the whole with the gap declared.
-4. **One cold run or two?** `IDM-004` uses one. Executed work splits naturally into *the code and
-   its tests* and *the documents and their claims*, and two narrower charters may find more than one
-   wide one. It also roughly doubles the cost, and **`n = 1` is not enough to know.**
-5. **Where does the output live?** `IDM-004` puts the merged work list in the document's own notes.
-   This phase's notes are already six files. A separate `review-executed.md` beside this plan is the
-   alternative.
+*The five questions this document opened with, answered by the owner on 2026-09-02 after reading it.
+Positions the review does not get to revisit — the same rule `plan.md`'s settled table carries.*
+
+| | Settled | Note |
+|---|---|---|
+| 1 | **The review runs before the merge** | The merge message is a claim-bearing artefact that cannot be corrected afterwards, and a later fix costs its own branch. The phase stays open longer, which was the argument against |
+| 2 | **Scope includes all eight documents edited outside the phase folder** | Not only the four a later session acts on. The `README.md` was in scope regardless — it is the deliverable |
+| 3 | **One author run, over the whole phase, with the gap declared** | First-hand for Groups D–E; for A–C only what the notes and commit messages record. **For A–C it is a warm read rather than an author run**, so the author/cold split is weaker exactly there — recorded as a measurement, not hidden |
+| 4 | **One cold run** | As `IDM-004` does. The two-narrow-charters alternative is untested and doubles the cost, and `n = 1` is not enough to choose it |
+| 5 | **The output goes in `notes-review.md`**, beside the group notes | Naming left to this session. It joins the `notes*` family so a reader scanning the folder finds it, rather than pairing with the two review *inputs* — `review-charter.md` and this file |
+
+**Nothing else in this document is settled.** The seven additions and three removals below are its
+argument, and the charter written from them is the first thing the run produces — at which point
+they stop being a proposal and become what the reviewer was told.
 
 ---
 
