@@ -48,7 +48,7 @@ content.*
 | 2 | What it does, and what it does not | The log line and the 20-column CSV live here rather than in an observability section |
 | 3 | Status | **Milestone 1 was seven phases, not six. Milestone 2 is four phases in. The test count is whatever `make test` reports at the merge** — see the register |
 | 4 | Prerequisites | Python 3.13+, `uv`, LM Studio for the local half |
-| 5 | Quick start | Install, run, point Claude Code at it, **verify with `--version`**, upgrade, uninstall |
+| 5 | Quick start | Install, **`uv tool update-shell` and a new shell** — the owner hit `command not found` where this session did not — run, point Claude Code at it, **verify with `--version`**, upgrade, uninstall |
 | 6 | Commands | **Where Phase 11's temporary corpus-tools content lands**, discharging the inherited commitment |
 | 7 | Configuration | `config.yaml`, `.env`, and the `forward`/`strip`/`inject` credential model |
 | 8 | Bugs and caveats | Four items, per settled row 6. `BUG-001` is `../../bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md` |

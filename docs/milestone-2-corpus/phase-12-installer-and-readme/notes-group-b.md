@@ -27,6 +27,29 @@ Installed 1 executable: ilirium-llm-router   →   ~/.local/bin/ilirium-llm-rout
 | `check`, no config present | `error: Config file not found: config.yaml`, exit **1** |
 | `--version` | `unrecognized arguments: --version`, exit **2** |
 
+### Reproduced by the owner, and it added something this session had missed
+
+**2026-09-02.** The owner ran `uv tool install .` from `main` and confirmed both states
+independently — `--version` exits 2 with `unrecognized arguments`, and `--help` lists **six**
+subcommands with no `init`. That is the pre-Group-C state exactly.
+
+**What their run showed and this session's did not: the executable directory has to be on `PATH`.**
+They ran `source ~/.zshrc` between installing and invoking. This session never saw it, because
+`~/.local/bin` was already on `PATH` here — **so the step was invisible to the person writing the
+Quick start, and visible to the person following it.**
+
+`uv tool update-shell` is the documented fix — *"Ensure that the tool executable directory is on the
+`PATH`"* — and `uv tool dir --bin` reports where that is (`~/.local/bin` on this machine). **Quick
+start must carry both**, or the first thing a reader does after installing is get
+`command not found`.
+
+*This is the argument for driving an installer on somebody else's shell rather than your own, in
+miniature: the environment that makes a step unnecessary also makes it invisible.*
+
+**Their `--help` output is the raw material for `README.md` section 6.** Six subcommands, each with
+a one-line description already written and already accurate. The section should quote the shipped
+help rather than paraphrase it, so the two cannot drift.
+
 ## Task 4 — where an installed run writes
 
 **The cwd model is confirmed, and it needed no code.** With a `config.yaml` copied into the scratch
