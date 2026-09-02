@@ -5,9 +5,14 @@
 *Entry point for the phase. Group notes split out as `notes-group-<letter>.md` once groups have work
 in them, per `../../README.md`.*
 
-**Where execution stopped: groups A, B, C and D are done; Group E has not started.** *Quick start's
-re-install and uninstall lines were driven on the owner's go-ahead after the group was first marked
-complete, and **both were wrong** — see `notes-group-d.md`. The `README.md` is corrected.*
+**All five groups are executed. What remains is the merge itself, and the owner asked to be waited
+for before it runs.** After it: fill this phase's `Merge commit` line in `plan.md`, then regenerate
+the branch index on the trunk — in that order, because the index row names the merge hash.
+
+*Two things worth carrying out of the last two groups. Quick start's re-install and uninstall lines
+were driven on the owner's go-ahead **after** Group D was first marked complete, and **both were
+wrong** — see `notes-group-d.md`. And the register check found the `README.md` carrying five caveats
+where settled row 6 says four — see `notes-group-e.md`.*
 
 *This line replaced "Nothing has been executed yet" on 2026-09-02, which was true when the file was
 created and false after task 1 — **in the phase's entry point, the first thing the next session
@@ -50,6 +55,7 @@ what belongs to no group and stays the entry point. The plan has five groups —
 | `notes-group-b.md` | Group B — establish what already works | 2026-09-02 |
 | `notes-group-c.md` | Group C — the installer | 2026-09-02 |
 | `notes-group-d.md` | Group D — the documents | 2026-09-02 |
+| `notes-group-e.md` | Group E — the close | 2026-09-02 |
 
 **Deliberately no placeholder rows, and this is not tidiness.** At Phase 11's merge this index
 carried `| *(none yet)* | Groups D, E, F | not started |` **directly beneath two rows naming files

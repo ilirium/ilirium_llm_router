@@ -10,9 +10,25 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-02 (later the same day) — Phase 12 is open and three of its five groups are done.**
-`feat/phase-12-installer-and-readme`, nine commits, **448 tests** from 438. **Groups D and E remain:
-the brief extraction, the `status.md` count fix and the `README.md` rewrite, then the close.**
+**2026-09-02 (later the same day) — Phase 12 is executed, all five groups, and waits only on the
+merge.** `feat/phase-12-installer-and-readme`, **448 tests** from 438, `register-check.py` 28 of 28.
+**The owner asked to be waited for before the merge runs.**
+
+**The `README.md` is ten sections, 133 lines to 304**, the brief is a capture, and the count that
+had gone stale in `status.md` is fixed. Phase 11's inherited commitment is discharged: its temporary
+corpus-tools section is now "Commands", checked by a 38-element sweep of the old file rather than by
+rereading it.
+
+**Three instruments reported something untrue without failing, across two groups.** `uvx --from`
+served a stale build that exited 0 for code that had not shipped; `$?` after a pipe reported the
+wrong command's status; and **`uv tool upgrade` installs changed code while printing "Nothing to
+upgrade"**, because its summary compares version numbers rather than builds. All three exited 0.
+*Both Quick start lines nobody had driven turned out to be wrong — `--force` was unnecessary, and
+`upgrade` was described as inert when it is merely quiet.*
+
+**The register check found the `README.md` carrying five caveats where settled row 6 says four.**
+The fifth was this session's own judgement and the fact was moved rather than dropped. **A plan's
+settled table is not overridden by the plan being executed**, which is the rule that decided it.
 
 **The router installs and runs without the repository.** `uv tool install <path>` yields a working
 binary; `init` writes `config.yaml` and `.env.example` into the working directory; `check` accepts
@@ -268,6 +284,10 @@ permanent record of a phase's branch, fork point and merge commit is still its p
 `…/phase-12-installer-and-readme`. **The installer and the `README.md` rewrite** — seventeen tasks
 in five groups, plan approved and forward-reviewed under `IDM-004` before its first task. Its
 permanent record will be its phase note, per `IDM-001`.
+
+**All seventeen tasks are executed and the branch waits on the merge**, which the owner asked to be
+consulted before. *Closed out here **before** the merge message rather than after it — `IDM-001`
+asks for that order, and Phase 11's merge is why it asks in those words.*
 
 *`feat/`, because the phase touches `src/`: an `init` subcommand, a fix to the `.env` search, and a
 `--version` flag. **The last two are defects the forward review found**, not planned work — and

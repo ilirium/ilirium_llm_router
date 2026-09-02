@@ -199,15 +199,40 @@ one command had already stopped scaling.
 The plan is `phase-11-corpus-tools/plan.md` and **it is not approved**; two positions in its settled
 table were still open when this entry was written. Nothing here should be read as ratifying it.
 
-### Phase 12 — the installer and the `README.md` rewrite
+### Phase 12 — the installer and the `README.md` rewrite *(executed 2026-09-02)*
 
 *Owner's decision, 2026-08-24.* Installation via `uv tool`, and the `README.md` rewritten around it.
 
-**Phase 12 inherits a commitment made in Phase 11, and it is written down in only one other place.**
-Phase 11 documents the existing dictionary commands with a user-facing note in the top-level
-`README.md`, **explicitly temporary until this phase reworks it**. A Phase 12 that rewrites the
-`README.md` without knowing that will silently drop the only user-facing description the dictionary
-tooling has.
+**The router installs and runs without the repository.** `uv tool install <path>` yields a working
+binary; a new `init` subcommand writes `config.yaml` and `.env.example` into the working directory;
+`check` accepts them unmodified; `serve` creates `logs/telemetry/` there. All of it driven from
+directories that have never held this checkout. The `README.md` is ten sections, 133 lines to 304.
+
+**Three of its five changes to `src/` are defects rather than planned work**, all found by the
+forward review before task 1 ran. **`load_dotenv()` never read the working directory** — it walks up
+from `cli.py`, reaching the repository root by accident in a checkout and `$HOME` in an installed
+tool, so a `.env` beside the config was invisible while the error told the user to set the variable
+in it. There was **no `--version`**, so no invocation printed a version and exited 0 on a fresh
+machine. And **`init` as an ordinary subcommand would have failed before it ran**, requiring the
+config file it exists to create.
+
+**The inherited commitment is discharged.** Phase 11's temporary corpus-tools section is now
+`README.md`'s "Commands", with the dictionary commands, `extract`'s selection and output layout, and
+the warning never to point a history viewer at `~/.claude/projects/`. The temporary framing is gone
+because it was framing; nothing it protected was dropped, and a 38-element sweep of the old file
+checked that rather than assuming it.
+
+**Two things it did not settle, both raised for the owner.** The `uv_build` pin was bumped to
+`<0.13` with no rule in `IDM-003` covering build backends, checked instead against 23 wheel entries
+byte for byte. And `status.md`'s Milestone 2 phase count went stale for the **third** time; the
+count was fixed and the mechanism filed in `../backlog.md` rather than chosen, since choosing one
+changes what `status.md` is.
+
+*What the phase's own instruments cost it is worth carrying: **three separate tools reported
+something untrue without failing** — `uvx --from` served a stale build that exited 0 for code that
+had not shipped, `$?` after a pipe reported the wrong command's status, and `uv tool upgrade`
+installs changed code while printing "Nothing to upgrade". All three exited 0. An exit code answers
+a different question from the one being asked.*
 
 ### Phase 13 — the Anthropic rate-limit response headers
 

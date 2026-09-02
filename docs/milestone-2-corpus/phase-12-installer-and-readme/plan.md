@@ -127,7 +127,7 @@ checked before it is built on.
     corpus-tools block that task 13 moves wholesale into section 6, so it can land twice. Lines 3–4
     carry repo and git URLs that map to no planned section.
 
-### Group E — close
+### Group E — close *(complete to the merge, 2026-09-02)*
 
 15. **Register check** against the code, per `../../method/IDM-008-the-register.md`.
 16. **Update `../implementation-plan.md`'s Phase 12 entry** to record what was built, as Phases 10
@@ -151,7 +151,7 @@ checked before it is built on.
 | `_init` | function in `cli.py` | `_init(path: Path) -> int`, in `cli.py` |
 | `CONFIG_TEMPLATE` | module constant in `cli.py` | `"config-template.yaml"` |
 | `.env` search path | where `load_dotenv` looks | `args.config.parent / ".env"` |
-| `init`'s refusal exit code | integer | `1`, matching the config-error path at `cli.py:49` |
+| `init`'s refusal exit code | integer | `1`, matching the config-error path — `cli.py:65` at the close, `:49` when this row was written |
 | the template's file name | on-disk name inside the package | `config-template.yaml` |
 | the template's location | package data path | `src/ilirium_llm_router/config-template.yaml` |
 | the template's content | a copy, a subset, or newly written | **`config.yaml` byte for byte**, pinned by a test |
@@ -164,7 +164,7 @@ checked before it is built on.
 | `original-project-description.md` | on-disk name, in `../../captures/` | fixed |
 | the test file | on-disk name, in `tests/` | `tests/test_cli_init.py` |
 | `DEFAULT_CONFIG_PATH` | existing constant, unchanged | `Path("config.yaml")` — `cli.py:30` |
-| install command | documented string | `uv tool install <path to the repo worktree>` |
+| install command | documented string | `uv tool install .` from a checkout — **no `--force`**, which the first draft had and task 17's drive disproved |
 | `README.md` sections | count | 10 |
 | caveats listed | count | 4 |
 | Milestone 1 phases, in `README.md` | corrected number | **7** (it reads 6 today) |
