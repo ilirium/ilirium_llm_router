@@ -68,13 +68,21 @@ groups are named in the sentence above instead, where nothing can rot.
 
 ## The two reviews
 
-**This phase was reviewed twice, and neither review's record is in this file.**
+**This phase is reviewed twice, and neither review's record is in this file.** The first ran before
+task 1, against the unexecuted `plan.md`; the second runs before the merge, against the work as
+built. Their charters are `review-charter.md` and `review-charter-jobs-done.md`, and
+`review-plan-jobs-done.md` is what the second was planned from.
 
 | Review | Subject | Charter | Findings |
 |---|---|---|---|
 | Forward, before task 1 | `plan.md` at `80914a0`, unexecuted | `review-charter.md` | `notes-review-plan.md` |
-| Of the executed work, before the merge | the phase as built | `review-charter-jobs-done.md` | `notes-review-jobs-done.md` |
+
+**One row, and the second review's row is deliberately absent until its file exists** — the rule
+this file already applies to the group notes above. A row naming a document nobody has written is a
+placeholder waiting to go stale, and at Phase 11's merge that is exactly what the owner found here.
+*The sentence above names the second review instead, where nothing can rot.*
 
 *The forward review's account lived in this file until 2026-09-02 and was moved out whole, on the
-owner's decision, when a second review made "the review" ambiguous. `review-plan-jobs-done.md` is
-what the second one was planned from.*
+owner's decision, when a second review made "the review" ambiguous. That diverges from Phases 10 and
+11, which kept both inside `notes.md`; `notes-review-plan.md`'s header says so, because a reader
+coming from those phases will look here first.*
