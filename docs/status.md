@@ -10,9 +10,36 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-02 (later the same day) — Phase 12 is executed, all five groups, and waits only on the
-merge.** `feat/phase-12-installer-and-readme`, **448 tests** from 438, `register-check.py` 28 of 28.
-**The owner asked to be waited for before the merge runs.**
+**2026-09-02 (later still) — Phase 12 is executed and reviewed twice. It is handed off unmerged,
+on one question.** The review of the finished work — the first this repository has run against
+executed work — returned **18 distinct findings at 11% overlap** between its two runs, against
+`IDM-004`'s forward figure of 18%. **All are fixed, refused with a reason, or filed**, except one
+that reverses an owner decision and therefore stops the merge by the rule the owner set.
+
+**The question: the `README.md`'s caveats section.** Settled row 6 fixes it at four items; a fifth
+was written, and Group E moved it to "What it does, and what it does not" rather than deleting it.
+**Both states honour the letter of the decision.** If four caveats meant *do not bury the reader*,
+the current state is right; if it meant *these four facts are the caveats*, a fifth caveat-shaped
+fact one section up is what the row was meant to prevent. One line, either direction.
+`milestone-2-corpus/phase-12-installer-and-readme/notes-review-jobs-done.md` holds it.
+
+**The finding that justified the review: `CLAUDE.md` said Milestone 2 was "three phases in".** A
+**fourth** copy of the count Phase 12's task 12 was chartered to fix, in the one file loaded into
+every session, naming Phase 10's merge date. The phase never opened it, and **the author could not
+have found it** — this session wrote the `backlog.md` item saying the count lives in "three places",
+having just fixed the two it knew about. Fixed, and the item is widened to four places across two
+files, which kills two of its three candidate fixes.
+
+**And a finding about a method rather than a document.** Re-running the mutation check on three
+tests that had never had one, the phase's own batch-of-three method reported a survivor that was not
+one: the first mutation redirected `init` to the working directory, a test then wrote
+`.env.example` over the repository's own, and the third mutation's comparison became trivially true.
+**A batch of mutations can mask a member of the batch.** Isolated, all three kill their tests.
+
+**2026-09-02 (earlier the same day) — Phase 12 is executed, all five groups.**
+`feat/phase-12-installer-and-readme`, **448 tests** from 438, `register-check.py` 28 of 28. *This
+entry said the merge waited on the owner unconditionally; the task list of the same day authorises
+it conditionally, and the review above is the condition.*
 
 **The `README.md` is ten sections, 133 lines to 310**, the brief is a capture, and the count that
 had gone stale in `status.md` is fixed. Phase 11's inherited commitment is discharged: its temporary

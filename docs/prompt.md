@@ -6,12 +6,21 @@ handoff rather than left. **Replaced 2026-09-02**, at the close of the session t
 
 ---
 
-**Phase 12 is executed, all seventeen tasks, and waits only on the merge — which the owner asked to
-be consulted about before it runs.** Branch `feat/phase-12-installer-and-readme`, worktree
-`…/phase-12-installer-and-readme`, **448 tests**, `register-check.py` 28 of 28, tree clean. `main`
-is at `5cdc1c9` and has none of this.
+**Phase 12 is executed and reviewed twice. It is handed off unmerged, on exactly one question.**
+Branch `feat/phase-12-installer-and-readme`, worktree `…/phase-12-installer-and-readme`, **448
+tests**, `register-check.py` 28 of 28, tree clean. `main` is at `5cdc1c9` and has none of this.
 
-**If the merge is the first thing you do, the order is fixed and it is not the obvious one:** merge
+**The question is in `milestone-2-corpus/phase-12-installer-and-readme/notes-review-jobs-done.md`,
+under "The question for the owner".** It is one line of `README.md`, either direction: settled row 6
+fixes the caveats section at four items, a fifth was written, and Group E moved it one section up
+rather than deleting it. Both states honour the letter of the decision. **The merge was authorised
+only if the review left no question; it left this one.**
+
+*Everything else the review found is fixed, refused with a reason, or filed — 18 distinct findings,
+11% overlap between the two runs against `IDM-004`'s forward 18%.*
+
+**Answer the question first, then merge.** Once it is answered — either way — the order is fixed and
+it is not the obvious one: merge
 `--no-ff` from `main` (write the message to a temp file — `git merge` cannot read stdin), then fill
 `plan.md`'s `Merge commit:` line, then `python3 docs/procedures/branch-index.py --write` on the
 trunk and commit the regenerated table. **The index row names the merge hash, so it cannot go inside
@@ -40,7 +49,7 @@ reviewed twice** — `notes.md` names both and where each one's record lives.
 | `README.md` | ten sections, 133 lines to 310, with the `--help` quoted from the shipped binary |
 | `evidence/register-check.py` | 28 assertions over the register, re-runnable on the trunk |
 
-## Five things a session will get wrong here
+## Six things a session will get wrong here
 
 - **An exit code answers a different question from the one being asked.** Three instruments reported
   something untrue *without failing* in this phase: `uvx --from` served a stale build, `$?` after a
@@ -55,11 +64,17 @@ reviewed twice** — `notes.md` names both and where each one's record lives.
 - **`make lint` cannot see column width.** `E501` is not in ruff's default set. Count characters by
   hand, exclude table rows, and **re-measure after every fix** — fixing over-width lines created new
   ones three times this session.
+- **A batch of mutations can mask a member of the batch.** Applying three at once, one redirected
+  `init`'s write target and a test then overwrote the repository's own `.env.example`, making a
+  third mutation's comparison trivially true — it reported a survivor that was not one. Isolate, or
+  read `git status` and disbelieve a survivor.
 - **A check for a marker matches the documents that describe the marker.** `register-check.py`'s
   unvalued-rows test failed on its first run against the two sentences stating the rule. It reads
   table rows only. `IDM-001`'s placeholder sweep has the same false positive.
 
-## Open, and none of it blocks
+## Open — one of these blocks, the rest do not
+
+**Blocking: the caveats question above.** It is the only thing between this branch and `main`.
 
 - **The `uv_build` pin bump to `<0.13` has no rule behind it.** `IDM-003` covers the formatter pin
   only. In `backlog.md`, and it is an owner decision.
