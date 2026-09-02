@@ -249,10 +249,19 @@ is not known.
 
 ## What is deliberately not done yet
 
-The opening playbook has seven steps. **Steps 1 and 3–6 are not run**, and this section exists so
-that a later session does not read their absence as an oversight. **Step 2 is no longer among them —
-it was discharged in fact on 2026-08-24** and waits only on Phase 11's Task 7 to make its evidence
-durable; the row and the note below say what that means.
+The opening playbook has seven steps. **Steps 3 and 5 are not run**, and this section exists so that
+a later session does not read their absence as an oversight. **Three steps have left that list, and
+the table below is what each is now** — step 1 was discharged by Phase 9, which named the claim at
+the top of this file; step 2 was discharged in fact on 2026-08-24, its evidence landing 2026-08-26;
+step 6 is this file.
+
+*This paragraph said **"Steps 1 and 3–6 are not run"**, and that step 2 **"waits only on Phase 11's
+Task 7 to make its evidence durable"**, until 2026-09-02. Both were true when written, and neither
+was updated when the rows beneath them were. **The table tracked every discharge and the sentence
+introducing it tracked none** — which is the failure `../status.md` records twice under its
+milestone table, arriving a third time, in the prose that introduces the section written to stop an
+absence being misread. Neither half is reachable by `../method/IDM-001-git-branching.md`'s
+placeholder grep, which matches "not yet run" and not "are not run".*
 
 | Step | State |
 |---|---|
