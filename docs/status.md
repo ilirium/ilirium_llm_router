@@ -10,6 +10,14 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
+**2026-09-04 — Phase 13 is open and planned; nothing of it is executed.**
+`docs/phase-13-method-and-backlog`, forked at `dec7c4a`. Four deliverables the owner set on
+2026-09-03: **`IDM-009`** reviewing executed work, **`IDM-010`** the per-phase `for-the-owner.md`,
+**`IDM-011`** the backlog, and the **backlog refactor** that gives every item a `BKL-NNNN` id and a
+generated table. Nineteen settled rows, twenty-eight tasks, seven groups. **The Anthropic
+rate-limit headers moved to Phase 14** on the owner's decision — their `calls.csv` collision is
+untouched and still has to be settled before that plan.
+
 **2026-09-02 (later still) — Phase 12 is complete and merged.** Merge `6c75997`; branch index
 regenerated, **24 rows**. **Milestone 2 is five phases in.**
 
@@ -326,7 +334,12 @@ was not a real hazard**, and repeating it would preserve a rule whose justificat
 `method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-**None. `feat/phase-12-installer-and-readme` merged 2026-09-02** at `6c75997`, and merged branches
+**`docs/phase-13-method-and-backlog`, opened 2026-09-04**, forked from `main` at `dec7c4a`. A
+documentation phase — three method documents and the backlog refactor — carrying **no `src/`
+change**, which is why the prefix is `docs/`. Its worktree is the fourth row of `IDM-001`'s layout.
+**Entered here at task 1**, which is where `IDM-001` puts it.
+
+**`feat/phase-12-installer-and-readme` merged 2026-09-02** at `6c75997`, and merged branches
 are not listed here. Its permanent record is its phase note and its row in `reference/branches.md`.
 
 *It was entered here at the phase's task 1 — which exists because the forward review found this
