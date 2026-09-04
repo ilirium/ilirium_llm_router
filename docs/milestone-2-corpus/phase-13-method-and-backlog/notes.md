@@ -30,6 +30,24 @@ directly beneath rows that did, and the owner found it because no sweep could.
 
 ---
 
+## The reviews
+
+**This phase is reviewed twice**, and neither record is in this file. The first ran before task 3a,
+against the plan as written; the second runs before the merge, against the work as built — the
+owner's decision, and it makes Phase 13 `IDM-009`'s first run.
+
+| Review | Subject | Charter | Findings |
+|---|---|---|---|
+| Forward, before task 3a | `plan.md` at `6345eb8`, unexecuted | `review-charter.md` | `notes-review-plan.md` |
+| Of the executed work, before the merge | the phase as built | `review-charter-jobs-done.md` *(task 21)* | `notes-review-jobs-done.md` *(task 23)* |
+
+**The second row names files that do not exist yet, and that is a departure** — this file's own
+rule, two sections down, is that a row appears when its file appears. It is kept because the two
+reviews are one decision and a reader who sees only the first will not know a second is coming.
+*If that reasoning is wrong, the row is the thing to delete.*
+
+---
+
 ## Why this phase amends a rule set two days before it opened
 
 **Settled row 9 changes `IDM-001`**, which currently says that filing a backlog item **is** how a

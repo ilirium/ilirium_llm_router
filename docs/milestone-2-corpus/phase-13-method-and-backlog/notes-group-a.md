@@ -68,9 +68,26 @@ close, and it is task 3a.
 **Task 27 is not the same task.** That one records what the phase found; 3a stops a session picking
 this branch up mid-phase from being misled about what the phase even is.
 
-## Task 3 — not run
+## Task 3 — the forward review, run on the owner's go-ahead
 
-**The forward review under `IDM-004` needs the owner's go-ahead**, because its cold run is a
-fresh-context agent. Raised and not yet answered. **The plan is now finished enough to be wrong,
-which is `IDM-004`'s own test for when to run one** — the re-derivation above is exactly the round
-of revision after which nobody holds the whole document.
+**Done. Its record is `notes-review-plan.md`**, beside this file rather than in it, which is what
+Phase 12 settled when a second review made "the review" ambiguous.
+
+**Eighteen distinct findings at 17% overlap.** `IDM-004`'s own forward figure is 18% and Phase 12's
+backward figure is 11%, so **this is the second forward measurement and it lands within a point of
+the first** — which is the outcome `IDM-004` says would *not* let it be rewritten: a run returning
+60% would have meant one run is enough.
+
+**Three of the author run's six findings were unique to it, and all three were about the record** —
+a decision the owner made in interview that never reached the settled table, a task that produces no
+commit, a status with no home. **Twelve of the cold run's fifteen were unique to it.** The split is
+the one `IDM-004` predicts.
+
+**The finding that paid for the run: task 5 would have made the next session re-decide an owner
+row.** It named four questions as deliberately open in `review-plan-jobs-done.md`; that file leaves
+**one**, and question 3 — whether the review runs before the merge — is settled row 1 there, decided
+2026-09-02. Full account in `notes-review-plan.md`.
+
+**Four findings became questions for the owner** rather than fixes, because each touches a settled
+row. They were put in the session, not left in a file — settled row 13 applied to the phase that
+wrote it.

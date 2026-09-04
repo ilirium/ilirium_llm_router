@@ -37,6 +37,9 @@ moving the number does not move the question. Task 26 renumbers the section in
 
 ## What is settled, and by whom
 
+*Row 20 sits above row 19 on purpose: the numbers are allocation order and the tables are grouped
+by subject, so a row restored later keeps its number and joins its topic.*
+
 *Owner's decisions, taken 2026-09-03 and 2026-09-04 across four rounds of interview. **Positions
 this phase does not revisit**, and which a review may question but never file as a defect —
 `IDM-004` rule 5.*
@@ -68,6 +71,7 @@ this phase does not revisit**, and which a review may question but never file as
 | 16 | **Four kinds:** `ASK`, `IDEA`, `REGRET`, `ERRAND` | `ASK` narrows to *asked out loud during the phase and still open at its close*. `ERRAND` is new and names the fourth thing: an action only a person at a keyboard can perform — Phase 11's `git --version` probe is the type case, and its own entry says why a session cannot run it |
 | 17 | **Headings read `## 4 · ASK · high · <title>`** | Numbers run 1..N within the phase **in order of appearance**, never renumbered, no gaps. Importance is `high` / `medium` / `low`. **Entries are not ordered by importance** — the owner's decision, on the ground that ordering adds friction and titles are easy to query |
 | 18 | **Forward-only from Phase 13** | No closed phase gets one written retroactively. Phase 11's stays untouched as archive. Same shape as the task-not-commit rule, which left Phase 7 saying "commit N" |
+| 20 | **Nothing formally closes an entry. The file is one-way by design, and an unanswered `ASK` is not a defect** | *Owner, interview round 1; **restored by the forward review**, which found it had never reached this table.* `IDM-010` must say it out loud, or the next reader of Phase 11's folder sees eleven unanswered entries and reads a dropped ball |
 
 ### The phase
 
@@ -75,17 +79,22 @@ this phase does not revisit**, and which a review may question but never file as
 |---|---|---|
 | 19 | **Phase 13 runs `IDM-009`'s first jobs-done review — on itself** | The rule binds the phase that wrote it. It also buys the second data point on a phase that changed **no `src/`**, which is the axis Phase 12's run could not vary |
 
-**Two things the owner decided to leave alone.** The two parked `backlog.md` items proposing
-`IDM-004` amendments **stay parked** — they get ids here and nothing more, having waited since
-2026-08-19 with nothing decaying. And the `Dictionaries` category stays, per settled row 4.
+**Two things the owner decided to leave alone.** The parked `backlog.md` items proposing `IDM-004`
+amendments **stay parked** — and there are **three**, not the two the owner was asked about: the
+third, added 2026-09-02, names an `IDM-004` charter requirement among its homes and says it *"merges
+naturally with the two items above"* and should be decided **together with them** — they get ids
+here and nothing more. *Two have waited since 2026-08-19 with nothing decaying; the third is from
+2026-09-02 and argues that its own cost is not correctness but **when**.* And the `Dictionaries`
+category stays, per settled row 4.
 
 ---
 
 ## The task groups
 
-**Seven groups, twenty-eight tasks.** Group E pauses for the owner; everything before it is
-independent of everything after it, so the phase can stop cleanly at a group boundary.
-`notes-group-<letter>.md` per group, per `../../README.md`.
+**Seven groups, twenty-nine tasks, numbered to 28.** *(Task 3a was inserted after this sentence was
+first written, and it said twenty-eight until the forward review counted them.)* Group E pauses for
+the owner; everything before it is independent of everything after it, so the phase can stop cleanly
+at a group boundary. `notes-group-<letter>.md` per group, per `../../README.md`.
 
 ### Group A — open the phase
 
@@ -100,22 +109,29 @@ independent of everything after it, so the phase can stop cleanly at a group bou
 
 | # | Task |
 |---|---|
-| **4** | Write `../../method/IDM-009-reviewing-executed-work.md` from Phase 12's run. Inputs are that phase's `review-plan-jobs-done.md`, `review-charter-jobs-done.md` and `notes-review-jobs-done.md` — **the argument, the instrument and the result** |
-| **5** | Answer the four questions `review-plan-jobs-done.md` deliberately left open. **They are the reason the `IDM` is not a copy of that document** — listed below |
+| **4** | Write `../../method/IDM-009-reviewing-executed-work.md` from Phase 12's run. Inputs are that phase's `review-plan-jobs-done.md`, `review-charter-jobs-done.md` and `notes-review-jobs-done.md` — **the argument, the instrument and the result**. *Whether it takes `IDM-000`'s two-zone shape is this task's call; its evidence is bulky, which is the stated condition* |
+| **5** | Close the three questions listed below, **each from its true source**, and inherit the fourth. **They are the reason the `IDM` is not a copy of `review-plan-jobs-done.md`** |
 | **6** | Add the `IDM-000` index row. Add a **one-line pointer** in `CLAUDE.md` — not a restatement. Point `../../README.md`'s "The review phase" at it, since that file draws the line between the closing review and the others |
 
-**The four open questions task 5 must close.** Each is named in `review-plan-jobs-done.md` as
-deliberately unanswered; **an `IDM` that inherits them silently is a guess wearing the tier's
-authority.**
+**Three questions task 5 must close, and one it must inherit.** *Corrected by the forward review:
+this block said all four were "named in `review-plan-jobs-done.md` as deliberately unanswered".
+**That file leaves exactly one open**, and question 3 is a row the owner settled. Sources below are
+now the real ones — see `notes-review-plan.md`, finding C1.*
 
-1. **What "the author run" means when a phase ran across several sessions.** Phase 12's answer — a
-   warm read with the gap declared — was settled for that phase only.
-2. **When the commit range is named.** Finding A5 was refused precisely so this would be decided
-   here: the plan said one range, the charter another, and both runs read a third. **State the range
-   at the moment the runs start.**
-3. **Whether "before the merge" generalises**, or was an argument about Phase 12's merge message.
-4. **What one measurement is worth.** Forward overlap 18%, backward 11%, each n=1. `IDM-004`'s own
-   "not evidence yet" section is the precedent for how to say so.
+1. **What "the author run" means when a phase ran across several sessions.** *Source:
+   `review-plan-jobs-done.md:177* — the one thing in that file marked `**Left open deliberately**`.
+   Phase 12's answer, a warm read with the gap declared, was settled for that phase only.
+2. **When the commit range is named.** *Source: `notes-review-jobs-done.md`, finding **A5**,
+   refused there with the general fix deferred to this `IDM` by name.* **State the range at the
+   moment the runs start.**
+3. **What one measurement is worth.** *Source: `review-plan-jobs-done.md` §7, which asks for the
+   measurements, and the run that produced them.* Forward 18% and 17%, backward 11%, each small-n.
+   `IDM-004`'s own "not evidence yet" section is the precedent for how to say so.
+
+**And the one to inherit rather than decide: the review runs *before the merge*.** That is
+`review-plan-jobs-done.md` settled row 1, **decided by the owner on 2026-09-02** — the merge message
+is a claim-bearing artefact that cannot be corrected afterwards. **`IDM-009` records whose decision
+it was and does not reopen it.**
 
 ### Group C — `IDM-010`, `for-the-owner.md`
 
@@ -123,7 +139,7 @@ authority.**
 |---|---|
 | **7** | Write `../../method/IDM-010-writing-for-the-owner.md` — settled rows 11–18, with the reasoning, not the rows restated |
 | **8** | Record Phase 11's file as **both the worked example and the evidence**. It is the only instance — **11 entries: 3 `ASK`, 5 `IDEA`, 3 `REGRET`**. All three `ASK`s are the shape settled row 13 now forbids, **none of the 11 was ever marked answered**, and **Phase 12 wrote none at all** — a practice invented without a rule that failed to survive one phase |
-| **9** | `IDM-000` index row, and a pointer from `../../README.md`'s phase template, which is where the contents of a phase folder are specified |
+| **9** | `IDM-000` index row; a **`CLAUDE.md` pointer**; and `../../README.md`'s phase template — **amend the contents sentence itself**, not only append a pointer. It reads *"holds `plan.md`, `notes.md` and `evidence/`"*, which settled row 11 makes wrong |
 
 ### Group D — `IDM-011`, the backlog
 
@@ -131,7 +147,7 @@ authority.**
 |---|---|
 | **10** | Write `../../method/IDM-011-the-backlog.md` — settled rows 1–10: the id scheme, the metadata line, the five statuses, the categories, the lifecycle, the generated table, and who may file an item |
 | **11** | **Amend `IDM-001`** for settled row 9, and rewrite `../../backlog.md`'s preamble to **point rather than restate**. The preamble currently holds two rules that `IDM-011` will own |
-| **12** | `IDM-000` index row |
+| **12** | `IDM-000` index row, and a **`CLAUDE.md` pointer**. *Settled row 9 is a rule that fails without one: `IDM-001` and `backlog.md` both currently tell a session that filing an item is its own to do* |
 
 **Task 11 is the one that changes a rule already in force**, and it is why this group is separate
 from Group E. `IDM-001`'s "Adding an item to `backlog.md` … does not open a branch" section keeps
@@ -143,12 +159,12 @@ lands on the owner's word.**
 | # | Task |
 |---|---|
 | **13** | **Compile the item inventory** — boundaries, ids, categories, statuses, dates, one-line descriptions. **Then stop.** |
-| **14** | *(checkpoint)* **The owner ratifies the inventory and prunes it.** Nothing is applied before this returns |
-| **15** | Apply the metadata lines to `../../backlog.md`. Move nothing |
-| **16** | Create `../../backlog-done.md`, seeded with the item this phase discharges — *"Give every item here a stable, referencable index"*, added 2026-08-26 on the owner's instruction. **It seeds itself** |
+| **14** | *(checkpoint)* **The owner ratifies the inventory and prunes it.** Nothing is applied before this returns. **This task produces no commit** — `../../README.md` requires the row to say so, or a reader cannot tell it from a task that was skipped |
+| **15** | Apply the metadata lines to `../../backlog.md`. **Move nothing here** — the one move belongs to task 16, and doing it in this task would mix a mechanical pass with a judgement |
+| **16** | Create `../../backlog-done.md` and **move** into it the item this phase discharges — *"Give every item here a stable, referencable index"*, added 2026-08-26 on the owner's instruction. **Move, not copy: it is deleted from `backlog.md`**, which is what makes the register's "`Done`/`Phase` always empty by construction" true. **It seeds itself** |
 | **17** | Write `../../procedures/backlog-index.py`, `--write` and `--check`, in the shape `branch-index.py` established |
 | **18** | Generate both tables |
-| **19** | **Repoint every existing citation to a `BKL` id.** Items are cited today by quoting their bold opening phrase — the exact defect the scheme exists to end. **Sweep for the citing sites; do not enumerate them** — the "two phase plans" in the backlog item dates from 2026-08-26 and two phases have landed since |
+| **19** | **Repoint every existing citation to a `BKL` id.** Items are cited today by quoting their bold opening phrase — the exact defect the scheme exists to end. **Sweep for the citing sites; do not enumerate them** — the "two phase plans" in the backlog item dates from 2026-08-26 and two phases have landed since. **The frozen archive is out of scope**: a quoted title in a closed phase's document is a *claim* about what the backlog said then, and `../../README.md`'s archive rule is paths yes, claims no. Live tier only |
 | **20** | `--check`: ids unique, every item has a row and every row an item, every `BKL-NNNN` citation in `docs/` resolves |
 
 **Task 13 is a judgement pass, not a parse.** Items in `backlog.md` are separated by a bold opening
@@ -170,7 +186,7 @@ premise is that ids never change**, which is why task 14 exists.
 | # | Task |
 |---|---|
 | **25** | **The register check.** `evidence/register-check.py`, run against the register below; the `❓` column must be empty. `IDM-008` makes this a numbered task, not a habit |
-| **26** | Retitle `../implementation-plan.md`'s "Phase 13 — the Anthropic rate-limit response headers" to **Phase 14**, add the Phase 13 section, and fix the cross-references in `../../backlog.md`, `../../status.md` and `../../prompt.md` |
+| **26** | **Whatever task 3a did not do** — normally just *add* the Phase 13 section to `../implementation-plan.md`, since 3a does the Phase 14 retitle and the `status.md`/`prompt.md` references. **`backlog.md` is not a target**: it names Phase 13 zero times |
 | **27** | Baselines; `../../status.md`; `../../prompt.md`; **this phase's own `for-the-owner.md`**, which is `IDM-010` applied to the phase that wrote it |
 | **28** | **Merge, in three steps.** `--no-ff`; fill this file's `Merge commit:` line; `branch-index.py --write` on the trunk and commit it. Stopping after the merge leaves a landed branch with no index row |
 
@@ -191,9 +207,10 @@ and expects the `❓` column empty.*
 | `docs/backlog-done.md` | new — task 16 | |
 | `docs/procedures/backlog-index.py` | new — task 17 | |
 | `docs/milestone-2-corpus/phase-13-method-and-backlog/` | this folder; slug identical to the branch's | |
+| `review-charter.md`, `notes-review-plan.md` | the forward review's pair, task 3; the plain names Phase 10 settled | |
 | `review-charter-jobs-done.md`, `notes-review-jobs-done.md` | the names Phase 12 used; `IDM-009` makes them canonical | |
 | `for-the-owner.md` | this phase's own, task 27 | |
-| `evidence/register-check.py` | task 25 | |
+| `evidence/register-check.py` | task 25 — **written against this phase's register**, not adapted from Phase 12's | |
 
 **Existing names this must not collide with:** `EPD-NNN`, `IDM-NNN`, `BUG-NNN`, `branch-index.py`,
 `link-check.py`, `register-check.py`. **`BUG-001` and `BKL-0001` are visually close and were
@@ -224,6 +241,7 @@ unambiguously.
 | Name | Value | ❓ |
 |---|---|---|
 | Columns, in order | `ID`, `Added`, `Status`, `Category`, `What it is`, `Done`, `Phase`, `See` — eight | |
+| `See` holds | the documents the item points at — an `EPD`, an `IDM`, a `BUG`, a phase note — **and any `BKL` id it supersedes or was reversed from**. Empty is normal | |
 | `Done` / `Phase` in `backlog.md`'s table | always empty by construction — done items are not in that file | |
 | `backlog-index.py` flags | `--write`, `--check` | |
 | Exit codes | 0 current / 1 stale or broken, as `branch-index.py --check` | |
@@ -244,8 +262,8 @@ unambiguously.
 
 1. **`IDM-009`, `IDM-010` and `IDM-011` are in force**, each with an `IDM-000` index row, and each
    written from evidence rather than from intention.
-2. **`IDM-009` answers all four of the questions `review-plan-jobs-done.md` left open**, rather than
-   carrying them forward.
+2. **`IDM-009` closes the three questions of task 5 from their true sources**, and records the
+   fourth as the owner's settled decision rather than reopening it.
 3. **Every backlog item has a `BKL` id the owner ratified**, and every existing citation-by-title
    has been repointed to one.
 4. **`backlog-index.py --write` reproduces both tables**, and `--check` exits 0 on the trunk.
@@ -259,7 +277,8 @@ unambiguously.
 ## Not in this phase
 
 - **The Anthropic rate-limit headers.** Phase 14, and their `calls.csv` collision is unsettled.
-- **The two `IDM-004` amendment items.** Parked by the owner's decision; they get ids here.
+- **The three `IDM-004` amendment items.** Parked by the owner's decision, which was taken on two
+  of them; the third says all three should be decided together. All get ids here.
 - **Re-categorising the backlog**, including the `Dictionaries` section the file itself flags as
   grouped on a different axis. Settled row 4.
 - **Teaching `link-check.py` anything.** Settled row 8 puts id checking in `backlog-index.py`.
