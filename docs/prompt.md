@@ -77,8 +77,8 @@ spent.
 ## What is in force now that was not a week ago
 
 - **A session asks the owner before filing a backlog item.** If the answer is no, the decline goes
-  in the phase's `notes.md`. `IDM-001` and `backlog.md` said for two days that filing was the phase's
-  own act; both are amended. → `IDM-011`.
+  in the phase's `notes.md`. `IDM-001` and `backlog.md` said for two days that filing was the
+  phase's own act; both are amended. → `IDM-011`.
 - **Every phase folder carries a `for-the-owner.md`**, written *during* the phase, to a person.
   **Anything needing a decision is asked out loud instead.** → `IDM-010`.
 - **A phase is reviewed before its merge**, under a charter, by two runs. → `IDM-009`. **Phase 13 is

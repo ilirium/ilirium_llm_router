@@ -77,3 +77,18 @@ number as unverified until the file was open.
 unverified until you open the thing it counts**. It is in `prompt.md` now as a session-level
 warning, which is the weakest form. I am not proposing a rule; I am noting that the same defect
 arrived three times in two days.*
+
+
+## 6 · REGRET · low · I committed an over-width line after the check had already reported it
+
+The width check printed `over-width: [(80, 101)]` for `prompt.md` and I ran the commit in the same
+breath without reading it. Fixed in the commit after.
+
+**Nothing was harmed** — it is one column over on one line of the file that is allowed to go stale
+anyway. **What is worth telling you is the shape**: this is the third time in this phase that an
+instrument produced the right answer and the failure was in reading it, after the byte-counting
+`awk` and the mutation script that errored where a check should have failed.
+
+*The rule this repository already has is `CLAUDE.md`'s — when a check comes back, fix the instrument
+before believing the result. **The gap it does not cover is not believing a result you never
+read.***
