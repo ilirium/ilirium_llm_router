@@ -1,14 +1,18 @@
 # Backlog — unscheduled work
 
 **Inventory, not state.** What is in flight and where the project stopped are in `status.md`; nothing
-here says when anything happens. An item lands in `status.md`'s "What is next" when it is picked up,
-and is deleted from here when it is done.
+here says when anything happens. An item is named in `status.md`'s "What is next" when it is picked
+up, and **moves to `backlog-done.md` when it is done** — it is not deleted.
 
-**Adding an item here goes on whatever branch you are already on, and never opens one of its own.**
-*Owner's instruction, 2026-09-02.* Filing a backlog item is **how a phase declines scope** — it
-happens during a phase and because of it — so a branch per item spends a worktree, a merge and an
-index row on a paragraph. → `method/IDM-001-git-branching.md`, "The plan opens the phase branch",
-which is canonical and holds the line between this and pre-empting a later phase's work.
+→ **`method/IDM-011-the-backlog.md` is canonical for this file**, and holds what a reader arriving
+here needs: **who may file an item**, the `BKL-NNNN` identifier and how one is allocated, the
+metadata line and its three placements, the five statuses and which file each lives in, and why the
+table below is generated rather than typed. **Read it before adding an item or changing this file.**
+
+**Two things restated here because a session acts on them without looking anything up.** **A session
+asks the owner before filing an item**; if the answer is no, the decline goes in the phase's
+`notes.md`. And **adding an item goes on whatever branch you are already on and never opens one** —
+that half is `method/IDM-001-git-branching.md`'s, which is canonical for it.
 
 **Every item names why it is parked, and several name why the question is weaker than it looks.**
 That column is the point of this file. An item that has lost its reason has become a to-do, and a

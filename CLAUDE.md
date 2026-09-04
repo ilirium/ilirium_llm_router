@@ -296,6 +296,13 @@ and this file is the digest. **Anything needing a decision is asked out loud ins
 in it.** Pointed at here rather than left in `docs/` because **there is no look-it-up moment** — the
 rule applies when somebody is already writing, which is `IDM-007`'s test.
 
+→ `docs/method/IDM-011-the-backlog.md` — **read it before adding anything to `docs/backlog.md`.**
+**A session asks the owner before filing an item**; if the answer is no, the decline goes in the
+phase's `notes.md`. *This reverses the reflex a session would otherwise have — `IDM-001` and the
+backlog's own preamble said for two days that filing an item was the phase's own act, and a session
+that learned that will file confidently and wrongly.* Adding an item still goes on whatever branch
+you are on and never opens one.
+
 ## Shell
 
 **Keep bash commands statically analyzable — no `$(...)`.** The general rule, which is the documented

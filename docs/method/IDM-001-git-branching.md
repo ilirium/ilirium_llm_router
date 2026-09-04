@@ -198,11 +198,18 @@ branch may sit holding only an unapproved plan — which is the next section.
 on the owner's instruction, after this rule was applied to a backlog addition and a branch was
 created for one item.*
 
-**The reasoning, which is the owner's and is the load-bearing part:** adding a backlog item is **how
-a phase declines scope**. It is the mechanism by which a session says *this is real, it is not this
-phase's, and it will not be lost* — so it happens **during** a phase, **because of** that phase, and
-it is the phase's own act. Filing it elsewhere separates the record from the moment that produced
-it.
+**The reasoning, which is the owner's and is the load-bearing part:** declining scope is **how a
+phase says *this is real, it is not this phase's, and it will not be lost*** — so it happens
+**during** a phase, **because of** that phase. Filing the record elsewhere separates it from the
+moment that produced it.
+
+**Amended again 2026-09-04, and the change is to the *authority*, not to the mechanism.** This
+paragraph said that adding a backlog item **is** how a phase declines scope, which read as a
+session's own act to perform. **It is not: a session asks, and the item lands on the owner's word.**
+If the answer is no, the decline is recorded in the phase's `notes.md` instead — nothing is dropped
+silently, only filed elsewhere. **The owner's reason: a large backlog is not itself a good
+outcome.** → `IDM-011-the-backlog.md`, which is canonical for who files an item; **this section
+keeps only the branch rule.**
 
 **And the cost of the alternative is not neutral.** A branch per backlog item means a worktree, a
 merge, a `branch-index.py` description and a row in `../reference/branches.md`, for a paragraph.
