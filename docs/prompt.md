@@ -6,7 +6,7 @@ Whatever comes next replaces it again.*
 
 ---
 
-**Phase 13 is open and stopped at a checkpoint that is the owner's.** Branch and worktree
+**Phase 13 is open. The checkpoint is discharged and Group E is unblocked.** Branch and worktree
 `docs/phase-13-method-and-backlog`, forked from `main` at `dec7c4a`. Milestone 2 has five phases
 merged and this one in flight.
 
@@ -20,19 +20,25 @@ tests** stand by construction.
 
 ## The one thing to do next
 
-**Run the review of the item inventory — task 14a — in a session of its own.** *It is deliberately
-not run in the session that produced the inventory.*
+**Task 15 — apply the ratified ids to `docs/backlog.md`.** It is no longer blocked: task 14a ran on
+2026-09-04, the owner ratified the same day, and `evidence/item-inventory.md` is the ratified
+source. **Read it, not this file, for what to apply.**
 
-> Hand a fresh-context agent this file, verbatim, and nothing else:
-> `docs/milestone-2-corpus/phase-13-method-and-backlog/evidence/item-inventory-review-charter.md`
+**The inventory holds 38 items, not 36.** *The cold review found two the pass had missed —
+`backlog.md:716` and `:735`. Both are struck-through `done` entries opening `~~**`, where the
+enumeration matched **bold or `###`** at the line start; the two struck entries opening `**~~` were
+both caught.* They are `BKL-0032` and `BKL-0033`, so **old `BKL-0032`–`0036` are now
+`BKL-0034`–`0038`**, and `BKL-0025`–`0031` did not move.
 
-**It is written to be self-contained** — the reviewer is assumed to know nothing about this
-repository. It names the subject, the frozen source to check against, eight checks, the known false
-positives, and the rules.
+**Two questions are still the owner's, and one gets expensive the moment task 15 lands** — whether
+`BKL-0020` splits into two ids, which would renumber everything below it. The other is `BKL-0007`'s
+status. Both are entry 9 of `for-the-owner.md`. **Neither blocks task 15; both are cheaper before
+it.**
 
-**Then bring its report back here.** Tasks 15, 16, 18, 19 and 20 all take the ratified inventory as
-input, and **none of them may run before it returns**: ids are permanent, so a wrong boundary
-applied is a wrong boundary forever.
+**`docs/backlog.md` is still untouched.** No id has been applied to it.
+
+**Task 14a's raw report is not kept** — `notes-review-plan.md` says why. Its outcome is in
+`notes-group-e.md` and its corrections are in `item-inventory.md` itself.
 
 ## Where the phase actually is
 
@@ -42,11 +48,9 @@ applied is a wrong boundary forever.
 | **B** `IDM-009` | **done** — reviewing executed work |
 | **C** `IDM-010` | **done** — the per-phase `for-the-owner.md` |
 | **D** `IDM-011` | **done** — the backlog, and the `IDM-001` amendment |
-| **E** the refactor | **part-done.** 13 and 17 are done; **14a is next**; 15, 16, 18, 19, 20 are blocked on it |
+| **E** the refactor | **part-done.** 13, 17 and **14a** are done and the inventory is ratified; **15 is next**, then 16, 18, 19, 20 |
 | **F** the review of this phase | not started — Phase 13 reviewed under the `IDM-009` it wrote |
 | **G** close | not started |
-
-**`docs/backlog.md` is untouched.** No id has been applied to it.
 
 ## Read these, in this order
 
@@ -55,7 +59,9 @@ applied is a wrong boundary forever.
    minimum. Grep the headings.
 3. **`notes.md`**, then the group notes you need. **`notes-group-e.md`** is where the refactor is;
    **`notes-review-plan.md`** is what the forward review found.
-4. **`for-the-owner.md`** if you are the owner. Five entries, written during the phase.
+4. **`for-the-owner.md`** if you are the owner. **Nine entries**, written during the phase.
+   *Do not take that number from here either — it said five while citing entry 7 eleven lines
+   below, and it is entry 5's own subject.*
 
 **Do not read `review-charter.md`** unless you are writing task 21's charter — the forward review is
 spent.
@@ -63,9 +69,11 @@ spent.
 ## Five things a session will get wrong here
 
 - **A number in a document is unverified until you open the thing it counts.** This phase has been
-  wrong about a count **four times**: twice about one file's entries, once relaying a week-old
-  figure, and once a line number in the inventory itself. **Every one was caught by opening the
-  file or by rendering it — none by rereading prose.**
+  wrong about a count **six times** — and the entry that counts them had itself gone stale at three.
+  Twice about one file's entries, once relaying a week-old figure, once a line number in the
+  inventory, twice in this file about `for-the-owner.md`, and **once about the inventory's own item
+  count, which was two commits from being frozen into permanent ids.** **Every one was caught by
+  opening the file or by rendering it — none by rereading prose.**
 - **`backlog-index.py --check` exits 1 on this branch and that is correct.** This phase's documents
   already cite `BKL` ids that `backlog.md` does not carry yet. It flips to 0 when task 15 lands.
 - **`make lint` reaches neither column width nor `docs/procedures/`.** `E501` is not in ruff's
@@ -99,14 +107,23 @@ spent.
 - **The `uv_build` pin bump has no rule behind it.** An owner decision.
 - **The Milestone 2 phase count has gone stale four times.** `CLAUDE.md` no longer carries it at
   all; the remaining copies are in `status.md`.
+- **Two inventory questions are unanswered** — `BKL-0007`'s status, and whether `BKL-0020` splits.
+  **The second stops being answerable cheaply once task 15 applies the ids.**
 
 ## The working agreement still applies
 
-`CLAUDE.md`, in full. Two earned their place this phase, both the hard way:
+`CLAUDE.md`, in full. Three earned their place this phase, all the hard way:
 
 **Exercise it before committing.** The script was read, looked right, and had **three defects** —
 one of which only appears if you run `--write` and then `--check`, in that order.
 
 **Propose before implementing, and raise it rather than burying it.** The plan was interviewed over
 four rounds; the forward review then found it would have made the next session **re-decide a settled
-row**. Both of the phase's `REGRET` entries are in `for-the-owner.md` rather than quietly fixed.
+row**. All three of the phase's `REGRET` entries are in `for-the-owner.md` rather than quietly
+fixed.
+
+**Check prior evidence before planning a rerun — and check a review's arithmetic too.** The author
+run of the inventory cleared the exact claim that was false, and its own reconciliation summed to 61
+against a real 59. **The subtraction was done and the column was never added up.** The cold run that
+caught it then miscounted which ids shift. *Neither is an argument against reviewing; both are the
+argument for opening the file.*

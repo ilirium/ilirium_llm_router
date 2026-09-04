@@ -23,14 +23,22 @@ handoff is stale at the next commit and this file has four recorded instances of
 | **`IDM-010`** | the per-phase `for-the-owner.md` |
 | **`IDM-011`** | the backlog — **and one of its rules is in force now**: a session asks before filing an item |
 
-**Where Group E stopped.** Task 13 compiled the item inventory — **36 items**, ids proposed in file
-order — and task 17 wrote and drove `procedures/backlog-index.py`. **`docs/backlog.md` is
-untouched.** *Tasks 15, 16, 18, 19 and 20 all take the ratified inventory as input and none has
-run.*
+**Where Group E is.** Task 13 compiled the item inventory, task 17 wrote and drove
+`procedures/backlog-index.py`, and **task 14a — the cold review — is done.** **`docs/backlog.md` is
+still untouched.** *Tasks 15, 16, 18, 19 and 20 all take the ratified inventory as input and none
+has run; **they are no longer blocked.***
 
-**The checkpoint was accepted and then extended by the owner: the inventory gets an independent
-review by a fresh-context agent, in a session of its own** — task 14a. Its charter and the frozen
-`backlog.md` it checks against are in the phase's `evidence/`.
+**The inventory is ratified and it holds 38 items, not the 36 task 13 proposed.** The cold run found
+**two missing items** — `backlog.md:716` and `:735`, struck-through `done` entries that open `~~**`
+where the pass's enumeration matched bold-or-`###` at the line start. *Both struck entries that open
+`**~~` were caught; two bytes in the wrong order made two items invisible.* **The author run had
+cleared this exact claim** and named it as the one an author is least entitled to be believed on.
+
+**The owner ratified on 2026-09-04**: the two get ids in file order as `BKL-0032` and `BKL-0033`, so
+old `BKL-0032`–`0036` became `BKL-0034`–`0038` and **`BKL-0025`–`0031` did not move**; `BKL-0038` is
+`done` rather than `refused`; `BKL-0004` is `partly-done` until task 15 lands. **Two questions are
+open and neither blocks** — `BKL-0007`'s status, and whether `BKL-0020` splits, which is the one
+that would renumber.
 
 | Commit | |
 |---|---|
@@ -41,6 +49,7 @@ review by a fresh-context agent, in a session of its own** — task 14a. Its cha
 | `809a422` | this file, `prompt.md`, `README.md` and `CLAUDE.md` brought true after the three landed |
 | `a9b0c6b` · `e1f6e5f` · `00d3ed3` | the inventory; the frozen copy and the review charter; the script |
 | `8374245` · `0ffeb00` | the handoff, and a one-column fix recorded rather than folded in |
+| `d315a16` · `d36cc27` · `16c9e6a` | the session close-out, why raw reports are not kept, and the author run |
 
 **`IDM-001` is amended for the second time in three days, and the two amendments differ.**
 2026-09-02 changed **where** the record of a declined scope goes — never its own branch. 2026-09-04

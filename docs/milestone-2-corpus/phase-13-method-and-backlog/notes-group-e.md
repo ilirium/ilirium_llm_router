@@ -89,7 +89,7 @@ questions; this is **one**, for session budget. The charter says so in its last 
 the reviewer **not to leave anything for a second pass that is not coming.**
 
 **Three questions are put to them**: are the six boundaries right, what should be pruned, and are
-`BKL-0002` (`partly-done`) and `BKL-0035` (`superseded`) — the only two non-obvious statuses —
+`BKL-0002` (`partly-done`) and `BKL-0037` (`superseded`) — the only two non-obvious statuses —
 correct.
 
 
@@ -176,10 +176,14 @@ first section rather than in a footnote.
 out a constant offset and points at the extraction having been done twice by different means. All
 corrected.
 
-**No item was missed.** Every paragraph opening in the file was enumerated and the 33 claimed ones
-subtracted; **28 remained and every one is accounted for** — four preamble, one section preamble,
-one the section-level advice at line 394, four the corrected openings, and eighteen continuations.
-**The count of 36 holds and the six boundary calls are right.**
+**~~No item was missed.~~ Refuted the same day by the cold run below — two were.** *Left in place
+rather than deleted, because the interesting fact is not that the claim was wrong but that it was
+made with a reconciliation that did not balance.* The claim was: every paragraph opening in the file
+was enumerated and the 33 claimed ones subtracted; **28 remained and every one is accounted for** —
+four preamble, one section preamble, one the section-level advice at line 394, four the corrected
+openings, and eighteen continuations. **That tally sums to 61 openings**, with the four corrected
+ones double-counted inside the 33, **against a real 59.** The imbalance was the size of the gap and
+nobody added it up. **The six boundary calls were right; the count of 36 was not.**
 
 *The two findings are worth their asymmetry: **the judgement half survived and the mechanical half
 did not**, which is the opposite of what the last three reviews in this repository returned.*
@@ -189,3 +193,93 @@ The reverse status question — *is any item marked `open` actually finished?* �
 list that omitted the non-`open` items, so several bodies ran into their neighbours. **At least one
 hit is provably its own bug.** Nothing is concluded from it; **it is recorded because a check that
 ran and proved nothing looks identical to one that ran and found nothing.**
+
+
+## Task 14a — the cold half, and it found what the author half could not
+
+**Run 2026-09-04, by a fresh-context agent handed `item-inventory-review-charter.md` verbatim and
+nothing else.** Read-only; its `git status` came back clean and was re-checked here.
+
+**Two items were missing — `backlog.md:716` and `:735`.** The inventory had 36 ids for **38 items**,
+and *Instruments and housekeeping* holds **10**, not 8. This is the charter's worst permanence
+category: *"a real item with no id, which the scheme will never notice is absent."*
+
+**The mechanism is two bytes in the wrong order**, and it is the reason the author run could not see
+it. The enumeration matched a paragraph opening with **bold or `###`** at the line start:
+
+| Line | Opens | Id? |
+|---|---|---|
+| 337 | `\| ~~…` — a table row | `BKL-0011` |
+| 841 | `**~~The Anthropic 429…` — **bold first** | `BKL-0037` |
+| **716** | `~~**\`status.md\`'s shape…` — **strike first** | **none** |
+| **735** | `~~**Close out the four \`Branch:\` lines…` | **none** |
+
+`grep -n '^~~'` returns exactly those two lines in the whole file. **Both struck entries that led
+with bold were caught; both that led with strike were invisible.** *Verified here rather than
+relayed — the two lines, the two that did get ids, and the absence of any mention of 716 or 735 in
+the inventory.*
+
+**The file settles the intent question in its own words.** `backlog.md:753`, of the entry at 735 —
+*"Kept struck rather than deleted, **like the two entries above it**."* The two above it are `:337`
+and `:841`, and **both have ids**. The file's own author treats all three as one kind of thing.
+
+**The owner ratified on 2026-09-04**: ids in file order, so `BKL-0032` and `BKL-0033` are the two,
+and old `BKL-0032`–`0036` became `BKL-0034`–`0038`. **`BKL-0025`–`0031` did not move** — the
+insertion points fall after line 706. *The cold report claims everything from `BKL-0025` shifts; it
+does not. Recorded because a review's arithmetic is no more exempt than a plan's.*
+
+### The other findings, and three were also verified here
+
+- **`BKL-0022` is dated in its own text** — `backlog.md:478`, *"Raised by the owner on 2026-08-18"*.
+  The author run's date regex covered Added/Proposed/Narrowed/Named/Overturned and **not "Raised"**.
+- **The undated count was wrong twice over** — eleven claimed, **fifteen** actual, against a
+  denominator of 33 where the claim's population is 36. With `BKL-0022` dated and the two new items
+  undated it is now **16 of 38**, confirmed by counting the Added column in Python. *The argument it
+  supports — that date order was unavailable, settled row 24 — gets stronger, not weaker.*
+- **`BKL-0021`'s description asserted the opposite of its item.** It read *"a race, never
+  observed"*;
+  `backlog.md:453` retracts exactly that: *"Observed 2026-08-20, at Phase 10's Task 18a. The 'never
+  been observed' clause above is spent."*
+- **`BKL-0007`'s description swapped the item's two numbers** — four places and three staleness
+  events, not several and four. *Mildly self-demonstrating: the item is about hand-carried counts
+  going stale.*
+- **`BKL-0034`'s description carried "Phase 14"**, which is scheduling state `backlog.md:3-4`
+  forbids — *"Inventory, not state … nothing here says when anything happens."* Removed.
+- **`BKL-0006`'s "parked whole" overstated it**; one finding has been acted on.
+
+### What it checked and found correct
+
+**All 33 line numbers, including the author run's five corrections.** Ids sequential, unique,
+gapless, correctly formatted. **All eight sections read in full at their true line ranges.** No
+fourth item shape. `BKL-0002`'s `partly-done` right and its remaining third real. `BKL-0011`'s
+`done` right. **Check 8 answered in the affirmative and independently** — `BKL-0004`'s three asks
+are all genuinely met, not two. **The three date suspects the author run left `REPORTED` are all
+correctly `—`** — a narrowing, a fix date and an overturn, none of them an `added` date. **And the
+register table inside `BKL-0002` is correctly not treated as items** — a naive rule would have
+manufactured three spurious ids there.
+
+**It agreed with all six flagged boundary calls.** *Which is the shape the charter predicted: the
+six the pass doubted were the six it got right, and the value was in the seventh it never flagged.*
+
+### What it did not reach
+
+**Its own list, kept rather than paraphrased:** an exhaustive enumeration of sub-paragraph bold runs
+behind the six boundary verdicts (spot-checked only); the `BKL-NNNN` citations elsewhere in the
+repository against the proposed ids; the plan's settled rows 1, 12, 23 and 24 beyond confirming
+`IDM-011` cites them; and `notes-review-plan.md`, this file and `evidence/README.md`, any of which
+might already have recorded the 716/735 question.
+
+**The second of those was closed here.** `grep -rln 'BKL-00'` over `docs/` returns eight files, and
+**only two carry an id that shifted** — this file, corrected, and `procedures/backlog-index.py`.
+
+**And the script's two are deliberately left alone.** `backlog-index.py:210-211` records that the
+run reported `BKL-0004` as following `BKL-0036` — **that is what the run reported**, against a
+36-item scratch copy, and rewriting it to `BKL-0038` would make the record describe a run that never
+happened. *A historical record of a defect is not a citation of a live id.*
+
+### One thing this leaves open about the evidence folder
+
+**`evidence/README.md` says "Nothing here is edited after it is written", and `item-inventory.md`
+has now been edited twice** — once by the author run and once by this ratification. **Either the
+inventory is not a frozen artefact or the rule is wrong as written.** *Raised rather than worked
+around; `backlog-before-ids.txt` is the artefact that genuinely cannot move.*

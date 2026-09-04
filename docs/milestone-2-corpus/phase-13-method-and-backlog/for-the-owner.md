@@ -64,10 +64,20 @@ cheap form — but the file is now ~48 lines past the figure the item records.
 not a cut, and two of the restatements already have arguments on the record. **What I am telling you
 is that the number in that item is stale and this phase is one of the reasons.**
 
-## 5 · IDEA · low · Three count errors in four commits, every one caught by opening the file
+## 5 · IDEA · medium · Six count errors now, every one caught by opening the file
+
+*This entry said **three** and was raised to six on 2026-09-04, by opening the files. **It went
+stale about the count of things going stale**, which is either the strongest version of its own
+argument or a joke at my expense; I record it as both.*
 
 This phase got a number wrong three times in its first four commits: Phase 11's entry count (twice,
 in one sentence), and a "two phase plans" figure relayed from a document written a week earlier.
+
+**Three more since.** *(4)* `prompt.md:58` said this file has **five entries** while citing entry 7
+eleven lines later — written in the same commit that added entries 6 and 7. *(5)* `prompt.md:112`
+said **both** `REGRET` entries; there are three. *(6)* The item inventory said **36 items** and the
+backlog holds **38** — the expensive one, because ids are permanent and it was two commits away from
+being frozen wrong.
 
 **None was caught by rereading the prose. All three were caught by opening the thing being
 described** — and the third only because the forward review was told, in its charter, to treat every
@@ -119,3 +129,42 @@ instrument gave you a wrong number in the course of enforcing it.
 **Not filed as a backlog item** — you asked to be asked first, and this is the asking. **The cheap
 half is worth doing either way:** one sentence stating which it is would have saved this phase a
 measurable amount of work.
+
+
+## 8 · IDEA · high · The cold review paid for itself on its first run, and the author run had said the opposite
+
+**You extended the checkpoint to require a fresh-context review of the inventory. It found two
+missing items.** `backlog.md:716` and `:735` — real items with bodies, in *Instruments and
+housekeeping*, which holds ten and was reported as eight.
+
+**What makes this worth an entry is not the finding. It is that the author run had specifically
+cleared it.** That run said *"No item was missed … the count of 36 holds"*, and it named that very
+claim as **"the one an author is least entitled to be believed on"**, asking for a cold run to redo
+exactly it. It was right to ask and wrong on the fact.
+
+**The cause was mechanical, not a lapse of care.** The enumeration matched a paragraph opening with
+bold or `###` at the line start. The two missed items open `~~**` — strike before bold. The two
+struck entries that open `**~~` were both caught. *Two bytes in the wrong order.*
+
+**And the author run's own arithmetic would have shown it.** Its reconciliation summed to 61
+openings against a real 59, and the gap was exactly the two. Nobody added the column up — the
+subtraction was done, the total was not.
+
+*What I take from it, and it is narrower than "always run a cold review": **a pass that enumerates
+by pattern should state the pattern**, because a stated pattern is falsifiable by one grep and a
+described pass is not. The author run described what it had done. The cold run asked what the
+description would exclude.*
+
+## 9 · ASK · medium · Two inventory questions are still open, and one of them is expensive after task 15
+
+**Both were raised aloud in the session and neither blocks task 15; I am recording them here because
+they get more expensive the moment ids are applied.**
+
+**Is `BKL-0007` `open` or `partly-done`?** Its fourth copy was fixed on Phase 12's branch, but its
+actual ask — pick the one durable fix among three candidates — is untouched. The cold reviewer
+leaned `open`. **One status, no id, stays in `backlog.md` either way.**
+
+**Should `BKL-0020` record that one third of it is refused?** `backlog.md:434` says *"the sequence
+column is refused rather than parked"* and the item is filed `open` whole. **A note in the
+description costs nothing. A split into two ids renumbers everything below it** — and after task 15
+that is not a renumbering, it is a broken promise.

@@ -1,14 +1,26 @@
 # Phase 13 — evidence
 
-**Frozen artefacts. Nothing here is edited after it is written**, which is `../../../README.md`'s
-archive rule applied at the point of capture rather than at the merge.
+**Captures are frozen. Nothing captured here is edited after it is written**, which is
+`../../../README.md`'s archive rule applied at the point of capture rather than at the merge.
+
+***This said "nothing here" until 2026-09-04, and it was wrong about its own folder.***
+*`item-inventory.md` is a **proposal under review**, not a capture: the author run corrected five
+line numbers in it, and task 14a's ratification then rewrote its counts, five descriptions and three
+statuses. A rule that forbade both would have had to be broken to act on a review — which is the
+opposite of what a review is for. **The frozen artefact here is `backlog-before-ids.txt`**, and the
+distinction is now stated rather than assumed.*
 
 | File | What it is |
 |---|---|
 | `backlog-before-ids.txt` | **`docs/backlog.md` exactly as it stood before any `BKL` id was applied**, captured 2026-09-04 at commit `809a422`. **859 lines, SHA-256 `08f49383…c43b37e7`**, verified byte-identical to the original with `cmp` at capture |
-| `item-inventory.md` | Task 13's output — 36 items with proposed ids, statuses and dates, and the six boundary calls. **The subject of the review below** |
+| `item-inventory.md` | Task 13's output, **as ratified by task 14a on 2026-09-04 — 38 items**, with proposed ids, statuses and dates, and now **seven** boundary calls. *It said 36 and six until the cold review.* **The subject of the reviews below, and the one file here that is not frozen** |
 | `item-inventory-review-charter.md` | What a fresh-context agent is given in order to review the inventory. Handed over verbatim |
-| `item-inventory-author-review.md` | **The author run only**, 2026-09-04, done against a session budget that would not stretch to a cold one. **It does not discharge the charter above** and says so in its first section |
+| `item-inventory-author-review.md` | **The author run only**, 2026-09-04, done against a session budget that would not stretch to a cold one. **It does not discharge the charter above** and says so in its first section. **Its central claim — "no item was missed" — was refuted the same day**, and it is left standing as written |
+
+**The cold run has no file here, and that is the standing rule rather than an omission.** Raw review
+reports are not kept — `../notes-review-plan.md` says why — so **task 14a's outcome lives in
+`../notes-group-e.md`**, and its corrections live in `item-inventory.md` itself. *The author run is
+the exception, because it is the artefact whose limits the charter's discharge depends on.*
 
 ## Why the backlog copy is `.txt` and not `.md`
 
