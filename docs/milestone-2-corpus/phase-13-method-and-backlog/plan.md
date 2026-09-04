@@ -94,6 +94,7 @@ independent of everything after it, so the phase can stop cleanly at a group bou
 | **1** | Open the branch, the folder and this plan. **Enter the in-flight row in `../../status.md`** — `IDM-001` puts it at task 1, because that section said "None" while a branch was open once already |
 | **2** | **Re-derive this plan** against what is now known. `../../README.md`: a phase's first act. Four of six Milestone 1 phases found their own plan wrong on contact |
 | **3** | **Forward review of this plan under `IDM-004`** — charter, two runs in parallel, reconcile into `notes-review-plan.md`. That rule is in force and this is a plan nobody has acted on |
+| **3a** | **Bring the cross-file documents true now**, not at the close — `../../prompt.md` still says nothing is in flight and that Phase 13 is probably the rate-limit headers, and `../implementation-plan.md` still allocates 13 to them. *Owner's proposal, 2026-09-04.* **Task 27 is not this** — that one records what the phase found; this one stops a mid-phase session being misled |
 
 ### Group B — `IDM-009`, reviewing executed work
 
@@ -121,7 +122,7 @@ authority.**
 | # | Task |
 |---|---|
 | **7** | Write `../../method/IDM-010-writing-for-the-owner.md` — settled rows 11–18, with the reasoning, not the rows restated |
-| **8** | Record Phase 11's file as **both the worked example and the evidence**. It is the only instance, it contains five `ASK` entries that settled row 13 now forbids, none of its twelve entries was ever answered, and **Phase 12 wrote none at all** — a practice invented without a rule that failed to survive one phase |
+| **8** | Record Phase 11's file as **both the worked example and the evidence**. It is the only instance — **11 entries: 3 `ASK`, 5 `IDEA`, 3 `REGRET`**. All three `ASK`s are the shape settled row 13 now forbids, **none of the 11 was ever marked answered**, and **Phase 12 wrote none at all** — a practice invented without a rule that failed to survive one phase |
 | **9** | `IDM-000` index row, and a pointer from `../../README.md`'s phase template, which is where the contents of a phase folder are specified |
 
 ### Group D — `IDM-011`, the backlog
@@ -147,7 +148,7 @@ lands on the owner's word.**
 | **16** | Create `../../backlog-done.md`, seeded with the item this phase discharges — *"Give every item here a stable, referencable index"*, added 2026-08-26 on the owner's instruction. **It seeds itself** |
 | **17** | Write `../../procedures/backlog-index.py`, `--write` and `--check`, in the shape `branch-index.py` established |
 | **18** | Generate both tables |
-| **19** | **Repoint every existing citation to a `BKL` id.** `../../status.md`'s "What is next" cites items by quoting their titles, and so do two phase plans — the exact defect the scheme exists to end |
+| **19** | **Repoint every existing citation to a `BKL` id.** Items are cited today by quoting their bold opening phrase — the exact defect the scheme exists to end. **Sweep for the citing sites; do not enumerate them** — the "two phase plans" in the backlog item dates from 2026-08-26 and two phases have landed since |
 | **20** | `--check`: ids unique, every item has a row and every row an item, every `BKL-NNNN` citation in `docs/` resolves |
 
 **Task 13 is a judgement pass, not a parse.** Items in `backlog.md` are separated by a bold opening
