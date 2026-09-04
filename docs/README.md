@@ -494,6 +494,19 @@ phase that must produce findings will manufacture them.
 first knowing which facts are true — run it the other way round and the durable tier canonises
 whatever was wrong.
 
+**This is one of three review protocols, and the checklist above is the milestone-scale one.** The
+other two are per-document and per-phase, and pointing at them here is what stops this checklist
+being reached for at the wrong scale.
+
+| | Subject | Where |
+|---|---|---|
+| **This one** | a **milestone's** executed work, once, as a checklist | above |
+| Forward review | a document nobody has acted on — a plan, an `implementation-plan.md`, an EPD | `method/IDM-004-reviewing-unexecuted-work.md` |
+| Review of executed work | **one phase**, before its merge | `method/IDM-009-reviewing-executed-work.md` |
+
+*The line between them is drawn in `IDM-009`, which holds all three in one table — a reader arriving
+at a finished phase is holding that document, not this one.*
+
 ---
 
 ## Worked examples

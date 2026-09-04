@@ -95,7 +95,7 @@ otherwise.*
 yes, claims no*. **A quoted backlog title inside an archived phase document is a claim** — it
 records what the backlog said at the time — so repointing it to a `BKL` id would edit a claim in a
 frozen document. The sweep covers the live tier only: `../../status.md`, `../../backlog.md`,
-`../../CLAUDE.md`, `../../method/`, `../../reference/`, `../implementation-plan.md`, and any
+`CLAUDE.md`, `../../method/`, `../../reference/`, `../implementation-plan.md`, and any
 **open** phase folder.
 
 **The cost of that decision is stated rather than hidden:** the scheme's promise — *nothing cites a

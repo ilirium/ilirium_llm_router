@@ -209,7 +209,9 @@ look alike; an **IDM is in force now and you are expected to act on it**, which 
 an EPD. `docs/method/IDM-000-about-these-documents.md` is the index. `IDM-001`, `IDM-003`, `IDM-005`, `IDM-006`
 and `IDM-008` are pointed at below; `IDM-002` holds the permission allowlist policy **and what else may go in the tracked settings file**; **`IDM-004` is the protocol for reviewing a
 plan before it runs — read it before reviewing one, because its first rule is that the charter decides
-what the review finds**; `IDM-007` is the Working agreement's fourth bullet, canonical.
+what the review finds**; **`IDM-009` is its sibling for work that has *run* — read it before
+reviewing a finished phase, and note that it puts the review **before the merge**, so a phase is not
+merged and then reviewed**; `IDM-007` is the Working agreement's fourth bullet, canonical.
 
 ## Git and branches
 
