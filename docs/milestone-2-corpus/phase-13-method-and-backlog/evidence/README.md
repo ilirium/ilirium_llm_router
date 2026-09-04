@@ -31,3 +31,16 @@ returns the same bytes, and that is the more durable record.
 know the commit**, and that the review below can be handed to a fresh agent as **two paths** rather
 than as a path and a git incantation. *That is a convenience rather than a correctness argument, and
 it is written down as one.*
+
+
+## The mutation fixture is not here, and that is deliberate
+
+**Task 17 drove `backlog-index.py` against a scratch copy** — `backlog.md` with the proposed
+metadata applied and one item moved to a `backlog-done.md` — and then mutated it seven times to
+check each validation bites. **None of that is frozen here.**
+
+**It is derived, entirely, from two things that are:** `backlog-before-ids.txt` above and
+`item-inventory.md` beside it. *Freezing a file that can be rebuilt from frozen inputs adds a third
+copy that can disagree with them.* **What is not reproducible is the outcome**, and that is written
+down — the three defects the run found and the seven mutations that were killed, in
+`../notes-group-e.md`.

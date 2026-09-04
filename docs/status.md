@@ -11,8 +11,9 @@ is and what is in flight. Three sections, most volatile first.
 the session that wrote it, it has become a document and gets its own file.*
 
 **2026-09-04 — Phase 13 is open. Groups A–D are complete; Group E is part-done and **stopped at a
-checkpoint that is the owner's**.** `docs/phase-13-method-and-backlog`, forked at `dec7c4a`, 13
-commits.
+checkpoint that is the owner's**.** `docs/phase-13-method-and-backlog`, forked at `dec7c4a`.
+*`git log main..HEAD` is the commit count; it is not written here, because a number written at a
+handoff is stale at the next commit and this file has four recorded instances of exactly that.*
 
 **All three method documents are written and in force.**
 
@@ -39,6 +40,7 @@ review by a fresh-context agent, in a session of its own** — task 14a. Its cha
 | `05f74ad` · `1a1fbb9` · `50d801c` | `IDM-009`, `IDM-010`, `IDM-011` |
 | `809a422` | this file, `prompt.md`, `README.md` and `CLAUDE.md` brought true after the three landed |
 | `a9b0c6b` · `e1f6e5f` · `00d3ed3` | the inventory; the frozen copy and the review charter; the script |
+| `8374245` · `0ffeb00` | the handoff, and a one-column fix recorded rather than folded in |
 
 **`IDM-001` is amended for the second time in three days, and the two amendments differ.**
 2026-09-02 changed **where** the record of a declined scope goes — never its own branch. 2026-09-04

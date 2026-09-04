@@ -7,8 +7,11 @@ Whatever comes next replaces it again.*
 ---
 
 **Phase 13 is open and stopped at a checkpoint that is the owner's.** Branch and worktree
-`docs/phase-13-method-and-backlog`, forked from `main` at `dec7c4a`, **13 commits**. Milestone 2 has
-five phases merged and this one in flight.
+`docs/phase-13-method-and-backlog`, forked from `main` at `dec7c4a`. Milestone 2 has five phases
+merged and this one in flight.
+
+*No commit count is written here. `git log main..HEAD` answers it, and a count written at a handoff
+is wrong at the next commit — which is the defect this repository has recorded four times.*
 
 **Start in the phase worktree**, not in `main`:
 `/Users/ilirium/Projects/local/ilirium_llm_router/phase-13-method-and-backlog`. It has **no venv**,
@@ -67,7 +70,9 @@ spent.
   already cite `BKL` ids that `backlog.md` does not carry yet. It flips to 0 when task 15 lands.
 - **`make lint` reaches neither column width nor `docs/procedures/`.** `E501` is not in ruff's
   default set, and the Makefile lints `src tests` only. Count characters **in Python, not `awk`** —
-  `awk` counts bytes and gave a wrong number here once already.
+  `awk` counts bytes and gave a wrong number here once already. **And the 100-column rule is written
+  for `src/` and `tests/` only** — no statement of one for markdown exists, and the documents run to
+  101–103 routinely. *Open question, entry 7 of this phase's `for-the-owner.md`.*
 - **`link-check.py`'s count is a property of the worktree** — **117 broken here against 91 on
   `main`**, and the delta is files Group E has still to create. Compare against a run in the *same*
   tree or not at all.

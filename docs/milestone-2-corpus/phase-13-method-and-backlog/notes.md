@@ -7,9 +7,18 @@ in it, per `../../README.md`.*
 
 **Written while working, not afterwards.** Where a section says otherwise it says so in the section.
 
-**Group A is executed; tasks 3 and 3a are not.** Task 3 is the forward review, which needs the
-owner's go-ahead because it spawns a fresh-context agent; task 3a was added by the owner during
-Group A and runs after it.
+**Groups A–D are complete. Group E is part-done and the phase is stopped at a checkpoint that is
+the owner's.** Tasks 13 and 17 are in; **task 14a — an independent review of the item inventory, in
+a session of its own — is next**; 15, 16, 18, 19 and 20 are blocked on it. Groups F and G have not
+started. **`../../backlog.md` is untouched.**
+
+*This line said **"Group A is executed; tasks 3 and 3a are not"** until 2026-09-04, four groups
+after it stopped being true. **That is Phase 12's defect arriving in the same position** — its
+`notes.md` opened with "Nothing has been executed yet" long after task 1, and its own note calls
+that "the phase's entry point, the first thing the next session reads". **It was found there by the
+owner asking, and here by a close-out sweep**, which is one instrument better and still not a check.
+The sweep that exists looks for markers of work **not** done; a state line that is merely out of
+date carries no marker.*
 
 ---
 

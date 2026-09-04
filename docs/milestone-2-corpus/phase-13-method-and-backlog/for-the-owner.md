@@ -92,3 +92,30 @@ instrument produced the right answer and the failure was in reading it, after th
 *The rule this repository already has is `CLAUDE.md`'s — when a check comes back, fix the instrument
 before believing the result. **The gap it does not cover is not believing a result you never
 read.***
+
+
+## 7 · IDEA · medium · The 100-column rule may not exist for prose, and I enforced it all phase
+
+**Where it is actually written:** `pyproject.toml`'s `[tool.ruff] line-length = 100`, and `IDM-003`
+saying *"the codebase is written at 100 columns"*. **Both are about `src/` and `tests/`.** I can
+find no statement of a column rule for markdown anywhere in `CLAUDE.md`, `README.md` or `method/`.
+
+**What the files actually do**, counted across the six documents this branch touched — 377 prose
+lines over 100 columns, distributed **149 at 101, 107 at 102, 56 at 103**, tapering to one at 157.
+*That is the signature of prose wrapped at about a hundred by eye, not of a rule enforced at exactly
+100 and then drifting.*
+
+**I have been holding my own markdown to a hard 100 for the whole phase**, at real cost: several
+rewrap passes, one line committed over and fixed after, and entry 2 above — where the wrong
+instrument gave you a wrong number in the course of enforcing it.
+
+**Two readings and I cannot separate them from the text:**
+
+- **The rule is for code only**, prose is wrapped by eye, and I invented a constraint. *Then the fix
+  is a sentence somewhere saying so, and sessions stop paying for it.*
+- **The rule is meant for prose too** and 377 lines are in violation. *Then it is a real
+  documentation defect, and the fix is a decision about whether it is worth a sweep.*
+
+**Not filed as a backlog item** — you asked to be asked first, and this is the asking. **The cheap
+half is worth doing either way:** one sentence stating which it is would have saved this phase a
+measurable amount of work.
