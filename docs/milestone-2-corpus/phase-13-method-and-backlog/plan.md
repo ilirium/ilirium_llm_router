@@ -250,7 +250,7 @@ unambiguously.
 | Which leave `backlog.md` | **`done` only.** `refused`, `partly-done` and `superseded` all stay — settled rows 6 and 23 | |
 | `superseded`'s instance | the struck 429 entry, overturned 2026-08-24 by the live rate-limit item | |
 | Categories | **the eight existing section names**, unchanged per settled row 4 | |
-| The eight category tokens | ❓ *— the exact spellings are fixed at task 13, from the sections as they stand* | ❓ |
+| The eight category tokens | `method`, `documentation-defects`, `decisions-waiting`, `measurements`, `owner-shaped`, `instruments`, `dictionaries`, `not-on-this-list` — **written out in the script, not derived.** *Deriving them produced `documentation-defects-found-and-not-fixed`* | |
 
 ### The generated table
 
@@ -259,7 +259,7 @@ unambiguously.
 | Columns, in order | `ID`, `Added`, `Status`, `Category`, `What it is`, `Done`, `Phase`, `See` — eight | |
 | `See` holds | the documents the item points at — an `EPD`, an `IDM`, a `BUG`, a phase note — **and any `BKL` id it supersedes or was reversed from**. Empty is normal | |
 | `Done` / `Phase` in `backlog.md`'s table | always empty by construction — done items are not in that file | |
-| `backlog-index.py` flags | `--write`, `--check` | |
+| `backlog-index.py` flags | `--print` *(default)*, `--write`, `--check`, plus an optional second argument naming a repository root — which is what lets it be exercised against a scratch copy | |
 | Exit codes | 0 current / 1 stale or broken, as `branch-index.py --check` | |
 
 ### `for-the-owner.md`

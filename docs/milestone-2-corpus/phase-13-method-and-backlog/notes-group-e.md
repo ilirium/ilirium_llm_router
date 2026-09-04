@@ -91,3 +91,73 @@ the reviewer **not to leave anything for a second pass that is not coming.**
 **Three questions are put to them**: are the six boundaries right, what should be pruned, and are
 `BKL-0002` (`partly-done`) and `BKL-0035` (`superseded`) — the only two non-obvious statuses —
 correct.
+
+
+## Task 17 — the script, written and driven before it was committed
+
+**`../../procedures/backlog-index.py`, 296 lines**, in the shape `branch-index.py` established:
+`--print` / `--write` / `--check` off `sys.argv[1]`, HTML splice markers, **refuse to render at
+all** rather than splice a half-written table, and exit 0 current / 1 stale-or-invalid / 2 misuse.
+
+**Taken out of order — 15 and 16 wait on the task-14a review, and this does not.** The script is
+indifferent to which items exist.
+
+### Two design decisions, both of which remove a second copy of a fact
+
+**It does not detect item boundaries.** An item *is* something carrying a metadata line. A boundary
+the script gets wrong is then a boundary somebody wrote wrong, visible in a diff — rather than a
+parser's opinion, which is not. *This also keeps the instrument from confirming the judgement that
+built it, which is the vacuity `IDM-009` asks about.*
+
+**The description column is the item's own opening sentence**, extracted, not authored. A
+hand-written one-line summary would be a second copy of a fact, and this repository has four
+recorded instances of exactly that going stale.
+
+### It was driven against a scratch copy, and that found three defects reading would not
+
+**A fixture was built in the scratchpad** — `backlog.md` with the proposed metadata applied and
+`BKL-0004` moved to a `backlog-done.md` — so the whole path ran end to end **without touching the
+real files while the review of the inventory is outstanding.**
+
+| | Defect | How it surfaced |
+|---|---|---|
+| 1 | **File order was checked across both files as one sequence.** A done item moves and leaves a gap, so the two interleave by construction | reported `BKL-0004`, the first item ever moved, as following `BKL-0036` |
+| 2 | **The generated table's own rows parsed back as items.** A generated row and a table-row *item* are the same shape | `--write` then `--check` reported all 33 ids as duplicates of themselves. **Only that order shows it** |
+| 3 | **The inventory had a wrong line number.** `BKL-0001` is at 40, not 38 | its generated row described the **section preamble** instead of the item |
+
+**The third is not the script's defect but the inventory's**, and it is the one worth carrying: *a
+wrong line number is invisible in a table of numbers and obvious the moment something renders the
+text it points at.* Corrected in `evidence/item-inventory.md`, which says so in place.
+
+### Then the checks were mutation-tested, one at a time
+
+**Seven mutations, isolated rather than batched** — the batch-masking finding from Phase 12 is why.
+**All seven were killed:** an invalid status, an id out of order, a category disagreeing with its
+section, a citation of an id no item carries, a `done` item left in `backlog.md`, a non-`done` item
+in `backlog-done.md`, and a `done` item missing its completion date.
+
+*An eighth attempt failed because the mutation script errored rather than the check passing —
+recorded because "the mutation did not apply" and "the test did not fail" are the same output at a
+glance, and this repository has already been caught by an instrument that reported something untrue
+without failing.*
+
+### Two register rows closed
+
+**`❓` is down to one.** The flags are `--print` / `--write` / `--check` plus an optional root path,
+and the eight category tokens are **written out in the script rather than derived** — deriving them
+produced `documentation-defects-found-and-not-fixed`, which nobody would type into a citation. *An
+explicit mapping is also the project's stated preference, and it has a second use: a heading the
+table does not know is refused, so renaming a section cannot silently invent a ninth category.*
+
+**The one `❓` left is the highest id allocated**, which task 15 fixes.
+
+### Two things about running it on the real tree, before task 15
+
+**`--check` exits 1 there, and that is correct.** No id has been applied, so every `BKL-NNNN` this
+phase's own documents cite resolves to nothing. **It will exit 0 the moment task 15 lands** — the
+citations are already written and are waiting for the items, not the other way round.
+
+**`make lint` does not reach this script.** It runs `ruff check src tests`; `docs/procedures/` is
+outside it. *That is Phase 12's finding C9 arriving again — five over-width lines in a `.py` under
+`docs/` that no lint run would ever see.* **Ruff was run against it explicitly**, at the pinned
+`0.16.1` with `--line-length 100`, and passes.
