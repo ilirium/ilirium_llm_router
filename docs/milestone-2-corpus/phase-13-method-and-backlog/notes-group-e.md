@@ -159,8 +159,19 @@ citations are already written and are waiting for the items, not the other way r
 
 **`make lint` does not reach this script.** It runs `ruff check src tests`; `docs/procedures/` is
 outside it. *That is Phase 12's finding C9 arriving again — five over-width lines in a `.py` under
-`docs/` that no lint run would ever see.* **Ruff was run against it explicitly**, at the pinned
-`0.16.1` with `--line-length 100`, and passes.
+`docs/` that no lint run would ever see.* ~~**Ruff was run against it explicitly**, at the pinned
+`0.16.1` with `--line-length 100`, and passes.~~
+
+**That last sentence is wrong, and it was found on 2026-09-04 by running the command it describes.**
+`uvx ruff@0.16.1 check docs/procedures/backlog-index.py` reports **`RUF007`** — prefer
+`itertools.pairwise()` over `zip()` for successive pairs, at line 220, in the file-order check.
+**It fires on the committed version too**, so this is not something a later edit introduced.
+
+**And the directory has never been clean.** `ruff check docs/procedures/` reports **36 findings**:
+24 in `branch-index.py`, 7 + 2 + 2 in the three `event-loop-lag` and `corpus-benchmark` scripts, and
+this one. *Left unfixed rather than half-fixed — fixing one of thirty-six because it happens to sit
+in this phase's file is arbitrary, and whether `docs/procedures/` is linted at all is a question
+`make lint`'s scope has never been asked.* **The claim is retracted; the code is untouched.**
 
 
 ## Task 14a — the author half, run on the owner's request
@@ -364,3 +375,44 @@ does not move it and nothing else would have touched it.
 three candidate fixes now says so in the past tense and records that the constraint expired: the
 count is in **two places, both in `status.md`**, since `CLAUDE.md` and "Where we stopped" both
 dropped theirs. **All three candidates are live again, including the cheapest.**
+
+
+## Tasks 16 and 18 — the move, the generated tables, and a second defect from the same two bytes
+
+**`backlog-done.md` exists and holds four items** — `BKL-0011`, `BKL-0032`, `BKL-0033`, `BKL-0038`.
+**`backlog.md` holds 34.** The two files interleave by gaps, which is the scheme working: a gap here
+is an item finished there.
+
+**It carries `backlog.md`'s section headings, and that is not decoration.** `validate` reads an
+item's section from the nearest `## ` heading and checks it against the category on the metadata
+line. **A file with no headings fails every category check** — found by building the file without
+them first. Only the three sections in use appear.
+
+**`BKL-0011` moved as prose**, per the owner's decision: a table row cannot carry a completion date,
+because the parser sets `done=None, phase=None` for row items unconditionally. **`BKL-0038` took
+`done 2026-08-07`**, derived from Phase 5's merge in `../../reference/branches.md` and recorded as
+derived — the item itself names a phase and no date.
+
+### The strike-before-bold shape caused a second defect, in the same instrument
+
+**`opening_sentence` returned the whole paragraph for every struck item.**
+`re.match(r"\*\*(.+?)\*\*", para)` cannot match a paragraph opening `~~**`, so the fallback returned
+the entire paragraph — which put `BKL-0033`'s **four commit hashes** into one cell of the generated
+table.
+
+**This is the same two bytes that hid `BKL-0032` and `BKL-0033` from the inventory pass**, causing
+an unrelated defect in a different component. *A strike is a marking on a shape, never a shape of
+its own, and both defects came from code that treated it as one.* **Fixed** — the pattern is now
+`(?:~~)?\*\*(.+?)\*\*`, with the reason written at the site.
+
+**It was found by rendering the table and reading it**, not by reading the code. *Which is the third
+time in this phase that opening the output beat re-reading the source.*
+
+### One correction the generated table forced
+
+**`BKL-0005`'s text said `CLAUDE.md` is 297 lines. It is 359.** The description column is derived
+from the item's own opening sentence, **so a stale figure in an item is now published in a table
+people scan** rather than buried in a paragraph. *The first attempt to fix it edited the generated
+row instead of the item — the row sits earlier in the file, a single-occurrence replace found it
+first, and `--write` overwrote the edit on the next run. **The generated block is not a place where
+an edit can survive**, which is what the marker comment says and what this proved.*

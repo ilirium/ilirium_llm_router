@@ -111,11 +111,18 @@ def opening_sentence(lines: list[str], meta_at: int) -> str:
     if lines[i].startswith("### "):
         return lines[i][4:].strip()
     # Walk back to the start of the paragraph, then take its leading bold run.
+    #
+    # The `~~` is optional and load-bearing. A struck-through item opens `~~**title**~~`, and without
+    # it `re.match` fails at position 0 and the fallback returns the *whole paragraph* — which put a
+    # four-hash commit list in one row of the generated table. **This is the second defect caused by
+    # that byte order**: the same shape hid two items from the inventory pass entirely, because it
+    # enumerated openings as bold-or-`###` at line start. A strike is a marking on a shape, never a
+    # shape of its own, and both defects came from treating it as one.
     start = i
     while start > 0 and lines[start - 1].strip():
         start -= 1
     para = " ".join(x.strip() for x in lines[start : i + 1])
-    m = re.match(r"\*\*(.+?)\*\*", para)
+    m = re.match(r"(?:~~)?\*\*(.+?)\*\*", para)
     return (m.group(1) if m else para).strip()
 
 
