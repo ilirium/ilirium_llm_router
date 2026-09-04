@@ -10,8 +10,9 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-04 — Phase 13 is open. Groups A through D are complete; Group E is next and it stops for
-the owner.** `docs/phase-13-method-and-backlog`, forked at `dec7c4a`.
+**2026-09-04 — Phase 13 is open. Groups A–D are complete; Group E is part-done and **stopped at a
+checkpoint that is the owner's**.** `docs/phase-13-method-and-backlog`, forked at `dec7c4a`, 13
+commits.
 
 **All three method documents are written and in force.**
 
@@ -21,17 +22,23 @@ the owner.** `docs/phase-13-method-and-backlog`, forked at `dec7c4a`.
 | **`IDM-010`** | the per-phase `for-the-owner.md` |
 | **`IDM-011`** | the backlog — **and one of its rules is in force now**: a session asks before filing an item |
 
-**Twenty-four settled rows, twenty-nine tasks.** What remains is **Group E**, the backlog refactor —
-`BKL-NNNN` ids, `backlog-done.md`, `procedures/backlog-index.py` — then **Group F**, which is this
-phase reviewed under the `IDM-009` it wrote, then the close.
+**Where Group E stopped.** Task 13 compiled the item inventory — **36 items**, ids proposed in file
+order — and task 17 wrote and drove `procedures/backlog-index.py`. **`docs/backlog.md` is
+untouched.** *Tasks 15, 16, 18, 19 and 20 all take the ratified inventory as input and none has
+run.*
+
+**The checkpoint was accepted and then extended by the owner: the inventory gets an independent
+review by a fresh-context agent, in a session of its own** — task 14a. Its charter and the frozen
+`backlog.md` it checks against are in the phase's `evidence/`.
 
 | Commit | |
 |---|---|
-| `9976873` | the plan, the branch, the in-flight row |
-| `6345eb8` | the re-derivation — it found the plan wrong twice |
-| `2ffb5e7` · `1d8872b` · `601c041` | the forward review: charter, **18 findings at 17% overlap**, and the owner's four answers as rows 21–24 |
+| `9976873` · `6345eb8` | the plan, then the re-derivation that found it wrong twice |
+| `2ffb5e7` · `1d8872b` · `601c041` | the forward review: charter, **18 findings at 17% overlap**, the owner's four answers as rows 21–24 |
 | `740eea6` | this file cut from 373 lines to 253, and `prompt.md` replaced whole |
 | `05f74ad` · `1a1fbb9` · `50d801c` | `IDM-009`, `IDM-010`, `IDM-011` |
+| `809a422` | this file, `prompt.md`, `README.md` and `CLAUDE.md` brought true after the three landed |
+| `a9b0c6b` · `e1f6e5f` · `00d3ed3` | the inventory; the frozen copy and the review charter; the script |
 
 **`IDM-001` is amended for the second time in three days, and the two amendments differ.**
 2026-09-02 changed **where** the record of a declined scope goes — never its own branch. 2026-09-04
@@ -42,19 +49,19 @@ and a declined item's decline goes in the phase's `notes.md`.
 about it during the phase chartered to fix the count — found by a review, not by a check. The number
 lives here now, and only here.*
 
-**Baselines are the trunk's, unchanged by construction.** This branch changes no `src/` and no
-`tests/`, so **448** stands. *Not re-run in this worktree, which has no venv.* `link-check.py`
-reports **120 broken** here against 91 on `main` — **every one of the delta is a file Group E will
-create**, and the count is a property of the tree.
+**Baselines.** This branch changes no `src/` and no `tests/`, so the trunk's **448** stands; *not
+re-run in this worktree, which has no venv.* `make lint` clean at the pinned `0.16.1` — **and it
+does not reach `docs/procedures/`**, so the new script was linted explicitly and passes.
+`link-check.py` reports **117 broken** here against 91 on `main`; the delta is files Group E will
+create. **`backlog-index.py --check` exits 1 and that is correct** — this phase's documents already
+cite ids `backlog.md` does not carry yet, and it flips to 0 when task 15 lands.
 
 **This section was 154 lines and is now short again — the four older entries were removed, not
-moved.** *Its own rule above says a section carrying what outlives its session "has become a
-document and gets its own file". **The opposite was true here**: every fact in those entries was
-checked and found to have a durable home already — Phase 11's and Phase 12's in their phase notes,
-and `fix-slop-docs/opening-playbook-not-run-table`'s entire content, "each of those five" beside a
-list of six included, in its row in `reference/branches.md`, which is strictly richer than the prose
-was. **A new file would have been a fifth home for facts that already had four**, which "One home
-per fact" forbids. This discharges the open item `prompt.md` carried.*
+moved.** *Every fact in them was checked and found to have a durable home already: Phase 11's and
+Phase 12's in their phase notes, and `fix-slop-docs/opening-playbook-not-run-table`'s entire content
+in its row in `reference/branches.md`, which is richer than the prose was. **A new file would have
+been a fifth home for facts that already had four.** This discharges the open item `prompt.md`
+carried.*
 
 ## Where the project is
 
