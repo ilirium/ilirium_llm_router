@@ -10,154 +10,41 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-04 — Phase 13 is open and planned; nothing of it is executed.**
+**2026-09-04 — Phase 13 is open. Group A is complete except task 3a.**
 `docs/phase-13-method-and-backlog`, forked at `dec7c4a`. Four deliverables the owner set on
 2026-09-03: **`IDM-009`** reviewing executed work, **`IDM-010`** the per-phase `for-the-owner.md`,
-**`IDM-011`** the backlog, and the **backlog refactor** that gives every item a `BKL-NNNN` id and a
-generated table. Nineteen settled rows, twenty-eight tasks, seven groups. **The Anthropic
-rate-limit headers moved to Phase 14** on the owner's decision — their `calls.csv` collision is
-untouched and still has to be settled before that plan.
+**`IDM-011`** the backlog, and the **backlog refactor** giving every item a `BKL-NNNN` id and a
+generated table. **Twenty-four settled rows, twenty-nine tasks, seven groups.** The Anthropic
+rate-limit headers moved to **Phase 14**; their `calls.csv` collision is untouched and still has to
+be settled before that plan.
 
-**2026-09-02 (later still) — Phase 12 is complete and merged.** Merge `6c75997`; branch index
-regenerated, **24 rows**. **Milestone 2 is five phases in.**
-
-**Baselines, on the merged trunk.**
-
-| Check | Figure |
+| Commit | |
 |---|---|
-| `make test` | **448 passed** |
-| `make lint` / `make check` | clean at the pinned `0.16.1` / valid |
-| `register-check.py` | 28 checks, 0 failed |
-| `link-check.py` | **91 broken, 2 roundabout** — *on `main`; the phase worktree reported 111, and the 20-link delta is the untracked-by-policy path the `backlog.md` item describes* |
-| `branch-index.py --check` | current, **24 rows** |
+| `9976873` | the plan, the branch, the in-flight row |
+| `6345eb8` | the re-derivation — it found the plan wrong twice |
+| `2ffb5e7` | the forward review's charter |
+| `1d8872b` | the review: **18 findings at 17% overlap**, 13 fixed, 1 decided, 4 escalated |
+| `601c041` | the owner's four answers, as settled rows 21–24 |
 
-**Phase 12 was reviewed twice, and the second review is new.** The review of the
-finished work — the first this repository has run against executed work — returned **18 distinct
-findings at 11% overlap** between its two runs, against `IDM-004`'s forward figure of 18%. **All are
-fixed, refused with a reason, or filed**, and the one question it raised was put to the owner and
-answered the same day.
+**The forward review found the plan would have made the next session re-decide an owner row.** Task
+5 named four questions as "deliberately unanswered" in Phase 12's `review-plan-jobs-done.md`; that
+file leaves **one**, and one of the four is **settled row 1** there. **17% overlap is the second
+forward measurement** — `IDM-004`'s own is 18% — and it lands within a point, which is the outcome
+that leaves `IDM-004` standing rather than needing a rewrite.
 
-**The question was the `README.md`'s caveats section**, which settled row 6 fixed at four items
-while a fifth had been written and moved out. **The owner changed the row, not the README**: it now
-reads five, the fact is a caveat again, and the register moved 4 → 5 with it. *The decision was
-about the reader rather than the number — which no mechanical check could have settled, because the
-question was what the four was protecting.*
+**Baselines are the trunk's, unchanged by construction.** This branch changes no `src/` and no
+`tests/`, so **448** stands. *Not re-run in this worktree, which has no venv, and `link-check.py` is
+deliberately not quoted — its count is a property of the tree.*
 
-**The finding that justified the review: `CLAUDE.md` said Milestone 2 was "three phases in".** A
-**fourth** copy of the count Phase 12's task 12 was chartered to fix, in the one file loaded into
-every session, naming Phase 10's merge date. The phase never opened it, and **the author could not
-have found it** — this session wrote the `backlog.md` item saying the count lives in "three places",
-having just fixed the two it knew about. Fixed, and the item is widened to four places across two
-files, which kills two of its three candidate fixes.
+**This section was 154 lines and is now short again — the four older entries were removed, not
+moved.** *Its own rule above says a section carrying what outlives its session "has become a
+document and gets its own file". **The opposite was true here**: every fact in those entries was
+checked and found to have a durable home already — Phase 11's and Phase 12's in their phase notes,
+and `fix-slop-docs/opening-playbook-not-run-table`'s entire content, "each of those five" beside a
+list of six included, in its row in `reference/branches.md`, which is strictly richer than the prose
+was. **A new file would have been a fifth home for facts that already had four**, which "One home
+per fact" forbids. This discharges the open item `prompt.md` carried.*
 
-**And a finding about a method rather than a document.** Re-running the mutation check on three
-tests that had never had one, the phase's own batch-of-three method reported a survivor that was not
-one: the first mutation redirected `init` to the working directory, a test then wrote
-`.env.example` over the repository's own, and the third mutation's comparison became trivially true.
-**A batch of mutations can mask a member of the batch.** Isolated, all three kill their tests.
-
-**2026-09-02 (earlier the same day) — Phase 12 is executed, all five groups.**
-`feat/phase-12-installer-and-readme`, **448 tests** from 438, `register-check.py` 28 of 28. *This
-entry said the merge waited on the owner unconditionally; the task list of the same day authorises
-it conditionally, and the review above is the condition.*
-
-**The `README.md` is ten sections, 133 lines to 311**, the brief is a capture, and the count that
-had gone stale in `status.md` is fixed. Phase 11's inherited commitment is discharged: its temporary
-corpus-tools section is now "Commands", checked by a 38-element sweep of the old file rather than by
-rereading it.
-
-**Three instruments reported something untrue without failing, across two groups.** `uvx --from`
-served a stale build that exited 0 for code that had not shipped; `$?` after a pipe reported the
-wrong command's status; and **`uv tool upgrade` installs changed code while printing "Nothing to
-upgrade"**, because its summary compares version numbers rather than builds. All three exited 0.
-*Both Quick start lines nobody had driven turned out to be wrong — `--force` was unnecessary, and
-`upgrade` was described as inert when it is merely quiet.*
-
-**The register check found the `README.md` carrying five caveats where settled row 6 says four.**
-The fifth was this session's own judgement and the fact was moved rather than dropped. **A plan's
-settled table is not overridden by the plan being executed**, which is the rule that decided it.
-
-**The router installs and runs without the repository.** `uv tool install <path>` yields a working
-binary; `init` writes `config.yaml` and `.env.example` into the working directory; `check` accepts
-them unmodified; `serve` creates `logs/telemetry/` there and shuts down reporting `0 arrived, 0
-recorded, 0 lost`. All of it driven from directories that have never held this checkout.
-
-**The forward review under `IDM-004` earned its cost before task 1 ran.** It found **three things
-that changed `src/`** and that no test would have caught — **two defects in existing code**, both of
-which the author had stated to the owner as fact, and one finding that decided where new code had to
-sit.
-The largest: **`load_dotenv()` never read the working directory** — it walks up from `cli.py`, which
-in a checkout reaches the repository root by accident and in an installed tool reaches `$HOME`. A
-`.env` beside the config was invisible while the error told the user to set the variable in it.
-
-**Two instruments produced results that were wrong and did not fail.** `uvx --from <path>` served a
-**stale build** — `--refresh` did not help — so a driven test exited 0 for a feature that had not
-shipped; caught only because a printed message was wrong. And `$?` after a pipe reported 0 for a run
-that had exited 1. **Both are recorded in `prompt.md`'s instruments list.**
-
-**2026-09-02 — `fix-slop-docs/opening-playbook-not-run-table` merged. A new prefix pair, and five
-documents corrected.** Four commits, **no `src/` or `tests/` change**, so the 438 below stands. The
-branch exists because the owner named a defect class: documentation wrong *for a reason* — a
-sentence summarising a table it has stopped matching, a count nobody re-ran, a directory described
-in the present tense after deletion. **`fix-slop-docs/` and `fix-slop-code/` are now rows in
-`IDM-001`'s prefix table and in `CLAUDE.md`**, and they name a *cause* rather than a kind of
-artefact, which breaks that table's heading on purpose.
-
-**Baselines re-run on the merged trunk.** `make test` **438 passed**; `make lint` clean at the
-pinned `0.16.1`; `make check` valid; `branch-index.py --check` current at **23 rows**;
-`link-check.py` **83 broken, 2 roundabout** — *unchanged by the merge, which is what the finding
-above predicts*: the new citation of the untracked path resolves in `main` and would not in a clean
-checkout.
-
-**What it found while fixing what it was sent to fix — which is the argument for the prefix.**
-`IDM-001`'s own accepted-duplication section said *"each of those five"* beside a list of six.
-`to-run-server/logs/` is **153 MB**, not the 93 recorded on 2026-08-25. And **`link-check.py`'s
-headline count is a property of the worktree, not of the repository** — 83 on `main`, 101 in a clean
-checkout — so the baseline row below records *a tree*, and a session re-running it elsewhere will
-read the difference as a regression it caused. That one is in `backlog.md`, under the existing
-`link-check.py` item.
-
-**2026-08-28 — Phase 11 is complete and merged. Milestone 2 is four phases in.** Merge `7e53f74`,
-51 commits; branch index regenerated at `f97c4b6`, 22 rows. **438 tests**, from 310 when the phase
-opened.
-
-**`extract` and `verify-archive` read the archive back.** Selection is exact on session, model, path
-and `--agent`; output is `bodies/` and `projects/` under one `--out`, and a session is rebuilt into a
-transcript a history viewer opens. **No `❓` remains anywhere in the phase register**, and
-`evidence/register-check.py` gates it at 89 checks.
-
-**The one thing this phase deliberately did not do: nobody has driven the tools by hand.** Task 14
-was struck on the owner's decision — a ground-truth diff was judged too early to be worth its cost —
-so the evidence is mechanical throughout. **Do not read "Phase 11 is merged" as "the tools were
-tried".** That step is the owner's, next.
-
-**Four findings worth carrying out of the phase:**
-
-1. **A `session_id` is not one conversation** — 36 across 9 sessions, including a 66-call subagent
-   under its parent's id. And **a request's tail is provisional**: 100 messages were revised by a
-   later call, 9 changing role.
-2. **A systematic mutation sweep found 5 real logic defects that 23 targeted mutations could not**,
-   because every targeted one had been chosen expecting it to fail. It also found **twelve tests
-   comparing the code to itself**, which nothing else can find.
-3. **The sweep nearly destroyed the module it measured.** `finally` does not run on `SIGTERM`:
-   `transcript.py` was left comment-stripped, 256 of 670 lines gone, **suite passing 427/427**.
-   `git status` caught it.
-4. **A settled justification stopped being true while its requirement stayed right.** The missing-day
-   error's stated failure mode cannot occur in the design that was built. The error was kept and the
-   reason rewritten in place.
-
-**Baselines, on the merged trunk.**
-
-| Check | Figure |
-|---|---|
-| `make test` | **438 passed** |
-| `make lint` / `make check` | clean at the pinned `0.16.1` / valid |
-| `register-check.py` | 89 checks, 0 failed |
-| `link-check.py` | **83 broken, 2 roundabout** |
-| `branch-index.py --check` | current, **22 rows** |
-
-*`make lint` still cannot see column width — `E501` is not in ruff's default set. Check added lines
-by hand, in **characters**: `awk` counts bytes and reported 13 where there were 4.*
 
 ## Where the project is
 
@@ -169,7 +56,7 @@ belong to the phase note, and each milestone's own index reads its phases in ord
 | | Subject | Phases | State | Read it in |
 |---|---|---|---|---|
 | **1** | The core router — dispatch, byte-relay, observability, failure handling | 1–7 | **complete** 2026-08-07 | `milestone-1-core/README.md`, which carries every branch and merge hash with what each phase settled |
-| **2** | The corpus — capturing bodies for analysis | 8– | **open**, five phases in — 8 through 12, the last merged 2026-09-02 | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
+| **2** | The corpus — capturing bodies for analysis | 8– | **open**, five phases merged — 8 through 12, the last 2026-09-02 — and **Phase 13 in flight** | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
 
 *Changed 2026-08-17 from a per-phase table of Milestone 1's merge commits, per the `backlog.md` item
 that proposed it. **The hashes are not lost** — each one keeps two to six homes, the fewest being
@@ -306,9 +193,10 @@ reason, which is exactly why the number does not belong in prose.*
 | `logs/corpus-gate/` | Phase 9's corpus, **8.8 MB** — re-measured 2026-08-25, unchanged. `measurements.md` names it as the slice behind four rows. It stays |
 | `logs/calls.csv`, `logs/router.log` | The router's history to 2026-08-20. **Deliberately left** where they are when the config moved to `logs/telemetry/` — owner's decision, in `milestone-2-corpus/phase-10-body-store/plan.md`'s settled table |
 
-**`phase-11-corpus-tools/` — the worktree is gone, removed after the merge. The finding it carried
-is kept, because the tree was only ever the instrument.** *Rewritten 2026-09-02; it described a live
-directory in the present tense, and had done since the tree was deleted.*
+**Worktrees that have been removed are not described here.** `phase-11-corpus-tools/` and
+`…/opening-playbook-not-run-table` are both gone; `git worktree list` is the answer to what exists,
+and today it is `main`, `to-run-server` and `phase-13-method-and-backlog`. *The findings those trees
+carried are kept in their branches' records — the tree was only ever the instrument.*
 
 **`make test`, `make lint` and `make check` all ran there and none of them created `logs/`** — which
 is `cli.py`'s documented promise that `--check` configures no logging, demonstrated rather than
@@ -317,9 +205,12 @@ corpus. Its `.venv/` was created **by the owner**, which is why `uv run python` 
 file briefly recorded that a review subagent created it. It did not; that claim is retracted in
 `milestone-2-corpus/phase-11-corpus-tools/notes.md`.)*
 
-**A fresh worktree starts with neither, and `…/opening-playbook-not-run-table` has neither —
-checked 2026-09-02.** So `uv run python` does **not** work in a new tree until a venv is made there,
-and anything importing `zstandard` needs one.
+**A fresh worktree starts with neither.** So `uv run python` does **not** work in a new tree until a
+venv is made there, and anything importing `zstandard` needs one. *Confirmed again 2026-09-04 in
+`phase-13-method-and-backlog/`, which has neither. This sentence named
+`…/opening-playbook-not-run-table` as the live example until that worktree was removed — **a fresh
+example goes stale exactly as fast as the last one**, which is why the rule is stated and the tree
+is only cited as evidence for it.*
 
 **One warning was dropped rather than carried across, and it stays dropped.** `prompt.md` said
 *"stage with explicit paths, never `git add -A`."* The stated reason was that `logs/` holds
@@ -336,51 +227,27 @@ permanent record of a phase's branch, fork point and merge commit is still its p
 
 **`docs/phase-13-method-and-backlog`, opened 2026-09-04**, forked from `main` at `dec7c4a`. A
 documentation phase — three method documents and the backlog refactor — carrying **no `src/`
-change**, which is why the prefix is `docs/`. Its worktree is the fourth row of `IDM-001`'s layout.
-**Entered here at task 1**, which is where `IDM-001` puts it.
+change**, which is why the prefix is `docs/`. **Entered here at task 1**, which is where `IDM-001`
+puts it.
 
-**`feat/phase-12-installer-and-readme` merged 2026-09-02** at `6c75997`, and merged branches
-are not listed here. Its permanent record is its phase note and its row in `reference/branches.md`.
-
-*It was entered here at the phase's task 1 — which exists because the forward review found this
-section saying "None" while the branch was already open, the defect this section's own closing
-paragraph describes — and closed out **before** the merge message rather than after it, which is
-the order `IDM-001` asks for and the one Phase 11's merge did not follow.*
-
-**`fix-slop-docs/opening-playbook-not-run-table` merged 2026-09-02**, and merged branches are
-not listed here. It carried no phase number, so its permanent record is its **merge commit message**
-and its row in `reference/branches.md` — `IDM-001`'s third and fourth homes, the pair
-`docs/bugs-tier` used. *It was listed in flight here earlier the same day and closed out before the
-merge message, which is what `IDM-001` asks for and what the previous merge did not do.*
-
-**`feat/phase-11-corpus-tools` merged 2026-08-28** at `7e53f74` and is not listed here, because
-merged branches are not. Its permanent record is its phase note and its row in
-`reference/branches.md`. **Its worktree was removed after the merge**, which is harmless — the next
-branch gets its own. **The branch must not be deleted**, for the reason two paragraphs down:
-removing a worktree is safe and deleting a merged branch is not. *This paragraph said the worktree
-"still exists and is spent" until 2026-09-02.*
-
-*This section listed Phase 11 as in flight from 2026-08-24 until the merge. It read **"None. The
-table is empty as of 2026-08-21"** before that, which was true when written and false the moment the
-branch opened — the defect this file's own milestone-table entry describes, in the section that
-exists to prevent it.*
-
-**`docs/bugs-tier` merged 2026-08-25 and is not listed above**, because it is done. It carried no
-phase number, so its permanent record is **its merge commit message** plus **its row in
-`reference/branches.md`** — `IDM-001`'s third and fourth rows, both added the day they were needed.
-
-**Everything is pushed as of 2026-08-28**, on the owner's word at the close of that session; this
-was **not** verified against `origin` and is recorded as reported rather than as checked. *Before
-that, on 2026-08-25, `git push --all` rejected `main` because `origin` held two commits from
-2026-08-21 that this bare clone never received; both are merged in now. That paragraph read "`main`
-is ahead of `origin/main` and nothing has been pushed" until then — true when written, and the reason
-the divergence came as a surprise.*
+**Nothing else is in flight.**
 
 **Merged branches are kept, not deleted, and the tooling enforces it.** `branch-index.py` refuses to
 render when a description names a branch that no longer exists, so deleting one breaks the next
 merge's regeneration. Found on 2026-08-25 by deleting `docs/bugs-tier` and restoring it.
 
-*Trimmed 2026-08-25: four paragraphs of commentary on **merged** branches — `docs/phase-9-corpus-gate`,
-`docs/phase-8-method-and-guardrails`, `docs/branch-index` and Phase 10's prefix — were cut. This
-section's own opening rule says merged branches are not listed here, and it had accumulated 22 lines
-of them. All of it is in `reference/branches.md` and the phase notes.*
+**Push state cannot be checked from here.** `origin` is configured, but this clone holds **no
+remote-tracking refs at all** — `git branch -r` is empty — so no local command can tell whether
+anything has been pushed without a fetch. *The last word on it is the owner's, 2026-08-28, and
+`status.md` has always recorded that as reported rather than checked. What is new on 2026-09-04 is
+knowing it is **unverifiable locally**, not merely unverified — so a session must ask rather than
+look.*
+
+*Trimmed twice for the same reason, and the second time is the interesting one. On 2026-08-25 four
+paragraphs of commentary on **merged** branches were cut, because this section's opening rule says
+merged branches are not listed and it had accumulated 22 lines of them. **By 2026-09-04 it had
+re-accumulated four more** — Phase 12, `fix-slop-docs/opening-playbook-not-run-table`, Phase 11 and
+`docs/bugs-tier` — each a paragraph explaining that the branch is merged and therefore not listed
+here. **Each of the four was verified to have a row in `reference/branches.md` before it was cut.**
+The rule did not fail; what fails is closing a branch out by writing a sentence here instead of
+deleting one, and the second instance is the argument for that being the thing to notice.*

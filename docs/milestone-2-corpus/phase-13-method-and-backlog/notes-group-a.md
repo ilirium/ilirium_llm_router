@@ -58,7 +58,62 @@ correction, so nothing about the plan changes.
 prose ahead of the inventory pass would put a hand-edit inside the file the pass has to read
 whole.
 
-## Task 3a — added by the owner during Group A
+## Task 3a — done, and it went further than renumbering
+
+**The owner asked whether `status.md` and `prompt.md` held anything worth keeping, or only stale
+items. The answer was: not only stale, and the difference had to be checked rather than assumed.**
+
+### `status.md`'s "Where we stopped" was 154 lines against its own ~30-line limit
+
+**Cut to the current session. Four dated entries removed — Phase 11's, Phase 12's two, and
+`fix-slop-docs/opening-playbook-not-run-table`'s.**
+
+**Removed, not moved, and that is the finding.** The section's own rule says that a section carrying
+what outlives its session *"has become a document and gets its own file"*. **The opposite applied**:
+every fact in those entries was checked for a durable home first, and every one had it.
+
+| Entry | Where its facts already live |
+|---|---|
+| Phase 11, Phase 12 ×2 | their phase notes — `IDM-001`'s permanent record |
+| `fix-slop-docs/opening-playbook-not-run-table` | **its row in `reference/branches.md`**, which carries the whole entry including *"each of those five"* beside a list of six |
+
+**So a new file would have been a fifth home for facts that already had four**, which "One home per
+fact" forbids. *Checked with six greps before a line was cut, not reasoned about.* The
+`reference/branches.md` row is **richer than the prose it replaces**, which is the derived-index
+argument `IDM-001` made when it refused a hand-typed table.
+
+### "In-flight branches" had re-accumulated exactly what it was trimmed for
+
+**Four paragraphs about merged branches**, in a section whose opening rule is that merged branches
+are not listed. It was trimmed for this on 2026-08-25, when it had 22 lines of the same thing.
+**Each of the four was verified to have a `reference/branches.md` row before being cut.**
+
+**The second instance is what makes it worth recording.** The rule did not fail. What fails is
+closing a branch out **by writing a sentence here instead of deleting one** — every paragraph cut
+was a correct statement that the branch is merged and therefore not listed, which is a sentence that
+should never have needed writing.
+
+### Two things found by looking rather than by relaying
+
+**Push state cannot be checked from this clone at all.** `origin` is configured and `git branch -r`
+is **empty** — there are no remote-tracking refs. `status.md` has always said the 2026-08-28 "all
+pushed" is reported rather than checked; what is new is that it is **unverifiable locally**, so a
+session must ask rather than look. Recorded in `status.md`.
+
+**`status.md`'s over-width prose lines are 15, and none is this branch's.** Verified by diffing the
+set of over-100-column lines against the file at `HEAD` — zero of the 15 are new. *This answers the
+question raised at the end of task 1 and closes it without a backlog item.*
+
+### `prompt.md` was replaced whole
+
+It described Phase 12's close and said nothing was in flight. That is what the file is *for* — it is
+the one document allowed to go stale — but it had become actively misleading about what phase this
+is. **One item it carried is discharged rather than carried forward:** `status.md`'s "Where we
+stopped" is no longer past its limit.
+
+---
+
+## Task 3a — as the owner proposed it
 
 **`../../prompt.md` is stale as of this branch opening** — it says nothing is in flight and that
 Phase 13 is probably the rate-limit headers, and `../implementation-plan.md` still allocates 13 to
