@@ -313,3 +313,54 @@ line 424 shifts all eighteen below it. **The option existed only before task 15 
 
 **And `evidence/README.md`'s scoped freeze rule stands** — captures frozen, the inventory amendable
 as a proposal under review.
+
+
+## Task 15 — the ids applied, and it found what task 16 actually has to move
+
+**`docs/backlog.md` now carries all 38 ids.** 35 as metadata lines under the item's opening
+paragraph, 3 as leading cells in the *Decisions waiting on a person* table. **Every line number was
+re-verified against the file before a single line was inserted** — all 35 sit on a
+blank-line-preceded opening — and the insertion ran **bottom-up**, so no insert moved a line another
+insert still needed.
+
+**`--check` no longer reports a single unknown citation.** Every `BKL-NNNN` written across this
+phase's documents now resolves to an item. *That half was waiting on the items, not the other way
+round, exactly as task 17's notes predicted.*
+
+### The table needed four leading columns, not one
+
+**`IDM-011` says a table-row item carries "an extra leading column".** One is not enough: the parser
+reads `category · status · added` from the first three cells after the id and takes the description
+from the **fifth**. The three-column table became seven — `ID · Category · Status · Added · Blocked
+on · What it is · Why it may be weaker` — with the EPD path moved into *What it is*, which is the
+cell the generated table reads. **No content was dropped.**
+
+### Three things task 16 inherits, and the plan names none of them
+
+**1 · Four items are `done`, not one — and the one the plan names is not among them.** Task 16 says
+to move *"the item this phase discharges"*, meaning `BKL-0004`. **`BKL-0004` is `partly-done` and
+stays put.** The four that must move are **`BKL-0011`, `BKL-0032`, `BKL-0033` and `BKL-0038`**.
+*Two of those are the items the cold review found, and one is the status the owner changed — so
+three of the four exist because of task 14a. `BKL-0011` was `done` in the original inventory and
+task 16 would have had to move it anyway; the plan was already incomplete before the review.*
+
+**2 · `BKL-0038` has no completion date, and `validate` requires one.** Its text says the work
+*"were built in Phase 5"* and *"was measured and closed the same day"*, naming no date. It is
+applied as `· phase 5` with no `done` date, which is valid in `backlog.md` and **will fail the
+moment task 16 moves it**, because a done item in `backlog-done.md` needs both.
+
+**3 · `BKL-0011` is a table row, and a table row cannot carry a completion date at all.** The parser
+sets `done=None, phase=None` unconditionally for row items — `backlog-index.py:177-178`. So a
+`done` table-row item can never satisfy `validate` once moved. **Either `backlog-done.md` holds
+prose items rather than rows, or the parser needs the row shape extended.** *Found by applying the
+ids and reading what the script does with them, not by reading the script.*
+
+### The two corrections this task carried
+
+**`BKL-0004`'s "545-line file" is now 859**, corrected in place because `partly-done` means task 16
+does not move it and nothing else would have touched it.
+
+**`BKL-0007`'s premise is corrected and its history kept.** The paragraph that eliminated two of its
+three candidate fixes now says so in the past tense and records that the constraint expired: the
+count is in **two places, both in `status.md`**, since `CLAUDE.md` and "Where we stopped" both
+dropped theirs. **All three candidates are live again, including the cheapest.**

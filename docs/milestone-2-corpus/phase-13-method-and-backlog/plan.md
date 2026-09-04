@@ -236,7 +236,7 @@ unambiguously.
 | Format | `BKL-NNNN` — four digits, zero-padded | |
 | First id | `BKL-0001` | |
 | Allocation | **file order** at task 13, then **never reused, never renumbered** — `IDM-000`'s scheme for `IDM-NNN`, with the bulk-pass ambiguity closed by settled row 24 | |
-| Highest id allocated | ❓ *— settled at task 13; ~30 items, and the count is not the point of the pass* | ❓ |
+| Highest id allocated | **`BKL-0038`** — 38 items, applied at task 15 on 2026-09-04. *Task 13 proposed 36; the cold review at task 14a found two it had missed* | |
 | Metadata line, prose items | `**BKL-0007** · <category> · <status> · added YYYY-MM-DD` | |
 | …for a `###` item | the same line, under the heading | |
 | …for a table-row item | **an extra leading column** carrying the id, the rest of the metadata in the row's existing cells | |
