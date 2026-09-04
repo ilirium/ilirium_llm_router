@@ -28,7 +28,7 @@ document's first subject, at task 21, and `IDM-009` puts the review **before** t
 `backlog-index.py --check` exits 0.
 
 **What a reviewer should be told to look at hardest:** the shape changed *after* the ids were
-applied, so the question is whether anything moved in the conversion. **Task 27 says nothing did**
+applied, so the question is whether anything moved in the conversion. **Task 20f says nothing did**
 and the check is four lines — *re-run it rather than trusting this sentence.*
 
 ---
@@ -67,7 +67,7 @@ place, because `partly-done` means it does not move out.
 | **C** `IDM-010` | **done** — the per-phase `for-the-owner.md` |
 | **D** `IDM-011` | **done** — the backlog, and the `IDM-001` amendment |
 | **E** the refactor | **done.** 13, 14, 14a, 15, 16, 17, 18, 19 and 20 all run; `--check` exits 0 |
-| **E2** one item shape | **done.** Tasks 22–29. `### BKL-NNNN — title` headings; the table-row and bare-paragraph shapes retired. **No id changed, proved at task 27** |
+| **E2** one item shape | **done.** Tasks 20a–20h. `### BKL-NNNN — title` headings; the table-row and bare-paragraph shapes retired. **No id changed, proved at task 27** |
 | **F** the review of this phase | not started — Phase 13 reviewed under the `IDM-009` it wrote |
 | **G** close | not started |
 

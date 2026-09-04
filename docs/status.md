@@ -27,7 +27,7 @@ handoff is stale at the next commit and this file has four recorded instances of
 files and rejected the shape.* **Every item is a `### BKL-NNNN — title` heading**, the metadata line
 carries no id, and **the table-row and bare-bold-paragraph shapes are both retired — they are the
 two that hid `BKL-0032` and `BKL-0033`.** **No id changed:** 38 ids in the ratified inventory, 38 in
-the files, identical sets and no status disagreement, proved mechanically at task 27. **Settled row
+the files, identical sets and no status disagreement, proved mechanically at task 20f. **Settled row
 21 is overturned and row 7 amended**, the only rows this phase reverses.
 
 **Group E is complete.** All of 13, 14, 14a, 15, 16, 17, 18, 19 and 20 have run. **`docs/backlog.md`

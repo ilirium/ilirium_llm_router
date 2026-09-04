@@ -4,7 +4,13 @@
 are the decision; this is the work. Its own group and its own notes file, per settled row 3 — which
 `BKL-0003` says is the rule nobody notices at the moment it applies.*
 
-**Nothing here changed an id.** Task 27 proves it rather than asserting it.
+**Nothing here changed an id.** Task 20f proves it rather than asserting it.
+
+***The group was planned as tasks 22–29 and renumbered to 20a–20h on 2026-09-04, because 22–28 were
+already Groups F and G's.*** *Caught by opening `plan.md` to read Group F's tasks, not by any check —
+the plan has no uniqueness check on task numbers, and `IDM-008`'s register covers names and numbers
+the phase **introduces**, which a task number is not. The file's own convention for a group inserted
+mid-phase was already on the page twice, as `3a` and `14a`.*
 
 ---
 
@@ -40,14 +46,14 @@ script learns three shapes rather than one", which was true and was not the pric
 
 | Task | |
 |---|---|
-| 22 | **`IDM-011` rewritten first**, before a single file was converted — so the files were edited against a written rule rather than a habit |
-| 23 | **34 items converted.** Titles lifted out of the bold openings; the EPD table dissolved into `BKL-0009` and `BKL-0010` as prose; the trailing advice moved |
-| 24 | **4 items in `backlog-done.md`**, the same way |
-| 25 | **Parser rewritten** — `HEADING` keys detection, `ROW` deleted, `opening_sentence` deleted, `META` lost its id group |
-| 26 | **Both tables regenerated**; `--check` exits 0 |
-| 27 | **The id set proved unchanged** |
-| 28 | **The heading-count assertion added** |
-| 29 | **Register and pointers swept** |
+| 20a | **`IDM-011` rewritten first**, before a single file was converted — so the files were edited against a written rule rather than a habit |
+| 20b | **34 items converted.** Titles lifted out of the bold openings; the EPD table dissolved into `BKL-0009` and `BKL-0010` as prose; the trailing advice moved |
+| 20c | **4 items in `backlog-done.md`**, the same way |
+| 20d | **Parser rewritten** — `HEADING` keys detection, `ROW` deleted, `opening_sentence` deleted, `META` lost its id group |
+| 20e | **Both tables regenerated**; `--check` exits 0 |
+| 20f | **The id set proved unchanged** |
+| 20g | **The heading-count assertion added** |
+| 20h | **Register and pointers swept** |
 
 **Ten titles were shortened and twenty-four were taken verbatim** from the item's own bold opening.
 *Where a title was shortened the original sentence stays in the body, unbolded, so no words were
@@ -57,7 +63,7 @@ heading.* **The shortened ones are mostly numbers coming out**: `BKL-0005` loses
 in the inventory — a title that states its subject cannot go stale, and both of those items are
 **about** numbers going stale.*
 
-## Task 27 — the check that mattered most, and it is cheap
+## Task 20f — the check that mattered most, and it is cheap
 
 **38 ids in the inventory, 38 in the files, identical sets, and no status disagreement.** *A shape
 change that silently renumbered would have been the one unrecoverable outcome of this group, and it
