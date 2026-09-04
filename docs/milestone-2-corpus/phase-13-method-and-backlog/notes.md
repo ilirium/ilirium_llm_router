@@ -26,6 +26,7 @@ phase's finished work, **G** close.
 | `notes-group-b.md` | Group B — `IDM-009` | 2026-09-04 |
 | `notes-group-c.md` | Group C — `IDM-010` | 2026-09-04 |
 | `notes-group-d.md` | Group D — `IDM-011` | 2026-09-04 |
+| `notes-group-e.md` | Group E — the refactor | 2026-09-04 |
 
 **A row appears here when its file appears**, never before. That is Phase 12's rule and the reason
 for it: at Phase 11's merge this index carried a placeholder row naming files that did not exist,
