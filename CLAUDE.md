@@ -289,6 +289,13 @@ bookkeeping: on its one run it found eight unvalued names, contradicted a number
 reviews, and exposed a defect **two forward-review passes had read past**, because a constant and a
 config key only look wrong when they sit in adjacent rows.
 
+→ `docs/method/IDM-010-writing-for-the-owner.md` — **read it the first time something in a phase is
+worth telling the owner rather than a later session.** Every phase folder carries a
+`for-the-owner.md`, written **during** the phase and **to a person**; the notes stay long on purpose
+and this file is the digest. **Anything needing a decision is asked out loud instead of being parked
+in it.** Pointed at here rather than left in `docs/` because **there is no look-it-up moment** — the
+rule applies when somebody is already writing, which is `IDM-007`'s test.
+
 ## Shell
 
 **Keep bash commands statically analyzable — no `$(...)`.** The general rule, which is the documented

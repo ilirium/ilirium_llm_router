@@ -198,7 +198,7 @@ premise is that ids never change**, which is why task 14 exists.
 |---|---|
 | **25** | **The register check.** `evidence/register-check.py`, run against the register below; the `❓` column must be empty. `IDM-008` makes this a numbered task, not a habit |
 | **26** | **Whatever task 3a did not do** — normally just *add* the Phase 13 section to `../implementation-plan.md`, since 3a does the Phase 14 retitle and the `status.md`/`prompt.md` references. **`backlog.md` is not a target**: it names Phase 13 zero times |
-| **27** | Baselines; `../../status.md`; `../../prompt.md`; **this phase's own `for-the-owner.md`**, which is `IDM-010` applied to the phase that wrote it |
+| **27** | Baselines; `../../status.md`; `../../prompt.md`; and **confirm `for-the-owner.md` is current** — *not write it.* **Settled row 14 puts it during the phase**, so it was opened in Group C and is added to as things arise. Task 27 checking it is the closing read, not the writing |
 | **28** | **Merge, in three steps.** `--no-ff`; fill this file's `Merge commit:` line; `branch-index.py --write` on the trunk and commit it. Stopping after the merge leaves a landed branch with no index row |
 
 ---

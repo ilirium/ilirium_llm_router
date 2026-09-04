@@ -357,7 +357,18 @@ for the placeholder rule.)*
 
 ## The phase template
 
-`phase-N-<slug>/` holds `plan.md`, `notes.md` and `evidence/` with its README.
+`phase-N-<slug>/` holds `plan.md`, `notes.md`, **`for-the-owner.md`** and `evidence/` with its
+README.
+
+→ **`method/IDM-010-writing-for-the-owner.md`** holds the third of those, and is canonical. In one
+line: **one file per phase, written to a person rather than to a session**, carrying what is worth a
+human's attention after the phase — `ASK` / `IDEA` / `REGRET` / `ERRAND`, numbered in order of
+appearance. **It always exists**, saying so in one line when it has no entries, because an omitted
+file cannot be told apart from a forgotten one. **Anything needing a decision is asked out loud
+instead**, and nothing here is required to go in it.
+
+*This sentence listed three of the four for one phase, between the file being invented and the rule
+being written — and the phase in that gap wrote none.*
 
 ### The plan carries a register
 
