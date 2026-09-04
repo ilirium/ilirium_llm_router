@@ -161,3 +161,31 @@ citations are already written and are waiting for the items, not the other way r
 outside it. *That is Phase 12's finding C9 arriving again — five over-width lines in a `.py` under
 `docs/` that no lint run would ever see.* **Ruff was run against it explicitly**, at the pinned
 `0.16.1` with `--line-length 100`, and passes.
+
+
+## Task 14a — the author half, run on the owner's request
+
+**`evidence/item-inventory-author-review.md`. The charter is not discharged and the cold run is
+still owed** — the owner's session budget would not stretch to it, and the file says so in its own
+first section rather than in a footnote.
+
+**Two verified findings, and they point opposite ways.**
+
+**Five of thirty-three line numbers were wrong** — `BKL-0001` off by two, and `BKL-0003`,
+`BKL-0004`, `BKL-0006`, `BKL-0007` each off by one, **two too high and two too low**, which rules
+out a constant offset and points at the extraction having been done twice by different means. All
+corrected.
+
+**No item was missed.** Every paragraph opening in the file was enumerated and the 33 claimed ones
+subtracted; **28 remained and every one is accounted for** — four preamble, one section preamble,
+one the section-level advice at line 394, four the corrected openings, and eighteen continuations.
+**The count of 36 holds and the six boundary calls are right.**
+
+*The two findings are worth their asymmetry: **the judgement half survived and the mechanical half
+did not**, which is the opposite of what the last three reviews in this repository returned.*
+
+**Two things were reported rather than concluded, and one of them is a check that proved nothing.**
+The reverse status question — *is any item marked `open` actually finished?* — ran with a boundary
+list that omitted the non-`open` items, so several bodies ran into their neighbours. **At least one
+hit is provably its own bug.** Nothing is concluded from it; **it is recorded because a check that
+ran and proved nothing looks identical to one that ran and found nothing.**

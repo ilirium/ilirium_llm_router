@@ -7,10 +7,13 @@ ratifying this and pruning it; task 15 applies it afterwards.
 `backlog.md` reads at commit `809a422` and are given so a boundary can be checked, not because they
 are part of the scheme.
 
-**All eight sections were read in full**, not sampled. *One line number in this table was wrong and
-is corrected: `BKL-0001` is at **40**, not 38 — 36–38 is the section's preamble. **Found by
-`backlog-index.py`, not by rereading**: the generated row for it came out describing the preamble
-instead of the item.* *The forward review's three-shape survey read
+**All eight sections were read in full**, not sampled. ***Five of the thirty-three line numbers in
+this table were wrong and are corrected.*** *`BKL-0001` was at 38 and opens at **40** — found by
+`backlog-index.py`, whose generated row for it described the section preamble instead of the item.
+**Four more were each off by one** — `BKL-0003`, `BKL-0004`, `BKL-0006`, `BKL-0007` — found by the
+author review in `item-inventory-author-review.md`. **Two too high and two too low, so not a
+constant offset.** The ids and the boundaries were right; a third of the line numbers were not.*
+*The forward review's three-shape survey read
 three of eight by grep and its result was a lower bound; it was right — no fourth shape exists, and
 the three are confirmed.*
 
@@ -41,16 +44,16 @@ the three are confirmed.*
 |---|---|---|---|---|
 | `BKL-0001` | 40 | 2026-08-19 | open | A forward review must classify each position by **authority**, not only correctness — an unratified position is reported as such |
 | `BKL-0002` | 77 | 2026-08-19 | **partly-done** | A forward review must check the plan's numbers against the phase's own `evidence/`. *Two thirds discharged by `IDM-008`; the forward-review half is open* |
-| `BKL-0003` | 121 | 2026-09-02 | open | The one-notes-file-per-task-group rule is invisible at the moment it applies |
-| `BKL-0004` | 176 | 2026-08-26 | **done** · 2026-09-04 · phase 13 | Give every item here a stable, referencable index. **This inventory is its discharge** |
+| `BKL-0003` | 122 | 2026-09-02 | open | The one-notes-file-per-task-group rule is invisible at the moment it applies |
+| `BKL-0004` | 175 | 2026-08-26 | **done** · 2026-09-04 · phase 13 | Give every item here a stable, referencable index. **This inventory is its discharge** |
 
 ### Documentation defects found and not fixed — 4
 
 | Id | Line | Added | Status | What it is |
 |---|---|---|---|---|
 | `BKL-0005` | 188 | — | open | `CLAUDE.md`'s length against upstream guidance, and nobody has measured what it could lose |
-| `BKL-0006` | 205 | 2026-08-17 | open | The whole of `milestone-1-core/documentation-review-2026-08-16.md` — ~30 findings and six owner questions, parked whole |
-| `BKL-0007` | 265 | 2026-09-02 | open | The open milestone's phase count is stated in several places and has gone stale four times |
+| `BKL-0006` | 206 | 2026-08-17 | open | The whole of `milestone-1-core/documentation-review-2026-08-16.md` — ~30 findings and six owner questions, parked whole |
+| `BKL-0007` | 266 | 2026-09-02 | open | The open milestone's phase count is stated in several places and has gone stale four times |
 | `BKL-0008` | 311 | 2026-09-02 | open | Phase 11 records its largest corpus session as both 292 calls and 270 |
 
 ### Decisions waiting on a person — 3 *(table rows)*

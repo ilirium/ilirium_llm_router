@@ -8,6 +8,7 @@ archive rule applied at the point of capture rather than at the merge.
 | `backlog-before-ids.txt` | **`docs/backlog.md` exactly as it stood before any `BKL` id was applied**, captured 2026-09-04 at commit `809a422`. **859 lines, SHA-256 `08f49383…c43b37e7`**, verified byte-identical to the original with `cmp` at capture |
 | `item-inventory.md` | Task 13's output — 36 items with proposed ids, statuses and dates, and the six boundary calls. **The subject of the review below** |
 | `item-inventory-review-charter.md` | What a fresh-context agent is given in order to review the inventory. Handed over verbatim |
+| `item-inventory-author-review.md` | **The author run only**, 2026-09-04, done against a session budget that would not stretch to a cold one. **It does not discharge the charter above** and says so in its first section |
 
 ## Why the backlog copy is `.txt` and not `.md`
 
