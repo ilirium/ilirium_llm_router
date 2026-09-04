@@ -48,10 +48,45 @@ than being deleted), and **a checker** (`backlog-index.py --check` rather than `
 corrected as the item moves to `backlog-done.md` — which is task 16, and is the first thing that
 file will hold.*
 
-## Task 14 — the checkpoint. Not run
+## Task 14 — the checkpoint. Returned, and extended
 
-**Waiting on the owner.** *This task produces no commit*, which `../../README.md` requires its row
-to say, so that a reader cannot mistake it for a task that was skipped.
+**The owner read the inventory and accepted it, then extended the checkpoint**: the inventory gets
+**an independent review by a fresh-context agent, in a session of its own**, before task 15 applies
+anything. *This task still produces no commit, which `../../README.md` requires its row to say, so
+that a reader cannot mistake it for a task that was skipped.*
+
+**Two artefacts were made for it, on the owner's instruction.**
+
+**`evidence/backlog-before-ids.txt`** — `backlog.md` frozen before any id touches it, verified
+byte-identical with `cmp` and recorded with its SHA-256. *`git show 809a422:docs/backlog.md` returns
+the same bytes and is the more durable record; what the copy buys is that the review can be handed
+over as **two paths** rather than as a path and a git incantation. That is a convenience argument
+and `evidence/README.md` states it as one.*
+
+**It is `.txt` and that is not a formatting preference.** `link-check.py` globs `*.md`; a `.md` copy
+of an 859-line file whose paths are written from `docs/` would be scanned five levels down and
+**every one of those paths reported broken**. *Confirmed: the broken count is **120 before and
+after** the copy landed. **The glob's narrowness is `BKL-0029`'s own fifth piece of evidence — a
+known gap — and here it is the useful behaviour**, which `evidence/README.md` records so that
+closing the gap later does not silently break this.*
+
+**`evidence/item-inventory-review-charter.md`** — written to be read by somebody who knows nothing
+about this repository, so it repeats rather than points. Eight checks, and the two that matter most
+are aimed at the failure that cannot be recovered from:
+
+- **Derive the count independently *before* reading the inventory's answer.** *The dangerous
+  direction is a **missed** item: a spurious id is visible as a row describing nothing, a missing
+  item is invisible forever.*
+- **Find a seventh boundary the pass did not flag.** *Checking the six it did flag is the easy half
+  and the inventory has already argued them.*
+
+**It also asks the reverse status question**, which nothing else would catch: not *are the five
+non-`open` items right*, but **is any item marked `open` actually finished** — several carry a note
+in their own text saying something was fixed.
+
+**One deviation is named rather than hidden.** `IDM-004` runs two reviewers in parallel on different
+questions; this is **one**, for session budget. The charter says so in its last section and tells
+the reviewer **not to leave anything for a second pass that is not coming.**
 
 **Three questions are put to them**: are the six boundaries right, what should be pruned, and are
 `BKL-0002` (`partly-done`) and `BKL-0035` (`superseded`) — the only two non-obvious statuses —
