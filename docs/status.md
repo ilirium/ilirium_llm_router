@@ -36,9 +36,14 @@ cleared this exact claim** and named it as the one an author is least entitled t
 
 **The owner ratified on 2026-09-04**: the two get ids in file order as `BKL-0032` and `BKL-0033`, so
 old `BKL-0032`–`0036` became `BKL-0034`–`0038` and **`BKL-0025`–`0031` did not move**; `BKL-0038` is
-`done` rather than `refused`; `BKL-0004` is `partly-done` until task 15 lands. **Two questions are
-open and neither blocks** — `BKL-0007`'s status, and whether `BKL-0020` splits, which is the one
-that would renumber.
+`done` rather than `refused`; `BKL-0004` is `partly-done` until task 15 lands. **The last two
+questions were settled the same day** — `BKL-0007` stays `open` and `BKL-0020` stays one id — so
+**nothing about the inventory is open and task 15 can run.**
+
+**Task 15 carries two corrections beyond applying the ids.** `BKL-0007`'s premise is expired — it
+reasons from *"four places across two files"* and there are now **two copies, both in this file**, at
+lines 87 and 117, so the cheapest of its three candidate fixes is live again. And `BKL-0004`'s
+*"545 lines"* must be fixed in place, since at `partly-done` it does not move to `backlog-done.md`.
 
 | Commit | |
 |---|---|

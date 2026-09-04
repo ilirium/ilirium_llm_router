@@ -155,16 +155,23 @@ by pattern should state the pattern**, because a stated pattern is falsifiable b
 described pass is not. The author run described what it had done. The cold run asked what the
 description would exclude.*
 
-## 9 · ASK · medium · Two inventory questions are still open, and one of them is expensive after task 15
+## 9 · IDEA · medium · Asking the two leftover questions found a third thing neither of them was about
 
-**Both were raised aloud in the session and neither blocks task 15; I am recording them here because
-they get more expensive the moment ids are applied.**
+**Both leftover inventory questions were answered on 2026-09-04** — `BKL-0007` stays `open`,
+`BKL-0020` stays one id with the refusal noted in its description. **Neither is the interesting
+part.**
 
-**Is `BKL-0007` `open` or `partly-done`?** Its fourth copy was fixed on Phase 12's branch, but its
-actual ask — pick the one durable fix among three candidates — is untouched. The cold reviewer
-leaned `open`. **One status, no id, stays in `backlog.md` either way.**
+**Writing `BKL-0007` up properly is what exposed it.** The item reasons from *"four places across
+two files"* to eliminate two of its three candidate fixes, because *"only deriving the count works
+across two files."* **There are two copies now, both in `status.md`.** `CLAUDE.md` dropped its copy
+in this phase and "Where we stopped" dropped the other. **The constraint that disqualified the
+cheapest fix has expired, and the item still argues against it.**
 
-**Should `BKL-0020` record that one third of it is refused?** `backlog.md:434` says *"the sequence
-column is refused rather than parked"* and the item is filed `open` whole. **A note in the
-description costs nothing. A split into two ids renumbers everything below it** — and after task 15
-that is not a renumbering, it is a broken promise.
+*I had asked the question in four words — "`BKL-0007`'s status" — and you said the questions were
+unclear and to re-ask them with the detail. **Going back to write the detail is what found this.**
+The compressed version would have got an answer and left the expired premise sitting there.*
+
+**What I take from it:** a question worth asking is worth writing out, and not because the reader
+needs it. *`IDM-007` says a concern raised where it will not be read has not been raised. This is
+the weaker sibling — a question compressed past the point of being answerable is one the asker has
+not finished thinking about either.*

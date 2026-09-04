@@ -30,10 +30,13 @@ enumeration matched **bold or `###`** at the line start; the two struck entries 
 both caught.* They are `BKL-0032` and `BKL-0033`, so **old `BKL-0032`–`0036` are now
 `BKL-0034`–`0038`**, and `BKL-0025`–`0031` did not move.
 
-**Two questions are still the owner's, and one gets expensive the moment task 15 lands** — whether
-`BKL-0020` splits into two ids, which would renumber everything below it. The other is `BKL-0007`'s
-status. Both are entry 9 of `for-the-owner.md`. **Neither blocks task 15; both are cheaper before
-it.**
+**Nothing about the inventory is open.** The last two questions were settled 2026-09-04:
+`BKL-0007` stays `open`, `BKL-0020` stays one id with its refused third noted in the description.
+
+**Task 15 carries two corrections beyond the ids**, both recorded at the end of `item-inventory.md`:
+`BKL-0007`'s premise is expired — it argues from *"four places across two files"* and there are now
+**two copies, both in `status.md`** — and `BKL-0004`'s *"545 lines"* is 859 and must be fixed in
+place, because `partly-done` means it does not move out.
 
 **`docs/backlog.md` is still untouched.** No id has been applied to it.
 
@@ -107,8 +110,6 @@ spent.
 - **The `uv_build` pin bump has no rule behind it.** An owner decision.
 - **The Milestone 2 phase count has gone stale four times.** `CLAUDE.md` no longer carries it at
   all; the remaining copies are in `status.md`.
-- **Two inventory questions are unanswered** — `BKL-0007`'s status, and whether `BKL-0020` splits.
-  **The second stops being answerable cheaply once task 15 applies the ids.**
 
 ## The working agreement still applies
 

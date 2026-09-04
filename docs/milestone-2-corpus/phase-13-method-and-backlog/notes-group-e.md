@@ -283,3 +283,33 @@ happened. *A historical record of a defect is not a citation of a live id.*
 has now been edited twice** — once by the author run and once by this ratification. **Either the
 inventory is not a frozen artefact or the rule is wrong as written.** *Raised rather than worked
 around; `backlog-before-ids.txt` is the artefact that genuinely cannot move.*
+
+
+## Task 14 — the last two questions, and one of them moved the item
+
+**Settled 2026-09-04, after the cold review. Neither renumbers.**
+
+**`BKL-0007` stays `open`** — none of the deliverable shipped; its ask is to *choose* one of three
+fixes and none is chosen. **But its premise has expired.** The item says the phase count is stated
+in *"four places across two files"* and eliminates two of its three candidates on that basis: *"only
+deriving the count works across two files."* **`CLAUDE.md` dropped its copy in this phase
+(`809a422`) and "Where we stopped" dropped the other**, leaving two, both in `status.md` at lines 87
+and 117. **So *"the table row alone"* is viable again**, and it is the one the item calls cheapest.
+*The correction is a task-15 action, recorded in the inventory: editing prose at line 266 today
+would shift every line below it and stale the Line column task 14a had just verified.*
+
+**Its description now carries no numbers** — *"the count is duplicated and goes stale at every
+merge; three candidate fixes, none chosen."* **This is the `BKL-0005` treatment**, which the cold
+review singled out as better than its source: a description that states the subject cannot go stale.
+*It is the obvious call here and nearly was not made — the first draft of this description said
+"four places across two files and gone stale three times", which is two numbers, in the description
+of the item about numbers going stale.*
+
+**`BKL-0020` stays one `open` id**, with the refusal in its description. *A split was the faithful
+reading — the `calls.csv` sequence column is `refused` and needs `implementation-plan.md`'s non-goal
+overturned, while the endpoint and the per-failure detail are merely parked.* **Declined on cost:**
+a split means editing `backlog.md` to make two items from one paragraph-block, and an id inserted at
+line 424 shifts all eighteen below it. **The option existed only before task 15 and was not taken.**
+
+**And `evidence/README.md`'s scoped freeze rule stands** — captures frozen, the inventory amendable
+as a proposal under review.

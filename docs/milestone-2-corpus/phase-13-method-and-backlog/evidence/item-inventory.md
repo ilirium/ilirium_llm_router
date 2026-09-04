@@ -61,7 +61,7 @@ the three are confirmed.*
 |---|---|---|---|---|
 | `BKL-0005` | 188 | — | open | `CLAUDE.md`'s length against upstream guidance, and nobody has measured what it could lose |
 | `BKL-0006` | 206 | 2026-08-17 | open | The whole of `milestone-1-core/documentation-review-2026-08-16.md` — ~30 findings and six owner questions, parked 2026-08-17 — one finding since acted on, the rest not |
-| `BKL-0007` | 266 | 2026-09-02 | open | The open milestone's phase count is stated in four places across two files and has gone stale three times |
+| `BKL-0007` | 266 | 2026-09-02 | open | The open milestone's phase count is duplicated and goes stale at every merge; three candidate fixes, none chosen |
 | `BKL-0008` | 311 | 2026-09-02 | open | Phase 11 records its largest corpus session as both 292 calls and 270 |
 
 ### Decisions waiting on a person — 3 *(table rows)*
@@ -89,7 +89,7 @@ the three are confirmed.*
 |---|---|---|---|---|
 | `BKL-0018` | 402 | — | open | Prompt-cache warmup probes cost 44% of local wall-clock time |
 | `BKL-0019` | 410 | 2026-08-26 | open | What a reconstructed session cannot contain, and the fix nobody should reach for |
-| `BKL-0020` | 424 | 2026-08-18 | open | Three diagnostics reserved out of Phase 10, deliberately |
+| `BKL-0020` | 424 | 2026-08-18 | open | Three diagnostics reserved out of Phase 10 — and **one of the three, the `calls.csv` sequence column, is refused rather than parked** |
 | `BKL-0021` | 438 | 2026-08-18 | open | A caller that disconnects before the generator's first step can leave no row — **observed 2026-08-20** at Phase 10's task 18a |
 | `BKL-0022` | 477 | 2026-08-18 | open | Running the router as several processes |
 | `BKL-0023` | 495 | — | open | The per-backend authentication header name |
@@ -198,20 +198,40 @@ does not move it and nothing else would touch the stale number.*
 3. **`BKL-0004` is `partly-done`, not `done`.** It stays in `backlog.md` and flips when task 15
    applies the ids.
 
-## What task 14 has not settled — two questions, both still the owner's
+## The two remaining questions, settled 2026-09-04
 
-**Neither blocks task 15, and both are cheaper to answer before it than after.**
+**Both were asked aloud and both are answered. Neither renumbers anything.**
 
-1. **Is `BKL-0007` `open` or `partly-done`?** Its fourth copy was fixed on Phase 12's branch
-   (`backlog.md:274-275`), but the item's actual ask — choose the one durable fix among three
-   candidates — is untouched. *The cold reviewer leaned `open`, on the grounds that unlike
-   `BKL-0002` none of the **deliverable** shipped.* **It changes one status and no id**, and the
-   item stays in `backlog.md` either way.
-2. **Should `BKL-0020` record that one third of it is refused?** `backlog.md:434` —
-   *"**The sequence column is refused rather than parked**"* — and the item is filed `open` whole.
-   **The two answers differ in cost:** a note in the description changes nothing structural, and a
-   **split into two ids renumbers everything below it**, which is the expensive one and must happen
-   before task 15 if it happens at all.
+**4 · `BKL-0007` stays `open`, and its premise needs correcting in `backlog.md`.** *`open` because
+none of the deliverable shipped — the item's ask is to **choose** one of three fixes, and none is
+chosen.* **But the item reasons from a premise that has expired.** It says the count is *"stated in
+**four places across two files**"* and then eliminates two of its three candidates because *"only
+deriving the count works across two files."* **`CLAUDE.md` stopped carrying the count in this phase
+(`809a422`), and the "Where we stopped" copy is gone too — leaving two copies, both in `status.md`,
+at lines 87 and 117.** So the constraint that disqualified *"the table row alone"* and *"leave three
+copies and check them"* no longer holds, and **the cheapest fix is live again**.
+
+**Its description drops the two numbers rather than carrying them**, which is what the cold review
+commended in `BKL-0005`: a description that states the subject does not go stale, and this item's
+entire subject is numbers going stale.
+
+**5 · `BKL-0020` stays one `open` id, with the refusal in its description.** *A split into two ids
+would have been the faithful reading — the `calls.csv` sequence column is `refused`, needing
+`implementation-plan.md`'s non-goal overturned, while the other two are merely parked. It was
+declined on cost: a split means editing `backlog.md` to make two items from one paragraph-block, and
+inserting an id at line 424 shifts all eighteen below it.* **Available only before task 15, and not
+taken.**
+
+---
+
+## Two things task 15 must carry, beyond applying the ids
+
+1. **Correct `BKL-0007`'s premise in `backlog.md`** — four places across two files → **two copies in
+   `status.md`**, and the consequent sentence eliminating two candidate fixes. *Deliberately not
+   done at task 14a: editing prose at line 266 shifts every line below it and would stale the Line
+   column this review had just finished verifying.*
+2. **Correct `BKL-0004`'s "545 lines" to 859** in place. *At `partly-done` the item stays in
+   `backlog.md`, so task 16 does not move it and nothing else would touch the stale figure.*
 
 **Nothing is applied to `backlog.md` yet.** A wrong boundary freezes a wrong id into a scheme whose
 whole premise is that ids never change.
