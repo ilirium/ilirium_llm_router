@@ -10,31 +10,42 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-04 — Phase 13 is open. Group A is complete except task 3a.**
-`docs/phase-13-method-and-backlog`, forked at `dec7c4a`. Four deliverables the owner set on
-2026-09-03: **`IDM-009`** reviewing executed work, **`IDM-010`** the per-phase `for-the-owner.md`,
-**`IDM-011`** the backlog, and the **backlog refactor** giving every item a `BKL-NNNN` id and a
-generated table. **Twenty-four settled rows, twenty-nine tasks, seven groups.** The Anthropic
-rate-limit headers moved to **Phase 14**; their `calls.csv` collision is untouched and still has to
-be settled before that plan.
+**2026-09-04 — Phase 13 is open. Groups A through D are complete; Group E is next and it stops for
+the owner.** `docs/phase-13-method-and-backlog`, forked at `dec7c4a`.
+
+**All three method documents are written and in force.**
+
+| | |
+|---|---|
+| **`IDM-009`** | reviewing **executed** work — the third review protocol, and it draws the line between all three |
+| **`IDM-010`** | the per-phase `for-the-owner.md` |
+| **`IDM-011`** | the backlog — **and one of its rules is in force now**: a session asks before filing an item |
+
+**Twenty-four settled rows, twenty-nine tasks.** What remains is **Group E**, the backlog refactor —
+`BKL-NNNN` ids, `backlog-done.md`, `procedures/backlog-index.py` — then **Group F**, which is this
+phase reviewed under the `IDM-009` it wrote, then the close.
 
 | Commit | |
 |---|---|
 | `9976873` | the plan, the branch, the in-flight row |
 | `6345eb8` | the re-derivation — it found the plan wrong twice |
-| `2ffb5e7` | the forward review's charter |
-| `1d8872b` | the review: **18 findings at 17% overlap**, 13 fixed, 1 decided, 4 escalated |
-| `601c041` | the owner's four answers, as settled rows 21–24 |
+| `2ffb5e7` · `1d8872b` · `601c041` | the forward review: charter, **18 findings at 17% overlap**, and the owner's four answers as rows 21–24 |
+| `740eea6` | this file cut from 373 lines to 253, and `prompt.md` replaced whole |
+| `05f74ad` · `1a1fbb9` · `50d801c` | `IDM-009`, `IDM-010`, `IDM-011` |
 
-**The forward review found the plan would have made the next session re-decide an owner row.** Task
-5 named four questions as "deliberately unanswered" in Phase 12's `review-plan-jobs-done.md`; that
-file leaves **one**, and one of the four is **settled row 1** there. **17% overlap is the second
-forward measurement** — `IDM-004`'s own is 18% — and it lands within a point, which is the outcome
-that leaves `IDM-004` standing rather than needing a rewrite.
+**`IDM-001` is amended for the second time in three days, and the two amendments differ.**
+2026-09-02 changed **where** the record of a declined scope goes — never its own branch. 2026-09-04
+changes **whose act it is**: declining scope is still the phase's, **filing is the owner's word**,
+and a declined item's decline goes in the phase's `notes.md`.
+
+**`CLAUDE.md` no longer states Milestone 2's phase count.** *It carried that count and was wrong
+about it during the phase chartered to fix the count — found by a review, not by a check. The number
+lives here now, and only here.*
 
 **Baselines are the trunk's, unchanged by construction.** This branch changes no `src/` and no
-`tests/`, so **448** stands. *Not re-run in this worktree, which has no venv, and `link-check.py` is
-deliberately not quoted — its count is a property of the tree.*
+`tests/`, so **448** stands. *Not re-run in this worktree, which has no venv.* `link-check.py`
+reports **120 broken** here against 91 on `main` — **every one of the delta is a file Group E will
+create**, and the count is a property of the tree.
 
 **This section was 154 lines and is now short again — the four older entries were removed, not
 moved.** *Its own rule above says a section carrying what outlives its session "has become a
@@ -44,7 +55,6 @@ and `fix-slop-docs/opening-playbook-not-run-table`'s entire content, "each of th
 list of six included, in its row in `reference/branches.md`, which is strictly richer than the prose
 was. **A new file would have been a fifth home for facts that already had four**, which "One home
 per fact" forbids. This discharges the open item `prompt.md` carried.*
-
 
 ## Where the project is
 

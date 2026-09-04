@@ -1,15 +1,18 @@
 # The next session's prompt
 
 *The one file in `docs/` allowed to go stale, per `README.md` — which is why it is rewritten at each
-handoff rather than left. **Replaced 2026-09-04**, mid-Phase-13, at task 3a. The version it replaced
-described Phase 12's close and said nothing was in flight, which stopped being true the moment this
-branch opened. Whatever comes next replaces it again.*
+handoff rather than left. **Replaced 2026-09-04** at task 3a and **updated the same day** at the end
+of Group D. The version it replaced described Phase 12's close and said nothing was in flight, which
+stopped being true the moment this branch opened. Whatever comes next replaces it again.*
 
 ---
 
-**Phase 13 is open and Group A is complete.** Branch `docs/phase-13-method-and-backlog`, worktree of
-the same name, forked from `main` at `dec7c4a`. **Milestone 2 has five phases merged and this one in
-flight.**
+**Phase 13 is open. Groups A through D are complete — all three method documents are written and in
+force.** Branch `docs/phase-13-method-and-backlog`, worktree of the same name, forked from `main` at
+`dec7c4a`. **Milestone 2 has five phases merged and this one in flight.**
+
+**What remains is Group E — the backlog refactor — then Group F, which is this phase reviewed under
+the `IDM-009` it just wrote, then the close.**
 
 **Start in the phase worktree**, not in `main`:
 `/Users/ilirium/Projects/local/ilirium_llm_router/phase-13-method-and-backlog`. It has **no venv**,
@@ -28,16 +31,22 @@ already has and has already failed to keep; the fourth applies one of them.
 | **`IDM-011`** | The backlog — ids, statuses, categories, and **who may file an item** |
 | **The refactor** | Every item gains a `BKL-NNNN` id, a metadata line, and a row in a generated table |
 
-**Twenty-four settled rows, twenty-nine tasks, seven groups.** Groups B, C and D are independent of
-each other and of E. **Group E stops at task 14 for the owner.**
+**Twenty-four settled rows, twenty-nine tasks, seven groups.** B, C and D are **done**. **Group E
+stops at task 14 for the owner.**
+
+**One rule of `IDM-011` is in force now and changes what you do:** **ask the owner before filing a
+backlog item.** If the answer is no, the decline goes in the phase's `notes.md`. `IDM-001` and
+`backlog.md` said for two days that filing was the phase's own act; both are amended.
 
 ## Read these, in this order
 
 1. **`docs/status.md`** — first, every session. The only file that holds state.
 2. **`.../phase-13-method-and-backlog/plan.md`** — the settled table and the register, at minimum.
-   It is 297 lines; grep the headings.
-3. **`notes.md`**, then **`notes-group-a.md`**, then **`notes-review-plan.md`** for what the forward
-   review found.
+   Grep the headings.
+3. **`notes.md`**, then the group notes you need. **`notes-review-plan.md`** holds what the forward
+   review found; **`notes-group-d.md`** holds the `IDM-001` amendment and why it is the second in
+   three days.
+4. **`for-the-owner.md`** if you are the owner. Five entries, written during the phase.
 
 **`review-charter.md` is spent** — do not read it unless you are writing the task-21 charter, which
 is modelled on it.
@@ -73,12 +82,19 @@ is modelled on it.
 
 ## What is next
 
-**Task 3a is done — this file and `status.md` are it.** Next is **Group B: write `IDM-009`.** Its
-three inputs are all in Phase 12's folder: `review-plan-jobs-done.md` (the argument),
-`review-charter-jobs-done.md` (the instrument), `notes-review-jobs-done.md` (the result).
+**Group E, the backlog refactor — and task 13 is the one to be careful with.**
 
-**Task 5 is the one to be careful with**, for the reason above. It closes three questions from their
-true sources and **inherits** the fourth as the owner's decision.
+**Task 13 compiles the item inventory and then stops.** Ids in **file order**; metadata placed **per
+shape**, because `backlog.md` holds **three item shapes** and two of its eight sections have no bold
+opening at all — *Decisions waiting on a person* is three table rows, *Dictionaries* holds two items
+as `###` subsections.
+
+**Task 14 is the owner's checkpoint and produces no commit.** They ratify the inventory and prune
+it. **Nothing is applied before it returns**, because a wrong boundary freezes a wrong id into a
+scheme whose whole premise is that ids never change.
+
+*The forward review's three-shape survey read three of eight sections by grep only, so it is a lower
+bound. **Re-survey all eight before compiling the inventory.***
 
 ## Open, and none of it blocks
 

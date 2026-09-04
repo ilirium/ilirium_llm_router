@@ -33,7 +33,7 @@ purpose: this sentence read "two files" over three rows from 2026-08-17 until 20
 | | |
 |---|---|
 | `status.md` | **State.** Where we stopped, where the project is, what is next. No work items live here |
-| `backlog.md` | **Inventory.** Unscheduled work, each item with why it is parked and why the question may be weaker than it looks. No state lives here |
+| `backlog.md` | **Inventory.** Unscheduled work, each item with why it is parked and why the question may be weaker than it looks. No state lives here. → **`method/IDM-011-the-backlog.md`** is canonical for it: **who may file an item** — a session asks, the owner decides — the `BKL-NNNN` id, the statuses, and why its table is generated |
 | `prompt.md` | **The next session's opening instruction, and nothing else.** Added 2026-08-17. It names what to read and what to distrust; it must never summarise what those documents say. **It expires when the phase it opens is merged** — check `status.md` before trusting it |
 | `prompt-<branch-slug>.md`, `merge-<branch-slug>.md` | **`prompt.md`'s class, for a branch that cannot have `prompt.md`.** Added 2026-08-21. When `prompt.md` is occupied by another branch, a second branch names its own: `prompt-` to open a session on it, `merge-` to say what the merge leaves for a follow-up session to integrate. Same rules as `prompt.md` — pointers, never a summary; paths from the repository root, so `procedures/link-check.py` does not check them. **Deleted by the merge that retires it**, which is part of the merge and not tidying afterwards (→ `method/IDM-001-git-branching.md`) |
 
