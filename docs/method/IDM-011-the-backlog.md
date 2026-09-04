@@ -163,12 +163,12 @@ otherwise be read as proof of something it does not test.*
 - **The owner's instructions, 2026-09-03 and 2026-09-04**, over four rounds of interview plus four
   questions raised by a forward review. Recorded in
   `../milestone-2-corpus/phase-13-method-and-backlog/plan.md`'s settled table, rows 1–10 and 21–24.
-- **`../backlog.md`'s own item asking for this**, added 2026-08-26 on the owner's instruction — *"a
-  quoted title is not an identifier"* — which names the three things it would take: an id, an
-  allocation rule that survives items being deleted when done, and a decision on whether a checker
-  verifies them. **All three are answered here**; the checker is `backlog-index.py --check` rather
-  than `link-check.py`, to keep id checking out of an instrument whose own count is worktree-
-  dependent and routinely misread.
+- **`../backlog.md`'s own item asking for this — `BKL-0004`**, added 2026-08-26 on the owner's
+  instruction — *"a quoted title is not an identifier"* — which names the three things it would
+  take: an id, an allocation rule that survives items being deleted when done, and a decision on
+  whether a checker verifies them. **All three are answered here**; the checker is `backlog-index.py
+  --check` rather than `link-check.py`, to keep id checking out of an instrument whose own count is
+  worktree- dependent and routinely misread.
 - **`IDM-001`** — the branch rule, which is that document's and is cited rather than restated here.
   Its authority claim is amended by "Who files an item" above.
 - **`IDM-000`** — the numbering scheme this copies, and the admission test this document passes: it

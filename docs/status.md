@@ -23,10 +23,10 @@ handoff is stale at the next commit and this file has four recorded instances of
 | **`IDM-010`** | the per-phase `for-the-owner.md` |
 | **`IDM-011`** | the backlog — **and one of its rules is in force now**: a session asks before filing an item |
 
-**Where Group E is.** Task 13 compiled the item inventory, task 17 wrote and drove
-`procedures/backlog-index.py`, and **task 14a — the cold review — is done.** **`docs/backlog.md` is
-still untouched.** *Tasks 15, 16, 18, 19 and 20 all take the ratified inventory as input and none
-has run; **they are no longer blocked.***
+**Group E is complete.** All of 13, 14, 14a, 15, 16, 17, 18, 19 and 20 have run. **`docs/backlog.md`
+carries 34 items with ids, `docs/backlog-done.md` exists and holds 4**, both tables are generated,
+and **`backlog-index.py --check` exits 0** — for the first time on this branch, and the notes that
+said its `1` was correct were right: the citations were written before the items.
 
 **The inventory is ratified and it holds 38 items, not the 36 task 13 proposed.** The cold run found
 **two missing items** — `backlog.md:716` and `:735`, struck-through `done` entries that open `~~**`
@@ -67,10 +67,12 @@ lives here now, and only here.*
 
 **Baselines.** This branch changes no `src/` and no `tests/`, so the trunk's **448** stands; *not
 re-run in this worktree, which has no venv.* `make lint` clean at the pinned `0.16.1` — **and it
-does not reach `docs/procedures/`**, so the new script was linted explicitly and passes.
-`link-check.py` reports **117 broken** here against 91 on `main`; the delta is files Group E will
-create. **`backlog-index.py --check` exits 1 and that is correct** — this phase's documents already
-cite ids `backlog.md` does not carry yet, and it flips to 0 when task 15 lands.
+does not reach `docs/procedures/`**. ***That directory has never been lint-clean: `ruff check
+docs/procedures/` reports 36 findings across five files***, one of them in this phase's own
+`backlog-index.py`. *A note claiming that script passes was written and is now retracted; the code
+is untouched, because fixing one of thirty-six is arbitrary.* `link-check.py` reports **112 broken**
+here against 91 on `main` — **down from 117** now that `backlog-done.md` exists.
+**`backlog-index.py --check` exits 0.**
 
 **This section was 154 lines and is now short again — the four older entries were removed, not
 moved.** *Every fact in them was checked and found to have a durable home already: Phase 11's and
@@ -117,7 +119,7 @@ both backends, and a local model handled tool use, file editing and multi-turn c
 **Two of its three failure modes are discharged**, and the third is not. Phase 9's measurement
 settled the storage-infrastructure half; **Phase 10 settled that archiving cannot stay opaque** — tar
 a day folder, unpack it elsewhere, and every blob opens and verifies against the digest in its own
-filename. **Whether archiving slows a call is untested**, and is parked in `backlog.md`.
+filename. **Whether archiving slows a call is untested**, and is parked as **`BKL-0017`**.
 
 **Five phases done. The first two touched no `src/`** — Phase 8 built the method tier and the
 guardrails, Phase 9 decided `EPD-003` and ran the gate that named the claim above — **and Phase 10 is
@@ -186,7 +188,8 @@ is the full inventory.*
    one is cheaper than any measurement in the list, and neither decision waits on Phase 11.
    (`EPD-003` is no longer among them — decided 2026-08-17 by Phase 9.)
 
-*The measurement items are both in `backlog.md` under "Measurements left open" and neither is listed
+*The measurement items are both in `backlog.md` under "Measurements left open" — **`BKL-0012`** and
+**`BKL-0017`** — and neither is listed
 here as next, because Phase 11 is chosen and running and this file is not the inventory. Whether
 Claude Code shows LM Studio's context error was already there. **Whether archiving slows a call was
 added there on 2026-08-21** — until then it lived only in `prompt.md`, which is the one file allowed

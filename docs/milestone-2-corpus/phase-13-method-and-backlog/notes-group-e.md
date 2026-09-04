@@ -416,3 +416,50 @@ people scan** rather than buried in a paragraph. *The first attempt to fix it ed
 row instead of the item — the row sits earlier in the file, a single-occurrence replace found it
 first, and `--write` overwrote the edit on the next run. **The generated block is not a place where
 an edit can survive**, which is what the marker comment says and what this proved.*
+
+
+## Tasks 19 and 20 — the citations repointed, and the sweep found far fewer than expected
+
+**The plan said to sweep rather than enumerate, and the sweep is what found the number.** Every
+item's own opening phrase was extracted from the two generated tables and searched across the live
+tier with markup stripped and whitespace collapsed — **a leading-words probe first, then a sliding
+window**, because the first pass found three sites and the second found nine. *The difference is
+citations that quote from the middle of a title: `IDM-011` cites `BKL-0004` as "a stable,
+referencable index", which no leading-word probe can see.*
+
+**Of the nine, five were real citations and four were coincidence** — an EPD describing its own
+subject in the words the backlog item borrowed from it, and this phase's own prose about the phase
+count. *A phrase match is evidence of a citation, not proof of one; each was opened.*
+
+| Repointed | Was |
+|---|---|
+| `method/IDM-003-development-tooling.md` → `BKL-0031` | "the backlog item below insists…" |
+| `reference/observability.md` → `BKL-0021` | "That remains open in `../backlog.md`" |
+| `method/IDM-011-the-backlog.md` → `BKL-0004` | "`backlog.md`'s own item asking for this" |
+| `status.md` → `BKL-0017` | "is parked in `backlog.md`" |
+| `status.md` → `BKL-0012` and `BKL-0017` | "both in `backlog.md` under 'Measurements left open'" |
+
+**`CLAUDE.md` cites no item by title** — it points at `IDM-011` and stops, which is the tier rule
+working.
+
+**`procedures/corpus-benchmark/README.md` was left alone deliberately.** Its "What it does not
+answer" bullets share wording with `BKL-0016` and `BKL-0017` because **the items were written from
+the README**, not the other way round. *A scope statement is not a citation, and adding an id there
+would point the source at its own derivative.*
+
+**The frozen archive was not touched**, per the plan: a quoted title in a closed phase's document is
+a claim about what the backlog said then.
+
+### Task 20
+
+**`backlog-index.py --check` exits 0.** Ids unique and in file order within each file, every item
+carrying a row and every row an item, every category agreeing with its section, both `done` rules
+holding, and **every `BKL-NNNN` written anywhere under `docs/` or in `CLAUDE.md` resolving to an
+item.**
+
+*It exited 1 for the whole of this phase until now, and the notes said that was correct. It was —
+the citations were written before the items and were waiting on them.*
+
+**`link-check.py` reports 112 broken, down from 117.** The five closed are the ones that named
+`backlog-done.md` before it existed. *The remainder are unchanged and belong to files Group F and G
+have still to create.*

@@ -51,7 +51,7 @@ place, because `partly-done` means it does not move out.
 | **B** `IDM-009` | **done** — reviewing executed work |
 | **C** `IDM-010` | **done** — the per-phase `for-the-owner.md` |
 | **D** `IDM-011` | **done** — the backlog, and the `IDM-001` amendment |
-| **E** the refactor | **part-done.** 13, 17 and **14a** are done and the inventory is ratified; **15 is next**, then 16, 18, 19, 20 |
+| **E** the refactor | **done.** 13, 14, 14a, 15, 16, 17, 18, 19 and 20 all run; `--check` exits 0 |
 | **F** the review of this phase | not started — Phase 13 reviewed under the `IDM-009` it wrote |
 | **G** close | not started |
 
