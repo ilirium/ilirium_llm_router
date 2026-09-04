@@ -79,6 +79,17 @@ this phase does not revisit**, and which a review may question but never file as
 |---|---|---|
 | 19 | **Phase 13 runs `IDM-009`'s first jobs-done review — on itself** | The rule binds the phase that wrote it. It also buys the second data point on a phase that changed **no `src/`**, which is the axis Phase 12's run could not vary |
 
+**Four more, settled 2026-09-04 after the forward review put them.** *Each answers a question that
+touched one of the rows above, which is why they are decisions rather than findings — `IDM-004`
+rule 5.*
+
+| | Settled | Note |
+|---|---|---|
+| 21 | **Metadata is placed per shape.** A line under the bold opening for prose items; **an extra leading column** for the table rows in `Decisions waiting on a person`; a line under the heading for the `###` items in `Dictionaries` | Settled rows 4 and 7 both survive and **nothing moves**. `backlog-index.py` learns three shapes rather than one, which is the cost |
+| 22 | **Settled row 13 stands, and its evidence is re-sourced.** `IDM-010` says plainly that Phase 11's file does **not** violate it | What that file actually shows is that **`ERRAND` was missing**, which is why two errands were filed as `ASK`s. That is the better finding, and it is the one `IDM-010` carries |
+| 23 | **`partly-done` and `superseded` both stay in `backlog.md`.** `backlog-done.md` keeps meaning exactly one thing: work that was done | **`superseded` has its instance**: the struck 429 entry, refused and then overturned by the live rate-limit item. The `See` column carries the link between the two |
+| 24 | **`BKL` ids are allocated in file order**, top to bottom as the file reads at task 13 | The section order is deliberate — method first, on the owner's 2026-08-19 instruction — so ids follow the reading a person actually does. **Date order is not merely different but unusable**: several older items carry no `added` date, and inferring one to freeze a permanent id is the guess this repository keeps finding later |
+
 **Two things the owner decided to leave alone.** The parked `backlog.md` items proposing `IDM-004`
 amendments **stay parked** — and there are **three**, not the two the owner was asked about: the
 third, added 2026-09-02, names an `IDM-004` charter requirement among its homes and says it *"merges
@@ -138,7 +149,7 @@ it was and does not reopen it.**
 | # | Task |
 |---|---|
 | **7** | Write `../../method/IDM-010-writing-for-the-owner.md` — settled rows 11–18, with the reasoning, not the rows restated |
-| **8** | Record Phase 11's file as **both the worked example and the evidence**. It is the only instance — **11 entries: 3 `ASK`, 5 `IDEA`, 3 `REGRET`**. All three `ASK`s are the shape settled row 13 now forbids, **none of the 11 was ever marked answered**, and **Phase 12 wrote none at all** — a practice invented without a rule that failed to survive one phase |
+| **8** | Record Phase 11's file as **both the worked example and the evidence**, per settled row 22. It is the only instance — **11 entries: 3 `ASK`, 5 `IDEA`, 3 `REGRET`**, **none ever marked answered**, and **Phase 12 wrote none at all**. **Say plainly that its three `ASK`s do not violate settled row 13**: two are errands a session cannot perform and one was raised aloud every phase. What the file shows is that **`ERRAND` was missing** |
 | **9** | `IDM-000` index row; a **`CLAUDE.md` pointer**; and `../../README.md`'s phase template — **amend the contents sentence itself**, not only append a pointer. It reads *"holds `plan.md`, `notes.md` and `evidence/`"*, which settled row 11 makes wrong |
 
 ### Group D — `IDM-011`, the backlog
@@ -158,11 +169,11 @@ lands on the owner's word.**
 
 | # | Task |
 |---|---|
-| **13** | **Compile the item inventory** — boundaries, ids, categories, statuses, dates, one-line descriptions. **Then stop.** |
+| **13** | **Compile the item inventory** — boundaries, ids, categories, statuses, dates, one-line descriptions. **Ids in file order** (row 24); **three item shapes** (row 21). **Then stop.** |
 | **14** | *(checkpoint)* **The owner ratifies the inventory and prunes it.** Nothing is applied before this returns. **This task produces no commit** — `../../README.md` requires the row to say so, or a reader cannot tell it from a task that was skipped |
 | **15** | Apply the metadata lines to `../../backlog.md`. **Move nothing here** — the one move belongs to task 16, and doing it in this task would mix a mechanical pass with a judgement |
 | **16** | Create `../../backlog-done.md` and **move** into it the item this phase discharges — *"Give every item here a stable, referencable index"*, added 2026-08-26 on the owner's instruction. **Move, not copy: it is deleted from `backlog.md`**, which is what makes the register's "`Done`/`Phase` always empty by construction" true. **It seeds itself** |
-| **17** | Write `../../procedures/backlog-index.py`, `--write` and `--check`, in the shape `branch-index.py` established |
+| **17** | Write `../../procedures/backlog-index.py`, `--write` and `--check`, in the shape `branch-index.py` established. **It parses three item shapes**, per settled row 21 |
 | **18** | Generate both tables |
 | **19** | **Repoint every existing citation to a `BKL` id.** Items are cited today by quoting their bold opening phrase — the exact defect the scheme exists to end. **Sweep for the citing sites; do not enumerate them** — the "two phase plans" in the backlog item dates from 2026-08-26 and two phases have landed since. **The frozen archive is out of scope**: a quoted title in a closed phase's document is a *claim* about what the backlog said then, and `../../README.md`'s archive rule is paths yes, claims no. Live tier only |
 | **20** | `--check`: ids unique, every item has a row and every row an item, every `BKL-NNNN` citation in `docs/` resolves |
@@ -223,9 +234,11 @@ unambiguously.
 |---|---|---|
 | Format | `BKL-NNNN` — four digits, zero-padded | |
 | First id | `BKL-0001` | |
-| Allocation | in order written, **never reused, never renumbered** — `IDM-000`'s scheme for `IDM-NNN` | |
+| Allocation | **file order** at task 13, then **never reused, never renumbered** — `IDM-000`'s scheme for `IDM-NNN`, with the bulk-pass ambiguity closed by settled row 24 | |
 | Highest id allocated | ❓ *— settled at task 13; ~30 items, and the count is not the point of the pass* | ❓ |
-| Metadata line | `**BKL-0007** · <category> · <status> · added YYYY-MM-DD` | |
+| Metadata line, prose items | `**BKL-0007** · <category> · <status> · added YYYY-MM-DD` | |
+| …for a `###` item | the same line, under the heading | |
+| …for a table-row item | **an extra leading column** carrying the id, the rest of the metadata in the row's existing cells | |
 | …for a done item | the same, plus `· done YYYY-MM-DD · phase N` | |
 
 ### Statuses and categories
@@ -233,6 +246,8 @@ unambiguously.
 | Name | Value | ❓ |
 |---|---|---|
 | Statuses | `open`, `partly-done`, `done`, `refused`, `superseded` — five | |
+| Which leave `backlog.md` | **`done` only.** `refused`, `partly-done` and `superseded` all stay — settled rows 6 and 23 | |
+| `superseded`'s instance | the struck 429 entry, overturned 2026-08-24 by the live rate-limit item | |
 | Categories | **the eight existing section names**, unchanged per settled row 4 | |
 | The eight category tokens | ❓ *— the exact spellings are fixed at task 13, from the sections as they stand* | ❓ |
 

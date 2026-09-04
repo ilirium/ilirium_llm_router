@@ -120,6 +120,24 @@ settled row 13 applied to this phase.
 3. **`partly-done` and `superseded` have no home, and `superseded` has no instance.**
 4. **`BKL` allocation order** — file order or `added`-date order. It differs, and ids are permanent.
 
+### Answered 2026-09-04, the same session — settled rows 21–24
+
+**All four were put to the owner in the session and answered there.** *That is settled row 13
+applied to the phase that wrote it: a question needing a decision is asked out loud, not left in a
+file for somebody to find.*
+
+| | Answer | What it turned on |
+|---|---|---|
+| 1 | **Metadata per shape** — a line under the bold opening, an extra leading column for the table rows, a line under the heading for `###` items | Settled rows 4 and 7 both survive and nothing moves. The cost lands on `backlog-index.py`, which learns three shapes |
+| 2 | **Row 13 stands; the evidence is re-sourced** | **The refutation improved the finding rather than killing it.** Phase 11's file does not show a rule being broken — it shows **`ERRAND` was missing**, which is why two errands were filed as `ASK`s. `IDM-010` now carries that instead |
+| 3 | **`partly-done` and `superseded` stay live; `superseded` gets its instance** — the struck 429 entry, overturned by the live rate-limit item, with `See` carrying the link | Keeps `backlog-done.md` meaning exactly one thing, which settled row 6 gave it |
+| 4 | **File order** | Not a preference between two workable schemes: **date order is unusable**, because several older items carry no `added` date and inferring one would freeze a permanent id on a guess |
+
+**Question 2 is the one worth carrying.** A refuted claim is normally a subtraction; here the file
+that was supposed to prove the rule turned out to prove something better about it, and **the review
+could not have reached that** — it takes the taxonomy the plan itself introduces to see that two of
+the three `ASK`s were `ERRAND`s all along.
+
 *Three more the cold run raised are recorded and not escalated, because each is answerable inside a
 later task:* whether `IDM-009` takes `IDM-000`'s two-zone shape (task 4's own call), where an
 entry's date goes in the new `for-the-owner.md` heading (task 7), and whether Phase 13's
