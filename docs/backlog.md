@@ -39,40 +39,40 @@ metadata lines and their own opening sentences. **Do not type in it.** Change an
 
 | ID | Added | Status | Category | What it is | Done | Phase | See |
 |---|---|---|---|---|---|---|---|
-| `BKL-0001` | 2026-08-19 | open | method | A forward review must classify each position by *authority*, not only by correctness. | — | — | |
-| `BKL-0002` | 2026-08-19 | partly-done | method | A forward review must check the plan's numbers against the phase's own `evidence/`, and a value register is the instrument that does it. | — | — | |
-| `BKL-0003` | 2026-09-02 | open | method | The one-notes-file-per-task-group rule is invisible at the moment it applies. | — | — | |
-| `BKL-0004` | 2026-08-26 | partly-done | method | Give every item here a stable, referencable index. | — | — | |
-| `BKL-0005` | — | open | documentation-defects | `CLAUDE.md` is 359 lines against upstream's ~200-line guidance, and nobody has measured what it could lose. | — | — | |
-| `BKL-0006` | 2026-08-17 | open | documentation-defects | The whole of `milestone-1-core/documentation-review-2026-08-16.md`. | — | — | |
-| `BKL-0007` | 2026-09-02 | open | documentation-defects | The open milestone's phase count is stated in four places across two files, and it has gone stale three times. | — | — | |
-| `BKL-0008` | 2026-09-02 | open | documentation-defects | Phase 11 records its largest corpus session as both 292 calls and 270. | — | — | |
-| `BKL-0009` | — | open | decisions-waiting | `epd/EPD-001-model-selection-and-mixed-model-sessions.md` — picking a local model mid-session, and subagents on local models | — | — | |
-| `BKL-0010` | — | open | decisions-waiting | `epd/EPD-002-token-counting-for-local-backends.md` — token counting for local backends | — | — | |
-| `BKL-0012` | — | open | measurements | Whether Claude Code shows LM Studio's context error. | — | — | |
-| `BKL-0013` | — | open | measurements | Non-streaming replies. | — | — | |
-| `BKL-0014` | — | open | measurements | Other local models. | — | — | |
-| `BKL-0015` | 2026-08-19 | open | measurements | What one day of real use actually contains, and where the training floor is. | — | — | |
-| `BKL-0016` | 2026-08-19 | open | measurements | Whether a response dictionary pays. | — | — | |
-| `BKL-0017` | 2026-08-21 | open | measurements | Whether archiving slows a call — failure mode 3 of Milestone 2's central claim. | — | — | |
-| `BKL-0018` | — | open | owner-shaped | Prompt-cache warmup probes cost 44% of local wall-clock time. | — | — | |
-| `BKL-0019` | 2026-08-26 | open | owner-shaped | What a reconstructed session cannot contain, and the fix nobody should reach for. | — | — | |
-| `BKL-0020` | 2026-08-18 | open | owner-shaped | Three diagnostics reserved out of Phase 10, deliberately. | — | — | |
-| `BKL-0021` | 2026-08-18 | open | owner-shaped | A caller that disconnects before the response generator's first step leaves no `calls.csv` row. | — | — | |
-| `BKL-0022` | 2026-08-18 | open | owner-shaped | Running the router as several processes — instances behind a proxy, `uvicorn --workers N`, or a process pool. | — | — | |
-| `BKL-0023` | — | open | owner-shaped | The per-backend authentication header name. | — | — | |
-| `BKL-0024` | — | open | owner-shaped | Extract the portable methodology. | — | — | |
-| `BKL-0025` | 2026-08-28 | open | instruments | ~24 mutation survivors are error-message wording, and they are parked rather than tested. | — | — | |
-| `BKL-0026` | 2026-08-28 | open | instruments | A mutation-testing tool, rather than the hand-rolled harness Phase 11 built. | — | — | |
-| `BKL-0027` | 2026-08-26 | open | instruments | Whether a reconstruction can be checked against the real thing — and it looks like it can. | — | — | |
-| `BKL-0028` | 2026-08-21 | open | instruments | Nothing runs `procedures/branch-index.py --check` automatically, so the branch index's whole guarantee rests on somebody remembering. | — | — | |
-| `BKL-0029` | — | open | instruments | `procedures/link-check.py`'s exit code carries no information. | — | — | |
-| `BKL-0030` | 2026-09-02 | open | instruments | `IDM-003` governs the formatter pin and says nothing about the build backend. | — | — | |
-| `BKL-0031` | — | open | instruments | Static analysis beyond ruff. | — | — | |
-| `BKL-0034` | 2026-08-24 | open | instruments | Record the Anthropic rate-limit response headers. | — | — | |
+| `BKL-0001` | 2026-08-19 | open | method | A forward review must classify each position by *authority*, not only by correctness | — | — | |
+| `BKL-0002` | 2026-08-19 | partly-done | method | A forward review must check the plan's numbers against its `evidence/` | — | — | |
+| `BKL-0003` | 2026-09-02 | open | method | The one-notes-file-per-task-group rule is invisible at the moment it applies | — | — | |
+| `BKL-0004` | 2026-08-26 | partly-done | method | Give every item here a stable, referencable index | — | — | |
+| `BKL-0005` | — | open | documentation-defects | `CLAUDE.md`'s length against upstream guidance | — | — | |
+| `BKL-0006` | 2026-08-17 | open | documentation-defects | The whole of `milestone-1-core/documentation-review-2026-08-16.md` | — | — | |
+| `BKL-0007` | 2026-09-02 | open | documentation-defects | The open milestone's phase count goes stale at every merge | — | — | |
+| `BKL-0008` | 2026-09-02 | open | documentation-defects | Phase 11 records its largest corpus session as both 292 calls and 270 | — | — | |
+| `BKL-0009` | — | open | decisions-waiting | Picking a local model mid-session, and subagents on local models | — | — | |
+| `BKL-0010` | — | open | decisions-waiting | Token counting for local backends | — | — | |
+| `BKL-0012` | — | open | measurements | Whether Claude Code shows LM Studio's context error | — | — | |
+| `BKL-0013` | — | open | measurements | Non-streaming replies | — | — | |
+| `BKL-0014` | — | open | measurements | Other local models | — | — | |
+| `BKL-0015` | 2026-08-19 | open | measurements | What one day of real use actually contains, and where the training floor is | — | — | |
+| `BKL-0016` | 2026-08-19 | open | measurements | Whether a response dictionary pays | — | — | |
+| `BKL-0017` | 2026-08-21 | open | measurements | Whether archiving slows a call | — | — | |
+| `BKL-0018` | — | open | owner-shaped | Prompt-cache warmup probes cost 44% of local wall-clock time | — | — | |
+| `BKL-0019` | 2026-08-26 | open | owner-shaped | What a reconstructed session cannot contain, and the fix nobody should reach for | — | — | |
+| `BKL-0020` | 2026-08-18 | open | owner-shaped | Three diagnostics reserved out of Phase 10, deliberately | — | — | |
+| `BKL-0021` | 2026-08-18 | open | owner-shaped | A disconnect before the generator's first step can leave no `calls.csv` row | — | — | |
+| `BKL-0022` | 2026-08-18 | open | owner-shaped | Running the router as several processes | — | — | |
+| `BKL-0023` | — | open | owner-shaped | The per-backend authentication header name | — | — | |
+| `BKL-0024` | — | open | owner-shaped | Extract the portable methodology | — | — | |
+| `BKL-0025` | 2026-08-28 | open | instruments | ~24 mutation survivors are error-message wording | — | — | |
+| `BKL-0026` | 2026-08-28 | open | instruments | A mutation-testing tool, rather than the hand-rolled harness Phase 11 built | — | — | |
+| `BKL-0027` | 2026-08-26 | open | instruments | Whether a reconstruction can be checked against the real thing | — | — | |
+| `BKL-0028` | 2026-08-21 | open | instruments | Nothing runs `branch-index.py --check` automatically | — | — | |
+| `BKL-0029` | — | open | instruments | `link-check.py`'s exit code carries no information | — | — | |
+| `BKL-0030` | 2026-09-02 | open | instruments | `IDM-003` governs the formatter pin and says nothing about the build backend | — | — | |
+| `BKL-0031` | — | open | instruments | Static analysis beyond ruff | — | — | |
+| `BKL-0034` | 2026-08-24 | open | instruments | Record the Anthropic rate-limit response headers | — | — | |
 | `BKL-0035` | 2026-08-26 | open | dictionaries | Dictionary commands — `list`, `show`, `install` | — | — | |
 | `BKL-0036` | 2026-08-26 | open | dictionaries | A benchmark: what a dictionary is worth against no dictionary | — | — | |
-| `BKL-0037` | — | superseded | not-on-this-list | ~~The Anthropic 429 rate-limit headers.~~ Overturned 2026-08-24 — it is now a live item | — | — | |
+| `BKL-0037` | — | superseded | not-on-this-list | The Anthropic 429 rate-limit headers — refused, then overturned | — | — | |
 
 <!-- end generated -->
 
@@ -84,10 +84,11 @@ metadata lines and their own opening sentences. **Do not type in it.** Change an
 EPD, which is parked by definition. An item here is therefore a proposal to change what sessions are
 *required* to do.
 
-**A forward review must classify each position by *authority*, not only by correctness.** Proposed
-2026-08-19, from the defect that produced Phase 10's retraining interview.
+### BKL-0001 — A forward review must classify each position by *authority*, not only by correctness
 
-**BKL-0001** · method · open · added 2026-08-19
+method · open · added 2026-08-19
+
+Proposed 2026-08-19, from the defect that produced Phase 10's retraining interview.
 
 *What happened:* `phase-10-body-store/plan.md` stated, in its own prose, that dictionary training
 *"belongs to an offline procedure the router never calls"* — training run by hand, by a person. **The
@@ -123,11 +124,13 @@ executing. Doing it mid-phase would put method work on a `feat/` branch, which
 
 ---
 
+### BKL-0002 — A forward review must check the plan's numbers against its `evidence/`
+
+method · partly-done · added 2026-08-19
+
 **A forward review must check the plan's numbers against the phase's own `evidence/`, and a value
 register is the instrument that does it.** Proposed 2026-08-19, from what compiling Phase 10's
 register found.
-
-**BKL-0002** · method · partly-done · added 2026-08-19
 
 *What happened:* `phase-10-body-store/plan.md` justified its shutdown drain with *"a full queue is
 ~640 bodies, which at **tens of milliseconds each** is a **twenty-second** shutdown"*. That phase's
@@ -170,10 +173,11 @@ review — so the open half is real and its evidence is unchanged.
 document. **Phase 10 is the worked example either way**, since its register and the defects it caught
 are recorded in `milestone-2-corpus/phase-10-body-store/notes.md` and summarised in `IDM-008`.
 
-**The one-notes-file-per-task-group rule is invisible at the moment it applies.** *Added
-2026-09-02, on the owner's instruction, from Phase 12's planning that same day.*
+### BKL-0003 — The one-notes-file-per-task-group rule is invisible at the moment it applies
 
-**BKL-0003** · method · open · added 2026-09-02
+method · open · added 2026-09-02
+
+*Added 2026-09-02, on the owner's instruction, from Phase 12's planning that same day.*
 
 *What happened:* Phase 12's `plan.md` was written with five task groups, reviewed under
 `method/IDM-004-reviewing-unexecuted-work.md` by **two runs**, revised against that review, and at
@@ -225,32 +229,36 @@ correctness but *when*: group notes exist to be written **as a group runs**, and
 at the merge produces them by reconstruction, which is the thing the whole notes tier exists to
 prevent.
 
-**Give every item here a stable, referencable index.** *Added 2026-08-26 on the owner's instruction.*
-Items are cited today by quoting their bold opening phrase — `status.md`'s "What is next" does it,
-and so do two phase plans. **A quoted title is not an identifier:** editing a title silently breaks
-every citation of it, nothing checks that, and the break stays invisible until a reader follows one.
-*What it would take:* an id per item, a rule for allocating one that survives items being deleted when
-done, and a decision on whether `procedures/link-check.py` learns to verify them — that last part is
-what turns this from a convention into an instrument. *Parked because* it touches every item in an
-**859-line** file, and an id scheme is worth deciding once rather than growing. *That figure read
-**545** until 2026-09-04 — it was written when the file was 545 lines and never re-taken, which is
-this file's own recurring defect appearing in the item about indexing it.*
+### BKL-0004 — Give every item here a stable, referencable index
 
-**BKL-0004** · method · partly-done · added 2026-08-26
+method · partly-done · added 2026-08-26
+
+*Added 2026-08-26 on the owner's instruction.* Items are cited today by quoting their bold opening
+phrase — `status.md`'s "What is next" does it, and so do two phase plans. **A quoted title is not an
+identifier:** editing a title silently breaks every citation of it, nothing checks that, and the
+break stays invisible until a reader follows one. *What it would take:* an id per item, a rule for
+allocating one that survives items being deleted when done, and a decision on whether
+`procedures/link-check.py` learns to verify them — that last part is what turns this from a
+convention into an instrument. *Parked because* it touches every item in an **859-line** file, and
+an id scheme is worth deciding once rather than growing. *That figure read **545** until 2026-09-04
+— it was written when the file was 545 lines and never re-taken, which is this file's own recurring
+defect appearing in the item about indexing it.*
 
 ---
 
 ## Documentation defects found and not fixed
 
-**`CLAUDE.md` is 359 lines against upstream's ~200-line guidance, and nobody has measured what it
-could lose.** *That figure read **297** until 2026-09-04 and was corrected by counting the file.
-It has grown 62 lines since it was written, which is the item's own subject happening to the item.*
-It was 260 before 2026-08-21 and grew by 37 that day — the branch-index rule and its two
-pointers, then `IDM-007`'s Working-agreement bullet, the "Reading" section and the `IDM-008` pointer.
-**The owner accepted the growth deliberately**, on the ground that the 200 figure is guidance about
-*adherence* rather than a limit, and that this file is the project's method rather than boilerplate.
+### BKL-0005 — `CLAUDE.md`'s length against upstream guidance
 
-**BKL-0005** · documentation-defects · open
+documentation-defects · open
+
+**`CLAUDE.md` is 359 lines against upstream's ~200-line guidance, and nobody has measured what it
+could lose.** *That figure read **297** until 2026-09-04 and was corrected by counting the file. It
+has grown 62 lines since it was written, which is the item's own subject happening to the item.* It
+was 260 before 2026-08-21 and grew by 37 that day — the branch-index rule and its two pointers, then
+`IDM-007`'s Working-agreement bullet, the "Reading" section and the `IDM-008` pointer. **The owner
+accepted the growth deliberately**, on the ground that the 200 figure is guidance about *adherence*
+rather than a limit, and that this file is the project's method rather than boilerplate.
 
 *Recorded so a later review can act on it*, which is the condition the growth was accepted under.
 `wiki/claude-code-context-budget.md` holds both relevant facts: `CLAUDE.md` of any length **loads
@@ -264,13 +272,15 @@ it. **Two of the six restated `IDM-001` facts and both new pointers were argued 
 record**, in `IDM-000` and `IDM-001`, so a review that wants them out has to beat those arguments
 rather than count lines.
 
-**The whole of `milestone-1-core/documentation-review-2026-08-16.md`.** A fresh-context agent
-reviewed the documentation Phase 7 produced — 23 files, ~5400 lines — and returned a work list:
-**five findings verified independently**, roughly 25 more reported but not re-checked, and **six
-questions for the owner (Q1–Q6)**. Its Part 5 orders the work by consequence and that order still
-stands for what is left. **One of its findings has been acted on; see below. The rest has not.**
+### BKL-0006 — The whole of `milestone-1-core/documentation-review-2026-08-16.md`
 
-**BKL-0006** · documentation-defects · open · added 2026-08-17
+documentation-defects · open · added 2026-08-17
+
+A fresh-context agent reviewed the documentation Phase 7 produced — 23 files, ~5400 lines — and
+returned a work list: **five findings verified independently**, roughly 25 more reported but not
+re-checked, and **six questions for the owner (Q1–Q6)**. Its Part 5 orders the work by consequence
+and that order still stands for what is left. **One of its findings has been acted on; see below.
+The rest has not.**
 
 *Parked because* the owner parked it whole on 2026-08-17, in favour of opening Milestone 2 and
 building router features. It is not blocked on anything and it is not scheduled; picking it up is a
@@ -326,12 +336,14 @@ open — Q2 asked whether it was closed at all, and the owner closed it. And Q5 
 when it belongs to no phase — was answered **for that file only**, by filing it in the archive at the
 milestone root; as a general rule for `README.md` it is still open, inside the file with the rest.
 
+### BKL-0007 — The open milestone's phase count goes stale at every merge
+
+documentation-defects · open · added 2026-09-02
+
 **The open milestone's phase count is stated in four places across two files, and it has gone stale
 three times.** *Added 2026-09-02 by Phase 12's task 12, which was chartered to fix the count and
 found that fixing it is the third instance rather than the end of it. **Widened the same day**, when
 the review of the finished work found a fourth copy — and the worst one.*
-
-**BKL-0007** · documentation-defects · open · added 2026-09-02
 
 **The fourth is `CLAUDE.md`**, which said *"three phases in, last merged 2026-08-21"* — naming
 Phase 10's merge where `status.md` names Phase 11's, so it was stale by a whole phase. **`CLAUDE.md`
@@ -381,10 +393,12 @@ stale in exactly the same edit as the prose. The 2026-08-17 item that settled `s
 concluded that the axis is **what goes stale invisibly**, and both of these are invisible for the
 same reason: nothing re-reads them at a merge.
 
-**Phase 11 records its largest corpus session as both 292 calls and 270.** *Added 2026-09-02 by
-Phase 12's review of its finished work, which found it while checking a number Phase 12 published.*
+### BKL-0008 — Phase 11 records its largest corpus session as both 292 calls and 270
 
-**BKL-0008** · documentation-defects · open · added 2026-09-02
+documentation-defects · open · added 2026-09-02
+
+*Added 2026-09-02 by Phase 12's review of its finished work, which found it while checking a number
+Phase 12 published.*
 
 `milestone-2-corpus/phase-11-corpus-tools/for-the-owner.md` says *"the last **45 of 270**"*; that
 phase's `notes.md` calls the same session *"the corpus's largest at 292 calls"*. **Both cannot be
@@ -405,10 +419,27 @@ mining Phase 11 for a denominator will pick one of two numbers with nothing to c
 None of these is blocked on work. Each is blocked on somebody deciding, and each is argued in full in
 `epd/`.
 
-| ID | Category | Status | Added | Blocked on | What it is | Why it may be weaker than it looks |
-|---|---|---|---|---|---|---|
-| `BKL-0009` | decisions-waiting | open | — | **a decision only** | `epd/EPD-001-model-selection-and-mixed-model-sessions.md` — picking a local model mid-session, and subagents on local models | Its gate — that a local model can hold a real session — was discharged by Phase 4. Per-request dispatch already satisfies the subagent half with no code, and the `session_id`/`agent_id` columns were accepted separately |
-| `BKL-0010` | decisions-waiting | open | — | **a decision, on a weakened case** | `epd/EPD-002-token-counting-for-local-backends.md` — token counting for local backends | Phase 4 measured the harm it was organised around and found none: the context boundary refuses cleanly rather than trimming silently. Its addendum also records the proposal reading `max_context_length` where it needs the loaded `context_length` |
+### BKL-0009 — Picking a local model mid-session, and subagents on local models
+
+decisions-waiting · open
+
+Argued in full in `epd/EPD-001-model-selection-and-mixed-model-sessions.md`. **Blocked on a decision
+only.**
+
+*Why it may be weaker than it looks.* Its gate — that a local model can hold a real session — was
+discharged by Phase 4. Per-request dispatch already satisfies the subagent half with no code, and
+the `session_id`/`agent_id` columns were accepted separately
+
+### BKL-0010 — Token counting for local backends
+
+decisions-waiting · open
+
+Argued in full in `epd/EPD-002-token-counting-for-local-backends.md`. **Blocked on a decision, on a
+weakened case.**
+
+*Why it may be weaker than it looks.* Phase 4 measured the harm it was organised around and found
+none: the context boundary refuses cleanly rather than trimming silently. Its addendum also records
+the proposal reading `max_context_length` where it needs the loaded `context_length`
 
 ## Measurements left open
 
@@ -416,109 +447,126 @@ Carried from Phase 4's own honest list. Phase 6 graded the live-behaviour claims
 **consistent with their committed transcripts but not re-measured**, which is the label they should
 keep.
 
-**Whether Claude Code shows LM Studio's context error.** It arrives as an SSE `error` event inside an
-HTTP 200 — the shape Phase 3 measured being ignored — but as the *sole* event, with no `message_start`
-before it, where Phase 3's case followed partial content. *Parked because* nobody has needed it.
-*Weaker than it looks?* No — this is the strongest item in the list. It decides whether the most
-actionable message LM Studio produces is ever seen by anyone.
-
-**BKL-0012** · measurements · open
-
-**Non-streaming replies.** Every Phase 4 probe ran streamed. `procedures/lmstudio-capability-probes/probe.py`
-already has `--no-stream` and it has never been used; the recorder takes a different path for
-buffered replies and LM Studio reports `usage` differently there. *Parked because* Claude Code always
-streams, so this is about the router's second code path rather than about live traffic.
-
-**BKL-0013** · measurements · open
-
-**Other local models.** All of Phase 4 is `qwen/qwen3.5-9b`. `capabilities` in `GET /api/v1/models`
-varies per model — several have no `vision`, several no `reasoning` — so nothing in the
-honoured/ignored table transfers without re-running the probes. *Parked because* it is re-running an
-existing instrument rather than building one, and expires with each LM Studio release anyway.
-
-**BKL-0014** · measurements · open
-
-**What one day of real use actually contains, and where the training floor is.** *Added 2026-08-19,
-from Phase 10's retraining interview; `EPD-003`'s corpus is the subject.* Phase 10 retrains from a
-rolling window whose **default is one day**, and nothing anywhere says whether one day holds enough
-material to train a dictionary from. *For scale, measured:* Phase 9's **entire** corpus — three runs,
-8.8 MB — yields **68 qualifying request bodies**, and its dictionaries were trained on **48**. A quiet
-day could plausibly be under ten. *Parked because* **no day-partitioned corpus has ever existed** —
-Phase 10's store is the first thing that will produce one, so the measurement cannot be taken until it
-has been running for a while. *Weaker than it looks?* No, and it has a consequence already built:
-until it is answered the sample floor is a guess, and **the refuse-a-worse-one rule is what stops a
-guess doing damage.**
-
-**BKL-0015** · measurements · open · added 2026-08-19
-
-**Whether a response dictionary pays.** *Added 2026-08-19.* Responses are stored **undicted, forever,
-by default** — Phase 10 trains a request dictionary only. *Parked because* nothing has measured it.
-*Weaker than it looks?* **The opposite — it is stronger than its absence suggests**, and that is the
-reason it is written down. The asymmetry is not a finding that responses do not benefit; it is
-inherited from what Phase 9's gate happened to measure, and its own `evidence/README.md` says it
-answers nothing about responses. **Under automatic retraining it would otherwise become permanent by
-default rather than by decision.** Responses may well be the larger volume; nobody has looked.
-
-**BKL-0016** · measurements · open · added 2026-08-19
-
-**Whether archiving slows a call — failure mode 3 of Milestone 2's central claim.** *Added
-2026-08-21, from what Phase 10 deliberately did not settle; until then it lived only in `prompt.md`,
-which is the one file allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s
-table.* The claim reads *"…without parsing a payload, **without slowing a call**, and without special
-storage infrastructure."* Phase 10 discharged the *break* half by driving it and left the *slow* half
-untouched. Settling it needs **one driven session with capture on against one with it off**, comparing
-`ttfb_ms` and `duration_ms`. *Parked because* it needs somebody to drive two comparable sessions, which
-is not a thing a session arranges for itself. *Weaker than it looks?* **No — it is the only open item
-in this file holding a published claim open.** Everything else here is improvement; this one decides
-whether a sentence the project already asserts is true. **One trap, from this repository's own
-numbers:** the local backend's variance is large — `reference/measurements.md` has the same request
-size differing by ≥30% on two days — so a two-session comparison against LM Studio can be swamped by
-noise, and the Anthropic rows are the tighter instrument.
-
-**BKL-0017** · measurements · open · added 2026-08-21
-
 **Before planning any of these, grep the frozen artefacts first.** Phases 3, 4 and 5 each found a
 third or more of their work already done, measured, or misdescribed. The limit is worth knowing too:
 the router logs metadata and never bodies, so old rows prove *a request succeeded* and can never
 prove *a request carrying a particular field succeeded* — which is exactly the gap `EPD-003` proposes
 to close.
 
+### BKL-0012 — Whether Claude Code shows LM Studio's context error
+
+measurements · open
+
+It arrives as an SSE `error` event inside an HTTP 200 — the shape Phase 3 measured being ignored —
+but as the *sole* event, with no `message_start` before it, where Phase 3's case followed partial
+content. *Parked because* nobody has needed it. *Weaker than it looks?* No — this is the strongest
+item in the list. It decides whether the most actionable message LM Studio produces is ever seen by
+anyone.
+
+### BKL-0013 — Non-streaming replies
+
+measurements · open
+
+Every Phase 4 probe ran streamed. `procedures/lmstudio-capability-probes/probe.py` already has
+`--no-stream` and it has never been used; the recorder takes a different path for buffered replies
+and LM Studio reports `usage` differently there. *Parked because* Claude Code always streams, so
+this is about the router's second code path rather than about live traffic.
+
+### BKL-0014 — Other local models
+
+measurements · open
+
+All of Phase 4 is `qwen/qwen3.5-9b`. `capabilities` in `GET /api/v1/models` varies per model —
+several have no `vision`, several no `reasoning` — so nothing in the honoured/ignored table
+transfers without re-running the probes. *Parked because* it is re-running an existing instrument
+rather than building one, and expires with each LM Studio release anyway.
+
+### BKL-0015 — What one day of real use actually contains, and where the training floor is
+
+measurements · open · added 2026-08-19
+
+*Added 2026-08-19, from Phase 10's retraining interview; `EPD-003`'s corpus is the subject.* Phase
+10 retrains from a rolling window whose **default is one day**, and nothing anywhere says whether
+one day holds enough material to train a dictionary from. *For scale, measured:* Phase 9's
+**entire** corpus — three runs, 8.8 MB — yields **68 qualifying request bodies**, and its
+dictionaries were trained on **48**. A quiet day could plausibly be under ten. *Parked because* **no
+day-partitioned corpus has ever existed** — Phase 10's store is the first thing that will produce
+one, so the measurement cannot be taken until it has been running for a while. *Weaker than it
+looks?* No, and it has a consequence already built: until it is answered the sample floor is a
+guess, and **the refuse-a-worse-one rule is what stops a guess doing damage.**
+
+### BKL-0016 — Whether a response dictionary pays
+
+measurements · open · added 2026-08-19
+
+*Added 2026-08-19.* Responses are stored **undicted, forever, by default** — Phase 10 trains a
+request dictionary only. *Parked because* nothing has measured it. *Weaker than it looks?* **The
+opposite — it is stronger than its absence suggests**, and that is the reason it is written down.
+The asymmetry is not a finding that responses do not benefit; it is inherited from what Phase 9's
+gate happened to measure, and its own `evidence/README.md` says it answers nothing about responses.
+**Under automatic retraining it would otherwise become permanent by default rather than by
+decision.** Responses may well be the larger volume; nobody has looked.
+
+### BKL-0017 — Whether archiving slows a call
+
+measurements · open · added 2026-08-21
+
+**Whether archiving slows a call — failure mode 3 of Milestone 2's central claim.** *Added
+2026-08-21, from what Phase 10 deliberately did not settle; until then it lived only in `prompt.md`,
+which is the one file allowed to go stale, and in `milestone-2-corpus/implementation-plan.md`'s
+table.* The claim reads *"…without parsing a payload, **without slowing a call**, and without
+special storage infrastructure."* Phase 10 discharged the *break* half by driving it and left the
+*slow* half untouched. Settling it needs **one driven session with capture on against one with it
+off**, comparing `ttfb_ms` and `duration_ms`. *Parked because* it needs somebody to drive two
+comparable sessions, which is not a thing a session arranges for itself. *Weaker than it looks?*
+**No — it is the only open item in this file holding a published claim open.** Everything else here
+is improvement; this one decides whether a sentence the project already asserts is true. **One trap,
+from this repository's own numbers:** the local backend's variance is large —
+`reference/measurements.md` has the same request size differing by ≥30% on two days — so a
+two-session comparison against LM Studio can be swamped by noise, and the Anthropic rows are the
+tighter instrument.
+
 ## Work with an owner-shaped decision behind it
 
-**Prompt-cache warmup probes cost 44% of local wall-clock time.** 40 calls returning zero content
-tokens, 20.0 of 45.6 minutes in the frozen step 6 session. *Parked because* it has no owner and is
-not a bug: `reference/design-decisions.md` records it under "No special case for background or
-auxiliary traffic" as an argument *against* that decision rather than a defect in it. Fixing it buys
-back nearly half the local wall clock at the price of the first special case in the dispatch rule.
-*Weaker than it looks?* The opposite — this is the largest measured cost in the project, and the
-reason it is parked is that nobody has been willing to take the trade.
+### BKL-0018 — Prompt-cache warmup probes cost 44% of local wall-clock time
 
-**BKL-0018** · owner-shaped · open
+owner-shaped · open
 
-**What a reconstructed session cannot contain, and the fix nobody should reach for.** *Added
-2026-08-26, from Phase 11's converter design.* The corpus holds bodies, so five things Claude Code's
-own session records carry can never be rebuilt from it: **`cwd`**, **`gitBranch`**, **`version`**,
-**`toolUseResult`** — Claude Code's enriched record of what a tool returned, where the wire carries
-only the `tool_result` content — and **agent attribution**. *Why this is an item rather than a line of
-documentation:* the obvious fix is *"capture some headers"* and **it does not work**, because none of
-the five is a header. They are client-side state that never crosses the wire in any form; at most
-`User-Agent` yields a version string. *The part that is genuinely owner-shaped:* whether the router
-should ever record context it is **told** rather than **sent**, which means a capture-time change and
-a new field on the write path. Nobody has asked for it. *Weaker than it looks?* **Yes, and this is the
-rare item that says so.** What is missing is chrome — every user turn, assistant turn, tool call and
-tool result **is** reconstructable, so a transcript comes out complete in substance and thin in
-metadata.
+40 calls returning zero content tokens, 20.0 of 45.6 minutes in the frozen step 6 session. *Parked
+because* it has no owner and is not a bug: `reference/design-decisions.md` records it under "No
+special case for background or auxiliary traffic" as an argument *against* that decision rather than
+a defect in it. Fixing it buys back nearly half the local wall clock at the price of the first
+special case in the dispatch rule. *Weaker than it looks?* The opposite — this is the largest
+measured cost in the project, and the reason it is parked is that nobody has been willing to take
+the trade.
 
-**BKL-0019** · owner-shaped · open · added 2026-08-26
+### BKL-0019 — What a reconstructed session cannot contain, and the fix nobody should reach for
 
-**Three diagnostics reserved out of Phase 10, deliberately.** Named 2026-08-18 when the owner asked
-what else should be logged so that loss is diagnosable, and answered *KISS — this is a prototype meant
-to be finished and used*. **A live metrics or status endpoint**, for watching queue depth and drop
-counts while a session runs rather than reading them afterwards. **A sequence column in `calls.csv`**,
-which would make a missing row self-evident instead of inferable from a counter. **Per-failure detail
-beyond the counters**, such as an errors file listing every body that was not stored.
+owner-shaped · open · added 2026-08-26
 
-**BKL-0020** · owner-shaped · open · added 2026-08-18
+*Added 2026-08-26, from Phase 11's converter design.* The corpus holds bodies, so five things Claude
+Code's own session records carry can never be rebuilt from it: **`cwd`**, **`gitBranch`**,
+**`version`**, **`toolUseResult`** — Claude Code's enriched record of what a tool returned, where
+the wire carries only the `tool_result` content — and **agent attribution**. *Why this is an item
+rather than a line of documentation:* the obvious fix is *"capture some headers"* and **it does not
+work**, because none of the five is a header. They are client-side state that never crosses the wire
+in any form; at most `User-Agent` yields a version string. *The part that is genuinely
+owner-shaped:* whether the router should ever record context it is **told** rather than **sent**,
+which means a capture-time change and a new field on the write path. Nobody has asked for it.
+*Weaker than it looks?* **Yes, and this is the rare item that says so.** What is missing is chrome —
+every user turn, assistant turn, tool call and tool result **is** reconstructable, so a transcript
+comes out complete in substance and thin in metadata.
+
+### BKL-0020 — Three diagnostics reserved out of Phase 10, deliberately
+
+owner-shaped · open · added 2026-08-18
+
+Named 2026-08-18 when the owner asked what else should be logged so that loss is diagnosable, and
+answered *KISS — this is a prototype meant to be finished and used*. **A live metrics or status
+endpoint**, for watching queue depth and drop counts while a session runs rather than reading them
+afterwards. **A sequence column in `calls.csv`**, which would make a missing row self-evident
+instead of inferable from a counter. **Per-failure detail beyond the counters**, such as an errors
+file listing every body that was not stored.
 
 *Parked because* the cheap versions of all three already ship in Phase 10: the corpus index says per
 call why a body was not stored, the recorder already logs a warning when a CSV write fails, and an
@@ -527,14 +575,16 @@ arrived-against-recorded counter pair makes the one silent case visible. *Weaker
 makes *"changing `calls.csv`, not its rotation, not its columns"* an explicit non-goal, so that one
 needs the non-goal overturned first, not merely scheduling.
 
+### BKL-0021 — A disconnect before the generator's first step can leave no `calls.csv` row
+
+owner-shaped · open · added 2026-08-18
+
 **A caller that disconnects before the response generator's first step leaves no `calls.csv` row.**
 *Narrowed 2026-08-18, and the original wording was wrong.* This item first said `record()` is never
 reached whenever a caller disconnects after the response headers. **It is reached, and a row is
 written**: `proxy.py:249` catches `GeneratorExit`, re-raises, and the `finally` calls `record()`.
 `reference/measurements.md` carries **six `client_disconnect` rows across both backends**, and the
 frozen step-6 CSV has one with 10,027 response bytes already streamed.
-
-**BKL-0021** · owner-shaped · open · added 2026-08-18
 
 **What remains is a race**: if Starlette closes the generator before its first step, there is no frame
 to throw into and nothing runs. *Parked because* **it has never been observed** — not in a 142-call
@@ -568,16 +618,19 @@ happening.
 > conclusion is not repaired by labelling it.** The premise was a code comment about the narrow case;
 > the leap was to the general one, without checking the measured rows that name exactly this.
 
-**Running the router as several processes — instances behind a proxy, `uvicorn --workers N`, or a
-process pool.** Raised by the owner on 2026-08-18 while planning Phase 10, for two reasons: spreading
-compression load across cores, and distinguishing concurrent harnesses. *Parked because* **the second
-reason is already discharged and the first is not needed at the measured load.** `session_id` and
-`agent_id` are header-copied CSV columns, and `milestone-2-corpus/phase-9-corpus-gate/` captured five
-distinct sessions and ten subagent rows through one instance — telling harnesses apart is not a
-problem this router has. Two to five concurrent harnesses extrapolates to 1–3 calls/second, which is
-ten to thirty times inside what a single thread absorbs.
+### BKL-0022 — Running the router as several processes
 
-**BKL-0022** · owner-shaped · open · added 2026-08-18
+owner-shaped · open · added 2026-08-18
+
+**Running the router as several processes — instances behind a proxy, `uvicorn --workers N`, or a
+process pool.** Raised by the owner on 2026-08-18 while planning Phase 10, for two reasons:
+spreading compression load across cores, and distinguishing concurrent harnesses. *Parked because*
+**the second reason is already discharged and the first is not needed at the measured load.**
+`session_id` and `agent_id` are header-copied CSV columns, and
+`milestone-2-corpus/phase-9-corpus-gate/` captured five distinct sessions and ten subagent rows
+through one instance — telling harnesses apart is not a problem this router has. Two to five
+concurrent harnesses extrapolates to 1–3 calls/second, which is ten to thirty times inside what a
+single thread absorbs.
 
 *Weaker than it looks?* **The blocker is not where it appears to be.** Every multi-process form hits
 the same wall, and a reverse proxy does not touch it: **the recorder's writers are single-process
@@ -588,21 +641,25 @@ multi-process safe, which is a phase in itself. **The proxy is the cheap part; t
 expensive part.** Reconsider only if Phase 10's benchmark shows a single worker is actually the
 bottleneck.
 
-**The per-backend authentication header name.** `inject` means `Authorization: Bearer` today, which
-suits LM Studio and OpenAI; Anthropic's native key is `x-api-key` and Gemini's is `x-goog-api-key`.
-*Parked deliberately:* it is needed before the second cloud provider, not before. Phase 5 was told
-explicitly not to settle it while editing the same function.
+### BKL-0023 — The per-backend authentication header name
 
-**BKL-0023** · owner-shaped · open
+owner-shaped · open
 
-**Extract the portable methodology.** `EPD-004` decision 18 defers this **with a trigger rather than
-a date**: when project #2 starts, extraction is a copy of `docs/README.md` with the backend rows
-deleted, plus `CLAUDE.md`'s rule block, plus the whole of `method/` unfiltered — `IDM-000` settles that
-the tier needs no such filter, because no IDM contains a fact about the router. *Parked because* a
-methodology extracted from n=1 is a guess about what generalises. Do not create a global
-`~/.claude/CLAUDE.md` before then.
+`inject` means `Authorization: Bearer` today, which suits LM Studio and OpenAI; Anthropic's native
+key is `x-api-key` and Gemini's is `x-goog-api-key`. *Parked deliberately:* it is needed before the
+second cloud provider, not before. Phase 5 was told explicitly not to settle it while editing the
+same function.
 
-**BKL-0024** · owner-shaped · open
+### BKL-0024 — Extract the portable methodology
+
+owner-shaped · open
+
+`EPD-004` decision 18 defers this **with a trigger rather than a date**: when project #2 starts,
+extraction is a copy of `docs/README.md` with the backend rows deleted, plus `CLAUDE.md`'s rule
+block, plus the whole of `method/` unfiltered — `IDM-000` settles that the tier needs no such
+filter, because no IDM contains a fact about the router. *Parked because* a methodology extracted
+from n=1 is a guess about what generalises. Do not create a global `~/.claude/CLAUDE.md` before
+then.
 
 > **Narrowed 2026-08-17. This item is now the extraction only.** The `docs/method/` tier itself was
 > **built** in Phase 8 — `IDM-000` through `IDM-003`. Decision 18 declined the tier on a *structural*
@@ -615,12 +672,13 @@ methodology extracted from n=1 is a guess about what generalises. Do not create 
 
 ## Instruments and housekeeping
 
-**~24 mutation survivors are error-message wording, and they are parked rather than tested.** *Added
-2026-08-28, Phase 11 Task 23, on the owner's decision — category A of four, with B, C and D fixed in
-the phase.* The converter's mutation sweep ran **279 mutants** and **105 survived**; the survivors
-decompose into four kinds, and only three of them are defects.
+### BKL-0025 — ~24 mutation survivors are error-message wording
 
-**BKL-0025** · instruments · open · added 2026-08-28
+instruments · open · added 2026-08-28
+
+*Added 2026-08-28, Phase 11 Task 23, on the owner's decision — category A of four, with B, C and D
+fixed in the phase.* The converter's mutation sweep ran **279 mutants** and **105 survived**; the
+survivors decompose into four kinds, and only three of them are defects.
 
 **These ~24 are the fourth kind: the harness mutating text nobody asserts.** They are the
 singular/plural grammar inside error messages — `"was"`/`"were"`, `"it"`/`"them"` — and similar
@@ -637,14 +695,15 @@ that is an argument for the tool parked below rather than for more tests.
 *Worth doing if* the schema note's wording ever becomes a contract something else parses — at that
 point the grammar stops being prose and a test is the right instrument.
 
-**A mutation-testing tool, rather than the hand-rolled harness Phase 11 built.** *Added 2026-08-28
-on the owner's instruction, at the moment the choice was made — option (b) of three, with (a) taken.*
-Phase 11's Task 23 needed systematic mutation coverage of the converter and had two ways to get it: a
-harness written in the phase, or a dependency (`mutmut`, `cosmic-ray`). **The harness was chosen and
-the tool is parked here rather than dropped**, because the difference between them is not the
-technique — it is who maintains it.
+### BKL-0026 — A mutation-testing tool, rather than the hand-rolled harness Phase 11 built
 
-**BKL-0026** · instruments · open · added 2026-08-28
+instruments · open · added 2026-08-28
+
+*Added 2026-08-28 on the owner's instruction, at the moment the choice was made — option (b) of
+three, with (a) taken.* Phase 11's Task 23 needed systematic mutation coverage of the converter and
+had two ways to get it: a harness written in the phase, or a dependency (`mutmut`, `cosmic-ray`).
+**The harness was chosen and the tool is parked here rather than dropped**, because the difference
+between them is not the technique — it is who maintains it.
 
 **`method/IDM-003-development-tooling.md` owns this decision, not a phase.** That document exists
 because `ty` was tried and refused with the refusal recorded nowhere, and its standing rule is that a
@@ -658,14 +717,16 @@ and the harness's own survivor list is the evidence to judge a tool against late
 before buying the tool:** if it found nothing, the tool is the more interesting purchase, and if it
 found real survivors, the technique is proven and only the coverage is in question.
 
-**Whether a reconstruction can be checked against the real thing — and it looks like it can.** *Added
-2026-08-26 on the owner's instruction, which asked whether the original `uuid`s could be recovered
-from local state.* **Checked the same day: yes, for any session driven on this machine.** Claude Code
-keeps its own session records at `~/.claude/projects/<mangled-path>/<session-id>.jsonl`, and **all
-three session ids in the `2026-08-25` corpus index have a file there** — `15b29c2a…`, `8aa605b9…`,
-`ad9392ae…`. *(Established by listing filenames only. No session content was read.)*
+### BKL-0027 — Whether a reconstruction can be checked against the real thing
 
-**BKL-0027** · instruments · open · added 2026-08-26
+instruments · open · added 2026-08-26
+
+**Whether a reconstruction can be checked against the real thing — and it looks like it can.**
+*Added 2026-08-26 on the owner's instruction, which asked whether the original `uuid`s could be
+recovered from local state.* **Checked the same day: yes, for any session driven on this machine.**
+Claude Code keeps its own session records at `~/.claude/projects/<mangled-path>/<session-id>.jsonl`,
+and **all three session ids in the `2026-08-25` corpus index have a file there** — `15b29c2a…`,
+`8aa605b9…`, `ad9392ae…`. *(Established by listing filenames only. No session content was read.)*
 
 **There are two uses for that and only one of them is safe.** As an **oracle** it is worth more than
 the uuids ever were: a reconstruction can be **diffed against the real record** rather than eyeballed,
@@ -676,14 +737,16 @@ Phase 11 exists to demonstrate. *Parked because* Phase 11 ships synthetic determ
 not need it. *Worth doing because* the oracle is the strongest test of the converter available, and it
 already exists on disk.
 
+### BKL-0028 — Nothing runs `branch-index.py --check` automatically
+
+instruments · open · added 2026-08-21
+
 **Nothing runs `procedures/branch-index.py --check` automatically, so the branch index's whole
 guarantee rests on somebody remembering.** *Added 2026-08-21, the day the script was written.* The
 argument that admitted `reference/branches.md` into `reference/` — over `IDM-001`'s refusal of a
 hand-maintained list — is that **a derived table cannot drift**. That is true of the table and not
 yet true of the *practice*: `--check` exits 1 correctly when a branch has landed without a row, and
 nothing invokes it. It is not a `make` target, not a hook, and not in CI.
-
-**BKL-0028** · instruments · open · added 2026-08-21
 
 **Four documents now instruct a human to run it at the merge** — `CLAUDE.md`, `IDM-001`,
 `README.md` and `branches.md` itself. **Four copies of an instruction is what this repository does
@@ -705,13 +768,15 @@ order is fixed and it is not the obvious one".
 
 
 
-**`procedures/link-check.py`'s exit code carries no information.** `link-check.py:222` is
-`return 1 if check(...) else 0` and **there is no expected-failures mechanism in the code** — the
-correct-and-permanent hits exist only as prose in the docstring. So the tool exits 1 permanently, can
-never gate a commit or a hook despite its own docstring saying *"exits 1 … so it can gate a commit"*, and
-reading its output requires a human holding a number from a comment.
+### BKL-0029 — `link-check.py`'s exit code carries no information
 
-**BKL-0029** · instruments · open
+instruments · open
+
+**`procedures/link-check.py`'s exit code carries no information.** `link-check.py:222` is `return 1
+if check(...) else 0` and **there is no expected-failures mechanism in the code** — the
+correct-and-permanent hits exist only as prose in the docstring. So the tool exits 1 permanently,
+can never gate a commit or a hook despite its own docstring saying *"exits 1 … so it can gate a
+commit"*, and reading its output requires a human holding a number from a comment.
 
 **Four pieces of evidence, all from Phase 8, all new:**
 
@@ -787,10 +852,11 @@ The cost measured in `milestone-2-corpus/phase-8-method-and-guardrails/notes.md`
 > 2026-08-16, ahead of the rest, because commit 13 produced two live instances of the defect rather than
 > a hypothetical one. See decision 21's second half.
 
-**`IDM-003` governs the formatter pin and says nothing about the build backend.** *Added
-2026-09-02, from Phase 12 bumping `uv_build` and finding no rule to follow.*
+### BKL-0030 — `IDM-003` governs the formatter pin and says nothing about the build backend
 
-**BKL-0030** · instruments · open · added 2026-09-02
+instruments · open · added 2026-09-02
+
+*Added 2026-09-02, from Phase 12 bumping `uv_build` and finding no rule to follow.*
 
 *What happened:* `uv build` warned that `uv_build>=0.11.32,<0.12.0` did not contain the installed uv
 `0.12.5`. The owner asked for `<0.13`. **`method/IDM-003-development-tooling.md` is titled for the
@@ -815,27 +881,30 @@ not held** — a build backend that silently changed what it packages produces a
 and misbehaves later, and the only reason anyone compared the wheels is that the ruff pin taught the
 habit.
 
-**Static analysis beyond ruff.** Other type checkers, AST-level linters, a language server — over a CLI
-or over MCP. `ruff` is all this project runs today; `method/IDM-003-development-tooling.md` records the
-pin and what it does and does not catch. *Parked because* nothing depends on it: the code is small, typed
-throughout, and covered by 158 tests. *Weaker than it looks?* **Yes, and it is worth saying why the
-obvious argument runs the wrong way.** `ty` was tried and **refused** — warnings without useful
-information — so the one data point this project has **weakens** the case rather than strengthening it.
-The honest reading is that the useful signal may be scarce generally rather than absent from that one
-tool, which was at version 0.0.14. **So the next attempt states what it expects to catch *before* it is
-run**, and is judged against that rather than against whether it produced output.
+### BKL-0031 — Static analysis beyond ruff
 
-**BKL-0031** · instruments · open
+instruments · open
+
+Other type checkers, AST-level linters, a language server — over a CLI or over MCP. `ruff` is all
+this project runs today; `method/IDM-003-development-tooling.md` records the pin and what it does
+and does not catch. *Parked because* nothing depends on it: the code is small, typed throughout, and
+covered by 158 tests. *Weaker than it looks?* **Yes, and it is worth saying why the obvious argument
+runs the wrong way.** `ty` was tried and **refused** — warnings without useful information — so the
+one data point this project has **weakens** the case rather than strengthening it. The honest
+reading is that the useful signal may be scarce generally rather than absent from that one tool,
+which was at version 0.0.14. **So the next attempt states what it expects to catch *before* it is
+run**, and is judged against that rather than against whether it produced output.
 
 
 
 ---
 
-**Record the Anthropic rate-limit response headers.** *Added 2026-08-24, and it is the reversal of an
-entry in "Not on this list, and why" below — read that first, because it holds why this was refused
-and what refuted it.*
+### BKL-0034 — Record the Anthropic rate-limit response headers
 
-**BKL-0034** · instruments · open · added 2026-08-24
+instruments · open · added 2026-08-24
+
+*Added 2026-08-24, and it is the reversal of an entry in "Not on this list, and why" below — read
+that first, because it holds why this was refused and what refuted it.*
 
 *What it needs:* `retry-after` and the `anthropic-ratelimit-*` family, read off the reply the same way
 everything else is — **on the way past, never by parsing and rebuilding.** They are already relayed
@@ -889,9 +958,9 @@ It is under "Measurements left open", added 2026-08-19. This file points rather 
 that item carries an argument — that automatic retraining would make the request-only asymmetry
 permanent *by default rather than by decision* — which a summary here would lose.
 
-### Dictionary commands — `list`, `show`, `install`
+### BKL-0035 — Dictionary commands — `list`, `show`, `install`
 
-**BKL-0035** · dictionaries · open · added 2026-08-26
+dictionaries · open · added 2026-08-26
 
 *Added 2026-08-26.* The dictionary machinery has no user-facing surface beyond `--train-dict` and
 `--tune-dict`. Nothing answers **which dictionaries exist**, **which one a given day's rows
@@ -901,9 +970,9 @@ reference**, **when one was installed and what it scored against the incumbent**
 **Partly, and only for one third of it** — `--extract` already prints a day folder's dictionaries, so
 `show` overlaps something that exists. `list` and `install` do not.
 
-### A benchmark: what a dictionary is worth against no dictionary
+### BKL-0036 — A benchmark: what a dictionary is worth against no dictionary
 
-**BKL-0036** · dictionaries · open · added 2026-08-26
+dictionaries · open · added 2026-08-26
 
 *Added 2026-08-26.* Nothing can currently answer *"is the installed dictionary helping, and by how
 much"* against real stored bodies. `--tune-dict` sweeps **training parameters**, and the trainer
@@ -919,11 +988,14 @@ refuses a headline ratio, so this needs a shape that answers the question withou
 
 ## Not on this list, and why
 
-**~~The Anthropic 429 rate-limit headers.~~ Overturned 2026-08-24 — it is now a live item**, under
-"Instruments and housekeeping" above. *Kept struck rather than deleted: an entry that vanishes cannot
-show that the mechanism caught it, and this one was caught by its own stated reasoning failing.*
+### BKL-0037 — The Anthropic 429 rate-limit headers — refused, then overturned
 
-**BKL-0037** · not-on-this-list · superseded
+not-on-this-list · superseded
+
+**~~The Anthropic 429 rate-limit headers.~~ Overturned 2026-08-24 — it is now a live item** , under
+"Instruments and housekeeping" above. *Kept struck rather than deleted: an entry that vanishes
+cannot show that the mechanism caught it, and this one was caught by its own stated reasoning
+failing.*
 
 *What it said:* `anthropic-ratelimit-*` and `retry-after` are never recorded, because the router tees
 bodies and not headers. Marked **do not go looking**, on the argument that the recorder keeps the

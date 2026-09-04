@@ -2,14 +2,13 @@
 
 `../method/IDM-011-the-backlog.md` is canonical for the scheme; this is the instrument.
 
-**Nothing here detects where an item begins.** That was a judgement call made once, by a person, and
-recorded in the file as a metadata line. An item *is* something carrying one. So a boundary this
-script gets wrong is a boundary somebody wrote wrong, which is visible in the diff — rather than a
-parser's opinion, which is not.
+**Nothing here detects where an item begins.** An item *is* a heading, written by a person. So a
+boundary this script gets wrong is a boundary somebody wrote wrong, which is visible in the diff —
+rather than a parser's opinion, which is not.
 
-**The description column is not authored twice either.** It is the item's own opening sentence, or
-its `###` heading. A second copy of a one-line summary is a second thing to go stale, and this
-repository has four recorded instances of exactly that.
+**The description column is not authored twice either.** It is the item's own heading title, read
+verbatim. A second copy of a one-line summary is a second thing to go stale, and this repository has
+four recorded instances of exactly that.
 
 Usage, from anywhere:
 
@@ -20,13 +19,16 @@ Usage, from anywhere:
 An optional second argument names a different repository root, so the script can be exercised
 against a scratch copy without touching the real files.
 
-## Three item shapes, because the file has three
+## One item shape
 
-| Shape | How the id is carried |
-|---|---|
-| prose opening with a bold sentence | a metadata line directly under it |
-| a `###` subsection | a metadata line directly under the heading |
-| a row of a table, where a whole section is one table | an extra leading cell holding the id |
+An item is a `### BKL-NNNN — title` heading, with its metadata line directly under it. Nothing else
+is an item.
+
+**This replaced three shapes on 2026-09-04**, and two of the three were how items went missing: a
+prose item opening with a bold sentence is indistinguishable from a continuation paragraph that also
+opens with one, and the pass that compiled the inventory **missed two items** whose openings put the
+strikethrough before the bold. A heading cannot be missed by a regex on bold runs, and `--check`
+now asserts that the heading count equals the number of items parsed.
 
 ## What it will not let you get away with
 
@@ -53,16 +55,19 @@ END = "<!-- end generated -->"
 
 STATUSES = ("open", "partly-done", "done", "refused", "superseded")
 
-# `**BKL-0007** · category · status · added 2026-08-19` and, for a done item,
-# `· done 2026-09-04 · phase 13`.
+# `### BKL-0007 — The open milestone's phase count goes stale at every merge`
+HEADING = re.compile(r"^### (?P<id>BKL-\d{4}) — (?P<what>.+?)\s*$")
+# `documentation-defects · open · added 2026-09-02` and, for a done item,
+# `· done 2026-09-04 · phase 13`. It carries no id — the heading above it does.
+#
+# Deliberately loose, and safe only because it is applied to exactly one line: the first non-blank
+# line under a heading. Matched against arbitrary prose it would fire constantly.
 META = re.compile(
-    r"^\*\*(?P<id>BKL-\d{4})\*\*\s+·\s+(?P<cat>[^·]+?)\s+·\s+(?P<status>[^·]+?)"
+    r"^(?P<cat>[^·]+?)\s+·\s+(?P<status>[^·]+?)"
     r"(?:\s+·\s+added\s+(?P<added>\d{4}-\d{2}-\d{2}))?"
     r"(?:\s+·\s+done\s+(?P<done>\d{4}-\d{2}-\d{2}))?"
     r"(?:\s+·\s+phase\s+(?P<phase>\d+))?\s*$"
 )
-# A table-row item carries its id in the first cell.
-ROW = re.compile(r"^\|\s*`(?P<id>BKL-\d{4})`\s*\|(?P<rest>.*)$")
 CITATION = re.compile(r"\bBKL-\d{4}\b")
 
 
@@ -97,37 +102,12 @@ CATEGORIES = {
 }
 
 
-def opening_sentence(lines: list[str], meta_at: int) -> str:
-    """The item's own first sentence: the bold run above its metadata line, or a `###` heading.
-
-    Wrapped lines are joined. Nothing is authored here — whatever the item says about itself is
-    what the table says about it.
-    """
-    i = meta_at - 1
-    while i >= 0 and not lines[i].strip():
-        i -= 1
-    if i < 0:
-        return ""
-    if lines[i].startswith("### "):
-        return lines[i][4:].strip()
-    # Walk back to the start of the paragraph, then take its leading bold run.
-    #
-    # The `~~` is optional and load-bearing. A struck-through item opens `~~**title**~~`, and without
-    # it `re.match` fails at position 0 and the fallback returns the *whole paragraph* — which put a
-    # four-hash commit list in one row of the generated table. **This is the second defect caused by
-    # that byte order**: the same shape hid two items from the inventory pass entirely, because it
-    # enumerated openings as bold-or-`###` at line start. A strike is a marking on a shape, never a
-    # shape of its own, and both defects came from treating it as one.
-    start = i
-    while start > 0 and lines[start - 1].strip():
-        start -= 1
-    para = " ".join(x.strip() for x in lines[start : i + 1])
-    m = re.match(r"(?:~~)?\*\*(.+?)\*\*", para)
-    return (m.group(1) if m else para).strip()
-
-
 def parse(path: Path) -> tuple[list[Item], list[str]]:
-    """Every item in one file, in file order, plus whatever is wrong with them."""
+    """Every item in one file, in file order, plus whatever is wrong with them.
+
+    An item is a `### BKL-NNNN — title` heading followed by a metadata line. The heading is the
+    boundary and the title is the description; neither is inferred.
+    """
     if not path.exists():
         return [], [f"MISSING: {path.name} does not exist"]
     lines = path.read_text().split("\n")
@@ -135,11 +115,11 @@ def parse(path: Path) -> tuple[list[Item], list[str]]:
     problems: list[str] = []
     section = ""
     generated = False
+    headings = 0
     for n, line in enumerate(lines):
-        # Skip the block this script writes. A generated row and a table-row *item* are the same
-        # shape — `| \`BKL-0009\` | … |` — so without this the second run parses its own output
-        # back in and reports every id as a duplicate of itself. Found by running --write then
-        # --check, which is the only order in which it happens.
+        # Skip the block this script writes. Its rows carry `BKL-NNNN` and would otherwise be
+        # counted as citations of themselves; under the old table-row shape they parsed back as
+        # duplicate items. Found by running --write then --check, the only order that shows it.
         if line.startswith(BEGIN):
             generated = True
             continue
@@ -151,43 +131,43 @@ def parse(path: Path) -> tuple[list[Item], list[str]]:
         if line.startswith("## "):
             section = line[3:].strip()
             continue
-        m = META.match(line)
-        if m:
-            items.append(
-                Item(
-                    id=m.group("id"),
-                    category=m.group("cat").strip(),
-                    status=m.group("status").strip(),
-                    added=m.group("added"),
-                    done=m.group("done"),
-                    phase=m.group("phase"),
-                    what=opening_sentence(lines, n),
-                    section=section,
-                    line=n + 1,
-                )
-            )
+        h = HEADING.match(line)
+        if not h:
+            # A `###` that is not a well-formed item heading is almost certainly a typo in one,
+            # and silence here is what let two items go missing before the shape was uniform.
+            if line.startswith("### ") and "BKL-" in line:
+                problems.append(f"{path.name}:{n + 1}  MALFORMED ITEM HEADING: {line.strip()}")
             continue
-        r = ROW.match(line)
-        if r:
-            cells = [c.strip() for c in r.group("rest").split("|")]
-            # id · category · status · added · what — the leading-cell shape IDM-011 specifies.
-            if len(cells) < 5:
-                bad = r.group("id")
-                problems.append(f"{path.name}:{n + 1}  ROW ITEM WITH TOO FEW CELLS: {bad}")
-                continue
-            items.append(
-                Item(
-                    id=r.group("id"),
-                    category=cells[0],
-                    status=cells[1],
-                    added=cells[2] if cells[2] not in ("", "—") else None,
-                    done=None,
-                    phase=None,
-                    what=cells[4] if len(cells) > 4 else cells[3],
-                    section=section,
-                    line=n + 1,
-                )
+        headings += 1
+        # The metadata line is the first non-blank line under the heading. Nothing else is scanned,
+        # which is what keeps the loose META pattern safe.
+        j = n + 1
+        while j < len(lines) and not lines[j].strip():
+            j += 1
+        m = META.match(lines[j]) if j < len(lines) else None
+        if not m:
+            problems.append(f"{path.name}:{n + 1}  {h.group('id')}: NO METADATA LINE under its heading")
+            continue
+        items.append(
+            Item(
+                id=h.group("id"),
+                category=m.group("cat").strip(),
+                status=m.group("status").strip(),
+                added=m.group("added"),
+                done=m.group("done"),
+                phase=m.group("phase"),
+                what=h.group("what").strip(),
+                section=section,
+                line=n + 1,
             )
+        )
+    # The count assertion. An item that stops looking like one disappears silently otherwise, which
+    # is exactly how BKL-0032 and BKL-0033 stayed invisible through four passes over the file.
+    if headings != len(items):
+        problems.append(
+            f"{path.name}: {headings} item headings but {len(items)} items parsed — "
+            "one carries no usable metadata line"
+        )
     return items, problems
 
 

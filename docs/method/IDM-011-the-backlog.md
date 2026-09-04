@@ -69,30 +69,51 @@ inferring one would freeze a permanent id on a guess.*
 and so did phase plans. **A quoted title is not an identifier:** editing a title silently breaks
 every citation of it, nothing checks that, and the break stays invisible until a reader follows one.
 
-## The metadata line
+## An item is a heading
 
-**Every item carries its metadata visibly**, not in an HTML comment. *The data a reader needs in
-order to cite an item must not be invisible to the reader.*
+**One shape, and only one.** An item is a `###` heading carrying its id and a short title, and
+nothing else in either file is one:
 
 ```
-**BKL-0007** · <category> · <status> · added YYYY-MM-DD
+### BKL-0007 — The open milestone's phase count goes stale at every merge
+
+documentation-defects · open · added 2026-09-02
+
+<the item: what the work is, and why it is parked>
 ```
 
-**A done item adds** `· done YYYY-MM-DD · phase N`.
+**The heading is the boundary.** A paragraph without one is not an item — preamble, section
+scoping, advice that applies to a whole section — and that is now visible rather than inferred.
 
-### Three item shapes, and the placement follows the shape
+**The metadata line sits directly under the heading and carries no id**, because the heading holds
+it. `<category> · <status> · added YYYY-MM-DD`, and **a done item adds** `· done YYYY-MM-DD ·
+phase N`. **Visible, never an HTML comment** — the data a reader needs in order to cite an item must
+not be invisible to the reader.
 
-**`../backlog.md` does not hold one kind of item.** A rule written for the common shape silently
-excludes the others:
+**The title is written once.** It lives in the heading; the body does not restate it. *Where an
+item's opening sentence carried facts a title cannot hold, those facts stay in the body — unbolded,
+because bold is no longer how an item begins.*
 
-| Shape | Where the metadata goes |
-|---|---|
-| A prose item opening with a bold sentence | **a line under the bold opening** |
-| A `###` subsection | **a line under the heading** |
-| A row of a table, where a whole section is one table | **an extra leading column** carrying the id |
+### This replaced three shapes, and two of the three were how items went missing
 
-*Found by surveying every section rather than by reading the common case: two of eight sections have
-no bold opening at all.*
+***Amended 2026-09-04, and the amendment is the point of this section.*** Until then this document
+said `../backlog.md` *"does not hold one kind of item"* and defined **three** placements — a line
+under a bold opening for prose items, a line under the heading for `###` subsections, and **an extra
+leading column** for the rows of the one table in `Decisions waiting on a person`.
+
+**That was written to fit the file as it already stood, and it cost two items.** With no structural
+marker, an item opening with a bold sentence is **indistinguishable from a continuation paragraph**
+that also opens with one. The compile pass enumerated openings as bold-or-`###` at line start;
+`../backlog.md`'s two struck-through entries open `~~**` — strike before bold — **and were invisible
+to it.** They survived the compile, an author review and two forward-review passes, and were found
+only by a cold reviewer told to look for a boundary nobody had flagged.
+
+*The table shape failed differently and less dangerously: it was merely unreadable, and grew to
+seven columns once metadata was added to it.*
+
+**A heading cannot be missed by a regex on bold runs**, and `backlog-index.py --check` now asserts
+that the count of `###` item headings equals the number of items it parsed — **the check that pass
+did not have.**
 
 ## Statuses
 
@@ -155,6 +176,17 @@ claims no* — so those citations are not repointed to ids.
 of the archive**, and `--check` **cannot tell the difference**: it validates the `BKL` citations
 that exist and never the title citations that remain. *Written down because a green check would
 otherwise be read as proof of something it does not test.*
+
+**And it cannot see an item deleted outright.** The heading-count assertion catches an item that
+*stops parsing* — a lost or malformed metadata line — but an item removed from both files takes its
+heading with it, so there is nothing left to count. *Established 2026-09-04 by mutation: cutting an
+item was caught only because the not-yet-regenerated table still cited it, which is luck rather than
+coverage.*
+
+**The defence is not a checker.** It is that ids are permanent and never reused, so a deleted item
+leaves a **gap** — and a gap is legal, because a `done` item moves and leaves one too. *Closing this
+would mean a manifest of every id ever issued, which is a second copy of the thing the ids already
+are; that is the trade, stated rather than resolved.*
 
 ---
 

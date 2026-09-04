@@ -23,12 +23,12 @@ handoff is stale at the next commit and this file has four recorded instances of
 | **`IDM-010`** | the per-phase `for-the-owner.md` |
 | **`IDM-011`** | the backlog — **and one of its rules is in force now**: a session asks before filing an item |
 
-**Group E2 is open and is the work in front of us** — one item shape. *Added 2026-09-04 after the
-owner read the finished files and rejected the shape:* items become `### BKL-NNNN — title` headings,
-the metadata line drops the id, and **the table-row and bare-bold-paragraph shapes are both
-retired.* **No id changes and nothing is renumbered.** It runs before Group F so the phase's own
-review sees the shape that will merge. **Settled row 21 is overturned and row 7 amended** — the only
-row this phase reverses.
+**Group E2 is complete** — one item shape. *Added and finished 2026-09-04, after the owner read the
+files and rejected the shape.* **Every item is a `### BKL-NNNN — title` heading**, the metadata line
+carries no id, and **the table-row and bare-bold-paragraph shapes are both retired — they are the
+two that hid `BKL-0032` and `BKL-0033`.** **No id changed:** 38 ids in the ratified inventory, 38 in
+the files, identical sets and no status disagreement, proved mechanically at task 27. **Settled row
+21 is overturned and row 7 amended**, the only rows this phase reverses.
 
 **Group E is complete.** All of 13, 14, 14a, 15, 16, 17, 18, 19 and 20 have run. **`docs/backlog.md`
 carries 34 items with ids, `docs/backlog-done.md` exists and holds 4**, both tables are generated,
@@ -79,7 +79,9 @@ docs/procedures/` reports 36 findings across five files***, one of them in this 
 `backlog-index.py`. *A note claiming that script passes was written and is now retracted; the code
 is untouched, because fixing one of thirty-six is arbitrary.* `link-check.py` reports **112 broken**
 here against 91 on `main` — **down from 117** now that `backlog-done.md` exists.
-**`backlog-index.py --check` exits 0.**
+**`backlog-index.py --check` exits 0**, and it now asserts that the count of item headings equals
+the items parsed — *the check the inventory pass did not have.* **One gap is recorded rather than
+closed:** an item deleted outright takes its heading with it and nothing counts what is not there.
 
 **This section was 154 lines and is now short again — the four older entries were removed, not
 moved.** *Every fact in them was checked and found to have a durable home already: Phase 11's and

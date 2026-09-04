@@ -20,15 +20,16 @@ tests** stand by construction.
 
 ## The one thing to do next
 
-**Group E2, task 22 — rewrite `IDM-011`'s shape section, then convert the files.** *The owner read
-the finished backlog on 2026-09-04 and rejected its shape.* **Canonical goes first**, so the files
-are converted against a written rule rather than a habit. The group is tasks 22–29 in `plan.md`, and
-**settled rows 25 and 26 are the decision** it implements.
+**Group F — review this phase's finished work, under the `IDM-009` it wrote.** *Phase 13 is that
+document's first subject, at task 21, and `IDM-009` puts the review **before** the merge.*
 
-**Three shapes become one, and two of the three are the ones that hid `BKL-0032` and `BKL-0033`** —
-an item with no structural marker is indistinguishable from a continuation paragraph. **No id
-changes; nothing is renumbered.** `evidence/item-inventory.md` stays the ratified source and task 27
-checks the id set against it.
+**Everything Groups A–E2 produce is now on disk and stable.** `backlog.md` holds 34 items,
+`backlog-done.md` holds 4, every item is a `### BKL-NNNN — title` heading, and
+`backlog-index.py --check` exits 0.
+
+**What a reviewer should be told to look at hardest:** the shape changed *after* the ids were
+applied, so the question is whether anything moved in the conversion. **Task 27 says nothing did**
+and the check is four lines — *re-run it rather than trusting this sentence.*
 
 ---
 
@@ -66,7 +67,7 @@ place, because `partly-done` means it does not move out.
 | **C** `IDM-010` | **done** — the per-phase `for-the-owner.md` |
 | **D** `IDM-011` | **done** — the backlog, and the `IDM-001` amendment |
 | **E** the refactor | **done.** 13, 14, 14a, 15, 16, 17, 18, 19 and 20 all run; `--check` exits 0 |
-| **E2** one item shape | **open, and it is what to do next.** Tasks 22–29. `### BKL-NNNN — title` headings; the table-row and bare-paragraph shapes retired. **No id changes** |
+| **E2** one item shape | **done.** Tasks 22–29. `### BKL-NNNN — title` headings; the table-row and bare-paragraph shapes retired. **No id changed, proved at task 27** |
 | **F** the review of this phase | not started — Phase 13 reviewed under the `IDM-009` it wrote |
 | **G** close | not started |
 

@@ -23,10 +23,10 @@ item's metadata line and re-run `--write`.
 
 | ID | Added | Status | Category | What it is | Done | Phase | See |
 |---|---|---|---|---|---|---|---|
-| `BKL-0011` | — | done | decisions-waiting | `epd/EPD-003-capturing-bodies-for-a-corpus.md` — capturing bodies for a corpus. | 2026-08-17 | 9 | |
-| `BKL-0032` | — | done | instruments | `status.md`'s shape — one row per milestone rather than per phase. | 2026-08-17 | 9 | |
-| `BKL-0033` | — | done | instruments | Close out the four `Branch:` lines that record intent instead of outcome. | 2026-08-21 | 10 | |
-| `BKL-0038` | — | done | not-on-this-list | Everything struck through in `milestone-1-core/outstanding-work.md`. | 2026-08-07 | 5 | |
+| `BKL-0011` | — | done | decisions-waiting | Capturing bodies for a corpus | 2026-08-17 | 9 | |
+| `BKL-0032` | — | done | instruments | `status.md`'s shape — one row per milestone rather than per phase | 2026-08-17 | 9 | |
+| `BKL-0033` | — | done | instruments | Close out the four `Branch:` lines that record intent instead of outcome | 2026-08-21 | 10 | |
+| `BKL-0038` | — | done | not-on-this-list | Everything struck through in `milestone-1-core/outstanding-work.md` | 2026-08-07 | 5 | |
 
 <!-- end generated -->
 
@@ -35,10 +35,12 @@ item's metadata line and re-run `--write`.
 
 ## Decisions waiting on a person
 
-~~**`epd/EPD-003-capturing-bodies-for-a-corpus.md` — capturing bodies for a corpus.**~~
-**Decided 2026-08-17 by Phase 9**, and it was blocked on **nothing but the decision**.
+### BKL-0011 — Capturing bodies for a corpus
 
-**BKL-0011** · decisions-waiting · done · done 2026-08-17 · phase 9
+decisions-waiting · done · done 2026-08-17 · phase 9
+
+Argued in full in `epd/EPD-003-capturing-bodies-for-a-corpus.md`. **Decided 2026-08-17 by
+Phase 9**, and it was blocked on **nothing but the decision**.
 
 Fine-tuning is dropped (analysis only), and its gate ran and passed: a dictionary trained on other
 sessions reaches **12.10×** against **3.12×** unaided, so **per-call files are the unit**. Graduated
@@ -57,11 +59,13 @@ owner settled it on 2026-09-04 as a property of this file rather than of the scr
 
 ## Instruments and housekeeping
 
-~~**`status.md`'s shape — one row per milestone rather than per phase.**~~ **Done 2026-08-17.**
-Proposed during Phase 8, deliberately not done there, executed once Phase 9 supplied the evidence it
-was missing. `status.md` now carries one row per milestone pointing at that milestone's index.
+### BKL-0032 — `status.md`'s shape — one row per milestone rather than per phase
 
-**BKL-0032** · instruments · done · done 2026-08-17 · phase 9
+instruments · done · done 2026-08-17 · phase 9
+
+**Done 2026-08-17.** Proposed during Phase 8, deliberately not done there, executed once Phase 9
+supplied the evidence it was missing. `status.md` now carries one row per milestone pointing at that
+milestone's index.
 
 *Two things checked before executing it, because the proposal rested on both.* **Milestone 1's hashes
 were safe to remove** — `milestone-1-core/README.md` holds a strictly richer table (branch, merge hash,
@@ -80,18 +84,19 @@ it was not duplication but what goes stale visibly**, which the item had not con
 
 ---
 
-~~**Close out the four `Branch:` lines that record intent instead of outcome.**~~ **Done 2026-08-21,
-on the owner's instruction.** Five lines existed across four of the six phases, in inconsistent
-places, and only `milestone-1-core/phase-4-lmstudio-parity/notes.md` recorded the merge commit; the
-other four said "Merge back with `--no-ff`" — written before the merge and never updated. All four
-now carry their merge commit in the form Phases 4, 8 and 9 already used:
+### BKL-0033 — Close out the four `Branch:` lines that record intent instead of outcome
+
+instruments · done · done 2026-08-21 · phase 10
+
+**Done 2026-08-21, on the owner's instruction.** Five lines existed across four of the six phases,
+in inconsistent places, and only `milestone-1-core/phase-4-lmstudio-parity/notes.md` recorded the
+merge commit; the other four said "Merge back with `--no-ff`" — written before the merge and never
+updated. All four now carry their merge commit in the form Phases 4, 8 and 9 already used:
 `milestone-1-core/phase-2-observability/notes.md` → `4d7d7f6`,
 `milestone-1-core/phase-3-failure-handling/notes.md` → `cc65aed`,
 `milestone-1-core/phase-4-lmstudio-parity/plan.md` → `50444c5`,
-`milestone-1-core/phase-5-config-and-timeouts/plan.md` → `c8401e9`. Every hash was read from
-`git log --merges` and cross-checked against `milestone-1-core/README.md`'s table.
-
-**BKL-0033** · instruments · done · done 2026-08-21 · phase 10
+`milestone-1-core/phase-5-config-and-timeouts/plan.md` → `c8401e9`. Every hash was read from `git
+log --merges` and cross-checked against `milestone-1-core/README.md`'s table.
 
 *It was parked as a review-phase checklist item under `EPD-004` decision 14, and the owner took it
 out of that ordering rather than waiting for the review.* **Two things are deliberately not done.**
@@ -108,9 +113,10 @@ vanishes cannot show that the mechanism caught it.
 
 ## Not on this list, and why
 
-**Everything struck through in `milestone-1-core/outstanding-work.md`.** The credential shape and the
-read timeout were built in Phase 5; silent trimming below the context boundary was measured and
-closed the same day. That file marks them in place rather than deleting them, because what a phase
-found already answered is worth as much as what it found outstanding.
+### BKL-0038 — Everything struck through in `milestone-1-core/outstanding-work.md`
 
-**BKL-0038** · not-on-this-list · done · done 2026-08-07 · phase 5
+not-on-this-list · done · done 2026-08-07 · phase 5
+
+The credential shape and the read timeout were built in Phase 5; silent trimming below the context
+boundary was measured and closed the same day. That file marks them in place rather than deleting
+them, because what a phase found already answered is worth as much as what it found outstanding.
