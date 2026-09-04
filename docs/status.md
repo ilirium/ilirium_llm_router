@@ -23,6 +23,13 @@ handoff is stale at the next commit and this file has four recorded instances of
 | **`IDM-010`** | the per-phase `for-the-owner.md` |
 | **`IDM-011`** | the backlog — **and one of its rules is in force now**: a session asks before filing an item |
 
+**Group E2 is open and is the work in front of us** — one item shape. *Added 2026-09-04 after the
+owner read the finished files and rejected the shape:* items become `### BKL-NNNN — title` headings,
+the metadata line drops the id, and **the table-row and bare-bold-paragraph shapes are both
+retired.* **No id changes and nothing is renumbered.** It runs before Group F so the phase's own
+review sees the shape that will merge. **Settled row 21 is overturned and row 7 amended** — the only
+row this phase reverses.
+
 **Group E is complete.** All of 13, 14, 14a, 15, 16, 17, 18, 19 and 20 have run. **`docs/backlog.md`
 carries 34 items with ids, `docs/backlog-done.md` exists and holds 4**, both tables are generated,
 and **`backlog-index.py --check` exits 0** — for the first time on this branch, and the notes that

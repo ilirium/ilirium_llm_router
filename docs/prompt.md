@@ -20,9 +20,23 @@ tests** stand by construction.
 
 ## The one thing to do next
 
-**Task 15 — apply the ratified ids to `docs/backlog.md`.** It is no longer blocked: task 14a ran on
-2026-09-04, the owner ratified the same day, and `evidence/item-inventory.md` is the ratified
-source. **Read it, not this file, for what to apply.**
+**Group E2, task 22 — rewrite `IDM-011`'s shape section, then convert the files.** *The owner read
+the finished backlog on 2026-09-04 and rejected its shape.* **Canonical goes first**, so the files
+are converted against a written rule rather than a habit. The group is tasks 22–29 in `plan.md`, and
+**settled rows 25 and 26 are the decision** it implements.
+
+**Three shapes become one, and two of the three are the ones that hid `BKL-0032` and `BKL-0033`** —
+an item with no structural marker is indistinguishable from a continuation paragraph. **No id
+changes; nothing is renumbered.** `evidence/item-inventory.md` stays the ratified source and task 27
+checks the id set against it.
+
+---
+
+*Group E is done and is kept here only as context for E2:*
+
+**~~Task 15 — apply the ratified ids to `docs/backlog.md`.~~ Done, with 16, 18, 19 and 20.** It is
+no longer blocked: task 14a ran on 2026-09-04, the owner ratified the same day, and
+`evidence/item-inventory.md` is the ratified source. **Read it, not this file, for what to apply.**
 
 **The inventory holds 38 items, not 36.** *The cold review found two the pass had missed —
 `backlog.md:716` and `:735`. Both are struck-through `done` entries opening `~~**`, where the
@@ -52,6 +66,7 @@ place, because `partly-done` means it does not move out.
 | **C** `IDM-010` | **done** — the per-phase `for-the-owner.md` |
 | **D** `IDM-011` | **done** — the backlog, and the `IDM-001` amendment |
 | **E** the refactor | **done.** 13, 14, 14a, 15, 16, 17, 18, 19 and 20 all run; `--check` exits 0 |
+| **E2** one item shape | **open, and it is what to do next.** Tasks 22–29. `### BKL-NNNN — title` headings; the table-row and bare-paragraph shapes retired. **No id changes** |
 | **F** the review of this phase | not started — Phase 13 reviewed under the `IDM-009` it wrote |
 | **G** close | not started |
 

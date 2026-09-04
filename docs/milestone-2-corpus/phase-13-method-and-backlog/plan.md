@@ -54,7 +54,7 @@ this phase does not revisit**, and which a review may question but never file as
 | 4 | **Sections and categories are kept exactly as they are** | Including `Dictionaries`, which the file itself flags as grouped on a different axis from the rest. Not this phase's to fix |
 | 5 | **Five statuses:** `open`, `partly-done`, `done`, `refused`, `superseded` | Covers every state the file actually contains today, including the partly-discharged register item and the rate-limit refusal that was later overturned |
 | 6 | **A refused item gets an id and stays in `backlog.md`** | In the existing "Not on this list, and why" section. `backlog-done.md` therefore means exactly one thing: work that was done. A refusal that is later reversed does not change file |
-| 7 | **Each item carries a visible metadata line** under its bold opening | Not an HTML comment. The data a reader needs in order to cite an item must not be invisible to the reader |
+| 7 | **Each item carries a visible metadata line** ~~under its bold opening~~ **under its heading** | Not an HTML comment. The data a reader needs in order to cite an item must not be invisible to the reader. ***Amended 2026-09-04 by row 25:*** the line sits under the item's `###` heading and **no longer carries the id**, which the heading now holds |
 | 8 | **Id and citation checking lives in `backlog-index.py --check`**, not in `link-check.py` | Keeps it out of an instrument whose broken-link count is already worktree-dependent and routinely misread |
 | 9 | **A session asks before filing a backlog item.** If the owner declines, the decline is recorded in `notes.md` | *2026-09-04.* This **amends** `IDM-001`, which currently says filing an item **is** how a phase declines scope. Filing remains the record of a decline; what changes is that the item lands on the owner's word. The branch rule — an item never opens a branch — is untouched |
 | 10 | **The Group E checkpoint is also a prune pass** | The owner sees ~30 items as one list and marks any to drop. A dropped item becomes `refused`, keeping its id and staying citable |
@@ -85,9 +85,11 @@ rule 5.*
 
 | | Settled | Note |
 |---|---|---|
-| 21 | **Metadata is placed per shape.** A line under the bold opening for prose items; **an extra leading column** for the table rows in `Decisions waiting on a person`; a line under the heading for the `###` items in `Dictionaries` | Settled rows 4 and 7 both survive and **nothing moves**. `backlog-index.py` learns three shapes rather than one, which is the cost |
+| 21 | ~~**Metadata is placed per shape.** A line under the bold opening for prose items; **an extra leading column** for the table rows in `Decisions waiting on a person`; a line under the heading for the `###` items in `Dictionaries`~~ | ***Overturned 2026-09-04 by row 25 — see it for why.*** *Kept rather than deleted: this row is the reason the file had three shapes, and the defect that followed is only legible beside the decision that caused it.* Its cost was stated correctly and understated: `backlog-index.py` learned three shapes, **and the inventory pass missed two items because two of the three are indistinguishable from a continuation paragraph** |
 | 22 | **Settled row 13 stands, and its evidence is re-sourced.** `IDM-010` says plainly that Phase 11's file does **not** violate it | What that file actually shows is that **`ERRAND` was missing**, which is why two errands were filed as `ASK`s. That is the better finding, and it is the one `IDM-010` carries |
 | 23 | **`partly-done` and `superseded` both stay in `backlog.md`.** `backlog-done.md` keeps meaning exactly one thing: work that was done | **`superseded` has its instance**: the struck 429 entry, refused and then overturned by the live rate-limit item. The `See` column carries the link between the two |
+| 25 | **One item shape: a `### BKL-NNNN — title` heading.** The metadata line sits beneath it and **drops the id**; the table row and the bare-bold-paragraph shapes are both retired | *Owner, 2026-09-04, on reading the finished files.* **This overturns row 21 and amends row 7**, and it is the only settled row this phase reverses. *Three reasons, in the order they were found: the sections were unskimmable; `Decisions waiting on a person` was a seven-column table after task 15 added four metadata columns to it; and **an item with no structural marker is indistinguishable from a continuation** — which is how `BKL-0032` and `BKL-0033` stayed invisible through a compile, an author review and two forward-review passes.* **No id changes and nothing is renumbered** |
+| 26 | **The heading carries a short title; the body does not repeat it** | *Owner, 2026-09-04, choosing the titled heading over an id-only one so the file's outline stays readable.* **The consequence is the one judgement in this work:** the item's bold opening sentence *is* its title today, so it moves into the heading. Where that sentence carries facts a heading cannot hold, the facts stay in the body **unbolded**. *The test after each item: no sentence in the body restates the heading* |
 | 24 | **`BKL` ids are allocated in file order**, top to bottom as the file reads at task 13 | The section order is deliberate — method first, on the owner's 2026-08-19 instruction — so ids follow the reading a person actually does. **Date order is not merely different but unusable**: several older items carry no `added` date, and inferring one to freeze a permanent id is the guess this repository keeps finding later |
 
 **Two things the owner decided to leave alone.** The parked `backlog.md` items proposing `IDM-004`
@@ -183,6 +185,35 @@ lands on the owner's word.**
 paragraph, and bold **continuations** inside an item look identical — there is no machine-detectable
 boundary. ~30 items across 855 lines. **A wrong boundary bakes a wrong id into a scheme whose whole
 premise is that ids never change**, which is why task 14 exists.
+
+### Group E2 — one item shape
+
+**Added 2026-09-04, after Group E finished and the owner read the result.** *Settled row 25 is the
+decision; this group is the work. It runs **before** Group F, so the phase's own review sees the
+shape that will merge rather than one already known to be wrong.*
+
+**Nothing here changes an id.** The 38 ids are allocated, permanent and correct; this is the shape
+they sit in. **`evidence/item-inventory.md` stays the ratified source** and task 27 checks against
+it.
+
+| # | Task |
+|---|---|
+| **22** | **Rewrite `IDM-011`'s shape section.** One shape — `### BKL-NNNN — <short title>`, metadata line beneath **without the id**. Record that three shapes collapsed to one **and why**: the two retired shapes are the two that hid `BKL-0032` and `BKL-0033`. **Canonical goes first**, before any file is converted, so the files are edited against a written rule rather than against a habit |
+| **23** | **Convert `backlog.md`'s 34 items.** Heading per item, title lifted out of the bold opening, metadata line beneath. **Three sub-parts that are not mechanical:** dissolve the `Decisions waiting on a person` table into three prose items *(settled row 25)*; retire the two `Dictionaries` `###` titles into `BKL-NNNN —` headings; and **move the trailing advice at `backlog.md:480` to that section's preamble**, because under headings it reads as part of `BKL-0017` rather than as advice about all six |
+| **24** | **Convert `backlog-done.md`'s 4 items**, the same way. `BKL-0011` is already prose there — **the two files stop disagreeing about the same item** |
+| **25** | **Rewrite `backlog-index.py`'s parser.** Items keyed on the heading; `ROW` deleted; `opening_sentence` replaced by reading the heading's title; the metadata regex loses its id group. **Drive it against a scratch copy before committing** — that is what found three defects at task 17 — and **mutation-test the checks that change**, not the ones that do not |
+| **26** | **Regenerate both tables. `--check` exits 0** |
+| **27** | **Verify no id moved.** The set of ids in both files, compared against `evidence/item-inventory.md`'s 38 — **same ids, same items, same statuses**. *A shape change that silently renumbered would be the one unrecoverable outcome, and it is cheap to rule out mechanically* |
+| **28** | **Add a count assertion to `--check`:** the number of `### BKL-` headings equals the number of items parsed. *Today a paragraph that stops looking like an item disappears silently; this is the check the inventory pass did not have* |
+| **29** | **Sweep the pointers.** `CLAUDE.md`, `status.md`, `README.md` and `IDM-011`'s own cross-references, for anything describing the old three-shape scheme |
+
+**What this group does not do.** *It does not touch the section order, the categories, the statuses,
+or any id — settled row 4 stands and row 24 stands.* **It does not fix `docs/procedures/`'s 36 ruff
+findings**, which are older than this phase and are not its subject.
+
+**Why it is in Phase 13 rather than Phase 14.** *Owner's decision, 2026-09-04.* Phase 13 owns the
+backlog refactor; **merging a shape the owner has already rejected and correcting it next phase
+would put a knowingly wrong file on `main`** and rework the parser twice.
 
 ### Group F — the review of this phase's finished work
 
