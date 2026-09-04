@@ -9,6 +9,13 @@ reconciliation.
 review made "the review" ambiguous. This phase will have two reviews for the same reason: task 21
 runs one against the finished work.*
 
+**The two runs' raw reports are not kept, and that is the protocol rather than a gap.** `IDM-004`
+specifies *one report per run, then a reconciliation*, and says the merged work list goes in the
+phase's notes — which is this file. Phase 12 did the same. **What is lost is the cold run's own
+wording and its line-by-line citations**; what is kept is every finding, its disposition, the four
+owner answers, and the measurement. *Recorded so a reader looking for the original reports stops
+looking.*
+
 ---
 
 ## The headline
