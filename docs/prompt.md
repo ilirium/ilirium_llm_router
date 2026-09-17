@@ -10,6 +10,15 @@ it again.*
 `/Users/ilirium/Projects/local/ilirium_llm_router/main`. **No phase is open, so there is no phase
 worktree to start in** — that is different from the last four handoffs.
 
+**The first decision of the next session is which phase to open, and that is the owner's.** *Phase
+14 is allocated to the Anthropic rate-limit headers but not chosen; the list under "Open" below is
+what is waiting, and two of those items are decisions rather than work.*
+
+**`phase-13-method-and-backlog/` is still on disk** and can be removed whenever you like. ***Its
+branch must not be deleted*** — `branch-index.py` refuses to render when a description names a
+branch that is gone, which breaks the next merge. **Removing the tree is safe; removing the branch
+is not.**
+
 *No commit count is written here. A count written at a handoff is wrong at the next commit, and this
 repository has recorded that defect five times.*
 
@@ -66,6 +75,18 @@ repository has recorded that defect five times.*
 - **The Milestone 2 phase count went stale a fifth time at this very merge**, in the paragraph that
   describes itself going stale. `BKL-0007` has the evidence and needs the decision, not more
   examples.
+
+## What the last session finished, so nothing is half-done
+
+**Phase 13 is closed out completely.** Its merge landed in three steps — `--no-ff`, the hash
+recorded in `plan.md` and the milestone plan, then `branch-index.py --write` on the trunk. **Both
+worktrees are clean and every check is green**: `backlog-index --check`, `branch-index --check`,
+`evidence/register-check.py`, and `link-check.py` at 92.
+
+**Nothing from that phase is left open for a session to pick up.** *The five findings that stopped
+its merge were all answered by the owner and fixed; the eighteen below them were fixed; the register
+check was written, found vacuous, fixed and mutation-tested.* **What remains is in `backlog.md`
+under permanent ids, and in the list above.**
 
 ## The working agreement still applies
 

@@ -279,6 +279,12 @@ reason, which is exactly why the number does not belong in prose.*
 and today it is `main`, `to-run-server` and `phase-13-method-and-backlog`. *The findings those trees
 carried are kept in their branches' records — the tree was only ever the instrument.*
 
+**`phase-13-method-and-backlog/` is a merged phase's tree and is kept, not removed.** *Its branch is
+merged into `main` at `97fd822` and **the branch itself must not be deleted** — `branch-index.py`
+refuses to render when a description names a branch that no longer exists. **Removing the working
+tree is safe and removing the branch is not**; the two are separate acts and only the second breaks
+the next merge.*
+
 **`make test`, `make lint` and `make check` all ran there and none of them created `logs/`** — which
 is `cli.py`'s documented promise that `--check` configures no logging, demonstrated rather than
 asserted. That worktree's config also reported `Corpus: off`, so nothing done in it could reach the
