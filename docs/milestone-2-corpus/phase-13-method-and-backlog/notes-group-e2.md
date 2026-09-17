@@ -52,7 +52,7 @@ script learns three shapes rather than one", which was true and was not the pric
 | 20d | **Parser rewritten** — `HEADING` keys detection, `ROW` deleted, `opening_sentence` deleted, `META` lost its id group |
 | 20e | **Both tables regenerated**; `--check` exits 0 |
 | 20f | **The id set proved unchanged** |
-| 20g | **The heading-count assertion added** |
+| 20g | **The heading-count assertion added** — *and it was the wrong check; see the correction below* |
 | 20h | **Register and pointers swept** |
 
 **Ten titles were shortened and twenty-four were taken verbatim** from the item's own bold opening.
@@ -83,7 +83,7 @@ costs four lines of Python to rule out. It was run rather than reasoned about.*
 
 | | Mutation | Caught by |
 |---|---|---|
-| 1 | a metadata line removed | **both** the per-item error and the new heading-count assertion |
+| 1 | a metadata line removed | **both** the per-item error and the heading-count assertion — *which is why the second proves nothing: it never fires alone* |
 | 2 | a heading written `### BKL-0014: …` instead of `— ` | the malformed-heading check, plus the citation check |
 | 3 | an item cut out entirely | **the citation check — and only by luck** |
 
@@ -99,3 +99,31 @@ ever issued, which is a second copy of what the ids already are.*
 added none** — `backlog-index.py` still reports exactly the one pre-existing `RUF007`.
 
 **The section order, the categories, the statuses, or any id.** Settled rows 4 and 24 stand.
+
+## Correction, 2026-09-17 — task 20g added the wrong check, and six documents repeated its claim
+
+**The heading-count assertion cannot detect the failure it was built for.** `headings` is
+incremented only where the heading regex already matched, so a heading that stops matching — demoted
+to `####`, given a `:` for its em dash — is not counted *and* not parsed. **Both totals fall
+together and the assertion stays silent.** It can differ only where `NO METADATA LINE` has already
+fired, which makes it a duplicate rather than a second line of defence.
+
+***Found by the jobs-done review's Run A, by running it.*** *Not by reading the code — including by
+me, who had just written it, and by the two mutations at task 20d that were supposed to prove it
+bit. Mutation 1 removed a metadata line and the assertion fired **alongside** the real error; that
+looked like a kill and was a duplicate.*
+
+**What actually catches the case:** `ANY_ITEM_HEADING` — any heading, any level, carrying a `BKL`
+id must be exactly `### BKL-NNNN — title`. **Widened 2026-09-17, and mutation-tested at `##`, `####`
+and `######`.** *The `##` case needed the check moved above the section branch: an id in a `##`
+otherwise becomes a section name and reports three `UNKNOWN SECTION` errors that name the heading
+and say nothing about the item that was promoted.*
+
+**The assertion is kept**, because it costs nothing and would catch a future refactor that decoupled
+the counts — **but it is now documented as a duplicate** in the script, in `IDM-011`, in
+`status.md`, in `plan.md`'s task row and here.
+
+***One claim in those six was not merely overstated but false:*** that this check was how
+`BKL-0032` and `BKL-0033` would have been caught. **No count of headings could have seen them** —
+they were never headings. They were prose paragraphs the compile pass never recognised as items.
+

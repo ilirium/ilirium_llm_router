@@ -144,8 +144,12 @@ now the real ones — see `notes-review-plan.md`, finding C1.*
    `review-plan-jobs-done.md:177* — the one thing in that file marked `**Left open deliberately**`.
    Phase 12's answer, a warm read with the gap declared, was settled for that phase only.
 2. **When the commit range is named.** *Source: `notes-review-jobs-done.md`, finding **A5**,
-   refused there with the general fix deferred to this `IDM` by name.* **State the range at the
-   moment the runs start.**
+   refused there with the general fix deferred to this `IDM` by name.* **Name the subject at the
+   moment the runs start, and have each run verify the tree still matches it.** *This row said
+   only "state the range", and `IDM-009` as written said "a single commit hash" — **the plan and
+   the document it produced disagreed from the day both were written.** Reconciled 2026-09-17:
+   either form is acceptable and **the verification is the part that is not optional**, which is
+   the half that actually went missing.*
 3. **What one measurement is worth.** *Source: `review-plan-jobs-done.md` §7, which asks for the
    measurements, and the run that produced them.* Forward 18% and 17%, backward 11%, each small-n.
    `IDM-004`'s own "not evidence yet" section is the precedent for how to say so.
@@ -213,7 +217,7 @@ it.
 | **20d** | **Rewrite `backlog-index.py`'s parser.** Items keyed on the heading; `ROW` deleted; `opening_sentence` replaced by reading the heading's title; the metadata regex loses its id group. **Drive it against a scratch copy before committing** — that is what found three defects at task 17 — and **mutation-test the checks that change**, not the ones that do not |
 | **20e** | **Regenerate both tables. `--check` exits 0** |
 | **20f** | **Verify no id moved.** The set of ids in both files, compared against `evidence/item-inventory.md`'s 38 — **same ids, same items, same statuses**. *A shape change that silently renumbered would be the one unrecoverable outcome, and it is cheap to rule out mechanically* |
-| **20g** | **Add a count assertion to `--check`:** the number of `### BKL-` headings equals the number of items parsed. *Today a paragraph that stops looking like an item disappears silently; this is the check the inventory pass did not have* |
+| **20g** | ~~**Add a count assertion to `--check`:** the number of `### BKL-` headings equals the number of items parsed~~ — ***the wrong check, and it shipped.*** *A paragraph that stops looking like an item fails the heading regex, so it is not counted either and both totals fall together. **Corrected 2026-09-17:** `--check` now rejects any heading at any level carrying a `BKL` id that is not exactly `### BKL-NNNN — title`, which is what catches it. The count assertion is kept and documented as the duplicate it is* |
 | **20h** | **Sweep the pointers.** `CLAUDE.md`, `status.md`, `README.md` and `IDM-011`'s own cross-references, for anything describing the old three-shape scheme |
 
 **What this group does not do.** *It does not touch the section order, the categories, the statuses,

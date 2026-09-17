@@ -194,9 +194,22 @@ and the finding was **not** fixed, because editing either document to name a lat
 wrong again the moment anything else lands. **The defect is naming a range in a document written
 before the runs start.**
 
-**So: the charter names the subject as a single commit hash, and each run verifies the subject is
-unchanged at that hash before it begins** — `git diff` against it, reported. Anything that lands
+**So: the charter names the subject exactly, at the moment the runs start, and each run verifies
+the tree still matches it before reading anything** — `git diff` against the named subject, and
+**the result reported in the run's output whether or not it is clean.** Anything that lands
 afterwards is out of scope and is named in the reconciliation rather than silently included.
+
+**A single hash or a `fork..hash` range are both acceptable**, and on a phase branch they carry the
+same information — the fork point is fixed by the branch, so naming the end hash names the range.
+***Amended 2026-09-17.*** *This said "a single commit hash" and Phase 13's own charter named a
+range, citing this sentence as its authority. The wording was the smaller half: **what actually
+failed is the verification, which no run was asked to perform.** Both reviewers checked anyway, on
+their own initiative, and reported the tree one commit ahead of the stated subject. **That is
+instinct, not protocol, and it is not a thing to rely on twice.***
+
+**The verification is the part that is not optional.** *A reviewer reads the working tree, which
+moves; a charter names a fixed point. Without the diff, a review can report on one subject while
+having read another, and the report will not say so — because nothing asked.*
 
 ### What one measurement is worth
 

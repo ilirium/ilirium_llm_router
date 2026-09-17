@@ -99,9 +99,12 @@ identical tree and got **111**, not 91 — about twenty of the gap is untracked 
 that exist in one checkout and not the other.* **Measured like for like, this phase's net effect on
 `main`'s content is +2 and −1** — two new broken links in `notes-group-b.md`, which is prose
 quoting a path the phase had just fixed, and one lost when `prompt.md` was rewritten.
-**`backlog-index.py --check` exits 0**, and it now asserts that the count of item headings equals
-the items parsed — *the check the inventory pass did not have.* **One gap is recorded rather than
-closed:** an item deleted outright takes its heading with it and nothing counts what is not there.
+**`backlog-index.py --check` exits 0**, and it rejects any heading carrying a `BKL` id that is not
+exactly `### BKL-NNNN — title` — *so an item demoted or re-punctuated is named rather than skipped.*
+*It also compares heading count against items parsed; **that one is a duplicate**, corrected here
+2026-09-17 after being credited with the demotion case it cannot see.* **One gap is recorded rather
+than closed:** an item **added after this phase** and then deleted is invisible — the 38 shipped ids
+are protected only because this phase's documents cite them.
 
 **This section was 154 lines and is now short again — the four older entries were removed, not
 moved.** *Every fact in them was checked and found to have a durable home already: Phase 11's and

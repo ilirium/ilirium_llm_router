@@ -202,3 +202,68 @@ inventory.*
 - **The bodies of 20 of the 34 live items**, seen by Run A only through mechanical extraction.
 - **`implementation-plan.md`**, where task 3a claims a retitle that is not in the diffstat.
 - **The charter itself**, which sits one commit outside the range it defines.
+
+---
+
+## What task 24 settled, 2026-09-17 — all five merge-stoppers, and the eighteen below them
+
+**The eighteen needing no decision were corrected first**, in their own commit. The five that
+stopped the merge were the owner's, and **three of them were not put to the owner until asked for
+a second time** — R2, R3 and R5 were left out of the first round and only surfaced when Group G
+reached the merge and found them still open. *That omission is recorded because a finding that
+stops a merge and is then not raised is worse than one nobody found.*
+
+| | Finding | Decision |
+|---|---|---|
+| **R1** | settled row 26 unapplied | **Fix the twelve items.** Row 26 now holds, both clauses, verified mechanically |
+| **R2** | the heading-count assertion is vacuous | **Fix the check *and* correct the six documents** |
+| **R3** | `IDM-011` describes the wrong gap | **Rewrite it to the real one** |
+| **R4** | `See` unfillable | **Build it**, and `--check` now requires it on a `superseded` item |
+| **R5** | `IDM-009`'s own rule unfollowed | **Amend `IDM-009`**: either form of subject, verification mandatory |
+
+### R2 — what the fix actually is, because the obvious one would not have worked
+
+**Widening the count assertion was not available.** A demoted heading fails the heading regex, so it
+is never counted; no comparison of two numbers derived from the same regex can see it.
+
+***`ANY_ITEM_HEADING` is the fix***: any heading, **any level**, carrying a `BKL` id must be exactly
+`### BKL-NNNN — title`. **Mutation-tested at `##`, `####` and `######`**, all three named correctly.
+
+**The `##` case needed the check moved above the section branch.** An id in a `##` otherwise becomes
+a *section name*, and `--check` reports three `UNKNOWN SECTION` errors that name the stolen heading
+and say nothing about the item that was promoted. *Found by mutation while fixing the first half —
+the fix had a second defect the fix's own test exposed.*
+
+**The assertion is kept and documented as the duplicate it is**, in all six places that had credited
+it otherwise. ***And one of those six was not overstated but false***: that it was how `BKL-0032`
+and `BKL-0033` would have been caught. **No count of headings could have seen them** — they were
+never headings.
+
+### R3 — the correction, and why it is the more useful warning
+
+**Shipped ids are protected**, because this phase's own documents cite all 38 — *three dangling
+citations for a typical item.* **That is a side effect of a check written for typos, not a designed
+defence**, and it covers exactly the items something happens to cite.
+
+***The real gap is a newly added item, never yet cited, deleted again.*** Nothing dangles, nothing
+counts, and the gap it leaves is indistinguishable from the one a `done` item leaves when it moves.
+**`--check` exits 0 and reports the smaller total as correct.** Demonstrated by mutation.
+
+**So the rule a session needs is the opposite of what the section said:** a brand-new item is
+unprotected until something cites it — *and that window is widest exactly when an item is most
+likely to be hand-edited.*
+
+### R5 — the wording was nearly empty and the missing half was the whole defect
+
+**`IDM-009` said "a single commit hash"; the charter named a range and cited `IDM-009` as its
+authority; `plan.md` told the phase to name a range.** *Three documents, two answers.*
+
+***But on a phase branch the fork point is fixed, so naming the end hash names the range.*** The two
+answers carried the same information. **What actually failed is that no run was asked to verify the
+tree still matched the subject** — both did it unprompted and both reported the tree one commit
+ahead. *Instinct, not protocol.*
+
+**`IDM-009` now accepts either form and makes the `git diff` verification mandatory and reported.**
+The charter is annotated rather than edited: it is the artefact the runs were given, and rewriting
+it would falsify what they were asked.
+

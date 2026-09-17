@@ -125,9 +125,15 @@ only by a cold reviewer told to look for a boundary nobody had flagged.
 *The table shape failed differently and less dangerously: it was merely unreadable, and grew to
 seven columns once metadata was added to it.*
 
-**A heading cannot be missed by a regex on bold runs**, and `backlog-index.py --check` now asserts
-that the count of `###` item headings equals the number of items it parsed — **the check that pass
-did not have.**
+**A heading cannot be missed by a regex on bold runs**, and `backlog-index.py --check` rejects any
+heading at any level that carries a `BKL` id and is not exactly `### BKL-NNNN — title` — **so an
+item quietly demoted or re-punctuated is named rather than skipped.**
+
+*`--check` also compares the heading count against the items parsed. **That assertion is a duplicate
+and is documented here as one**: it can only fire where a per-item error has already been raised. It
+was added believing it caught the demotion case and it does not — the demoted heading is not counted
+either, so both totals fall together. Corrected 2026-09-17, after this document had credited it with
+that coverage for thirteen days.*
 
 ## Statuses
 
@@ -212,16 +218,31 @@ of the archive**, and `--check` **cannot tell the difference**: it validates the
 that exist and never the title citations that remain. *Written down because a green check would
 otherwise be read as proof of something it does not test.*
 
-**And it cannot see an item deleted outright.** The heading-count assertion catches an item that
-*stops parsing* — a lost or malformed metadata line — but an item removed from both files takes its
-heading with it, so there is nothing left to count. *Established 2026-09-04 by mutation: cutting an
-item was caught only because the not-yet-regenerated table still cited it, which is luck rather than
-coverage.*
+**And it cannot see a *newly added* item deleted again.** *This is the one worth understanding,
+because the obvious reading of it is backwards.*
 
-**The defence is not a checker.** It is that ids are permanent and never reused, so a deleted item
-leaves a **gap** — and a gap is legal, because a `done` item moves and leaves one too. *Closing this
-would mean a manifest of every id ever issued, which is a second copy of the thing the ids already
-are; that is the trade, stated rather than resolved.*
+**An item that has been cited somewhere cannot vanish silently.** Every `BKL-NNNN` written anywhere
+under `docs/` is resolved against the items, so deleting one that any document mentions fails the
+check — *three times over, for a typical item.* **All the ids allocated up to and including Phase 13
+are cited in that phase's own record**, so none of them can be deleted without `--check` saying so.
+
+***But that protection is a side effect, not a design.*** It comes from a check written to catch
+citation typos, and it covers exactly the items something happens to cite. **An item added later,
+never yet referenced, and then removed leaves nothing behind at all** — no citation to dangle, no
+heading to count, no gap that is distinguishable from the gap a `done` item leaves when it moves.
+**`--check` exits 0 and reports the smaller total as though it were correct.** *Demonstrated by
+mutation, 2026-09-17.*
+
+**So the practical rule is: a brand-new item is unprotected until something cites it**, and the
+window is widest at exactly the moment an item is most likely to be edited by hand.
+
+*This section said the opposite until 2026-09-17 — that deletion was invisible in general and that
+the one time it was caught was luck. **Both halves were wrong**, and the section exists precisely so
+its silence is not misread. It misread its own.*
+
+**Closing it properly would mean a manifest of every id ever issued**, which is a second copy of the
+thing the ids already are. *That trade is stated rather than resolved, and it is the same trade
+`IDM-001` refused for merge hashes.*
 
 ---
 

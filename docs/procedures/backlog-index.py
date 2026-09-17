@@ -27,8 +27,12 @@ is an item.
 **This replaced three shapes on 2026-09-04**, and two of the three were how items went missing: a
 prose item opening with a bold sentence is indistinguishable from a continuation paragraph that also
 opens with one, and the pass that compiled the inventory **missed two items** whose openings put the
-strikethrough before the bold. A heading cannot be missed by a regex on bold runs, and `--check`
-now asserts that the heading count equals the number of items parsed.
+strikethrough before the bold. A heading cannot be missed by a regex on bold runs.
+
+**And a heading that stops being well-formed is reported rather than skipped** — any heading at any
+level carrying a `BKL` id must be exactly `### BKL-NNNN — title`. *That is the check that catches an
+item quietly demoted or re-punctuated. The heading-count assertion below it does not, and said it
+did until 2026-09-17.*
 
 ## What it will not let you get away with
 
@@ -57,6 +61,12 @@ STATUSES = ("open", "partly-done", "done", "refused", "superseded")
 
 # `### BKL-0007 — The open milestone's phase count goes stale at every merge`
 HEADING = re.compile(r"^### (?P<id>BKL-\d{4}) — (?P<what>.+?)\s*$")
+# Anything heading-shaped that carries an id. An item that stops being a well-formed heading —
+# demoted to `####`, given a `:` instead of an em dash, or re-levelled by a careless edit — still
+# names its id, and that is what makes it findable. **Matching only `### ` here was the defect**:
+# a demoted heading failed `HEADING`, was not heading-shaped enough to be reported, and simply
+# vanished, taking its entry in the count with it so the count assertion stayed silent too.
+ANY_ITEM_HEADING = re.compile(r"^#{1,6}\s+.*\bBKL-\d{4}\b")
 # `documentation-defects · open · added 2026-09-02` and, for a done item,
 # `· done 2026-09-04 · phase 13`. It carries no id — the heading above it does.
 #
@@ -134,13 +144,19 @@ def parse(path: Path) -> tuple[list[Item], list[str]]:
         if generated:
             continue
         if line.startswith("## "):
+            # An id in a `##` would otherwise become a section name and take the items under it with
+            # it — three `UNKNOWN SECTION` errors naming a heading, which says nothing about the
+            # item that was promoted. Checked before the section branch so the message names the
+            # real fault. Found by mutation on 2026-09-17, not by reading.
+            if ANY_ITEM_HEADING.match(line):
+                problems.append(f"{path.name}:{n + 1}  MALFORMED ITEM HEADING: {line.strip()}")
+                continue
             section = line[3:].strip()
             continue
         h = HEADING.match(line)
         if not h:
-            # A `###` that is not a well-formed item heading is almost certainly a typo in one,
-            # and silence here is what let two items go missing before the shape was uniform.
-            if line.startswith("### ") and "BKL-" in line:
+            # A heading at any level carrying an id is meant to be an item and is not one.
+            if ANY_ITEM_HEADING.match(line):
                 problems.append(f"{path.name}:{n + 1}  MALFORMED ITEM HEADING: {line.strip()}")
             continue
         headings += 1
@@ -167,8 +183,19 @@ def parse(path: Path) -> tuple[list[Item], list[str]]:
                 line=n + 1,
             )
         )
-    # The count assertion. An item that stops looking like one disappears silently otherwise, which
-    # is exactly how BKL-0032 and BKL-0033 stayed invisible through four passes over the file.
+    # The count assertion, and what it actually does — which is less than it was built to do.
+    #
+    # It fires only when a heading parsed and its metadata line did not, a state that has already
+    # produced `NO METADATA LINE` above. **So it is a duplicate, not a second line of defence.**
+    #
+    # It was added believing it would catch "a paragraph that stops looking like an item". It
+    # cannot: such a paragraph fails `HEADING`, so `headings` is never incremented and both counters
+    # fall together. **`ANY_ITEM_HEADING` is what catches that case**, widened to do so on
+    # 2026-09-17 after the jobs-done review found this comment claiming coverage the code lacked.
+    #
+    # Kept because it costs nothing and would catch a future refactor that decoupled the two counts.
+    # *Its old comment claimed it was how BKL-0032 and BKL-0033 would have been caught. It is not —
+    # those two were never headings at all, and no count of headings could have seen them.*
     if headings != len(items):
         problems.append(
             f"{path.name}: {headings} item headings but {len(items)} items parsed — "

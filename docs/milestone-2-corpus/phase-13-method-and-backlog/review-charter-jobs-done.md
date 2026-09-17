@@ -7,8 +7,16 @@ finding can still change what does.*
 **Written 2026-09-04. Subject: `dec7c4a..40e05bc`** — 26 commits on branch
 `docs/phase-13-method-and-backlog`, worktree
 `/Users/ilirium/Projects/local/ilirium_llm_router/phase-13-method-and-backlog`. *The range is fixed
-here, at the moment the runs start, per `IDM-009`'s answer to its own question 2. If `HEAD` has
-moved when you read this, review the range, not `HEAD`.*
+here, at the moment the runs start. If `HEAD` has moved when you read this, review the range, not
+`HEAD`.*
+
+> ***This charter broke `IDM-009` and cited it as authority, 2026-09-04.*** *`IDM-009` required a
+> single commit hash and a `git diff` verification reported by each run; this named a range and
+> asked for no verification, while saying it did so "per `IDM-009`'s answer to its own question 2".
+> **Both runs verified anyway, unprompted, and both reported the tree one commit ahead.** The
+> misattribution is corrected here rather than removed, because the charter is the artefact the
+> review ran against and editing it would falsify what the runs were given. `IDM-009` was amended
+> on 2026-09-17 to accept either form and to make the verification the mandatory half.*
 
 **Two runs, in parallel, on different questions.** You are one of them. **Do not assume the other
 covers what you skip** — say you skipped it.
