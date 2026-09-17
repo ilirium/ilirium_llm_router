@@ -10,10 +10,13 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-17 — Phase 13 is open and unmerged. Groups A–G are complete except the merge itself.**
-*Group F's review stopped it, and the owner has answered five of its findings; **three method-tier
-findings are still open and the charter's rule is that any one of them stops the merge**.*
-`docs/phase-13-method-and-backlog`, forked at `dec7c4a`.
+**2026-09-17 — Phase 13 merged at `97fd822`. Nothing is in flight.** *Its review stopped its own
+merge on five method-tier findings; all five were answered by the owner and fixed before it landed.*
+
+**What a next session most needs from it:** `docs/backlog.md` and `docs/backlog-done.md` now carry
+**38 permanent `BKL-NNNN` ids**, one item per `### BKL-NNNN — title` heading, and both tables are
+generated — **do not hand-type in them.** `method/IDM-011-the-backlog.md` is canonical, and **a
+session asks the owner before filing an item.**
 
 *This line said "Groups A–D are complete; Group E is part-done and stopped at a checkpoint" from the
 2026-09-04 handoff until 2026-09-17, while the paragraphs below it said E and E2 were both done —
@@ -123,7 +126,7 @@ belong to the phase note, and each milestone's own index reads its phases in ord
 | | Subject | Phases | State | Read it in |
 |---|---|---|---|---|
 | **1** | The core router — dispatch, byte-relay, observability, failure handling | 1–7 | **complete** 2026-08-07 | `milestone-1-core/README.md`, which carries every branch and merge hash with what each phase settled |
-| **2** | The corpus — capturing bodies for analysis | 8– | **open**, five phases merged — 8 through 12, the last 2026-09-02 — and **Phase 13 in flight** | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
+| **2** | The corpus — capturing bodies for analysis | 8– | **open**, six phases merged — 8 through 13, the last 2026-09-17 | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
 
 *Changed 2026-08-17 from a per-phase table of Milestone 1's merge commits, per the `backlog.md` item
 that proposed it. **The hashes are not lost** — each one keeps two to six homes, the fewest being
@@ -153,11 +156,18 @@ settled the storage-infrastructure half; **Phase 10 settled that archiving canno
 a day folder, unpack it elsewhere, and every blob opens and verifies against the digest in its own
 filename. **Whether archiving slows a call is untested**, and is parked as **`BKL-0017`**.
 
-**Five phases done. The first two touched no `src/`** — Phase 8 built the method tier and the
+**Six phases done. The first two touched no `src/`** — Phase 8 built the method tier and the
 guardrails, Phase 9 decided `EPD-003` and ran the gate that named the claim above — **and Phase 10 is
 the first of this milestone that did**, merging 2026-08-21 as `32c26bb`; Phase 11 built the offline
 tools over the store, merging 2026-08-28 as `7e53f74`; Phase 12 made it installable, merging
-2026-09-02 as `6c75997`.
+2026-09-02 as `6c75997`; **and Phase 13 touched no `src/` either**, merging 2026-09-17 as
+`97fd822`.
+
+***Fifth instance, 2026-09-17, and it is the cleanest one yet.*** *This paragraph said **five** the
+moment Phase 13 landed — the phase whose own `BKL-0007` is about this sentence, whose review found
+three other stale counts, and which corrected this file twice on the way. **It still went stale at
+the merge**, because a merge is the one moment nobody is rereading prose. The item's argument no
+longer needs a fourth example; it needs the decision.*
 
 **And the merge that closed Phase 12 made this paragraph stale for a fourth time, within minutes of
 the phase that existed to fix it.** *Written down rather than quietly corrected, because it is the
@@ -296,12 +306,14 @@ was not a real hazard**, and repeating it would preserve a rule whose justificat
 `method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-**`docs/phase-13-method-and-backlog`, opened 2026-09-04**, forked from `main` at `dec7c4a`. A
-documentation phase — three method documents and the backlog refactor — carrying **no `src/`
-change**, which is why the prefix is `docs/`. **Entered here at task 1**, which is where `IDM-001`
-puts it.
+**Nothing is in flight.** *Phase 13 was entered here at task 1 and removed at its merge on
+2026-09-17; its row is in `reference/branches.md` and its permanent record is its phase note.*
 
-**Nothing else is in flight.**
+***Closing this section is not one of `IDM-001`'s three merge steps, and it should be.*** *`dec7c4a`
+— the commit this phase forked from — exists because this section still opened with a branch it then
+said had merged. **Phase 13 reached its own merge with the same two sentences still live**, and
+caught them only because a session went looking. A third instance would be the argument for a
+check.*
 
 **Merged branches are kept, not deleted, and the tooling enforces it.** `branch-index.py` refuses to
 render when a description names a branch that no longer exists, so deleting one breaks the next
