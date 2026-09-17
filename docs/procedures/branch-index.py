@@ -213,6 +213,22 @@ DESCRIPTIONS: dict[str, tuple[int | None, int | None, str]] = {
         "against `IDM-004`'s forward 18%, and it found a fourth stale copy of the phase count in "
         "`CLAUDE.md`.",
     ),
+    "docs/phase-13-method-and-backlog": (
+        2,
+        13,
+        "Three method documents and the backlog refactor, carrying no `src/` change. `IDM-009` "
+        "reviewing executed work, `IDM-010` the per-phase `for-the-owner.md`, `IDM-011` the "
+        "backlog — and every item in `backlog.md` given a permanent `BKL-NNNN` id, with done items "
+        "moved to a new `backlog-done.md` and a generated table in each from a new "
+        "`backlog-index.py`. **A cold review of the item inventory found two items the compile "
+        "pass had missed**, so 36 became 38 before any id was applied; the two open `~~**`, where "
+        "the pass matched bold-or-`###` at the line start. **The owner then rejected the item "
+        "shape**, and a late group made every item a `### BKL-NNNN — title` heading, retiring the "
+        "two shapes that had hidden them. **Phase 13 is `IDM-009`'s first subject and the protocol "
+        "stopped its own author's merge**: two runs, 23 findings, five method-tier, **none of them "
+        "caught by any instrument the phase built** while every check was green. Three of the 23 "
+        "are checks that passed while testing nothing.",
+    ),
     "docs/idm-and-claude-md": (
         2,
         None,
