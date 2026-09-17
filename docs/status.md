@@ -10,8 +10,13 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-04 — Phase 13 is open. Groups A–D are complete; Group E is part-done and **stopped at a
-checkpoint that is the owner's**.** `docs/phase-13-method-and-backlog`, forked at `dec7c4a`.
+**2026-09-17 — Phase 13 is open and unmerged. Groups A–E2 are complete; Group F's review has run
+and stopped the merge.** `docs/phase-13-method-and-backlog`, forked at `dec7c4a`.
+
+*This line said "Groups A–D are complete; Group E is part-done and stopped at a checkpoint" from the
+2026-09-04 handoff until 2026-09-17, while the paragraphs below it said E and E2 were both done —
+**so the section's first sentence and its body disagreed for thirteen days.** A reader going
+top-down stopped at the false one. Found by this phase's own jobs-done review, not by a check.*
 *`git log main..HEAD` is the commit count; it is not written here, because a number written at a
 handoff is stale at the next commit and this file has four recorded instances of exactly that.*
 
@@ -48,9 +53,13 @@ questions were settled the same day** — `BKL-0007` stays `open` and `BKL-0020`
 **nothing about the inventory is open and task 15 can run.**
 
 **Task 15 carries two corrections beyond applying the ids.** `BKL-0007`'s premise is expired — it
-reasons from *"four places across two files"* and there are now **two copies, both in this file**, at
-lines 87 and 117, so the cheapest of its three candidate fixes is live again. And `BKL-0004`'s
-*"545 lines"* must be fixed in place, since at `partly-done` it does not move to `backlog-done.md`.
+reasons from *"four places across two files"* and there are now **two copies, both in this file** —
+the milestone table row and the prose paragraph under "Where the project is" — so the cheapest of
+its three candidate fixes is live again. *This sentence cited lines 87 and 117 until 2026-09-17;
+they were 103 and 133, and a reader chasing them landed on two innocent paragraphs. **Line numbers
+are not written here any more** — they moved once already, in the commit that trimmed this file.*
+And `BKL-0004`'s *"545 lines"* must be fixed in place, since at `partly-done` it does not move to
+`backlog-done.md`.
 
 | Commit | |
 |---|---|
@@ -77,8 +86,15 @@ re-run in this worktree, which has no venv.* `make lint` clean at the pinned `0.
 does not reach `docs/procedures/`**. ***That directory has never been lint-clean: `ruff check
 docs/procedures/` reports 36 findings across five files***, one of them in this phase's own
 `backlog-index.py`. *A note claiming that script passes was written and is now retracted; the code
-is untouched, because fixing one of thirty-six is arbitrary.* `link-check.py` reports **112 broken**
-here against 91 on `main` — **down from 117** now that `backlog-done.md` exists.
+is untouched, because fixing one of thirty-six is arbitrary.* `link-check.py` reports **112 broken
+here**, down from 117 now that `backlog-done.md` exists.
+
+***Do not compare that against `main`'s 91.*** *The count is a property of the worktree, not of the
+content: this phase's jobs-done review ran `main`'s own checker over `main`'s own content in an
+identical tree and got **111**, not 91 — about twenty of the gap is untracked per-worktree files
+that exist in one checkout and not the other.* **Measured like for like, this phase's net effect on
+`main`'s content is +2 and −1** — two new broken links in `notes-group-b.md`, which is prose
+quoting a path the phase had just fixed, and one lost when `prompt.md` was rewritten.
 **`backlog-index.py --check` exits 0**, and it now asserts that the count of item headings equals
 the items parsed — *the check the inventory pass did not have.* **One gap is recorded rather than
 closed:** an item deleted outright takes its heading with it and nothing counts what is not there.
@@ -199,7 +215,10 @@ is the full inventory.*
 
 *The measurement items are both in `backlog.md` under "Measurements left open" — **`BKL-0012`** and
 **`BKL-0017`** — and neither is listed
-here as next, because Phase 11 is chosen and running and this file is not the inventory. Whether
+here as next, because a phase was in flight when this was written and this file is not the
+inventory. *It named **Phase 11** as that phase until 2026-09-17 — Phase 11 merged 2026-08-28, and
+the sentence survived being edited by this phase's own citation sweep, which added the two ids
+without reading the clause they sit in.* Whether
 Claude Code shows LM Studio's context error was already there. **Whether archiving slows a call was
 added there on 2026-08-21** — until then it lived only in `prompt.md`, which is the one file allowed
 to go stale, and in `milestone-2-corpus/implementation-plan.md`'s table. *(This sentence gave as its

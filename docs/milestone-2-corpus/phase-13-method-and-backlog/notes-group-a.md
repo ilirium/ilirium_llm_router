@@ -58,7 +58,19 @@ correction, so nothing about the plan changes.
 prose ahead of the inventory pass would put a hand-edit inside the file the pass has to read
 whole.
 
-## Task 3a — done, and it went further than renumbering
+## Task 3a — recorded done, and one of its three files was never opened
+
+> ***Corrected 2026-09-17.*** *This section's heading said "done, and it went further than
+> renumbering". **It did less than renumbering.** Task 3a names three files; `status.md` and
+> `prompt.md` were brought true and **`../implementation-plan.md` was never touched** — `git log`
+> over the branch shows no commit against it — so it went on allocating **Phase 13** to the
+> rate-limit headers while Phase 13 was the method-and-backlog phase. Retitled to **Phase 14** on
+> 2026-09-17.*
+>
+> ***Neither jobs-done review run caught it.*** *Run B listed the file under "what I did not reach"
+> and said its absence from the diffstat suggested the edit did not exist. **It was right, and
+> nothing acted on it for thirteen days.** A task that names its own targets can be checked against
+> them mechanically; nothing did.*
 
 **The owner asked whether `status.md` and `prompt.md` held anything worth keeping, or only stale
 items. The answer was: not only stale, and the difference had to be checked rather than assumed.**

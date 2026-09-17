@@ -45,15 +45,19 @@ Phase 9**, and it was blocked on **nothing but the decision**.
 Fine-tuning is dropped (analysis only), and its gate ran and passed: a dictionary trained on other
 sessions reaches **12.10×** against **3.12×** unaided, so **per-call files are the unit**. Graduated
 into `reference/design-decisions.md`. Its open questions 3–6 survive as **Phase 10 design detail**,
-not as parked decisions. **Struck rather than deleted** so the next reader can tell it was resolved
-rather than dropped
+not as parked decisions. ***It was struck rather than deleted*** in `backlog.md`, so a reader could
+tell it was resolved rather than dropped. **That marking is gone and its job is done by this file**:
+being here *is* the record that the work finished, which is what `backlog-done.md` means. *The
+strikethrough went when Phase 13 lifted item titles into headings on 2026-09-04.*
 
 *It was a row of `backlog.md`'s one table, and it is prose here.* **A table row cannot carry a
 completion date** — `procedures/backlog-index.py` reads `done` and `phase` from a metadata line
 and never from a cell — so a `done` row could not have satisfied `--check` in this file. **The
 owner settled it on 2026-09-04 as a property of this file rather than of the script:**
-`backlog-done.md` holds prose items. *The two `EPD` rows that were not decided stay a table in
-`backlog.md`, where they carry no completion date and nothing is lost.*
+`backlog-done.md` holds prose items. *The two undecided `EPD` items stayed in `backlog.md`, where
+they carry no completion date and nothing is lost.* **They were rows of a table when this was
+written and are prose now** — Group E2 dissolved that table hours later, so every item in both files
+is a `### BKL-NNNN — title` heading and the shape argument above is settled a second way.
 
 ---
 
@@ -105,7 +109,9 @@ did not exist when they were written, and `milestone-1-core/README.md` holds bot
 And `EPD-004:703`'s *"four of six left open"* is **untouched**: that row records what Phase 6's review
 found, not what is outstanding now.
 
-*Kept struck rather than deleted, like the two entries above it.* This was this repository's
+*It was kept struck rather than deleted in `backlog.md`, like the two entries above it there — and
+none of the three carries that marking now; the move to this file replaced it.* This was this
+repository's
 signature failure in miniature — a document recording intent and never closed out — and an item that
 vanishes cannot show that the mechanism caught it.
 

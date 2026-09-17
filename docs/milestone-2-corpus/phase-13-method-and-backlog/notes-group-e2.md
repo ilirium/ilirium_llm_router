@@ -56,9 +56,19 @@ script learns three shapes rather than one", which was true and was not the pric
 | 20h | **Register and pointers swept** |
 
 **Ten titles were shortened and twenty-four were taken verbatim** from the item's own bold opening.
-*Where a title was shortened the original sentence stays in the body, unbolded, so no words were
-lost — settled row 26's rule, and the check after each was that no body sentence restates its
-heading.* **The shortened ones are mostly numbers coming out**: `BKL-0005` loses "359 lines",
+*Where a title was shortened the original sentence stays in the body, so no words were lost.*
+
+> ***RETRACTED 2026-09-17.*** *This paragraph said the sentence stays **unbolded** and that "the
+> check after each was that no body sentence restates its heading". **Neither is true.** The
+> conversion wrote `f"**{bold}**"` back into the body, so the sentence stayed bold in all ten — and
+> **no such check was ever written or run.** Both halves were found by the jobs-done review, by both
+> runs independently.*
+>
+> ***The false claim is the worse half.*** *A wrong sentence in a document is found by reading it; a
+> claim that a check ran is what a later reader trusts **instead of** reading. It closed the
+> question for thirteen days.*
+
+**The shortened ones are mostly numbers coming out**: `BKL-0005` loses "359 lines",
 `BKL-0007` loses "four places" and "three times". *That is the treatment the cold review commended
 in the inventory — a title that states its subject cannot go stale, and both of those items are
 **about** numbers going stale.*

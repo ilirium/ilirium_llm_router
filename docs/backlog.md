@@ -6,7 +6,7 @@ up, and **moves to `backlog-done.md` when it is done** — it is not deleted.
 
 → **`method/IDM-011-the-backlog.md` is canonical for this file**, and holds what a reader arriving
 here needs: **who may file an item**, the `BKL-NNNN` identifier and how one is allocated, the
-metadata line and its three placements, the five statuses and which file each lives in, and why the
+metadata line that sits under it, the five statuses and which file each lives in, and why the
 table below is generated rather than typed. **Read it before adding an item or changing this file.**
 
 **Two things restated here because a session acts on them without looking anything up.** **A session
@@ -30,7 +30,7 @@ documentation defects, decisions waiting on a person, measurements left open, wo
 decision behind it, and instruments and housekeeping.
 
 **The table below is generated** by `procedures/backlog-index.py` from the items themselves — their
-metadata lines and their own opening sentences. **Do not type in it.** Change an item and re-run
+metadata lines and their own heading titles. **Do not type in it.** Change an item and re-run
 `--write`; `--check` exits 1 when it is stale.
 
 ---
@@ -233,16 +233,22 @@ prevent.
 
 method · partly-done · added 2026-08-26
 
-*Added 2026-08-26 on the owner's instruction.* Items are cited today by quoting their bold opening
-phrase — `status.md`'s "What is next" does it, and so do two phase plans. **A quoted title is not an
-identifier:** editing a title silently breaks every citation of it, nothing checks that, and the
-break stays invisible until a reader follows one. *What it would take:* an id per item, a rule for
-allocating one that survives items being deleted when done, and a decision on whether
-`procedures/link-check.py` learns to verify them — that last part is what turns this from a
-convention into an instrument. *Parked because* it touches every item in an **859-line** file, and
-an id scheme is worth deciding once rather than growing. *That figure read **545** until 2026-09-04
-— it was written when the file was 545 lines and never re-taken, which is this file's own recurring
-defect appearing in the item about indexing it.*
+*Added 2026-08-26 on the owner's instruction.* ***Written when items were cited by quoting their
+bold opening phrase*** — `status.md`'s "What is next" did it, and so did two phase plans. **Phase 13
+repointed the live tier to ids on 2026-09-04**; the archive still quotes titles, deliberately. **A
+quoted title is not an identifier:** editing a title silently breaks every citation of it, nothing
+checks that, and the break stays invisible until a reader follows one. *What it would take:* an id
+per item, a rule for allocating one that survives items being deleted when done, and a decision on
+whether `procedures/link-check.py` learns to verify them — that last part is what turns this from a
+convention into an instrument. **The checker question is answered**: settled row 8 chose
+`backlog-index.py --check` over `link-check.py`, to keep id checking out of an instrument whose own
+count is worktree-dependent. *Parked because* it touches every item in this file, and an id scheme
+is worth deciding once rather than growing.
+
+***The line count is deliberately not stated here.*** *It read **545** until 2026-09-04, then
+**859**, and the conversion to headings made it **1010** within the same phase — three values in
+four days. The figure was never load-bearing; it was standing in for "large", and a number that
+restates an adjective is the cheapest kind to get wrong.*
 
 ---
 
@@ -428,7 +434,7 @@ only.**
 
 *Why it may be weaker than it looks.* Its gate — that a local model can hold a real session — was
 discharged by Phase 4. Per-request dispatch already satisfies the subagent half with no code, and
-the `session_id`/`agent_id` columns were accepted separately
+the `session_id`/`agent_id` columns were accepted separately.
 
 ### BKL-0010 — Token counting for local backends
 
@@ -439,7 +445,7 @@ weakened case.**
 
 *Why it may be weaker than it looks.* Phase 4 measured the harm it was organised around and found
 none: the context boundary refuses cleanly rather than trimming silently. Its addendum also records
-the proposal reading `max_context_length` where it needs the loaded `context_length`
+the proposal reading `max_context_length` where it needs the loaded `context_length`.
 
 ## Measurements left open
 
@@ -942,8 +948,10 @@ same gate the sequence column sits behind.
 ## Dictionaries
 
 *Added 2026-08-26 on the owner's instruction, and **it is the first section here grouped by topic
-rather than by kind**.* Under the 2026-08-19 section order the items below would file in three
-different places — one is a measurement, one is tooling, one is an instrument. Grouped anyway, because
+rather than by kind**.* Under the 2026-08-19 section order **the section's three questions** would
+file in three different places — one is a measurement, one is tooling, one is an instrument. *Two of
+the three are below; the measurement is `BKL-0016`, under "Measurements left open", as the next
+paragraph says.* Grouped anyway, because
 they are three questions about **one mechanism**, and a mechanism nobody owns is how each of them
 stayed unasked. *If that turns out to be the wrong call the fix is cheap: each item is self-contained
 and can be scattered back.*
@@ -992,7 +1000,7 @@ refuses a headline ratio, so this needs a shape that answers the question withou
 
 not-on-this-list · superseded
 
-**~~The Anthropic 429 rate-limit headers.~~ Overturned 2026-08-24 — it is now a live item** , under
+**~~The Anthropic 429 rate-limit headers.~~ Overturned 2026-08-24 — it is now a live item**, under
 "Instruments and housekeeping" above. *Kept struck rather than deleted: an entry that vanishes
 cannot show that the mechanism caught it, and this one was caught by its own stated reasoning
 failing.*

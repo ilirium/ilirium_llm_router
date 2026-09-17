@@ -79,9 +79,14 @@ this phase does not revisit**, and which a review may question but never file as
 |---|---|---|
 | 19 | **Phase 13 runs `IDM-009`'s first jobs-done review — on itself** | The rule binds the phase that wrote it. It also buys the second data point on a phase that changed **no `src/`**, which is the axis Phase 12's run could not vary |
 
-**Four more, settled 2026-09-04 after the forward review put them.** *Each answers a question that
-touched one of the rows above, which is why they are decisions rather than findings — `IDM-004`
-rule 5.*
+**Six more.** **Rows 21–24 were settled 2026-09-04 after the forward review put them** — *each
+answers a question that touched one of the rows above, which is why they are decisions rather than
+findings, `IDM-004` rule 5.*
+
+***Rows 25 and 26 are not the forward review's and came later the same day***, when the owner read
+the finished files and rejected the item shape. **Separated 2026-09-17**: this heading said "four
+more … after the forward review put them" above a table of six, which attributed the shape reversal
+to a review that predates it.
 
 | | Settled | Note |
 |---|---|---|
@@ -104,8 +109,12 @@ category stays, per settled row 4.
 
 ## The task groups
 
-**Seven groups, twenty-nine tasks, numbered to 28.** *(Task 3a was inserted after this sentence was
-first written, and it said twenty-eight until the forward review counted them.)* Group E pauses for
+**Eight groups, thirty-eight tasks.** *(This sentence has now been wrong three times: it said
+twenty-eight until the forward review counted them, then **seven groups, twenty-nine tasks** until
+2026-09-17, when Group E2's eight tasks had been added to the file for thirteen days without it
+moving. **Re-derive it — `grep -c '^### Group '` and a count of the numbered task rows — rather
+than reading it.** It is the same defect `BKL-0007` is about, in the document that plans the phase
+that built `BKL-0007`'s scheme.)* Group E pauses for
 the owner; everything before it is independent of everything after it, so the phase can stop cleanly
 at a group boundary. `notes-group-<letter>.md` per group, per `../../README.md`.
 
@@ -252,7 +261,7 @@ and expects the `❓` column empty.*
 | `docs/milestone-2-corpus/phase-13-method-and-backlog/` | this folder; slug identical to the branch's | |
 | `review-charter.md`, `notes-review-plan.md` | the forward review's pair, task 3; the plain names Phase 10 settled | |
 | `review-charter-jobs-done.md`, `notes-review-jobs-done.md` | the names Phase 12 used; `IDM-009` makes them canonical | |
-| `for-the-owner.md` | this phase's own, task 27 | |
+| `for-the-owner.md` | this phase's own, **opened in Group C and written during the phase** per settled row 14. *Task 27 confirms it is current; it does not write it* | |
 | `evidence/register-check.py` | task 25 — **written against this phase's register**, not adapted from Phase 12's | |
 
 **Existing names this must not collide with:** `EPD-NNN`, `IDM-NNN`, `BUG-NNN`, `branch-index.py`,

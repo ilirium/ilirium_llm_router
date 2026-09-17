@@ -237,11 +237,18 @@ had not shipped, `$?` after a pipe reported the wrong command's status, and `uv 
 installs changed code while printing "Nothing to upgrade". All three exited 0. An exit code answers
 a different question from the one being asked.*
 
-### Phase 13 — the Anthropic rate-limit response headers
+### Phase 14 — the Anthropic rate-limit response headers
 
-*Number allocated 2026-08-25 on the owner's instruction.* The work itself is a live item in
-`../backlog.md`, added 2026-08-24 as the reversal of an entry that had refused it; read that entry
-first, because it holds why the refusal was reasonable and what refuted it.
+***Renumbered from 13 to 14 on 2026-09-17.*** *The number was allocated 2026-08-25, and on
+2026-09-04 the owner took **13** for the method-and-backlog phase and moved the headers to **14**.
+This file was named in that phase's task 3a as one of three to bring true; the other two were
+corrected and this one was not, so it went on allocating 13 to the headers for thirteen days while
+Phase 13 was visibly something else. **The task was recorded as done.** Found by reading the file
+rather than by any check.*
+
+*The work itself is a live item in `../backlog.md` — **`BKL-0034`**, added 2026-08-24 as the
+reversal of an entry that had refused it, and that entry is **`BKL-0037`**; read it first, because
+it holds why the refusal was reasonable and what refuted it.
 
 **What it needs:** `retry-after` and the `anthropic-ratelimit-*` family, read off the reply **on the
 way past, never by parsing and rebuilding**. They are already relayed to the client untouched. The
@@ -255,14 +262,14 @@ this router is positioned to take it.
 
 **It arrives carrying a collision with this file's own non-goal, and allocating a number does not
 clear it.** *"Changing `calls.csv`. Not its rotation, not its columns"* is named above as a
-Milestone 2 non-goal. Phase 13 needs a home for the headers, so one of two things has to happen
+Milestone 2 non-goal. Phase 14 needs a home for the headers, so one of two things has to happen
 first: **the non-goal is overturned**, or **the headers go somewhere that is not a `calls.csv`
 column** — the corpus day index and a sidecar are the visible candidates. **Neither is chosen here,
-and Phase 13's plan cannot skip the question.**
+and Phase 14's plan cannot skip the question.**
 
 **A named allowlist, never a copy — this is the design constraint, not a detail.**
 `../reference/corpus.md` says the store sees bodies only and never headers, *"so the credential never
-reaches disk."* A header-reading recorder walks straight up to that sentence. Whatever Phase 13
+reaches disk."* A header-reading recorder walks straight up to that sentence. Whatever Phase 14
 builds must record an **explicit list of header names**; a blanket copy of the response headers puts
 the next `authorization` header into a file that is not supposed to be capable of holding one.
 

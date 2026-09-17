@@ -56,13 +56,18 @@ have been the recommended option.*
 The backlog carries an item recording that `CLAUDE.md` is long — **297 lines** when it was written,
 and that you accepted the growth deliberately *"so a later review can act on it"*.
 
-**It was 338 lines when this branch opened and is 345 now**, with `IDM-009` and `IDM-010` pointers
-added and `IDM-011`'s still to come. Every one is a pointer rather than a restatement, which is the
-cheap form — but the file is now ~48 lines past the figure the item records.
+**It was 338 lines when this branch opened and is 359 now**, with the `IDM-009`, `IDM-010` and
+`IDM-011` pointers added. Every one is a pointer rather than a restatement, which is the cheap form.
 
 **Nothing here argues for cutting it.** The item's own framing is that the fix is a *measurement*,
-not a cut, and two of the restatements already have arguments on the record. **What I am telling you
-is that the number in that item is stale and this phase is one of the reasons.**
+not a cut, and two of the restatements already have arguments on the record.
+
+***Amended 2026-09-17, and the amendment is the point.*** *When written, this entry told you the
+number in `BKL-0005` was stale and that this phase was one of the reasons. **Task 15 then corrected
+that item to 359** — so the entry outlived its own complaint, while carrying "345 now", which was
+itself already wrong. **An entry written to report a stale number went stale about it.** Amended in
+place rather than removed: `IDM-010` only forbids rewriting one at the close, and what is worth
+keeping is that the file written to a person needs re-reading like everything else.*
 
 ## 5 · IDEA · medium · Six count errors now, every one caught by opening the file
 

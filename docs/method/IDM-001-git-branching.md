@@ -311,7 +311,10 @@ rather than a reason not to record state.
 **Write the merge commit in when the merge happens.** Four of Milestone 1's six phase notes said
 "merge back with `--no-ff`" and never recorded what happened; only `phase-4-notes.md:7` carried the
 hash. That is this repository's signature failure in miniature — a document recording intent and never
-closed out — and `../backlog.md` still carries the repair as a review-phase item.
+closed out. **The repair is recorded as `BKL-0033`**, and it is `done` — so it lives in
+`../backlog-done.md` rather than in `../backlog.md`. *This sentence said `backlog.md` "still
+carries" it until 2026-09-17; it was already struck as done when written, and Phase 13 then moved
+it to the other file.*
 
 **A `Merge commit` row still reading "not yet merged" after the branch is gone is the defect, not the
 placeholder.** Writing "not yet merged" while it is true is correct; leaving it there afterwards is

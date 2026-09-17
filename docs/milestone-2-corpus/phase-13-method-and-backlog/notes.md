@@ -7,10 +7,17 @@ in it, per `../../README.md`.*
 
 **Written while working, not afterwards.** Where a section says otherwise it says so in the section.
 
-**Groups A–D are complete. Group E is part-done and the phase is stopped at a checkpoint that is
-the owner's.** Tasks 13 and 17 are in; **task 14a — an independent review of the item inventory, in
-a session of its own — is next**; 15, 16, 18, 19 and 20 are blocked on it. Groups F and G have not
-started. **`../../backlog.md` is untouched.**
+**Groups A–E2 are complete. Group F's review has run and stopped the merge; task 24 and Group G
+remain.** `../../backlog.md` carries all 38 ids and `../../backlog-done.md` holds the four done
+ones.
+
+***This paragraph has now gone stale twice in the same position, and the second time was worse than
+the first.*** *The note below records the first instance, found by a close-out sweep. It then sat
+four groups behind for thirteen days — through the cold review, the whole of Group E, the shape
+conversion and the phase's own jobs-done review — **saying task 14a was next and `backlog.md`
+untouched, while both had been false since 2026-09-04.** It was found by the review, not by the
+sweep that caught it last time. **An entry point is the one paragraph a stale-check cannot be
+trusted to reach, because every session reads it and none of them is looking at it.***
 
 *This line said **"Group A is executed; tasks 3 and 3a are not"** until 2026-09-04, four groups
 after it stopped being true. **That is Phase 12's defect arriving in the same position** — its
@@ -25,9 +32,10 @@ date carries no marker.*
 ## The group notes
 
 **Each task group's notes go to `notes-group-<letter>.md`**, per `../../README.md`; this file keeps
-what belongs to no group and stays the entry point. The plan has seven groups — **A** open,
-**B** `IDM-009`, **C** `IDM-010`, **D** `IDM-011`, **E** the refactor, **F** the review of this
-phase's finished work, **G** close.
+what belongs to no group and stays the entry point. The plan has **eight** groups — **A** open,
+**B** `IDM-009`, **C** `IDM-010`, **D** `IDM-011`, **E** the refactor, **E2** one item shape,
+**F** the review of this phase's finished work, **G** close. *`E2` was added mid-phase and this
+sentence said seven until 2026-09-17.*
 
 | File | Covers | Written |
 |---|---|---|
@@ -36,6 +44,8 @@ phase's finished work, **G** close.
 | `notes-group-c.md` | Group C — `IDM-010` | 2026-09-04 |
 | `notes-group-d.md` | Group D — `IDM-011` | 2026-09-04 |
 | `notes-group-e.md` | Group E — the refactor | 2026-09-04 |
+| `notes-group-e2.md` | Group E2 — one item shape | 2026-09-04 |
+| `notes-review-jobs-done.md` | Group F — the jobs-done review, both runs reconciled | 2026-09-04 |
 
 **A row appears here when its file appears**, never before. That is Phase 12's rule and the reason
 for it: at Phase 11's merge this index carried a placeholder row naming files that did not exist,

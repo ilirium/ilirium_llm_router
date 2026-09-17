@@ -20,16 +20,22 @@ tests** stand by construction.
 
 ## The one thing to do next
 
-**Group F — review this phase's finished work, under the `IDM-009` it wrote.** *Phase 13 is that
-document's first subject, at task 21, and `IDM-009` puts the review **before** the merge.*
+**Group F's review has run and stopped the merge.** *Phase 13 is `IDM-009`'s first subject, and
+`IDM-009` puts the review **before** the merge — so nothing here has landed.* **Two runs, 23
+findings, five of them method-tier or settled-row.** The report is `notes-review-jobs-done.md`.
 
-**Everything Groups A–E2 produce is now on disk and stable.** `backlog.md` holds 34 items,
-`backlog-done.md` holds 4, every item is a `### BKL-NNNN — title` heading, and
-`backlog-index.py --check` exits 0.
+**What is left: task 24, then Group G.** Task 24 decides what is fixed before the merge and what
+becomes a backlog item, **and settled row 9 makes that the owner's word rather than a session's.**
 
-**What a reviewer should be told to look at hardest:** the shape changed *after* the ids were
-applied, so the question is whether anything moved in the conversion. **Task 20f says nothing did**
-and the check is four lines — *re-run it rather than trusting this sentence.*
+**Five of the findings are waiting on the owner and none may be guessed at**: whether twelve
+duplicated item bodies are fixed or settled row 26 is amended; whether the unfillable `See` column
+is built or the claim narrowed; whether the citation checker learns to tell a mention from a
+citation; whether the Group E checkpoint's prune ever ran; and whether anything has been pushed,
+**which cannot be determined from this clone at all.**
+
+***Two findings are about instruments that pass while testing nothing***, and they are the reason
+`IDM-009` has a vacuity pass: the heading-count assertion cannot detect the failure it was built
+for, and the `See` column is named by two documents and written by no code.
 
 ---
 
@@ -53,7 +59,8 @@ both caught.* They are `BKL-0032` and `BKL-0033`, so **old `BKL-0032`–`0036` a
 **two copies, both in `status.md`** — and `BKL-0004`'s *"545 lines"* is 859 and must be fixed in
 place, because `partly-done` means it does not move out.
 
-**`docs/backlog.md` is still untouched.** No id has been applied to it.
+**`docs/backlog.md` carries all 38 ids** and `docs/backlog-done.md` holds the four done ones.
+*This line said the file was untouched until 2026-09-17, thirteen days after task 15 applied them.*
 
 **Task 14a's raw report is not kept** — `notes-review-plan.md` says why. Its outcome is in
 `notes-group-e.md` and its corrections are in `item-inventory.md` itself.
@@ -67,14 +74,14 @@ place, because `partly-done` means it does not move out.
 | **C** `IDM-010` | **done** — the per-phase `for-the-owner.md` |
 | **D** `IDM-011` | **done** — the backlog, and the `IDM-001` amendment |
 | **E** the refactor | **done.** 13, 14, 14a, 15, 16, 17, 18, 19 and 20 all run; `--check` exits 0 |
-| **E2** one item shape | **done.** Tasks 20a–20h. `### BKL-NNNN — title` headings; the table-row and bare-paragraph shapes retired. **No id changed, proved at task 27** |
-| **F** the review of this phase | not started — Phase 13 reviewed under the `IDM-009` it wrote |
+| **E2** one item shape | **done.** Tasks 20a–20h. `### BKL-NNNN — title` headings; the table-row and bare-paragraph shapes retired. **No id changed, proved at task 20f** |
+| **F** the review of this phase | **21, 22, 23 done** — charter, two runs, reconciliation. **Task 24 is open and is the owner's** |
 | **G** close | not started |
 
 ## Read these, in this order
 
 1. **`docs/status.md`** — first, every session. The only file that holds state.
-2. **`.../phase-13-method-and-backlog/plan.md`** — the **24-row settled table** and the register, at
+2. **`.../phase-13-method-and-backlog/plan.md`** — the settled table and the register, at
    minimum. Grep the headings.
 3. **`notes.md`**, then the group notes you need. **`notes-group-e.md`** is where the refactor is;
    **`notes-review-plan.md`** is what the forward review found.
@@ -93,16 +100,19 @@ spent.
   inventory, twice in this file about `for-the-owner.md`, and **once about the inventory's own item
   count, which was two commits from being frozen into permanent ids.** **Every one was caught by
   opening the file or by rendering it — none by rereading prose.**
-- **`backlog-index.py --check` exits 1 on this branch and that is correct.** This phase's documents
-  already cite `BKL` ids that `backlog.md` does not carry yet. It flips to 0 when task 15 lands.
+- **`backlog-index.py --check` is green on the ids and red on one word.** Every `BKL` citation
+  resolves; the single failure is `notes-review-jobs-done.md`, which *discusses* a synthetic id that
+  no item carries. **The checker cannot tell a citation from a mention** — an open question, not a
+  defect in the data.
 - **`make lint` reaches neither column width nor `docs/procedures/`.** `E501` is not in ruff's
   default set, and the Makefile lints `src tests` only. Count characters **in Python, not `awk`** —
   `awk` counts bytes and gave a wrong number here once already. **And the 100-column rule is written
   for `src/` and `tests/` only** — no statement of one for markdown exists, and the documents run to
   101–103 routinely. *Open question, entry 7 of this phase's `for-the-owner.md`.*
-- **`link-check.py`'s count is a property of the worktree** — **117 broken here against 91 on
-  `main`**, and the delta is files Group E has still to create. Compare against a run in the *same*
-  tree or not at all.
+- **`link-check.py`'s count is a property of the worktree, and the `main` comparison is a trap.**
+  **112 broken here.** *`main` is often quoted at 91; running `main`'s own checker over `main`'s own
+  content in an identical tree gives **111**, and about twenty of that gap is untracked
+  per-worktree files.* **Compare against a run in the same tree or not at all.**
 - **Push state cannot be checked from here.** `origin` is configured but this clone holds **no
   remote-tracking refs** — `git branch -r` is empty. Ask the owner; do not infer.
 
