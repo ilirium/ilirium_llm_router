@@ -60,13 +60,17 @@ HEADING = re.compile(r"^### (?P<id>BKL-\d{4}) — (?P<what>.+?)\s*$")
 # `documentation-defects · open · added 2026-09-02` and, for a done item,
 # `· done 2026-09-04 · phase 13`. It carries no id — the heading above it does.
 #
+# `· see <refs>` is optional and comes last: a comma-separated list of documents the item points at
+# and of `BKL` ids it supersedes or was reversed from. Empty is normal — most items point nowhere.
+#
 # Deliberately loose, and safe only because it is applied to exactly one line: the first non-blank
 # line under a heading. Matched against arbitrary prose it would fire constantly.
 META = re.compile(
     r"^(?P<cat>[^·]+?)\s+·\s+(?P<status>[^·]+?)"
     r"(?:\s+·\s+added\s+(?P<added>\d{4}-\d{2}-\d{2}))?"
     r"(?:\s+·\s+done\s+(?P<done>\d{4}-\d{2}-\d{2}))?"
-    r"(?:\s+·\s+phase\s+(?P<phase>\d+))?\s*$"
+    r"(?:\s+·\s+phase\s+(?P<phase>\d+))?"
+    r"(?:\s+·\s+see\s+(?P<see>[^·]+?))?\s*$"
 )
 CITATION = re.compile(r"\bBKL-\d{4}\b")
 
@@ -80,6 +84,7 @@ class Item:
     done: str | None
     phase: str | None
     what: str
+    see: str | None
     section: str
     line: int
 
@@ -157,6 +162,7 @@ def parse(path: Path) -> tuple[list[Item], list[str]]:
                 done=m.group("done"),
                 phase=m.group("phase"),
                 what=h.group("what").strip(),
+                see=(m.group("see") or "").strip() or None,
                 section=section,
                 line=n + 1,
             )
@@ -201,6 +207,19 @@ def validate(live: list[Item], done: list[Item]) -> list[str]:
             if a.id >= b.id:
                 problems.append(f"OUT OF FILE ORDER: {b.id} follows {a.id}")
 
+    # A `superseded` item must name what replaced it. `IDM-011` defines the status as "replaced by
+    # another item, which the `See` column names", so a superseded item with an empty `See` makes
+    # the definition false — and the link is the only thing that makes the status useful.
+    #
+    # This check exists because the column was named by two documents and written by no code for
+    # thirteen days, and nothing could fail: `--check` cannot notice a value nothing produces.
+    for it in every:
+        if it.status == "superseded" and not (it.see and "BKL-" in it.see):
+            problems.append(
+                f"{it.id}: status is superseded but `see` names no BKL id — "
+                "IDM-011 requires the replacement to be named"
+            )
+
     # Only `done` leaves backlog.md, and only `done` may be in backlog-done.md.
     for it in live:
         if it.status == "done":
@@ -238,7 +257,7 @@ def table(items: list[Item], *, with_completion: bool) -> str:
         phase = it.phase or "" if with_completion else ""
         out.append(
             f"| `{it.id}` | {it.added or '—'} | {it.status} | {it.category} | {it.what} "
-            f"| {done or '—'} | {phase or '—'} | |"
+            f"| {done or '—'} | {phase or '—'} | {it.see or ''} |"
         )
     return "\n".join(out)
 

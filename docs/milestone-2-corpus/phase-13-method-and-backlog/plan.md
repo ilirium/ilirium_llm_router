@@ -279,6 +279,7 @@ unambiguously.
 | Highest id allocated | **`BKL-0038`** — 38 items, applied at task 15 on 2026-09-04. *Task 13 proposed 36; the cold review at task 14a found two it had missed* | |
 | Item heading | `### BKL-0007 — <short title>` — **the only item shape**, per settled row 25 | |
 | Metadata line | `<category> · <status> · added YYYY-MM-DD`, directly under the heading, **carrying no id** | |
+| …`see` | `· see <refs>`, optional and last — documents the item points at, and any `BKL` id it supersedes or was reversed from. **Required on a `superseded` item**, and `--check` enforces that | |
 | …for a done item | the same, plus `· done YYYY-MM-DD · phase N` | |
 | ~~…per shape~~ | ~~a line under the bold opening / an extra leading column / a line under the `###` heading~~ — **retired 2026-09-04**, and two of those three are how `BKL-0032` and `BKL-0033` went missing | |
 

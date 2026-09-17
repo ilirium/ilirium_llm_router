@@ -93,6 +93,24 @@ the reviewer **not to leave anything for a second pass that is not coming.**
 correct.
 
 
+## Settled row 10's prune was not exercised, and that is recorded rather than implied
+
+***Owner's answer, 2026-09-17, to a question the jobs-done review raised.*** Row 10 made the Group E
+checkpoint a prune pass — *"the owner sees ~30 items as one list and marks any to drop"* — and
+**the prune half never ran.** The checkpoint was used to ratify the inventory and then to extend it
+with task 14a; nobody was shown the list and asked what to drop.
+
+**So `refused` is a status with no instance anywhere in the scheme that defines it.** *It is not
+dead: `IDM-011` gives it a meaning, `backlog.md` has the section it lives in, and a future refusal
+has somewhere to go. It is simply untested.*
+
+**Why this is written down at all.** *A prune that ran and dropped nothing looks identical to a
+prune that never ran* — the same absence of `refused` items, the same silence in the notes. **That
+is the ambiguity `../../README.md`'s no-commit rule exists to prevent**, applied to a task rather
+than to a commit. The owner declined to run it late rather than run it under time pressure, which is
+the defensible call: **a prune done badly costs more than one not done**, because a wrongly refused
+item keeps its id forever.
+
 ## Task 17 — the script, written and driven before it was committed
 
 **`../../procedures/backlog-index.py`, 296 lines**, in the shape `branch-index.py` established:

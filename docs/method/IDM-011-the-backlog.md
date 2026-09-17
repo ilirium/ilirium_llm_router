@@ -90,6 +90,20 @@ it. `<category> · <status> · added YYYY-MM-DD`, and **a done item adds** `· d
 phase N`. **Visible, never an HTML comment** — the data a reader needs in order to cite an item must
 not be invisible to the reader.
 
+**`· see <refs>` is optional and comes last** — a comma-separated list of the documents an item
+points at and of any `BKL` id it supersedes or was reversed from. **Empty is normal**; most items
+point nowhere, and thirteen of thirty-eight carry one today.
+
+**A metadata line is never wrapped**, whatever its length — the parser matches it as a single line,
+so a wrapped one silently stops being an item. *Two exceed 100 characters today, which is the same
+exception a table row already has.*
+
+***A `superseded` item is the one case where it is required***, and `--check` enforces it: the
+status means "replaced by another item", so an empty `See` makes the definition false. *That check
+was added 2026-09-17, after the column spent thirteen days named by this document and written by no
+code — during which nothing could fail, because **`--check` cannot notice a value nothing
+produces.***
+
 **The title is written once.** It lives in the heading; the body does not restate it. *Where an
 item's opening sentence carried facts a title cannot hold, those facts stay in the body — unbolded,
 because bold is no longer how an item begins.*
@@ -165,6 +179,27 @@ stale at the moment the thing it counted changed — which is the moment nobody 
 
 **`--check` validates** that ids are unique, that every item has a row and every row an item, and
 that every `BKL-NNNN` citation in the live tier resolves to an item.
+
+### Never write an id that does not exist, not even as an example
+
+**Any `BKL-NNNN` written anywhere under `docs/` or in `CLAUDE.md` is a citation.** `--check`
+resolves every one of them against the items, and it **cannot tell a citation from a mention** — so
+a document discussing a hypothetical id fails the check.
+
+***That is the smaller reason. The real one is that the check would later go green on a false
+statement.*** **Ids are allocated in order and never reused**, so an invented id is not permanently
+unresolvable — it is the **next** id to be handed out. The moment an item claims that number, a
+sentence written about something imaginary becomes a **citation of a real and unrelated item**, and
+`--check` starts passing on it. *A checker that fails today and passes tomorrow because the text
+became wrong is worse than one that never looked.*
+
+**So: describe, never name.** *"A synthetic item one past the highest id"* costs nothing and cannot
+rot. **The rule covers review reports, notes, plans and examples in this document** — everything the
+checker scans, which is everything.
+
+*Owner's decision, 2026-09-17, after a reconciliation quoted a review's test id and turned
+`--check` red. **The alternative was to teach the checker an escape hatch**; it was refused, because
+an escape hatch only suppresses the failure and leaves the sentence to go quietly false later.*
 
 ### What `--check` cannot see, said here so nobody reads its silence as coverage
 

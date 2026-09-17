@@ -68,7 +68,14 @@ and that regenerating first would leave nothing to catch it.
 
 **Both halves are wrong.** All 38 ids are cited in `evidence/item-inventory.md` and
 `notes-group-e2.md`, so **no shipped item can be deleted silently** — the protection is real, not
-luck. But Run A added `BKL-0039`, regenerated, deleted it and its row: **`--check` exited 0.**
+luck. But Run A added **a synthetic item one past the highest id**, regenerated, deleted it and its
+row: **`--check` exited 0.**
+
+> ***The id it used is deliberately not written here, and that is now a rule*** — see `IDM-011`.
+> *Naming it made `--check` fail on this very file, because the checker cannot tell a mention from a
+> citation. **The owner's reason is the stronger one**: the next item allocated takes that number,
+> at which point this sentence stops being an unresolvable mention and silently becomes a **wrong
+> citation** of a real item. **The check would go green at the moment the text became false.***
 
 **So the gap is not "an item deleted outright" — it is "an item added after this phase and then
 deleted", which is the opposite distribution to the one recorded.** *The section exists so its

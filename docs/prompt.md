@@ -113,7 +113,9 @@ spent.
   **112 broken here.** *`main` is often quoted at 91; running `main`'s own checker over `main`'s own
   content in an identical tree gives **111**, and about twenty of that gap is untracked
   per-worktree files.* **Compare against a run in the same tree or not at all.**
-- **Push state cannot be checked from here.** `origin` is configured but this clone holds **no
+- **Push state cannot be checked from here — ask, do not infer.** *The owner reported the branch
+  pushed on 2026-09-17; that is a report, not a check, and it says nothing about commits made
+  after.* `origin` is configured but this clone holds **no
   remote-tracking refs** — `git branch -r` is empty. Ask the owner; do not infer.
 
 ## What is in force now that was not a week ago

@@ -302,10 +302,13 @@ merge's regeneration. Found on 2026-08-25 by deleting `docs/bugs-tier` and resto
 
 **Push state cannot be checked from here.** `origin` is configured, but this clone holds **no
 remote-tracking refs at all** — `git branch -r` is empty — so no local command can tell whether
-anything has been pushed without a fetch. *The last word on it is the owner's, 2026-08-28, and
-`status.md` has always recorded that as reported rather than checked. What is new on 2026-09-04 is
-knowing it is **unverifiable locally**, not merely unverified — so a session must ask rather than
-look.*
+anything has been pushed without a fetch. *The last word is the owner's, and `status.md` has always
+recorded that as reported rather than checked. What was established 2026-09-04 is that it is
+**unverifiable locally**, not merely unverified — so a session must ask rather than look.*
+
+**Reported pushed, 2026-09-17, by the owner.** *That covers the work up to the moment it was said,
+and nothing since. It is not a claim this clone can re-derive on any later day, so a session that
+needs to know asks again rather than reading this line.*
 
 *Trimmed twice for the same reason, and the second time is the interesting one. On 2026-08-25 four
 paragraphs of commentary on **merged** branches were cut, because this section's opening rule says

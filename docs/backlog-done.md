@@ -23,10 +23,10 @@ item's metadata line and re-run `--write`.
 
 | ID | Added | Status | Category | What it is | Done | Phase | See |
 |---|---|---|---|---|---|---|---|
-| `BKL-0011` | — | done | decisions-waiting | Capturing bodies for a corpus | 2026-08-17 | 9 | |
-| `BKL-0032` | — | done | instruments | `status.md`'s shape — one row per milestone rather than per phase | 2026-08-17 | 9 | |
-| `BKL-0033` | — | done | instruments | Close out the four `Branch:` lines that record intent instead of outcome | 2026-08-21 | 10 | |
-| `BKL-0038` | — | done | not-on-this-list | Everything struck through in `milestone-1-core/outstanding-work.md` | 2026-08-07 | 5 | |
+| `BKL-0011` | — | done | decisions-waiting | Capturing bodies for a corpus | 2026-08-17 | 9 | `epd/EPD-003-capturing-bodies-for-a-corpus.md` |
+| `BKL-0032` | — | done | instruments | `status.md`'s shape — one row per milestone rather than per phase | 2026-08-17 | 9 |  |
+| `BKL-0033` | — | done | instruments | Close out the four `Branch:` lines that record intent instead of outcome | 2026-08-21 | 10 |  |
+| `BKL-0038` | — | done | not-on-this-list | Everything struck through in `milestone-1-core/outstanding-work.md` | 2026-08-07 | 5 |  |
 
 <!-- end generated -->
 
@@ -37,7 +37,7 @@ item's metadata line and re-run `--write`.
 
 ### BKL-0011 — Capturing bodies for a corpus
 
-decisions-waiting · done · done 2026-08-17 · phase 9
+decisions-waiting · done · done 2026-08-17 · phase 9 · see `epd/EPD-003-capturing-bodies-for-a-corpus.md`
 
 Argued in full in `epd/EPD-003-capturing-bodies-for-a-corpus.md`. **Decided 2026-08-17 by
 Phase 9**, and it was blocked on **nothing but the decision**.
@@ -67,23 +67,33 @@ is a `### BKL-NNNN — title` heading and the shape argument above is settled a 
 
 instruments · done · done 2026-08-17 · phase 9
 
-**Done 2026-08-17.** Proposed during Phase 8, deliberately not done there, executed once Phase 9
+Proposed during Phase 8, deliberately not done there, executed once Phase 9
 supplied the evidence it was missing. `status.md` now carries one row per milestone pointing at that
 milestone's index.
 
-*Two things checked before executing it, because the proposal rested on both.* **Milestone 1's hashes
-were safe to remove** — `milestone-1-core/README.md` holds a strictly richer table (branch, merge hash,
+*Two things checked before executing it, because the proposal rested on both.* **Milestone 1's
+hashes
+were safe to remove** — `milestone-1-core/README.md` holds a strictly richer table (branch, merge
+hash,
 and what each phase settled), and every hash has three to five homes. **But the proposal's "point at
-that archive" does not hold for an open milestone:** `milestone-2-corpus/` has no `README.md`, because
-per `README.md`'s template that is a *closing* artefact — *"what the milestone was, what it proved"*.
-Milestone 2 points at its `implementation-plan.md` until it closes, and `status.md` says so in place.
+that archive" does not hold for an open milestone:** `milestone-2-corpus/` has no `README.md`,
+because
+per `README.md`'s template that is a *closing* artefact — *"what the milestone was, what it
+proved"*.
+Milestone 2 points at its `implementation-plan.md` until it closes, and `status.md` says so in
+place.
 
-*The counter-argument this item carried is preserved and was not overturned:* a separate `history.md`
-is still declined as a third copy. **What decided it was new evidence rather than the old argument.**
+*The counter-argument this item carried is preserved and was not overturned:* a separate
+`history.md`
+is still declined as a third copy. **What decided it was new evidence rather than the old
+argument.**
 The item said the file "is not actually accreting — the duplication is the whole of the complaint",
-and that stayed true. What changed is that Milestone 2's state had been written as **prose** precisely
-to avoid pre-empting this decision, and that prose went stale invisibly — it said "one phase of it is
-done" after Phase 9 merged. The per-phase table beside it never went stale. **So the axis that decided
+and that stayed true. What changed is that Milestone 2's state had been written as **prose**
+precisely
+to avoid pre-empting this decision, and that prose went stale invisibly — it said "one phase of it
+is
+done" after Phase 9 merged. The per-phase table beside it never went stale. **So the axis that
+decided
 it was not duplication but what goes stale visibly**, which the item had not considered.
 
 ---
@@ -92,7 +102,7 @@ it was not duplication but what goes stale visibly**, which the item had not con
 
 instruments · done · done 2026-08-21 · phase 10
 
-**Done 2026-08-21, on the owner's instruction.** Five lines existed across four of the six phases,
+Done on the owner's instruction. Five lines existed across four of the six phases,
 in inconsistent places, and only `milestone-1-core/phase-4-lmstudio-parity/notes.md` recorded the
 merge commit; the other four said "Merge back with `--no-ff`" — written before the merge and never
 updated. All four now carry their merge commit in the form Phases 4, 8 and 9 already used:
@@ -106,7 +116,8 @@ log --merges` and cross-checked against `milestone-1-core/README.md`'s table.
 out of that ordering rather than waiting for the review.* **Two things are deliberately not done.**
 Phases 1 and 6 still carry no `Branch:` line at all — owner's decision, on the ground that the rule
 did not exist when they were written, and `milestone-1-core/README.md` holds both records anyway.
-And `EPD-004:703`'s *"four of six left open"* is **untouched**: that row records what Phase 6's review
+And `EPD-004:703`'s *"four of six left open"* is **untouched**: that row records what Phase 6's
+review
 found, not what is outstanding now.
 
 *It was kept struck rather than deleted in `backlog.md`, like the two entries above it there — and
