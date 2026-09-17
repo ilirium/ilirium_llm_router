@@ -10,8 +10,10 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-17 — Phase 13 is open and unmerged. Groups A–E2 are complete; Group F's review has run
-and stopped the merge.** `docs/phase-13-method-and-backlog`, forked at `dec7c4a`.
+**2026-09-17 — Phase 13 is open and unmerged. Groups A–G are complete except the merge itself.**
+*Group F's review stopped it, and the owner has answered five of its findings; **three method-tier
+findings are still open and the charter's rule is that any one of them stops the merge**.*
+`docs/phase-13-method-and-backlog`, forked at `dec7c4a`.
 
 *This line said "Groups A–D are complete; Group E is part-done and stopped at a checkpoint" from the
 2026-09-04 handoff until 2026-09-17, while the paragraphs below it said E and E2 were both done —
@@ -81,13 +83,15 @@ and a declined item's decline goes in the phase's `notes.md`.
 about it during the phase chartered to fix the count — found by a review, not by a check. The number
 lives here now, and only here.*
 
-**Baselines.** This branch changes no `src/` and no `tests/`, so the trunk's **448** stands; *not
-re-run in this worktree, which has no venv.* `make lint` clean at the pinned `0.16.1` — **and it
-does not reach `docs/procedures/`**. ***That directory has never been lint-clean: `ruff check
-docs/procedures/` reports 36 findings across five files***, one of them in this phase's own
-`backlog-index.py`. *A note claiming that script passes was written and is now retracted; the code
-is untouched, because fixing one of thirty-six is arbitrary.* `link-check.py` reports **112 broken
-here**, down from 117 now that `backlog-done.md` exists.
+**Baselines, all re-derived 2026-09-17.** This branch changes no `src/` and no `tests/` — *checked,
+not assumed: `git diff --stat main..HEAD -- src tests` is empty* — so the trunk's **448** stands;
+*not re-run in this worktree, which has no venv.* **`evidence/register-check.py` exits 0**, and it
+was mutation-tested eight ways after its first version passed while testing nothing. `make lint`
+clean at the pinned `0.16.1` — **and it does not reach `docs/procedures/`**. ***That directory has
+never been lint-clean: `ruff check docs/procedures/` reports 36 findings across five files***, one
+of them in this phase's own `backlog-index.py`. *A note claiming that script passes was written and
+is now retracted; the code is untouched, because fixing one of thirty-six is arbitrary.*
+`link-check.py` reports **112 broken here**, down from 117 now that `backlog-done.md` exists.
 
 ***Do not compare that against `main`'s 91.*** *The count is a property of the worktree, not of the
 content: this phase's jobs-done review ran `main`'s own checker over `main`'s own content in an

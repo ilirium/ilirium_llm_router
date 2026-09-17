@@ -75,7 +75,8 @@ place, because `partly-done` means it does not move out.
 | **D** `IDM-011` | **done** — the backlog, and the `IDM-001` amendment |
 | **E** the refactor | **done.** 13, 14, 14a, 15, 16, 17, 18, 19 and 20 all run; `--check` exits 0 |
 | **E2** one item shape | **done.** Tasks 20a–20h. `### BKL-NNNN — title` headings; the table-row and bare-paragraph shapes retired. **No id changed, proved at task 20f** |
-| **F** the review of this phase | **21, 22, 23 done** — charter, two runs, reconciliation. **Task 24 is open and is the owner's** |
+| **F** the review of this phase | **21, 22, 23 done**; 24 part-done — five findings answered, **three still open** |
+| **G** close | **25, 26, 27 done.** **28 — the merge — is blocked** on those three |
 | **G** close | not started |
 
 ## Read these, in this order

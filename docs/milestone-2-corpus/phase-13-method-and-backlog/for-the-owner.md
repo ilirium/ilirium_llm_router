@@ -180,3 +180,31 @@ The compressed version would have got an answer and left the expired premise sit
 needs it. *`IDM-007` says a concern raised where it will not be read has not been raised. This is
 the weaker sibling — a question compressed past the point of being answerable is one the asker has
 not finished thinking about either.*
+
+
+## 10 · IDEA · high · Three instruments in this phase passed while testing nothing, and none was found by reading
+
+**The register check I wrote at task 25 passed on its first run, and the pass was worthless.** Its
+`❓` test skipped any table row ending `❓ |` as "the header row" — which is exactly what a row
+carrying a live `❓` looks like. **It skipped the rows it exists to find.**
+
+***That is the third instance in this phase, and the pattern is one shape.*** The heading-count
+assertion in `backlog-index.py` cannot detect the failure it was built for, because its counter sits
+inside the branch that succeeds. The `See` column was named by two documents and written by no code,
+so nothing could fail. **All three are checks whose exclusion swallows their own subject**, and
+**all three exited 0 while a person read them and saw nothing wrong.**
+
+**The way each was found was the same: make the thing it checks go wrong, and see whether it
+notices.** Not one was found by reading the code — including by me, twice, in code I had just
+written.
+
+**And the mutation harness itself failed silently.** Seven mutations "survived" the register check,
+one of which deleted a whole method document. **The check was right; the harness never ran the
+mutations.** This repository had already written that trap down — `notes-group-e.md` records *"the
+mutation did not apply and the test did not fail are the same output at a glance"* — **and it
+happened anyway, eight days later, to the person who wrote it down.**
+
+*What I would suggest, and it is a suggestion rather than a rule: **a new check does not count as
+written until one mutation has killed it**, and the harness reports "mutation applied" separately
+from "check failed". Both are one extra line. The second one is what would have caught this.*
+
