@@ -135,8 +135,8 @@ ordinary *queued* disconnect is unaffected and still gets its row through `Gener
 
 **The line reports the hole; it does not close it.** Writing the missing row from elsewhere has to
 guarantee it can never write one **twice**, and a duplicated row is worse than a missing one. That
-remains open in `../backlog.md`, and `../milestone-2-corpus/phase-10-body-store/notes.md` has the
-reproduction.
+remains open as **`BKL-0021`** in `../backlog.md`, and
+`../milestone-2-corpus/phase-10-body-store/notes.md` has the reproduction.
 
 ## What the columns are read back by
 

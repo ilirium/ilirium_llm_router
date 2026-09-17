@@ -13,8 +13,14 @@ adding a document or moving one.
 dispatches, relays and records; the central claim is settled, that **no protocol translation is
 needed and a local model can drive a real coding session through the router.**
 
-**Milestone 2 is open — the corpus, five phases in, last merged 2026-09-02.** Do not read the 158
-above as the current count; it is Milestone 1's, and it is dated for that reason.
+**Milestone 2 is open — the corpus.** Do not read the 158 above as the current count; it is
+Milestone 1's, and it is dated for that reason.
+
+***How many phases are in is `docs/status.md`'s to say, and this file deliberately no longer says
+it.*** *It carried that count and was **wrong** about it — during the very phase chartered to fix
+the count, which never opened this file. It was found by a review, not by a check. A number here is
+read by every session without being questioned and goes stale at the one moment nobody is rereading
+prose: when a phase lands.*
 
 **No number here is current by construction. `docs/status.md` is the only file that holds state** —
 read it first, every session, for where the project is, what is on disk and what is next.
@@ -204,12 +210,16 @@ was accepted. Do not build from one.**
 `docs/reference/design-decisions.md`. Bodies are archived as content-addressed per-call files;
 fine-tuning is dropped. Its open questions 3–6 are Phase 10 design detail, not parked decisions.
 
-**Do not read `docs/method/`'s `IDM-NNN` documents with that reflex.** The two schemes sit adjacent and
-look alike; an **IDM is in force now and you are expected to act on it**, which is the exact opposite of
-an EPD. `docs/method/IDM-000-about-these-documents.md` is the index. `IDM-001`, `IDM-003`, `IDM-005`, `IDM-006`
-and `IDM-008` are pointed at below; `IDM-002` holds the permission allowlist policy **and what else may go in the tracked settings file**; **`IDM-004` is the protocol for reviewing a
-plan before it runs — read it before reviewing one, because its first rule is that the charter decides
-what the review finds**; `IDM-007` is the Working agreement's fourth bullet, canonical.
+**Do not read `docs/method/`'s `IDM-NNN` documents with that reflex.** The two schemes sit adjacent
+and look alike; an **IDM is in force now and you are expected to act on it**, which is the exact
+opposite of an EPD. `docs/method/IDM-000-about-these-documents.md` is the index. `IDM-001`,
+`IDM-003`, `IDM-005`, `IDM-006`, `IDM-008`, `IDM-010` and `IDM-011` are pointed at below; `IDM-002`
+holds the permission allowlist policy **and what else may go in the tracked settings file**;
+**`IDM-004` is the protocol for reviewing a plan before it runs — read it before reviewing one,
+because its first rule is that the charter decides what the review finds**; **`IDM-009` is its
+sibling for work that has *run* — read it before reviewing a finished phase, and note that it puts
+the review **before the merge**, so a phase is not merged and then reviewed**; `IDM-007` is the
+Working agreement's fourth bullet, canonical.
 
 ## Git and branches
 
@@ -286,6 +296,20 @@ anything named and never valued, and the closing task checks it against the code
 bookkeeping: on its one run it found eight unvalued names, contradicted a number that had survived two
 reviews, and exposed a defect **two forward-review passes had read past**, because a constant and a
 config key only look wrong when they sit in adjacent rows.
+
+→ `docs/method/IDM-010-writing-for-the-owner.md` — **read it the first time something in a phase is
+worth telling the owner rather than a later session.** Every phase folder carries a
+`for-the-owner.md`, written **during** the phase and **to a person**; the notes stay long on purpose
+and this file is the digest. **Anything needing a decision is asked out loud instead of being parked
+in it.** Pointed at here rather than left in `docs/` because **there is no look-it-up moment** — the
+rule applies when somebody is already writing, which is `IDM-007`'s test.
+
+→ `docs/method/IDM-011-the-backlog.md` — **read it before adding anything to `docs/backlog.md`.**
+**A session asks the owner before filing an item**; if the answer is no, the decline goes in the
+phase's `notes.md`. *This reverses the reflex a session would otherwise have — `IDM-001` and the
+backlog's own preamble said for two days that filing an item was the phase's own act, and a session
+that learned that will file confidently and wrongly.* Adding an item still goes on whatever branch
+you are on and never opens one.
 
 ## Shell
 

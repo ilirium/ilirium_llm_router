@@ -76,8 +76,9 @@ same experiment.
 
 **What the refusal does *not* establish** is that static analysis beyond ruff is worthless. `ty` was
 version **0.0.14** at the time, which is early enough that the result may say more about the tool than
-about the idea. That is why it is a refusal with a reason rather than a policy, and why the backlog item
-below insists the next attempt states what it expects to catch **before** it runs.
+about the idea. That is why it is a refusal with a reason rather than a policy, and why
+**`BKL-0031`** in `../backlog.md` insists the next attempt states what it expects to catch
+**before** it runs.
 
 ## Provenance
 

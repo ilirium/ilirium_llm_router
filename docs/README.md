@@ -33,7 +33,7 @@ purpose: this sentence read "two files" over three rows from 2026-08-17 until 20
 | | |
 |---|---|
 | `status.md` | **State.** Where we stopped, where the project is, what is next. No work items live here |
-| `backlog.md` | **Inventory.** Unscheduled work, each item with why it is parked and why the question may be weaker than it looks. No state lives here |
+| `backlog.md` | **Inventory.** Unscheduled work, each item with why it is parked and why the question may be weaker than it looks. No state lives here. → **`method/IDM-011-the-backlog.md`** is canonical for it: **who may file an item** — a session asks, the owner decides — the `BKL-NNNN` id, the statuses, and why its table is generated |
 | `prompt.md` | **The next session's opening instruction, and nothing else.** Added 2026-08-17. It names what to read and what to distrust; it must never summarise what those documents say. **It expires when the phase it opens is merged** — check `status.md` before trusting it |
 | `prompt-<branch-slug>.md`, `merge-<branch-slug>.md` | **`prompt.md`'s class, for a branch that cannot have `prompt.md`.** Added 2026-08-21. When `prompt.md` is occupied by another branch, a second branch names its own: `prompt-` to open a session on it, `merge-` to say what the merge leaves for a follow-up session to integrate. Same rules as `prompt.md` — pointers, never a summary; paths from the repository root, so `procedures/link-check.py` does not check them. **Deleted by the merge that retires it**, which is part of the merge and not tidying afterwards (→ `method/IDM-001-git-branching.md`) |
 
@@ -357,7 +357,18 @@ for the placeholder rule.)*
 
 ## The phase template
 
-`phase-N-<slug>/` holds `plan.md`, `notes.md` and `evidence/` with its README.
+`phase-N-<slug>/` holds `plan.md`, `notes.md`, **`for-the-owner.md`** and `evidence/` with its
+README.
+
+→ **`method/IDM-010-writing-for-the-owner.md`** holds the third of those, and is canonical. In one
+line: **one file per phase, written to a person rather than to a session**, carrying what is worth a
+human's attention after the phase — `ASK` / `IDEA` / `REGRET` / `ERRAND`, numbered in order of
+appearance. **It always exists**, saying so in one line when it has no entries, because an omitted
+file cannot be told apart from a forgotten one. **Anything needing a decision is asked out loud
+instead**, and nothing here is required to go in it.
+
+*This sentence listed three of the four for one phase, between the file being invented and the rule
+being written — and the phase in that gap wrote none.*
 
 ### The plan carries a register
 
@@ -493,6 +504,19 @@ phase that must produce findings will manufacture them.
 **The review comes before the close**, not after. Harvesting facts into a permanent home requires
 first knowing which facts are true — run it the other way round and the durable tier canonises
 whatever was wrong.
+
+**This is one of three review protocols, and the checklist above is the milestone-scale one.** The
+other two are per-document and per-phase, and pointing at them here is what stops this checklist
+being reached for at the wrong scale.
+
+| | Subject | Where |
+|---|---|---|
+| **This one** | a **milestone's** executed work, once, as a checklist | above |
+| Forward review | a document nobody has acted on — a plan, an `implementation-plan.md`, an EPD | `method/IDM-004-reviewing-unexecuted-work.md` |
+| Review of executed work | **one phase**, before its merge | `method/IDM-009-reviewing-executed-work.md` |
+
+*The line between them is drawn in `IDM-009`, which holds all three in one table — a reader arriving
+at a finished phase is holding that document, not this one.*
 
 ---
 
