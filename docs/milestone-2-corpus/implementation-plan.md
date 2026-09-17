@@ -237,7 +237,7 @@ had not shipped, `$?` after a pipe reported the wrong command's status, and `uv 
 installs changed code while printing "Nothing to upgrade". All three exited 0. An exit code answers
 a different question from the one being asked.*
 
-### Phase 13 — the method tier and the backlog *(in flight; the merge hash is recorded here at task 28)*
+### Phase 13 — the method tier and the backlog *(complete, merged 2026-09-17 at `97fd822`)*
 
 *Owner's decision, 2026-09-04.* **Three method documents and the backlog refactor**, carrying no
 `src/` change — which is why the branch prefix is `docs/`.

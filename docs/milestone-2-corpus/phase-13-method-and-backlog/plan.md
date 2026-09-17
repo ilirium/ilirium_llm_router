@@ -1,7 +1,7 @@
 # Phase 13 — the method tier and the backlog
 
 **Branch:** `docs/phase-13-method-and-backlog`, forked from `main` at `dec7c4a`.
-**Merge commit:** *(filled at the merge, before the branch index is regenerated)*
+**Merge commit:** `97fd822`, 2026-09-17, `--no-ff` into `main` from `dec7c4a`.
 
 **A documentation phase. Nothing here touches `src/`**, which is why it runs on a `docs/` branch —
 `method/IDM-001-git-branching.md`, "Planning that produces no code goes on a `docs/` branch". It is
