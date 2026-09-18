@@ -13,8 +13,11 @@ from.
   its entries is what makes the bearer token acceptable, so trimming the list breaks authentication.
 - Drop hop-by-hop and connection-describing headers (host, content-length) and let the HTTP client
   set fresh ones.
-- Ask the backend for an uncompressed reply. Claude Code asks for compression on the way in, so
-  this has to be overridden deliberately rather than merely left unset.
+- Ask the backend for an uncompressed reply **when the caller asked for a stream**, because the SSE
+  scanner reads raw bytes. Claude Code asks for compression on the way in, so this has to be
+  overridden deliberately rather than merely left unset. *Non-streamed requests relay the caller's
+  own `accept-encoding` instead — a Phase 14 experiment, dated and reversible; see
+  `outgoing_headers`.*
 - Answer the `HEAD /` probe Claude Code sends before its first real call (see `app.py`).
 """
 
@@ -321,7 +324,7 @@ class Proxy:
         outgoing = self.client.build_request(
             request.method,
             target_url(backend.base_url, request),
-            headers=outgoing_headers(request, backend, self.api_keys.get(name)),
+            headers=outgoing_headers(request, backend, self.api_keys.get(name), call.stream),
             content=body,
             timeout=backend_timeout(backend),
         )
@@ -534,7 +537,7 @@ def target_url(base_url: str, request: Request) -> httpx.URL:
 
 
 def outgoing_headers(
-    request: Request, backend: Backend, api_key: str | None
+    request: Request, backend: Backend, api_key: str | None, wants_stream: bool | None = None
 ) -> list[tuple[bytes, bytes]]:
     """The incoming headers, minus the ones that described the old connection.
 
@@ -543,19 +546,44 @@ def outgoing_headers(
 
     The credential is decided by `backend.credential` alone, never by whether a key happens to
     exist. `api_key` carries the value for `inject` and is ignored by the other two modes.
+
+    **`accept-encoding` is forced to `identity` for a streamed reply and relayed untouched
+    otherwise.** *Phase 14 experiment, 2026-09-18 — see the block comment below.*
     """
     dropped = set(DROPPED_FROM_REQUEST)
     if backend.credential in {"strip", "inject"}:
         dropped |= CREDENTIAL_HEADERS
+
+    # PHASE 14 EXPERIMENT. Until 2026-09-18 this function forced `accept-encoding: identity` on
+    # EVERY outgoing request, because a compressed reply cannot be read for `usage` on its way past
+    # (Phase 2) without decompressing it first.
+    #
+    # It is now the router's only remaining unforced difference from what Claude Code sends when it
+    # talks to Anthropic directly -- and direct is the path on which the safety classifier WORKS,
+    # measured 2026-09-18 against the same credential, machine and client version. So it is the
+    # first variable being flipped. A streamed reply still gets `identity`: the SSE scanner reads
+    # raw bytes and that half is not in question, and all 820 streamed calls in the record
+    # succeeded anyway.
+    #
+    # TWO CONSEQUENCES, named rather than discovered:
+    #   1. A non-streamed reply may now arrive gzipped, so the scanner will not find `usage` and the
+    #      token columns go empty. That is `reference/observability.md`'s documented fallback --
+    #      "write empty token columns rather than failing the request" -- not a new failure mode.
+    #   2. The CORPUS will store those bytes compressed, because it stores what arrives. A stored
+    #      non-streamed response blob stops being readable JSON and becomes gzip. Nothing is lost
+    #      and `extract` will need to know.
+    #
+    # If the experiment comes back negative, this reverts to one unconditional line.
+    if not wants_stream:
+        dropped.discard("accept-encoding")
 
     headers = [
         (name, value)
         for name, value in request.headers.raw
         if name.decode("latin-1").lower() not in dropped
     ]
-    # Deliberate override: Claude Code asks for gzip and friends, but a compressed reply cannot be
-    # read for `usage` on its way past (Phase 2) without decompressing it first.
-    headers.append((b"accept-encoding", b"identity"))
+    if wants_stream:
+        headers.append((b"accept-encoding", b"identity"))
     if backend.credential == "inject" and api_key is not None:
         headers.append((b"authorization", f"Bearer {api_key}".encode()))
     return headers

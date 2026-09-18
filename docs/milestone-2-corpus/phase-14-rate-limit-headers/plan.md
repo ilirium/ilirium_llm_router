@@ -65,6 +65,22 @@ which is `BUG-001`'s own stated limit, *"reconstruction rather than measurement.
 evidence supports; the measurement is designed to report what is there rather than to decide
 between two named outcomes.
 
+***Resolved 2026-09-18, and not the way the measurement first suggested — H2.*** *The headers came
+back matching H1's signature exactly: a `rate_limit_error` naming no exhausted bucket, on a
+connection whose successful calls carry twelve. **That was read as H1 and it was the wrong
+reading.*** The owner then supplied the control nobody had run: **the classifier works when Claude
+Code talks to Anthropic directly and fails through the router**, on the same credential, machine,
+client version and afternoon.
+
+**So H1's evidence is real and H1's conclusion does not follow.** *"Anthropic sent this rejection"
+and "Anthropic is at fault for it" are different claims, and only the first was measured.*
+`BUG-001`'s own dismissal of the router turns out to be circular — it compares streamed against
+non-streamed **inside** the router — and is retracted on this branch.
+
+**The constraint any explanation must satisfy: 820 streamed calls through the router succeeded.**
+So it is the router **and** a non-streamed request together, which rules out everything that would
+apply to every call the router makes.
+
 ---
 
 ## What is settled, and by whom

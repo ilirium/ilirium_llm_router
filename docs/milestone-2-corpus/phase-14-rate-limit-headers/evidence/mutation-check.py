@@ -122,6 +122,21 @@ MUTATIONS = [
         expect_failing="test_the_unified_family_is_recorded_with_its_values",
         why="the only family a subscription credential is actually metered by stops being valued",
     ),
+    # The accept-encoding experiment, 2026-09-18.
+    Mutation(
+        name="a streamed request stops asking for identity",
+        old="    if wants_stream:\n        headers.append((b\"accept-encoding\", b\"identity\"))",
+        new="    if False:\n        headers.append((b\"accept-encoding\", b\"identity\"))",
+        expect_failing="test_a_streamed_request_asks_for_an_uncompressed_reply",
+        why="the SSE scanner would be handed compressed bytes and silently find no usage",
+    ),
+    Mutation(
+        name="a non-streamed request goes back to forced identity",
+        old='        dropped.discard("accept-encoding")',
+        new="        pass",
+        expect_failing="test_a_non_streamed_request_relays_the_callers_own_accept_encoding",
+        why="the experiment silently stops running while still looking like it does",
+    ),
     Mutation(
         name="the sample skips the allowlist",
         # Anchored on the success line's own wording: the call to `describe_headers` is identical

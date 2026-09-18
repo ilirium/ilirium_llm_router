@@ -124,13 +124,47 @@ def test_headers_describing_the_old_connection_are_replaced() -> None:
     assert received.headers["content-length"] == str(len(CLAUDE_BODY))
 
 
-def test_an_uncompressed_reply_is_requested() -> None:
-    """Claude Code asks for compression, so identity has to be set deliberately, not just unset."""
+def test_a_streamed_request_asks_for_an_uncompressed_reply() -> None:
+    """Claude Code asks for compression, so identity has to be set deliberately, not just unset.
+
+    The SSE scanner reads raw bytes off the wire, so this half is not negotiable.
+    """
+    upstream = Upstream()
+    body = b'{"model":"claude-sonnet-5","stream":true,"messages":[]}'
+    with running(upstream) as client:
+        client.post("/v1/messages", content=body, headers=CLAUDE_CODE_HEADERS)
+
+    assert upstream.received.headers["accept-encoding"] == "identity"
+
+
+def test_a_non_streamed_request_relays_the_callers_own_accept_encoding() -> None:
+    """Phase 14 experiment: the router's last unforced difference from the direct path.
+
+    The classifier works direct and 429s through the router, on the same credential and client.
+    This is the first variable being flipped -- see the block comment in `outgoing_headers`.
+    """
     upstream = Upstream()
     with running(upstream) as client:
         client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
 
-    assert upstream.received.headers["accept-encoding"] == "identity"
+    assert upstream.received.headers["accept-encoding"] == "gzip, deflate, br, zstd"
+
+
+def test_httpx_supplies_its_own_accept_encoding_when_the_caller_sends_none() -> None:
+    """Relaying "absent" is NOT available, and this test exists to say so rather than to approve it.
+
+    httpx fills in its own `accept-encoding` when the header is missing, so the router cannot pass
+    a caller's *absence* through the way it passes a value through. It does not matter for the
+    experiment -- Claude Code always sends one -- but it is a real floor on how transparent this
+    header can be, and finding it in a debugging session later would cost more than the line.
+    """
+    upstream = Upstream()
+    headers = {k: v for k, v in CLAUDE_CODE_HEADERS.items() if k != "accept-encoding"}
+    with running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=headers)
+
+    supplied = upstream.received.headers["accept-encoding"]
+    assert supplied and supplied != "identity"
 
 
 def _injecting_config() -> Config:

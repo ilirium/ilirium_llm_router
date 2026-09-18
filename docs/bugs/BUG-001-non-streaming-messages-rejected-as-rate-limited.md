@@ -1,6 +1,14 @@
 # BUG-001 — Non-streamed `/v1/messages` rejected as rate-limited
 
-**Status: open. Last confirmed 2026-08-25.**
+**Status: open. Last confirmed 2026-09-18** — reproduced unchanged on Claude Code **2.1.267**.
+
+> ***RETRACTION, 2026-09-18. This document has been clearing the router with a circular argument
+> since it was written, and the row is struck below.*** **The classifier works when Claude Code
+> talks to Anthropic directly and fails through the router** — same credential, same machine, same
+> client version, same afternoon. **That control had never been run.** What follows is still an
+> accurate description of the responses; its attribution of cause is not settled, and the sentence
+> *"the 429 is not a rate limit"* in the next paragraph is now the weakest claim in the file
+> rather than its conclusion.
 
 Every `POST /v1/messages` sent with `stream: false` to `api.anthropic.com` returns **HTTP 429**
 `rate_limit_error`, while a streamed request **2.8× larger** to the same model, on the same
@@ -62,7 +70,7 @@ the specific combination **`/v1/messages` with `stream: false`**.
 |---|---|
 | A genuine token-rate limit | The accepted request is 2.8× larger than the rejected one, 0.6 s later |
 | A genuine request-rate limit | 375 streamed calls in the same two days, zero rejected |
-| The router | Same process, same second, one path works and the other does not |
+| ~~The router~~ | ~~Same process, same second, one path works and the other does not~~ **STRUCK 2026-09-18 — the reasoning is circular.** It compares streamed against non-streamed **inside** the router, which cannot detect a router-caused defect that only affects non-streamed requests — *which is the exact defect shape in question*. **The control that would settle it is direct versus routed at the same shape, and it was never run until 2026-09-18, when it came back against the router** |
 | A model-specific limit | Identical model on both sides of each pair |
 | Non-streaming generally | 21 non-streamed `count_tokens` calls succeeded on the worst day |
 | Real capacity pressure | The 429 returns in **385–786 ms**, against 1274–2761 ms for successful calls — rejected at the edge, before any inference |
@@ -129,3 +137,48 @@ An earlier session recorded *"66 of 232 calls"* rate-limited on 2026-08-24. The 
 **63 for that day**, and 2026-08-21 contributes exactly **3**. `63 + 3 = 66`: the earlier count summed
 the whole file and attributed it to one date. **The corrected figures are the table above**, and the
 2026-08-24 total of 232 does not appear anywhere in the complete record — that day holds 317 rows.
+
+## The control that was missing, run 2026-09-18
+
+**Direct versus routed, at the same request shape.** *This is the comparison the "What this rules
+out" table never made, and it is why the router row above is struck.*
+
+| Path | Auto mode's classifier |
+|---|---|
+| Claude Code → **api.anthropic.com** directly | **works** |
+| Claude Code → **the router** → api.anthropic.com | **429**, every time |
+
+Same credential, same machine, **Claude Code 2.1.267**, the same afternoon. *Established by the
+owner noticing that the session he was reading this in had auto mode on and working, and asking
+what the difference was.*
+
+**What any explanation has to satisfy: 820 streamed calls through the router succeeded.** So it is
+not "the router" — it is the router **and** a non-streamed request together.
+
+**The four differences between the working path and the failing one**, all of which apply to
+streamed calls too:
+
+| | |
+|---|---|
+| **`accept-encoding: identity`** | The router's only *deliberate* change to an outgoing request. **Being tested first**, Phase 14 |
+| **HTTP/1.1 vs HTTP/2** | The router builds `httpx.AsyncClient` with no `http2=True` and carries no `h2` dependency |
+| **TLS fingerprint** | Python/httpx against Node. Structural, and not cheaply changed |
+| **Connection headers re-derived** | `host` and `content-length` are set fresh by the client |
+
+**What the headers say, measured through the router on 2026-09-18** — the measurement this document
+asked for under "What the router cannot tell you", now taken:
+
+| | Rate-limit headers on the reply |
+|---|---|
+| A **successful** call | **12**, the whole `anthropic-ratelimit-unified-*` family |
+| A **429** | **none at all** |
+
+***Read that pair carefully, because it is easy to over-read.*** It says the rejection carries no
+metering information on a connection whose successes carry plenty. **It does not by itself say
+whose fault the rejection is**, and this document said it did for several hours before the direct
+control was run.
+
+*One detail for anyone chasing this upstream: the classifier request carries **no `stream` key at
+all**, rather than `"stream": false`. Searching a payload for the latter will not find it.*
+
+**Full record:** `../milestone-2-corpus/phase-14-rate-limit-headers/evidence/`.

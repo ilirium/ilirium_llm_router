@@ -228,3 +228,61 @@ is not.*
 
 **Twelve mutations, twelve caught**, including one that adds `representative-claim` to the list and
 one that drops the unified family back out of it.
+
+## The finding above is wrong about cause, and the owner found it by asking a question
+
+***Do not read the two sections above without this one.*** They establish what the responses
+contain. **They do not establish whose fault the rejection is, and for a few hours this phase said
+they did.**
+
+**The owner asked: if the classifier is broken, how is auto mode working in the session we are
+having right now?** *That session is not connected to the router. His was.*
+
+| Path | The classifier |
+|---|---|
+| Claude Code → Anthropic **directly** | **works** |
+| Claude Code → **the router** → Anthropic | **429** |
+
+**Same credential, same machine, Claude Code 2.1.267, the same afternoon.** *This is the control
+that was never run, and `BUG-001` is retracted accordingly — its "What this rules out" table clears
+the router by comparing streamed against non-streamed **inside** the router, which cannot see a
+router-caused defect specific to non-streamed requests.* **The document has been assuming its
+conclusion since 2026-08-25.**
+
+***The lesson is not that the measurement was bad.*** The headers are real and the 429 genuinely
+carries no metering. **What was bad was the inference**: "Anthropic sent this" was read as
+"Anthropic is at fault", and the one experiment that separates them was sitting unrun while a
+session with the answer in it was open on the same screen.
+
+### The constraint that makes this hard, and it is worth keeping in view
+
+**820 streamed calls through the router succeeded.** Whatever the cause is, it is the router **and**
+a non-streamed request *together* — which rules out anything that would apply to every call the
+router makes, and that is most of the obvious candidates.
+
+### The experiment now in the tree
+
+**`accept-encoding` is no longer forced to `identity` for non-streamed requests** — the caller's own
+value is relayed. It is the router's only *deliberate* difference from the direct path. Streamed
+requests are unchanged, because the SSE scanner reads raw bytes and that half is not in question.
+
+**Two consequences, named in the code rather than discovered later:** a non-streamed reply may
+arrive gzipped, so `usage` will not be found and the token columns go empty — which is
+`reference/observability.md`'s documented fallback, not a new failure mode — and **the corpus will
+store those bytes compressed**, so a stored non-streamed response blob stops being readable JSON.
+
+**And one thing the change cannot do, found by a test that asserted otherwise and failed.** httpx
+supplies its own `accept-encoding` when the caller sends none, so the router can relay a *value* but
+not an *absence*. It does not matter here — Claude Code always sends one — but the test now records
+it rather than claiming transparency the code does not have.
+
+**Fourteen mutations, fourteen caught**, including one that silently reverts the experiment while
+leaving it looking live.
+
+### If it comes back negative
+
+**HTTP/2 is next** — the router builds `httpx.AsyncClient` with no `http2=True` and carries no `h2`
+dependency, so it speaks HTTP/1.1 where Claude Code direct almost certainly speaks HTTP/2. After
+that the remaining suspects are the TLS fingerprint and the re-derived connection headers, and the
+cheaper move at that point is to capture both requests byte for byte rather than keep guessing —
+`procedures/anthropic-auth-check.md` already establishes the technique.
