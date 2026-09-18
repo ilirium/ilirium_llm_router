@@ -1,101 +1,119 @@
 # The next session's prompt
 
 *The one file in `docs/` allowed to go stale, per `README.md` — which is why it is rewritten at each
-handoff rather than left. **Replaced 2026-09-17**, at Phase 13's merge. Whatever comes next replaces
-it again.*
+handoff rather than left. **Replaced 2026-09-18**, mid-phase rather than at a merge. Whatever comes
+next replaces it again.*
 
 ---
 
-**Phase 13 merged 2026-09-17 at `97fd822`. Nothing is in flight.** Work in `main`:
-`/Users/ilirium/Projects/local/ilirium_llm_router/main`. **No phase is open, so there is no phase
-worktree to start in** — that is different from the last four handoffs.
+**Phase 14 is OPEN and IN FLIGHT. Nothing is merged.** Work in
+`/Users/ilirium/Projects/local/ilirium_llm_router/phase-14-rate-limit-headers` — *that worktree, not
+`main`. A session started in `main` sees none of this.* Branch
+`feat/phase-14-rate-limit-headers`, forked from `main` at `ac2976e`.
 
-**The first decision of the next session is which phase to open, and that is the owner's.** *Phase
-14 is allocated to the Anthropic rate-limit headers but not chosen; the list under "Open" below is
-what is waiting, and two of those items are decisions rather than work.*
-
-**`phase-13-method-and-backlog/` is still on disk** and can be removed whenever you like. ***Its
-branch must not be deleted*** — `branch-index.py` refuses to render when a description names a
-branch that is gone, which breaks the next merge. **Removing the tree is safe; removing the branch
-is not.**
-
-*No commit count is written here. A count written at a handoff is wrong at the next commit, and this
-repository has recorded that defect five times.*
+**This is different from the last five handoffs**, which all closed a merged phase. **You are
+picking up an unfinished one**, and the first thing to know is that **the phase's chartered work is
+not what most of it turned out to be.**
 
 ## Read these, in this order
 
 1. **`docs/status.md`** — first, every session. The only file that holds state.
-2. **`docs/backlog.md`** — **it has changed shape completely.** Every item is now a
-   `### BKL-NNNN — title` heading with a metadata line under it, and the table at the top is
-   **generated**. `docs/backlog-done.md` is new and holds the four done items.
-3. **`docs/method/IDM-011-the-backlog.md`** before touching either file.
+2. **`docs/milestone-2-corpus/phase-14-rate-limit-headers/for-the-owner.md`** — **nine entries, and
+   four of them are things you would otherwise rediscover the hard way.** Read it before `plan.md`.
+3. **`.../phase-14-rate-limit-headers/notes.md`** — long, and written while the work ran. **Read it
+   by section**, per `CLAUDE.md`.
+4. **`.../phase-14-rate-limit-headers/plan.md`** — its register is where every name and number is.
 
-## What is in force now that was not before
+## What the phase is, and what it became
 
-- **A session asks the owner before filing a backlog item.** If the answer is no, the decline goes
-  in the phase's `notes.md`. → `IDM-011`, which amends `IDM-001`'s authority claim.
-- **Every phase folder carries a `for-the-owner.md`**, written *during* the phase, to a person.
-  **Anything needing a decision is asked out loud instead.** → `IDM-010`.
-- **A phase is reviewed before its merge**, under a charter, by two runs, with the subject verified
-  by `git diff` at the moment the runs start. → `IDM-009`. **Phase 13 was its first subject and it
-  stopped its own author's merge.**
+**Chartered:** record `retry-after` and the `anthropic-ratelimit-*` family — `BKL-0034`.
 
-## Five things a session will get wrong here
+**Reshaped by the owner on the day it opened**, around a live symptom: **Claude Code's auto mode
+cannot run its safety classifier through the router.** The classifier's request omits `stream`, so
+it goes upstream non-streamed, and **every non-streamed `/v1/messages` comes back `429`.**
 
-- **Never hand-type inside a generated table.** `backlog.md`, `backlog-done.md` and
-  `reference/branches.md` all carry one. Edit the item or the description and re-run `--write`.
-  *`--write` refuses while any problem is outstanding, so fix the problem first.*
-- **Never write a `BKL-NNNN` that does not exist — not even as an example.** Ids are allocated in
-  order and never reused, so an invented id is the **next** one to be handed out; the moment an item
-  claims it, a sentence about something imaginary becomes a citation of a real and unrelated item
-  and `--check` starts **passing** on it. *Describe it instead: "a synthetic id one past the
-  highest."* → `IDM-011`.
-- **A green check is a claim, not evidence.** Phase 13 shipped **three** checks that passed while
-  testing nothing, and none was found by reading — a count assertion blind to the case it was built
-  for, a table column named by two documents and written by no code, and a test whose header-row
-  exclusion skipped the rows it existed to find. **Make the thing go wrong and see whether the check
-  notices**, and have the harness report "mutation applied" separately from "check failed".
-- **`link-check.py`'s count is a property of the worktree.** **92 broken on `main` today.** Compare
-  against a run in the *same* tree or not at all.
-- **Push state cannot be checked from here — ask, do not infer.** `origin` is configured, this clone
-  holds **no remote-tracking refs**, and `git branch -r` is empty. *The owner reported the branch
-  pushed on 2026-09-17; that is a report, not a check.*
+**The instrument was built, it works, and it is the phase's real deliverable.** An allowlist of
+response headers logged at `WARNING` on a failure and sampled once at `INFO` on a success; **28
+names**, plus a prefix catch that reports an unknown `anthropic-ratelimit-*` header **by name and
+never by value**.
 
-## Open, and none of it blocks
+## What is established, and it is a lot
 
-- **Nobody has driven the corpus tools by hand.** Named as the owner's first job at Phase 11's
-  handoff; still not done, four phases later.
-- **`BUG-001` is still unreported** to either upstream issue.
-- **Failure mode 3 is undischarged** — whether archiving *slows* a call. `BKL-0017`.
-- **`EPD-001` and `EPD-002` are both waiting on a decision**, not on work.
-- **Phase 14 is allocated** to the Anthropic rate-limit response headers — `BKL-0034`, and
-  `milestone-2-corpus/implementation-plan.md` holds what its plan cannot skip.
-- **`for-the-owner.md` entry 1 is an open errand:** run `git fetch origin` once, so push state
-  becomes checkable at all.
-- **The Milestone 2 phase count went stale a fifth time at this very merge**, in the paragraph that
-  describes itself going stale. `BKL-0007` has the evidence and needs the decision, not more
-  examples.
+| | |
+|---|---|
+| **The rejection is Anthropic's own** | Every one carries a distinct `request_id` |
+| **A `429` carries no metering at all** | No `retry-after`, no bucket, not even an unlisted one |
+| **A `200` on the same connection carries twelve** | `unified-status=allowed`, `5h` at **0.52**, `7d` at **0.59** — *so it is not quota* |
+| **The classifier works DIRECT and fails ROUTED** | Same credential, machine, client version, afternoon |
+| **The router alters no header** | Computed from a capture: nothing dropped, nothing added |
+| **The two TLS fingerprints differ trivially** | And a **Chrome** fingerprint is rejected exactly as Python's is |
 
-## What the last session finished, so nothing is half-done
+***Eleven hypotheses are eliminated by measurement*** — `accept-encoding`, HTTP/2, a dropped header,
+an added header, the `anthropic-beta` list, the withheld attribution headers, quota, request size,
+the model, the router inventing it, and a non-browser TLS fingerprint.
 
-**Phase 13 is closed out completely.** Its merge landed in three steps — `--no-ff`, the hash
-recorded in `plan.md` and the milestone plan, then `branch-index.py --write` on the trunk. **Both
-worktrees are clean and every check is green**: `backlog-index --check`, `branch-index --check`,
-`evidence/register-check.py`, and `link-check.py` at 92.
+***The cause is NOT identified.*** **Say so.** *What is left is an exact-fingerprint allowlist that
+only Bun's own build could match, and connection reuse, which nothing has touched.*
 
-**Nothing from that phase is left open for a session to pick up.** *The five findings that stopped
-its merge were all answered by the owner and fixed; the eighteen below them were fixed; the register
-check was written, found vacuous, fixed and mutation-tested.* **What remains is in `backlog.md`
-under permanent ids, and in the list above.**
+## Five things you will get wrong here
+
+- ***Three experiments are live in `src/` and the owner chose to keep them.*** **Do not revert them
+  without asking** — he wants to keep experimenting on this branch. **One has a standing cost: the
+  corpus now stores non-streamed response bodies brotli-compressed**, so `extract` hands a reader
+  bytes where it used to hand them JSON.
+- ***`make run` now starts with the corpus OFF.*** `config.yaml` was restored to the shipped default
+  so `test_template_matches_the_repository_config` would stop being red. **`make run-boringssl` with
+  `config-boringssl.yaml` is the one that captures**, and it needs `make forwarder` running first.
+- ***An instrument that passes its tests can still be pointed at the wrong thing.*** **Three times
+  in this phase**, and none was caught by a test while twenty-four mutations passed: an allowlist
+  built from documentation that matched nothing on this credential; a sample latch spent on
+  `/api/hello` printing `(none)`, *the same string a rejection prints*; and a header that four tests
+  asserted the content of and none validated as legal HTTP. **Read a new line against a measurement
+  you already have.**
+- **`branch-index.py --write` deletes the `temp/to-run-server` row**, on this branch and on a clean
+  `main` alike, and `--check` says only `STALE`. **`IDM-001` says that row must not be removed, and
+  puts `--write` as the last step of every merge** — so the next merge deletes it silently.
+  **`main` is STALE right now for this reason alone.** → `for-the-owner.md` entry 4.
+- **`link-check.py`'s count is a property of the worktree.** **92 on `main`, 112 here.** Compare
+  within one tree or not at all.
+
+## Open, and the owner's to choose between
+
+- **Group D has never started** — where the headers durably live. ***It is still the milestone
+  plan's "Phase 14's plan cannot skip the question"***, deferred on the owner's decision with the
+  values now in hand. Three candidates: a sidecar telemetry file, the corpus day index, or
+  overturning the `calls.csv` non-goal — **and only the owner can overturn that.**
+- **The upstream report is not sent.** `BUG-001` now holds what both issues stall on and **neither
+  has been told any of it.** `status.md`'s item 2, unchanged since 2026-08-25.
+- **The Bun exact-fingerprint test**, if it is wanted: a runtime to install, a second forwarder, and
+  a maybe — Bun's `fetch` need not fingerprint like the compiled Claude Code binary.
+- **`BUG-001` is retracted and corrected on this branch, not on the trunk.** It reaches `main` only
+  at the merge.
+- **Everything `prompt.md` listed on 2026-09-17 is still open**: the corpus tools undriven by hand,
+  `BUG-001` unreported, `BKL-0017`, `EPD-001` and `EPD-002`, `BKL-0007`, and `git fetch origin`.
+
+## What is finished, so nothing is half-done
+
+**Groups A, B and C are complete. Group C2 — the eleven eliminated hypotheses — was not planned and
+is written into `plan.md` after the fact.** **Every check on the branch is green**: 475 tests, 24
+mutations, `make lint` at the pinned `0.16.1`, `backlog-index --check`.
+
+**The working tree is clean and every finding is committed** across 21 commits. **Nothing is
+half-written**: each experiment is recorded with its result, its cost, and whether it was verified
+to have actually run.
+
+*Push state was deliberately not checked at this handoff, on the owner's instruction.*
 
 ## The working agreement still applies
 
-`CLAUDE.md`, in full. Two earned their place in Phase 13, both the hard way:
+`CLAUDE.md`, in full. Three earned their place again in Phase 14:
 
-**Exercise it before committing.** Three instruments passed while testing nothing, and a mutation
-harness silently never ran its mutations — which looks identical to a clean pass.
+**Exercise it before committing** — and the sharper version this phase paid for three times: *a
+green check tells you the instrument works, never that it is aimed correctly.*
 
-**Raise it rather than burying it, and say it is wrong rather than working around it.** Three of the
-five findings that stopped the merge were found, written down, and then **not put to the owner**
-until a later session went looking. A finding that stops a merge and is then not raised is worse
-than one nobody found.
+**Ask before inferring.** The owner is present. **The control that overturned this phase's headline
+finding came from him asking a question**, not from another experiment. → the memory note
+`ask-rather-than-infer-about-the-setup`.
+
+**Raise it rather than burying it.** *"Anthropic sent this rejection"* was read as *"Anthropic is at
+fault"*, and `BUG-001` had been making a worse version of the same mistake since 2026-08-25.

@@ -5,7 +5,12 @@ renumbered. Anything needing a decision was asked out loud instead of being park
 
 ---
 
-## 1 · ERRAND · high · Only you can run the measurement
+## 1 · ERRAND · ~~high~~ · Only you can run the measurement — ***DISCHARGED 2026-09-18***
+
+> **Run five times that day, Claude Code 2.1.267.** It produced the measurement, and then four more
+> experiments on top of it. *The text below is left exactly as written, because what it predicted —
+> that only a person at a keyboard could take this — held for every one of the five.*
+
 
 **Group C needs a real Claude Code session, through the router, with auto mode on.** A session
 cannot do it: it needs your credential and your machine, and `CLAUDE.md` says driving a session is
@@ -76,3 +81,57 @@ as in flight, and it belongs on its own branch rather than inside a phase about 
 **`main` is STALE right now** for this reason alone.
 
 *Asked out loud on 2026-09-18. Recorded here because it survives the session.*
+
+## 5 · REGRET · high · I read "Anthropic sent this" as "Anthropic is at fault"
+
+**The headers were real and the inference was not.** A `429` carrying no metering, on a connection
+whose successes carry twelve buckets, is a fact. *"Therefore it is Anthropic's fault"* is a
+different claim, and **the one experiment separating them — direct against routed — had never been
+run.** You ran it by asking why auto mode worked in the session you were reading the finding in.
+
+**`BUG-001` had been making the same mistake since 2026-08-25**, with a worse version of it: its
+table clears the router by comparing streamed against non-streamed *inside* the router, which
+cannot see a router-caused defect specific to non-streamed requests. **Struck on this branch.**
+
+*Recorded because the phase's instruments all worked and the reasoning on top of them did not.*
+
+## 6 · REGRET · medium · Three instruments, three near-misses, one pattern
+
+| | What it would have said |
+|---|---|
+| The allowlist, built from Anthropic's documentation | *"a 200 carries no rate-limit headers either"* — **none of the documented names arrives on your credential** |
+| The sample latch, spent on `/api/hello` | `(none)` — **the same string a rejection prints** |
+| The imitated billing header, ending `"; "` | Four tests asserted its content; **none validated it as HTTP**, and it broke as a 502 in your face |
+
+***Each tested the thing it was pointed at. None tested whether it was pointed at the right
+thing.*** *All three were caught by reading a line against a measurement taken minutes earlier, and
+none by a test — while twenty-four mutations pass.*
+
+## 7 · ERRAND · high · Three experiments are live in the router and one has a cost
+
+**You asked for them to stay, and they have stayed.** So that the next session does not have to
+rediscover it:
+
+| In the tree | |
+|---|---|
+| `accept-encoding` relayed for non-streamed | ***The corpus now stores those bodies compressed.*** A stored non-streamed response blob is **brotli, not JSON**, and `extract` will hand a reader bytes |
+| `http2=True` and the `h2` dependency | Harmless, buys nothing measured |
+| The imitation headers | Fabricated attribution on every Anthropic call |
+
+**All three are exonerated. None is reverted. That is your decision and it is recorded as yours.**
+
+## 8 · IDEA · medium · The two things left, and neither is cheap
+
+**The exact-fingerprint allowlist.** `curl_cffi` is Chrome, not Claude Code — it carries three
+extensions a bare BoringSSL build does not. **Only Bun's own build could match, and even that is a
+maybe**: Bun's `fetch` need not fingerprint like the compiled binary.
+
+**Connection reuse**, which nothing here has touched. *Claude Code direct may put the classifier on
+an HTTP/2 connection that already carried a conversation; the router and the forwarder each pool
+their own.* **Untested, and named because it is untested.**
+
+## 9 · ERRAND · medium · The upstream report is written but not sent
+
+**`BUG-001` now holds the measurements both issues stall on** — the paired control, the meter
+reading `allowed` at 52%, request ids, and the proof that the router alters no header. **Nobody has
+told either issue any of it.** *It was `status.md`'s item 2 before this phase and it still is.*

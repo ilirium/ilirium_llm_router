@@ -10,111 +10,51 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-17 — Phase 13 merged at `97fd822`. Nothing is in flight.** *Its review stopped its own
-merge on five method-tier findings; all five were answered by the owner and fixed before it landed.*
+**2026-09-18 — Phase 14 is open and in flight on `feat/phase-14-rate-limit-headers`.** *Not
+merged. Work in `/Users/ilirium/Projects/local/ilirium_llm_router/phase-14-rate-limit-headers`.*
 
-**What a next session most needs from it:** `docs/backlog.md` and `docs/backlog-done.md` now carry
-**38 permanent `BKL-NNNN` ids**, one item per `### BKL-NNNN — title` heading, and both tables are
-generated — **do not hand-type in them.** `method/IDM-011-the-backlog.md` is canonical, and **a
-session asks the owner before filing an item.**
+**It was chartered to record the Anthropic rate-limit headers and the owner reshaped it, on the day
+it opened, around a live symptom: Claude Code's auto mode cannot run its safety classifier through
+the router.** The instrument was built, it worked, and **eleven hypotheses have been eliminated by
+measurement.** *The cause is **not identified**, and the phase says so rather than implying
+otherwise.*
 
-*This line said "Groups A–D are complete; Group E is part-done and stopped at a checkpoint" from the
-2026-09-04 handoff until 2026-09-17, while the paragraphs below it said E and E2 were both done —
-**so the section's first sentence and its body disagreed for thirteen days.** A reader going
-top-down stopped at the false one. Found by this phase's own jobs-done review, not by a check.*
-*`git log main..HEAD` is the commit count; it is not written here, because a number written at a
-handoff is stale at the next commit and this file has four recorded instances of exactly that.*
-
-**All three method documents are written and in force.**
+***What a next session most needs to know, in one line each:***
 
 | | |
 |---|---|
-| **`IDM-009`** | reviewing **executed** work — the third review protocol, and it draws the line between all three |
-| **`IDM-010`** | the per-phase `for-the-owner.md` |
-| **`IDM-011`** | the backlog — **and one of its rules is in force now**: a session asks before filing an item |
+| **The instrument works** | An allowlist of response headers, logged on a failure and sampled once on a success. **28 names** and a prefix catch that reports unknown `anthropic-ratelimit-*` **by name, never by value** |
+| **The finding** | A `429` carries **no metering at all**; a `200` on the same connection carries **twelve** `unified` buckets, all `allowed` at 52% / 59% |
+| **The control that broke the conclusion** | **The classifier works direct and fails through the router.** The owner found it by asking why auto mode worked in the session he was reading the finding in |
+| **Three experiments are live in `src/`** | **Deliberately not reverted** — owner's decision. *One of them makes the corpus store non-streamed bodies **brotli-compressed*** |
+| **Group D never started** | Where the headers durably live — the milestone plan's *"Phase 14's plan cannot skip the question"* — **is still deferred** |
 
-**Group E2 is complete** — one item shape. *Added and finished 2026-09-04, after the owner read the
-files and rejected the shape.* **Every item is a `### BKL-NNNN — title` heading**, the metadata line
-carries no id, and **the table-row and bare-bold-paragraph shapes are both retired — they are the
-two that hid `BKL-0032` and `BKL-0033`.** **No id changed:** 38 ids in the ratified inventory, 38 in
-the files, identical sets and no status disagreement, proved mechanically at task 20f. **Settled row
-21 is overturned and row 7 amended**, the only rows this phase reverses.
+*Phase 13 merged 2026-09-17 at `97fd822`; its review stopped its own merge on five method-tier
+findings, all answered by the owner and fixed before it landed.*
 
-**Group E is complete.** All of 13, 14, 14a, 15, 16, 17, 18, 19 and 20 have run. **`docs/backlog.md`
-carries 34 items with ids, `docs/backlog-done.md` exists and holds 4**, both tables are generated,
-and **`backlog-index.py --check` exits 0** — for the first time on this branch, and the notes that
-said its `1` was correct were right: the citations were written before the items.
+**Phase 13, in the one line a session still needs it:** `docs/backlog.md` and
+`docs/backlog-done.md` carry **38 permanent `BKL-NNNN` ids**, one item per `### BKL-NNNN — title`
+heading, and **both tables are generated — do not hand-type in them.**
+`method/IDM-011-the-backlog.md` is canonical, and **a session asks the owner before filing an
+item.**
 
-**The inventory is ratified and it holds 38 items, not the 36 task 13 proposed.** The cold run found
-**two missing items** — `backlog.md:716` and `:735`, struck-through `done` entries that open `~~**`
-where the pass's enumeration matched bold-or-`###` at the line start. *Both struck entries that open
-`**~~` were caught; two bytes in the wrong order made two items invisible.* **The author run had
-cleared this exact claim** and named it as the one an author is least entitled to be believed on.
+*The rest of Phase 13's detail was removed from this section on 2026-09-18 — roughly seventy lines
+of execution record. **Every fact in it was checked for a home before it went**: the backlog's shape
+is in `IDM-011` and in `backlog.md`'s own preamble, the inventory ratification and the task-by-task
+record are in `milestone-2-corpus/phase-13-method-and-backlog/`, the commit table is `git log` and
+`reference/branches.md`, and `IDM-001`'s two amendments are stated in `IDM-001`. **This section is
+state; that was archive**, and it was pushing thirty lines before Phase 14 added a word to it.*
 
-**The owner ratified on 2026-09-04**: the two get ids in file order as `BKL-0032` and `BKL-0033`, so
-old `BKL-0032`–`0036` became `BKL-0034`–`0038` and **`BKL-0025`–`0031` did not move**; `BKL-0038` is
-`done` rather than `refused`; `BKL-0004` is `partly-done` until task 15 lands. **The last two
-questions were settled the same day** — `BKL-0007` stays `open` and `BKL-0020` stays one id — so
-**nothing about the inventory is open and task 15 can run.**
+**Baselines.** The trunk's test count is **448**. **On the Phase 14 branch it is 475**, with
+`make lint` clean at the pinned `0.16.1`, `24/24` on that phase's mutation harness, and
+`backlog-index --check` green. ***`link-check.py` is worktree-dependent and must never be compared
+across trees*** — **92 on `main`, 112 in the Phase 14 worktree**, and about twenty of that gap is
+untracked per-worktree files rather than content.
 
-**Task 15 carries two corrections beyond applying the ids.** `BKL-0007`'s premise is expired — it
-reasons from *"four places across two files"* and there are now **two copies, both in this file** —
-the milestone table row and the prose paragraph under "Where the project is" — so the cheapest of
-its three candidate fixes is live again. *This sentence cited lines 87 and 117 until 2026-09-17;
-they were 103 and 133, and a reader chasing them landed on two innocent paragraphs. **Line numbers
-are not written here any more** — they moved once already, in the commit that trimmed this file.*
-And `BKL-0004`'s *"545 lines"* must be fixed in place, since at `partly-done` it does not move to
-`backlog-done.md`.
-
-| Commit | |
-|---|---|
-| `9976873` · `6345eb8` | the plan, then the re-derivation that found it wrong twice |
-| `2ffb5e7` · `1d8872b` · `601c041` | the forward review: charter, **18 findings at 17% overlap**, the owner's four answers as rows 21–24 |
-| `740eea6` | this file cut from 373 lines to 253, and `prompt.md` replaced whole |
-| `05f74ad` · `1a1fbb9` · `50d801c` | `IDM-009`, `IDM-010`, `IDM-011` |
-| `809a422` | this file, `prompt.md`, `README.md` and `CLAUDE.md` brought true after the three landed |
-| `a9b0c6b` · `e1f6e5f` · `00d3ed3` | the inventory; the frozen copy and the review charter; the script |
-| `8374245` · `0ffeb00` | the handoff, and a one-column fix recorded rather than folded in |
-| `d315a16` · `d36cc27` · `16c9e6a` | the session close-out, why raw reports are not kept, and the author run |
-
-**`IDM-001` is amended for the second time in three days, and the two amendments differ.**
-2026-09-02 changed **where** the record of a declined scope goes — never its own branch. 2026-09-04
-changes **whose act it is**: declining scope is still the phase's, **filing is the owner's word**,
-and a declined item's decline goes in the phase's `notes.md`.
-
-**`CLAUDE.md` no longer states Milestone 2's phase count.** *It carried that count and was wrong
-about it during the phase chartered to fix the count — found by a review, not by a check. The number
-lives here now, and only here.*
-
-**Baselines, all re-derived 2026-09-17.** This branch changes no `src/` and no `tests/` — *checked,
-not assumed: `git diff --stat main..HEAD -- src tests` is empty* — so the trunk's **448** stands;
-*not re-run in this worktree, which has no venv.* **`evidence/register-check.py` exits 0**, and it
-was mutation-tested eight ways after its first version passed while testing nothing. `make lint`
-clean at the pinned `0.16.1` — **and it does not reach `docs/procedures/`**. ***That directory has
-never been lint-clean: `ruff check docs/procedures/` reports 36 findings across five files***, one
-of them in this phase's own `backlog-index.py`. *A note claiming that script passes was written and
-is now retracted; the code is untouched, because fixing one of thirty-six is arbitrary.*
-`link-check.py` reports **112 broken here**, down from 117 now that `backlog-done.md` exists.
-
-***Do not compare that against `main`'s 91.*** *The count is a property of the worktree, not of the
-content: this phase's jobs-done review ran `main`'s own checker over `main`'s own content in an
-identical tree and got **111**, not 91 — about twenty of the gap is untracked per-worktree files
-that exist in one checkout and not the other.* **Measured like for like, this phase's net effect on
-`main`'s content is +2 and −1** — two new broken links in `notes-group-b.md`, which is prose
-quoting a path the phase had just fixed, and one lost when `prompt.md` was rewritten.
-**`backlog-index.py --check` exits 0**, and it rejects any heading carrying a `BKL` id that is not
-exactly `### BKL-NNNN — title` — *so an item demoted or re-punctuated is named rather than skipped.*
-*It also compares heading count against items parsed; **that one is a duplicate**, corrected here
-2026-09-17 after being credited with the demotion case it cannot see.* **One gap is recorded rather
-than closed:** an item **added after this phase** and then deleted is invisible — the 38 shipped ids
-are protected only because this phase's documents cite them.
-
-**This section was 154 lines and is now short again — the four older entries were removed, not
-moved.** *Every fact in them was checked and found to have a durable home already: Phase 11's and
-Phase 12's in their phase notes, and `fix-slop-docs/opening-playbook-not-run-table`'s entire content
-in its row in `reference/branches.md`, which is richer than the prose was. **A new file would have
-been a fifth home for facts that already had four.** This discharges the open item `prompt.md`
-carried.*
+*Two Phase 13 paragraphs stood here until 2026-09-18 and were removed with the rest of its record:
+its own `link-check` arithmetic, and a note that this section had been 154 lines. **What `--check`
+does and does not see is `IDM-011`'s to say** and it says it, under "What `--check` cannot see, said
+here so nobody reads its silence as coverage".*
 
 ## Where the project is
 
@@ -312,13 +252,22 @@ was not a real hazard**, and repeating it would preserve a rule whose justificat
 `method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-**`feat/phase-14-rate-limit-headers`** — Phase 14, forked from `main` at `ac2976e` on 2026-09-18.
-The Anthropic rate-limit response headers, **reshaped around `BUG-001`'s live symptom**: Claude
-Code's auto mode cannot run its safety classifier through the router, because the classifier's
-request is non-streamed and comes back `429`. *The milestone plan's "Phase 14's plan cannot skip the
-question" — where the headers durably live — is **deferred to Group D on the owner's decision**,
-because the diagnostic form needs no schema. **Group C is the owner's** and cannot be run by a
-session.*
+**`feat/phase-14-rate-limit-headers`** — Phase 14, forked from `main` at `ac2976e` on 2026-09-18,
+**21 commits and not merged.** The Anthropic rate-limit response headers, **reshaped around
+`BUG-001`'s live symptom**: Claude Code's auto mode cannot run its safety classifier through the
+router, because the classifier's request is non-streamed and comes back `429`.
+
+***Groups A, B and C are done. Group C2 — eleven eliminated hypotheses — was not planned and
+happened anyway. Group D has not started.*** *Where the headers durably live is still the milestone
+plan's "cannot skip the question", still deferred, and still the owner's.*
+
+**Every check on that branch is green** — 475 tests, 24 mutations, `make lint`, `backlog-index
+--check`. **`BUG-001` is retracted and corrected there**, not on the trunk: its table cleared the
+router with an argument that compares streamed against non-streamed *inside* the router.
+
+***Three experiments are live in `src/` and are deliberately not reverted*** — owner's decision,
+2026-09-18, to keep experimenting on the branch. **The `accept-encoding` one has a standing cost:
+the corpus stores non-streamed response bodies brotli-compressed.**
 
 *Phase 13 was entered here at task 1 and removed at its merge on
 2026-09-17; its row is in `reference/branches.md` and its permanent record is its phase note.*

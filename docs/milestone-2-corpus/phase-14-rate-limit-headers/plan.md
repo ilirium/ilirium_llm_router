@@ -127,11 +127,30 @@ against the real credential. The plan stops at its boundary and says so.
 
 | Task | |
 |---|---|
-| **7** | Drive one Claude Code session through the router with auto mode on. **Record the Claude Code version** — `BUG-001` asks for it, and it is the only thing that will identify a client-side fix |
+| **7** | ***Done 2026-09-18, five times.*** Drive one Claude Code session through the router with auto mode on. **Record the Claude Code version** — `BUG-001` asks for it, and it is the only thing that will identify a client-side fix. *It is **2.1.267** throughout* |
 | **8** | Read the logged headers off `router.log`. **Freeze them into `evidence/`**, redacted per `../../README.md` — a measurement that lives only in one worktree's gitignored `logs/` discharges nothing, which this milestone has recorded once already |
 | **9** | Decide H1 / H2 / neither, in `notes.md`, from the values rather than from the absence of a failure. ***An absence of 429s proves nothing*** — `BUG-000`, and a quiet session looks exactly like a fix |
 
-### Group D — the durable home *(blocked on Group C)*
+### Group C2 — eleven hypotheses, eliminated one at a time *(not planned; it happened)*
+
+***This group was not in the plan and is written down after the fact.*** *The phase was chartered
+to record the headers; recording them produced a finding, the finding turned out to rest on an
+unrun control, and the owner ran it. What follows is what that cost.*
+
+| Task | | Result |
+|---|---|---|
+| **C2a** | Relay the caller's `accept-encoding` instead of forcing `identity` | **negative** — and it left the corpus storing non-streamed bodies **brotli-compressed** |
+| **C2b** | Offer HTTP/2 — `h2` declared, `http2=True` | **negative** |
+| **C2c** | Capture what Claude Code sends the router, per shape | **the router alters nothing** — nothing dropped, nothing added |
+| **C2d** | Supply the attribution headers Claude Code withholds from a custom base URL | **negative**, twice — the second time with a legal header |
+| **C2e** | Capture both TLS `ClientHello`s — `evidence/clienthello-capture.py` | **the premise holds**: the two are trivially distinguishable |
+| **C2f** | A BoringSSL egress hop — `evidence/boringssl-forwarder.py`, `make forwarder` | **negative** — a Chrome fingerprint is rejected exactly as Python's is |
+
+***Nothing from C2a, C2b or C2d is reverted.*** **Owner's decision, 2026-09-18: they stay for
+further experiments on this branch.** *Their costs are real and are recorded in `notes.md` —
+`accept-encoding` most of all.*
+
+### Group D — the durable home *(NOT STARTED, and still the milestone plan's "cannot skip")*
 
 | Task | |
 |---|---|

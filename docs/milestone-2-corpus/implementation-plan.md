@@ -277,6 +277,18 @@ have shipped the vacuous check.*
 
 ### Phase 14 — the Anthropic rate-limit response headers
 
+> ***IN FLIGHT since 2026-09-18 on `feat/phase-14-rate-limit-headers`. Not merged.*** **Reshaped by
+> the owner on the day it opened**, from an instrument into a diagnosis of `BUG-001`: Claude Code's
+> auto mode cannot run its safety classifier through the router. **The instrument exists and works;
+> eleven hypotheses are eliminated by measurement and the cause is not identified.**
+>
+> ***The question this section says the plan cannot skip is still not answered.*** It was **deferred
+> on the owner's decision**, not skipped — the diagnostic form needs no schema, so the values were
+> taken first. **It comes back as that phase's Group D, which has not started.**
+>
+> The record is in `phase-14-rate-limit-headers/` — `for-the-owner.md` first.
+
+
 ***Renumbered from 13 to 14 on 2026-09-17.*** *The number was allocated 2026-08-25, and on
 2026-09-04 the owner took **13** for the method-and-backlog phase and moved the headers to **14**.
 This file was named in that phase's task 3a as one of three to bring true; the other two were
