@@ -594,3 +594,55 @@ a proof that the router alters no header, and a measured client-side difference 
 | The imitation headers | Fabricated attribution sent on every call for **no benefit**, and it is the one change with a terms question attached |
 
 *The owner's call, and it is the last one this phase needs.*
+
+## The TLS premise holds, measured rather than assumed
+
+**Captured 2026-09-18 with `evidence/clienthello-capture.py`** — a socket with no certificate at
+all. *A `ClientHello` is plaintext and arrives **before** cert validation, so the client is seen and
+then fails.* **No Anthropic traffic, no credential, nothing installed on the machine.**
+
+| | Python / httpx / OpenSSL | Claude Code 2.1.267 |
+|---|---|---|
+| **JA3** | `166b2ba7d17746ef6996ecbe142aa507` | `5260242a2eb12c71995767c24569bff5` |
+| Cipher suites | 17, opening `4866,4867,4865` | 17, opening **`4865,4866,4867`** |
+| Extensions | **11** | **12** |
+| Supported groups | **8** | **4** |
+
+***Eight of the seventeen cipher suites differ, and the shared ones are offered in a different
+order.*** Python sends `encrypt_then_mac` (22) and Claude Code does not; Claude Code sends
+`status_request` (5) and `signed_certificate_timestamp` (18) and Python does not.
+
+**A server tells these two apart trivially, before a byte of HTTP is read.** *The premise the
+hypothesis rested on is no longer an assumption.*
+
+### A correction, and then a correction to the correction
+
+**This phase said "Node → BoringSSL" twice. That was wrong** — Node bundles OpenSSL. *Said plainly
+when the machine turned out to have no Node at all and `claude` turned out to be a compiled
+binary.*
+
+***And then the capture pointed back the other way.*** The absence of `encrypt_then_mac` together
+with `status_request`, `SCT` and a four-group list is **BoringSSL-shaped**, and a compiled
+single-file binary is consistent with a **Bun** build — Bun uses BoringSSL. **So the original guess
+may have been right for the wrong reason.** *Recorded as inference; the measured fact is only that
+the two hellos differ.*
+
+### What this does not do, and it is the same limit as before
+
+***It does not show that fingerprinting causes the 429.*** **Streamed calls still succeed on the
+Python fingerprint**, so a fingerprint check alone cannot be the rule — it would have to be a
+combination with the request shape, and there is still no evidence for that beyond its being the
+last thing standing.
+
+### And it is not fixable from here
+
+**Python's `ssl` exposes cipher lists, ALPN and version bounds. It does not expose extension
+ordering or the extension set**, so the router cannot be configured into that fingerprint.
+
+***A stack swap would not close it either.*** `curl_cffi` and its relatives impersonate **browsers**
+— Chrome, Firefox, Safari. **None of them ships a Claude-Code profile**, and a rule keyed on Claude
+Code's own fingerprint is not satisfied by looking like Chrome. **Matching it would mean
+reproducing Bun's BoringSSL build**, which is far outside what this router is.
+
+***So this line is closed: the hypothesis is plausible, unfalsifiable from this machine, and its fix
+is unavailable.***

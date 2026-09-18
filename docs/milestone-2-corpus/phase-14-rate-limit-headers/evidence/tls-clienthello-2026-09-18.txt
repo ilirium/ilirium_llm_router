@@ -1,0 +1,30 @@
+# The two TLS ClientHellos, captured 2026-09-18
+
+Captured by evidence/clienthello-capture.py, which is a socket with no certificate: a
+ClientHello is plaintext and arrives BEFORE cert validation, so the client is seen and then
+fails. No Anthropic traffic, no credential, nothing installed.
+
+  python3 clienthello-capture.py <port> <label>   then point the client at https://127.0.0.1:<port>
+
+PYTHON / httpx / OpenSSL  (the router's own create_client)
+  ja3_hash   : 166b2ba7d17746ef6996ecbe142aa507
+  ciphers    : 17  first three 4866,4867,4865
+  extensions : 11  [65281,11,10,35,16,22,23,13,43,45,51]
+  curves     : [4588,29,23,30,24,25,256,257]
+
+CLAUDE CODE 2.1.267  (the compiled binary at /opt/homebrew/Caskroom/claude-code/2.1.267)
+  ja3_hash   : 5260242a2eb12c71995767c24569bff5
+  ciphers    : 17  first three 4865,4866,4867
+  extensions : 12  [23,65281,10,11,35,16,5,13,18,51,45,43]
+  curves     : [4588,29,23,24]
+
+DIFFERENCES
+  8 of 17 cipher suites differ, and the shared ones are in a different order.
+  python offers ext 22 (encrypt_then_mac); claude does not.
+  claude offers ext 5 (status_request) and 18 (SCT); python does not.
+  python offers 8 supported groups, claude 4.
+
+The absence of encrypt_then_mac together with status_request + SCT and a short group list is
+BoringSSL-shaped rather than OpenSSL-shaped. Claude Code ships as a compiled single-file
+binary, which is consistent with a Bun build. Stated as INFERENCE from the fingerprint --
+the measured fact is only that the two hellos differ.
