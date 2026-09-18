@@ -492,3 +492,45 @@ place: *why streamed calls are untouched.* **Stated as a hypothesis with no evid
    settled: **it would show whether Claude Code sends the same `anthropic-beta` list when it talks
    to Anthropic directly.** *This phase has been assuming the client behaves identically whatever
    `ANTHROPIC_BASE_URL` points at, and that assumption has never been checked.*
+
+## Claude Code does NOT behave identically when `ANTHROPIC_BASE_URL` is set
+
+***The assumption this phase carried from its first session is false, and it was never checked until
+2026-09-18.***
+
+**The listener plan was wrong and is recorded as wrong.** *Pointing Claude Code at `nc` **is**
+setting `ANTHROPIC_BASE_URL`, so it captures the case the router already captures perfectly. It
+could never have answered the question it was proposed for.* **Seeing the genuinely direct request
+needs TLS interception**, which is invasive and was not done.
+
+**`claude --debug api --debug-file` replaced it**, and a probe cost one trivial call instead of one
+of the owner's sessions. **It does not log request headers** — path, an `x-client-request-id`, and
+one attribution line — *which is itself why probing first was right.*
+
+**But the attribution line is the finding:**
+
+| | `x-anthropic-billing-header` |
+|---|---|
+| **direct** | `cc_version=2.1.267.0a3; cc_entrypoint=sdk-cli; cch=00000; cc_prompt_id=<uuid>` |
+| **through the router** | `cc_version=2.1.267.0a3; cc_entrypoint=sdk-cli;` |
+
+***Same `-p` mode, same client version, ninety seconds apart, and only the base URL differs.***
+**`cch` and `cc_prompt_id` are dropped when the client is not talking to Anthropic directly.**
+
+**And `x-anthropic-billing-header` appears nowhere in the twenty-one headers the router captured
+arriving** — nor does `x-client-request-id`.
+
+### What this does and does not establish
+
+**Established:** the client varies what it sends by base URL. *So every router-side experiment this
+phase ran was answering "what does the router change", while a second variable was moving
+underneath and nobody had looked.*
+
+**Not established:** whether that header reaches the wire in either case, and whether it has
+anything to do with the 429. *The router's twenty-one-header capture came from an **interactive**
+session and both probes above are `-p`, so the two are not like for like.* **One restart of the
+router and one `-p` probe through it closes that**, because the arrival latch is spent for the
+current process.
+
+***Recorded before it is resolved, because the assumption's falseness stands on its own*** and does
+not depend on how the remaining question comes out.
