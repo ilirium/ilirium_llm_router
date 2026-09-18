@@ -3,8 +3,8 @@
 **One entry per artefact**, per `../../../README.md`'s "Evidence and redaction": what produced it,
 what it proves, what was redacted and how, and whether it can be regenerated.
 
-***Eleven artefacts: four instruments that can be re-run, and seven records of runs that cannot.***
-All seven were produced on **2026-09-18**, by the owner, against **Claude Code 2.1.267** and router
+***Twelve artefacts: four instruments that can be re-run, and eight records of runs that cannot.***
+All eight were produced on **2026-09-18**, by the owner, against **Claude Code 2.1.267** and router
 `0.1.0`, on an OAuth subscription credential with `credential: forward`.
 
 ---
@@ -102,6 +102,27 @@ that the function exists and on who calls it.
 **Regenerable, with one caveat that matters.** The script re-runs at no cost, but **the byte offsets
 are a property of one build** and the minified identifiers are that build's own. *Against another
 version, re-run the patterns rather than trusting an offset.*
+
+### `first-party-flag-run-2026-09-18.txt` — 14:52 UTC, and it is the record of a near-miss
+
+**What produced it.** The owner, running entry 10: `_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL=1`
+alongside `ANTHROPIC_BASE_URL`, Claude Code **2.1.267**, auto mode on.
+
+**What it proves.** ***The flag reaches the wire*** — `x-client-request-id` arrives, and it is in
+neither earlier capture — ***and the 429 is unchanged***: **13 rejections against 7 of 7 streamed
+calls succeeding**, with the meter at **0.11 and 0.01**. *That eliminates the absence of
+`x-client-request-id`, and it kills quota a second time at an all-but-empty budget.*
+
+***What it does not prove, and the file says so in its own header.*** **The sampled non-streamed
+request is the `haiku` warm-up at 323 bytes, not a classifier request** — the classifier's are
+127,949 bytes and none was sampled, because `arrival_sampled` is keyed on the stream flag alone.
+**So the `forceAttributionHeader` reading is neither confirmed nor refuted by this run.**
+
+**Redaction:** session ids to stable placeholders in first-appearance order; **Anthropic request ids
+kept**, as every record here keeps them. *Every header value was already `<unlisted>` by the
+recorder's own rule, so nothing needed removing from the log lines.*
+
+**Not regenerable** — it is a record of one session.
 
 ### `rate-limit-headers-2026-09-18.txt` — 11:02–11:05 UTC
 
@@ -214,10 +235,14 @@ fingerprint.
 
 ***They do not identify the cause, and nothing here should be read as though they do.***
 
-**Three things remain untested:** an **exact-fingerprint allowlist**, which only Bun's own build
-could match and perhaps not even that; **connection reuse**, which nothing in this phase has
-touched; and — added 2026-09-18, and the only one of the three that is cheap —
-**`_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL`**, the client-side switch the last record names.
+**Two things remain untested:** an **exact-fingerprint allowlist**, which only Bun's own build
+could match and perhaps not even that; and **connection reuse**, which nothing in this phase has
+touched.
+
+***And one thing was tested and came back inconclusive rather than negative***, which is a third
+state this section did not previously have room for: **`_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL`
+ran at 14:52 and the latch sampled the wrong request.** *The flag is proven to reach the wire; the
+hypothesis it was run to test is untouched.* **`for-the-owner.md` entry 11.**
 
 *This section replaced one that said the success control was unmeasured. **It was true when written
 and false within the hour** — the control ran at 11:19 and its record is the third entry above.*

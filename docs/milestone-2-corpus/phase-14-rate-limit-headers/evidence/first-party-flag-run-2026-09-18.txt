@@ -1,0 +1,78 @@
+# _CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL=1 through the router - 2026-09-18 14:52 UTC
+
+Run by the owner, Claude Code 2.1.267, router 0.1.0, OAuth subscription, auto mode on.
+The experiment is for-the-owner.md entry 10. Router started from this worktree's venv.
+
+REDACTION: session ids mapped to stable placeholders in first-appearance order. Anthropic
+request ids are kept verbatim, as every earlier record in this directory keeps them - they
+identify a rejection upstream and carry no secret. Every header value in the log lines below
+was already <unlisted> by the recorder's own rule.
+
+RESULT IN ONE LINE: the flag reached the wire and the 429 did not move.
+
+## The log lines
+
+2026-09-18T14:52:09.022+00:00  INFO     arriving non-streamed request to /v1/messages: http/1.1 accept=application/json authorization=<unlisted> content-type=application/json user-agent=claude-cli/2.1.267 (external, cli) x-claude-code-session-id=<unlisted> x-stainless-arch=<unlisted> x-stainless-lang=<unlisted> x-stainless-os=<unlisted> x-stainless-package-version=<unlisted> x-stainless-retry-count=<unlisted> x-stainless-runtime=<unlisted> x-stainless-runtime-version=<unlisted> x-stainless-timeout=<unlisted> anthropic-beta=oauth-2025-04-20,interleaved-thinking-2025-05-14,redact-thinking-2026-02-12,thinking-token-count-2026-05-13,context-management-2025-06-27,prompt-caching-scope-2026-01-05 anthropic-dangerous-direct-browser-access=<unlisted> anthropic-version=2023-06-01 x-app=cli x-client-request-id=<unlisted> connection=<unlisted> host=<unlisted> accept-encoding=gzip, deflate, br, zstd content-length=<unlisted>
+
+2026-09-18T14:52:09.688+00:00  INFO     anthropic replied 200 to /v1/messages, sampling rate-limit headers once: anthropic-ratelimit-unified-5h-reset=1789759200 anthropic-ratelimit-unified-5h-status=allowed anthropic-ratelimit-unified-5h-utilization=0.11 anthropic-ratelimit-unified-7d-reset=1790344800 anthropic-ratelimit-unified-7d-status=allowed anthropic-ratelimit-unified-7d-utilization=0.01 anthropic-ratelimit-unified-fallback-percentage=0.5 anthropic-ratelimit-unified-overage-disabled-reason=out_of_credits anthropic-ratelimit-unified-overage-status=rejected anthropic-ratelimit-unified-reset=1789759200 anthropic-ratelimit-unified-status=allowed request-id=req_redacted0000000000000024 anthropic-ratelimit-unified-representative-claim=<unlisted>
+
+2026-09-18T14:52:15.955+00:00  INFO     arriving streamed request to /v1/messages: http/1.1 accept=application/json authorization=<unlisted> content-type=application/json user-agent=claude-cli/2.1.267 (external, cli) x-claude-code-session-id=<unlisted> x-stainless-arch=<unlisted> x-stainless-lang=<unlisted> x-stainless-os=<unlisted> x-stainless-package-version=<unlisted> x-stainless-retry-count=<unlisted> x-stainless-runtime=<unlisted> x-stainless-runtime-version=<unlisted> x-stainless-timeout=<unlisted> anthropic-beta=oauth-2025-04-20,interleaved-thinking-2025-05-14,redact-thinking-2026-02-12,thinking-token-count-2026-05-13,context-management-2025-06-27,prompt-caching-scope-2026-01-05,advisor-tool-2026-03-01,structured-outputs-2025-12-15,cache-diagnosis-2026-04-07 anthropic-dangerous-direct-browser-access=<unlisted> anthropic-version=2023-06-01 x-app=cli x-client-request-id=<unlisted> connection=<unlisted> host=<unlisted> accept-encoding=gzip, deflate, br, zstd content-length=<unlisted>
+
+2026-09-18T14:52:21.487+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000025
+
+2026-09-18T14:52:22.429+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000026
+
+2026-09-18T14:52:23.800+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000027
+
+2026-09-18T14:52:25.892+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000028
+
+2026-09-18T14:52:30.402+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000029
+
+2026-09-18T14:52:30.842+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000030
+
+2026-09-18T14:52:31.804+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000031
+
+2026-09-18T14:52:33.126+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000032
+
+2026-09-18T14:52:35.220+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000033
+
+2026-09-18T14:52:39.316+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000034
+
+2026-09-18T14:52:49.182+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000035
+
+2026-09-18T14:52:50.077+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000036
+
+2026-09-18T14:52:51.362+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000037
+
+2026-09-18T14:52:53.488+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000038
+
+2026-09-18T14:52:57.655+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000039
+
+## The telemetry rows, redacted
+
+timestamp,session_id,agent_id,backend,model,path,stream,input_tokens,output_tokens,cache_read_input_tokens,cache_creation_input_tokens,stop_reason,request_bytes,response_bytes,ttfb_ms,duration_ms,error_status,error_code,error_message,router_version
+2026-09-18T14:52:08.405+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,246,ok,,,0.1.0
+2026-09-18T14:52:09.022+00:00,session-01,,anthropic,claude-haiku-4-5-20251001,/v1/messages,false,8,1,0,0,max_tokens,323,517,667,668,ok,,,0.1.0
+2026-09-18T14:52:15.955+00:00,session-01,,anthropic,claude-haiku-4-5-20251001,/v1/messages,true,902,13,0,0,end_turn,4061,1882,719,846,ok,,,0.1.0
+2026-09-18T14:52:15.956+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,2,341,30533,11441,tool_use,122356,6780,956,4740,ok,,,0.1.0
+2026-09-18T14:52:20.990+00:00,session-01,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,127949,114,501,504,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T14:52:21.944+00:00,session-01,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,127949,114,486,487,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T14:52:23.322+00:00,session-01,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,127949,114,479,480,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T14:52:25.390+00:00,session-01,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,127949,114,504,506,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T14:52:29.885+00:00,session-01,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,127949,114,518,518,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T14:52:30.408+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,127947,114,434,435,client_disconnect,client_disconnect,The caller went away before the reply finished.,0.1.0
+2026-09-18T14:52:31.348+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,127947,114,457,458,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T14:52:32.638+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,127947,114,491,495,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T14:52:34.767+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,127947,114,456,459,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T14:52:38.862+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,127947,114,458,459,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T14:52:39.397+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,2,297,41974,471,tool_use,124419,4685,823,4871,ok,,,0.1.0
+2026-09-18T14:52:45.096+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,2,229,42445,304,tool_use,125980,6133,964,3292,ok,,,0.1.0
+2026-09-18T14:52:48.678+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128677,114,506,507,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T14:52:49.585+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128677,114,493,495,client_disconnect,client_disconnect,The caller went away before the reply finished.,0.1.0
+2026-09-18T14:52:50.915+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128677,114,447,449,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T14:52:52.992+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128677,114,498,498,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T14:52:57.195+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128677,114,461,463,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T14:52:57.669+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,2,94,42749,359,tool_use,127484,2839,878,1565,ok,,,0.1.0
+2026-09-18T14:52:59.821+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,2,322,43108,131,end_turn,127897,11098,809,5077,ok,,,0.1.0
+2026-09-18T14:53:04.962+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,504,8,43239,322,end_turn,130209,1933,811,1485,ok,,,0.1.0
+2026-09-18T14:56:05.309+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,94,76,43561,0,end_turn,129022,3955,821,1966,ok,,,0.1.0

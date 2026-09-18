@@ -896,3 +896,59 @@ router-side reading of the same evidence, and it is worth one minute to close.*
 **Unchanged:** the exact-fingerprint allowlist, and connection reuse. **Added, and it is the only
 cheap one:** set `_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL` and run the classifier through the
 router. *`for-the-owner.md` entry 10 has the procedure and what each outcome means.*
+
+## The flag reached the wire and the 429 did not move
+
+**Run by the owner 2026-09-18 14:52 UTC**, Claude Code **2.1.267**, `_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL=1`
+alongside `ANTHROPIC_BASE_URL`, auto mode on. *The experiment is `for-the-owner.md` entry 10.*
+Frozen at `evidence/first-party-flag-run-2026-09-18.txt`.
+
+| | |
+|---|---|
+| `/v1/messages` **non-streamed** | **13 × 429**, 2 `client_disconnect`, **1 ok** |
+| `/v1/messages` **streamed** | **7 of 7 ok** |
+| The meter, 14:52:09 | `allowed` — **5h at 0.11, 7d at 0.01** |
+| Every 429 | a `request-id` and **no rate-limit header**, exactly as before |
+
+***The flag is not inert and this is the first proof of it.*** **`x-client-request-id` arrives**,
+and it appears in **neither** the 12:40 nor the 13:41 capture. *`go()` is true, `Jje()` is true, and
+the binary reading is confirmed against the wire rather than against itself.*
+
+**So hypothesis twelve is eliminated the honest way:** the absence of `x-client-request-id` is not
+the cause. **It is present now and the rejection is unchanged.**
+
+### And the measurement that would have tested the actual hypothesis was spent on the wrong request
+
+***The sampled non-streamed request is not a classifier request.*** It is the **haiku warm-up** at
+14:52:09 — **323 bytes, 8 input tokens, `max_tokens`, and it succeeded.** The classifier requests
+are the **127,949-byte** ones that begin eleven seconds later, and **not one of them was sampled.**
+
+**`arrival_sampled` is keyed on `bool(call.stream)`** and taken by the **first** request of that
+shape, whatever it is. *`proxy.py:368`.*
+
+***So whether the classifier's own request carried `x-anthropic-billing-header` is still unknown,
+and the `forceAttributionHeader` reading is neither confirmed nor refuted.*** **What the log proves
+is that one unrelated non-streamed request did not carry it.**
+
+**This is the third instance of one defect, and the second after it was supposedly fixed.**
+*`for-the-owner.md` entry 6 records the latch spent on `/api/hello`; the fix was to gate it on the
+path, and the comment at `proxy.py:372` says so in as many words.* **Path-gating was one level too
+shallow: `/v1/messages` non-streamed is not one thing.** *The warm-up and the classifier differ by
+four hundred times in size and the latch cannot tell them apart.*
+
+***Recorded before it is fixed, and the fix is not this session's to choose*** — it touches `src/`,
+and `CLAUDE.md`'s first working-agreement bullet is propose before implementing. **Entry 11 puts the
+options to the owner.**
+
+### One thing not to over-read, said here because it is the obvious thing to over-read
+
+**The `anthropic-beta` list on the sampled request is shorter than the one captured at 12:40** and
+is missing `claude-code-20250219`. ***That is the warm-up being a `haiku` call, not the flag.*** *The
+client's beta assembly pushes that entry only when the model name does not contain `haiku`.*
+**The list was already ruled out as a discriminator and nothing here revives it.**
+
+### What the run does settle, and it is worth more than it looks
+
+**Quota is dead as a hypothesis, twice over.** *The earlier control had the meter at 52% and 59%;
+this one has it at **0.11 and 0.01** — an all-but-empty budget — and the rejections are identical.*
+**Anybody reading the upstream issues should be given this pair rather than either half.**

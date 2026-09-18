@@ -179,3 +179,48 @@ blocked mid-analysis by the auto-mode classifier* — the very mechanism this ph
 diagnose. **I stopped and said so rather than finding another route**, so the fragments frozen in
 `evidence/` are what was read before the block and not everything there is to read. *Entry 7's live
 experiments are untouched by any of this.*
+
+## 11 · ASK · high · Entry 10 ran, and the latch missed the one request that mattered
+
+***Entry 10 is discharged as an errand and is not discharged as a question.*** **You ran it at
+14:52 UTC and the result is frozen** at `evidence/first-party-flag-run-2026-09-18.txt`.
+
+**What it settled:** the flag **works** — `x-client-request-id` reaches the router for the first
+time — and **the 429 is completely unchanged**, 13 of them, while 7 of 7 streamed calls succeeded.
+**The meter read 0.11 and 0.01.** *Quota was already dead; it is now dead at an empty budget.*
+
+***What it did not settle is the thing the session before it predicted.*** **The non-streamed
+sample was spent on the `haiku` warm-up** — 323 bytes — **and every classifier request that
+followed was 127,949 bytes and unsampled.** So whether the classifier carries
+`x-anthropic-billing-header` is **still unknown**, which is exactly the claim entry 10 was run to
+test.
+
+**This is the third time this phase has spent a one-shot sample on the wrong request**, and the
+second after the fix. *Entry 6's row — "the sample latch, spent on `/api/hello`" — was fixed by
+gating on the path. `/v1/messages` non-streamed turns out not to be one thing.*
+
+**Three ways to fix it, and the choice is yours because it changes `src/`:**
+
+| | |
+|---|---|
+| **Latch per shape *and* per size band** | One line. **Crude, and it would have worked here** — the warm-up and the classifier differ by four hundred times |
+| **Log the header *name set*, every non-streamed request, and only when the set differs from the last** | **No latch to spend.** Cannot miss a request shape nobody predicted, and it stays inside the standing "names, never values" rule |
+| **Leave it and drive a second session** | **Free in code and costs one of your sessions** — and it is the option this phase has taken twice already |
+
+***My recommendation is the second***, and not because it is tidier: **every near-miss in entry 6
+is a latch deciding in advance which request would be interesting.** *A set-difference log makes
+that decision impossible to get wrong, and it would have caught this without anyone predicting the
+warm-up existed.*
+
+**Not implemented.** `CLAUDE.md` says propose before implementing, and this is a proposal.
+
+## 12 · REGRET · medium · I let "the flag works" stand in for "the hypothesis holds"
+
+**They are different claims and only the first is measured.** *`x-client-request-id` arriving proves
+the gate is real and the switch reaches the wire. It says nothing about the attribution header,
+because the request that would have shown it was never sampled.*
+
+***This is entry 5 again, one level in.*** *There the error was reading "Anthropic sent this" as
+"Anthropic is at fault"; here the temptation was to read a confirmed **mechanism** as a confirmed
+**cause**.* **Caught by reading the sampled request's byte count against the classifier's before
+writing the conclusion** — 323 against 127,949 — **and not by any check.**
