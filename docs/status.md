@@ -15,18 +15,25 @@ merged. Work in `/Users/ilirium/Projects/local/ilirium_llm_router/phase-14-rate-
 
 **It was chartered to record the Anthropic rate-limit headers and the owner reshaped it, on the day
 it opened, around a live symptom: Claude Code's auto mode cannot run its safety classifier through
-the router.** The instrument was built, it worked, and **eleven hypotheses have been eliminated by
+the router.** The instrument was built, it worked, and **thirteen hypotheses have been eliminated by
 measurement.** *The cause is **not identified**, and the phase says so rather than implying
 otherwise.*
+
+***The 2026-09-18 evening session read the client instead of the router***, which nothing in this
+phase had done. **Claude Code ships as a Bun executable with its JavaScript embedded in plaintext**,
+so it is greppable — `evidence/binary-extract.sh`.
 
 ***What a next session most needs to know, in one line each:***
 
 | | |
 |---|---|
 | **The instrument works** | An allowlist of response headers, logged on a failure and sampled once on a success. **28 names** and a prefix catch that reports unknown `anthropic-ratelimit-*` **by name, never by value** |
-| **The finding** | A `429` carries **no metering at all**; a `200` on the same connection carries **twelve** `unified` buckets, all `allowed` at 52% / 59% |
+| **The finding** | A `429` carries **no metering at all**; a `200` on the same connection carries **twelve** `unified` buckets, `allowed` at 52% / 59% — *and at **0.11 / 0.01** in the later run, so quota is dead twice* |
 | **The control that broke the conclusion** | **The classifier works direct and fails through the router.** The owner found it by asking why auto mode worked in the session he was reading the finding in |
-| **Three experiments are live in `src/`** | **Deliberately not reverted** — owner's decision. *One of them makes the corpus store non-streamed bodies **brotli-compressed*** |
+| ***The attribution "header" is a body field*** | **Retracted 2026-09-18.** It is a system-prompt block inside the request, not an HTTP header — ***so `C2d` added a header the client never sends as one and tested the wrong channel entirely*** |
+| **The first-party gate, and its switch** | `ANTHROPIC_BASE_URL` naming any host but `api.anthropic.com` turns off first-party behaviour; **`_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL` forces it back.** *Run: it reaches the wire — `x-client-request-id` arrives — and **the 429 does not move*** |
+| ***The next experiment is BUILT and NOT RUN*** | **The hosts entry with `mkcert`**, so the client is fully first-party while still routed. *Two scripts in `evidence/`, plus `config-hosts.yaml` and `make run-hosts`; the owner runs it **2026-09-19**.* ***`for-the-owner.md` entry 14 is the full runbook*** |
+| **Three experiments are live in `src/`** | **Deliberately not reverted** — owner's decision. *One of them makes the corpus store non-streamed bodies **brotli-compressed***. ***The imitation header can now come out on its own merits***: it imitates a header that is not one |
 | **Group D never started** | Where the headers durably live — the milestone plan's *"Phase 14's plan cannot skip the question"* — **is still deferred** |
 
 *Phase 13 merged 2026-09-17 at `97fd822`; its review stopped its own merge on five method-tier

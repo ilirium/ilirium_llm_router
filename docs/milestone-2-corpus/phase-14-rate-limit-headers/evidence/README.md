@@ -3,7 +3,7 @@
 **One entry per artefact**, per `../../../README.md`'s "Evidence and redaction": what produced it,
 what it proves, what was redacted and how, and whether it can be regenerated.
 
-***Thirteen artefacts: four instruments that can be re-run, and nine records that cannot.*** All
+***Fifteen artefacts: six instruments that can be re-run, and nine records that cannot.*** All
 nine were produced on **2026-09-18**, by the owner, against **Claude Code 2.1.267** and router
 `0.1.0`, on an OAuth subscription credential with `credential: forward`.
 
@@ -74,6 +74,32 @@ five sessions for each of the experiments above it.
 pattern to `grep` as a **regular expression**, so the first pattern containing `[` — a minified
 `[...kr` — died with *"brackets not balanced"* rather than matching. **Caught because one of nine
 fragments came back empty and the count was checked**, not by reading the script.
+
+---
+
+### `run-pinned.py` · `tls-terminator.py`
+
+***Built 2026-09-18 and NOT YET RUN.*** **The two hops the hosts-entry experiment needs** — the one
+the owner chose over patching the client binary. *`for-the-owner.md` entry 14 has the reasoning and
+what it costs.*
+
+**Why two.** The client decides it is first-party by comparing `new URL(base).host` against the
+literal `api.anthropic.com`, so the experiment points `/etc/hosts` at `127.0.0.1`. **That creates
+two problems and each file solves one.**
+
+| | |
+|---|---|
+| `tls-terminator.py` | The router **has no TLS** — its `Server` config is host and port only. This terminates 443 with an `mkcert` certificate and hands plaintext to the router unchanged. ***Needs `sudo`***, because 443 is privileged |
+| `run-pinned.py` | ***`/etc/hosts` is machine-wide, so the router resolves `api.anthropic.com` to itself and forwards to its own listener forever.*** This pins `getaddrinfo` **in the router's own process** — no second hop, no disabled certificate verification, `src/` untouched, SNI and validation intact |
+
+**The address is not in the file.** `PINNED_ANTHROPIC_IP` supplies it, because a CDN edge address
+outlives nothing — *and a plain `dig` will answer `127.0.0.1` once the hosts entry exists, which is
+why the usage line says `@1.1.1.1`.* **Both guards are exercised:** a missing variable and a
+loopback value each refuse to start.
+
+***Streaming is the hazard the terminator inherits from the BoringSSL forwarder above***, and for
+the same reason: a hop that buffered would stall every streamed call and turn `ttfb_ms` into a
+measurement of itself.
 
 ---
 

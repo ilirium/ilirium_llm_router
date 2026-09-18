@@ -241,28 +241,129 @@ never sends as a header. The negative was real; the subject was not.* **Entry 7'
 experiment can come out on those grounds alone** — it is not merely unproductive, it is answering a
 question nobody has.
 
-## 14 · ASK · high · Patching the binary — there is a cheaper version of your idea
+## 14 · ERRAND · high · The hosts experiment — the full runbook for 2026-09-19
 
-**Your idea works in principle and I would not start with it.** *`CE()` reads
-`process.env.ANTHROPIC_BASE_URL` **directly**; unset means first-party. So anything that leaves that
-variable unset while traffic still reaches the router gets you the full first-party client.*
+***You chose this over patching the binary and you were right to.*** `CE()` reads
+`process.env.ANTHROPIC_BASE_URL` **directly**, so leaving that variable unset is what makes the
+client first-party — **and a hosts entry does that with nothing modified.** *The alternative was
+editing a 200 MB code-signed Bun executable whose bundle is marked `@bun @bytecode`, where a
+compiled copy of the patched source may sit alongside the text and the edit may simply not take.*
 
-***But `NA()` compares `new URL(e).host` against the literal string `api.anthropic.com`.*** **So a
-hosts entry does the same job with nothing modified:**
+**Why it is worth a session:** ***it is the only remaining experiment that makes the client fully
+first-party while still routing through you.*** **If the 429 survives it, the entire client-side
+variable is eliminated** and what is left is the TLS fingerprint and connection reuse — entry 8,
+both expensive. **If it goes away, `BUG-001` gets a real workaround.**
 
-| | |
-|---|---|
-| **`/etc/hosts`: `api.anthropic.com → 127.0.0.1`**, router on **443** with a locally-trusted cert (`mkcert`), `ANTHROPIC_BASE_URL` **unset** | Nothing patched, reversible with one line, and **every** `CE()` and `go()` path is first-party, including ones neither of us has read |
-| **Patching the binary** | A 200 MB **code-signed** Bun executable. Changing a string breaks the signature and needs an ad-hoc re-sign; **the bundle is marked `@bun @bytecode`**, so a compiled copy of that code may exist alongside the text and the patch may not take. And a length change shifts every offset after it |
+```
+Claude Code (ANTHROPIC_BASE_URL unset)
+  -> api.anthropic.com:443      [/etc/hosts -> 127.0.0.1]
+  -> evidence/tls-terminator.py  (sudo; mkcert certificate)
+  -> the router on 8787          (unchanged)
+  -> evidence/run-pinned.py      (pins api.anthropic.com to its real address)
+  -> Anthropic
+```
 
-***The hosts route is strictly better on every axis I can see*** — less work, reversible, no
-signature question, and it covers code paths a targeted string patch would miss.
+### Before anything — the one number to take first
 
-**Why it is worth doing at all, now that entry 13 has killed the attribution hypothesis:** *it is the
-only experiment left that makes the client **fully** first-party while still routing through you.*
-**If the 429 survives that, the entire client-side variable is eliminated** and what remains is the
-TLS fingerprint and connection reuse — entry 8, both of them, and both expensive. **If it goes away,
-the cause is client behaviour keyed on the base URL and `BUG-001` gets a real workaround.**
+```sh
+dig +short @1.1.1.1 api.anthropic.com | head -1        # e.g. 160.79.104.10
+```
 
-***It needs a decision before any work:*** it puts a cert in your trust store and redirects a real
-hostname on your machine. **Both are reversible and neither is mine to do without you saying so.**
+***Take it now and write it down.*** **Once the hosts entry exists, a plain `dig` answers
+`127.0.0.1`** — which is the router's own listener, and pointing the router at that is the loop the
+whole design exists to avoid. *`run-pinned.py` refuses a loopback value rather than looping, but do
+not make it do the catching.*
+
+### Step 1 · mkcert, and what it changes
+
+```sh
+brew install mkcert
+mkcert -install                                        # puts a local CA in your system trust store
+cd ~/                                                  # or anywhere you like; note where
+mkcert api.anthropic.com                               # writes the .pem pair into the cwd
+```
+
+***`mkcert -install` is the only thing here that changes your system beyond one file.*** **It is
+reversible with `mkcert -uninstall`.** *Note the two paths it prints; steps 3 and 6 need them.*
+
+### Step 2 · The router, with the address pinned
+
+**Terminal 1**, from this worktree:
+
+```sh
+make run-hosts
+```
+
+*It resolves the address itself via `@1.1.1.1` and starts the router under `run-pinned.py` with
+`config-hosts.yaml`.* **Expect a `[pinned] api.anthropic.com -> …` line on stderr** — ***if that
+line is missing, stop***: the pin did not take and the next step would loop.
+
+**`config-hosts.yaml` is new and it matters:** it is `config-boringssl.yaml` with the egress hop
+removed, so ***the corpus is ON***. *Without it this run captures no bodies, and the corpus is what
+answered the attribution question when nothing else could.*
+
+### Step 3 · The TLS terminator
+
+**Terminal 2**, from this worktree, with your paths from step 1:
+
+```sh
+sudo .venv/bin/python \
+  docs/milestone-2-corpus/phase-14-rate-limit-headers/evidence/tls-terminator.py \
+  --cert ~/api.anthropic.com.pem --key ~/api.anthropic.com-key.pem
+```
+
+***`sudo` because 443 is privileged.*** *The process writes nothing; stopping it is `Ctrl-C`.*
+
+### Step 4 · Prove the whole chain WITHOUT touching `/etc/hosts`
+
+```sh
+curl --resolve api.anthropic.com:443:127.0.0.1 https://api.anthropic.com/api/hello
+```
+
+***This is the step that protects you.*** **`--resolve` redirects only this one command**, so the
+full path — TLS, terminator, router, pinned egress — is exercised while the rest of the machine,
+***including the Claude Code session you are reading this in***, still reaches the real Anthropic.
+
+**Do not go past this step until it answers.** *A TLS error here is a certificate problem; a
+`connect_error` in the router's log is the pin; a hang is the terminator.*
+
+### Step 5 · The hosts entry, last, and knowing what it does
+
+```sh
+sudo sh -c 'printf "127.0.0.1\tapi.anthropic.com\t# PHASE 14 EXPERIMENT - remove me\n" >> /etc/hosts'
+```
+
+***This redirects every process on the machine, including any Claude Code session you have open.***
+**If the chain is not working, that session loses its connection mid-turn and you will be debugging
+with the line still in place.** *That is why step 4 comes first, and why the line carries its own
+removal note.*
+
+### Step 6 · The measurement
+
+**A Claude Code session, `ANTHROPIC_BASE_URL` UNSET, auto mode ON, and something that shells
+out** — `printenv` was enough on 2026-08-25 and failed within ninety seconds.
+
+- **Record `claude --version`.** *`BUG-001` asks for it by name.*
+- ***An absence of 429s is not a pass.*** **Drive it until a `Bash` call is actually classified** —
+  `BUG-000`, and a quiet session looks exactly like a fix.
+
+### Step 7 · Put it back
+
+```sh
+sudo sed -i '' '/PHASE 14 EXPERIMENT/d' /etc/hosts     # first, and check with: grep anthropic /etc/hosts
+```
+
+*Then `Ctrl-C` both terminals.* **`mkcert -uninstall` whenever you want the CA gone** — *it can stay
+if you would rather not repeat step 1.*
+
+### What to hand back
+
+**Nothing needs transcribing.** *A session can read `logs/telemetry/router.log`, `calls.csv` and
+`logs/corpus/` straight off this worktree — that is how the 14:52 run was read.* **Say which steps
+you ran and whether step 4 was green**, and ***say it if it did not reproduce***: that is a result,
+not a failed session.
+
+***One known gap, and it is entry 11's.*** **The arrival sampler will again spend its non-streamed
+latch on whatever arrives first**, which last time was a 323-byte warm-up rather than the 127 KB
+classifier. *The corpus captures every body regardless, so nothing is lost this time* — **but the
+log line will once more describe the wrong request, and entry 11's fix is still unchosen.**

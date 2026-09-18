@@ -6,7 +6,9 @@ ARGS   ?=
 
 # Phase 14 experiment only. Both of the next two come out when it does.
 PORT   ?= 8799
-FWD    := docs/milestone-2-corpus/phase-14-rate-limit-headers/evidence/boringssl-forwarder.py
+EVID   := docs/milestone-2-corpus/phase-14-rate-limit-headers/evidence
+FWD    := $(EVID)/boringssl-forwarder.py
+PIN    := $(EVID)/run-pinned.py
 
 # ruff is fetched on demand rather than installed as a dependency, but it is pinned: an unpinned
 # formatter reformats the whole repository the day it changes its mind, and a version bump then
@@ -17,7 +19,7 @@ RUFF   ?= ruff@0.16.1
 
 .DEFAULT_GOAL := help
 
-.PHONY: help sync run check test lint format clean forwarder run-boringssl
+.PHONY: help sync run check test lint format clean forwarder run-boringssl run-hosts
 
 help: ## List the available targets
 	@grep -hE '^[a-z-]+:.*##' $(MAKEFILE_LIST) \
@@ -35,6 +37,12 @@ forwarder: ## Phase 14 experiment: start the BoringSSL egress hop (PORT=8799)
 
 run-boringssl: ## Phase 14 experiment: start the router pointed at the forwarder above
 	uv run ilirium-llm-router -c config-boringssl.yaml
+
+# The address is resolved HERE rather than inside the router, because once the hosts entry exists a
+# plain lookup answers 127.0.0.1 and the router would forward to itself. @1.1.1.1 ignores the file.
+run-hosts: ## Phase 14 experiment: the router behind the hosts entry, api.anthropic.com pinned
+	PINNED_ANTHROPIC_IP="$${PINNED_ANTHROPIC_IP:-$$(dig +short @1.1.1.1 api.anthropic.com | head -1)}" \
+		uv run python $(PIN) -c config-hosts.yaml
 
 check: ## Validate the config and print it, without starting the server
 	uv run ilirium-llm-router -c $(CONFIG) check
