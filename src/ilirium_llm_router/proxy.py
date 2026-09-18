@@ -157,7 +157,15 @@ TIMEOUT = httpx.Timeout(connect=5.0, read=600.0, write=30.0, pool=5.0)
 
 def create_client() -> httpx.AsyncClient:
     """The single HTTP client shared by every request, so connections are reused."""
-    return httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False)
+    # `http2=True` NEGOTIATES rather than demands: httpx offers h2 over ALPN and falls back to
+    # HTTP/1.1 if the backend does not take it, so LM Studio is unaffected by this.
+    #
+    # PHASE 14 EXPERIMENT, 2026-09-18, running alongside the `accept-encoding` one in
+    # `outgoing_headers` at the owner's instruction -- two variables at once, to be bisected only if
+    # the pair comes back positive. Anthropic's API serves HTTP/2 and Claude Code talking to it
+    # directly uses it; the router did not, and the direct path is the one where the safety
+    # classifier works.
+    return httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False, http2=True)
 
 
 def backend_timeout(backend: Backend) -> httpx.Timeout:
@@ -357,10 +365,18 @@ class Proxy:
                 request.url.path,
                 describe_headers(*recorded_headers(reply)),
             )
-        elif self.headers_sampled.take():
+        elif request.url.path.startswith("/v1/messages") and self.headers_sampled.take():
             # The control, once per process. Logged at INFO rather than WARNING because nothing is
             # wrong, and once rather than always because every call reporting its buckets would
             # drown the file the failure lines have to be found in.
+            #
+            # PATH-GATED, and this is not a refinement -- the first version was WRONG. Claude Code
+            # probes `/api/hello` before its first real call, the router forwards it, and it comes
+            # back 200. So the latch was spent on an endpoint that meters nothing, and the control
+            # line read `(none)` on the 2026-09-18 11:50 run. **That is the exact string the failure
+            # lines print**, and reading it as "successes carry no buckets either" would have
+            # reversed the phase's conclusion a second time -- this time through the instrument
+            # built to stop that happening.
             logger.info(
                 "%s replied %s to %s, sampling rate-limit headers once: %s",
                 name,

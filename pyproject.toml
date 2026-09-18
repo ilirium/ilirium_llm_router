@@ -9,6 +9,12 @@ authors = [
 requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.140.9",
+    # `h2` is httpx's HTTP/2 stack, pulled in deliberately rather than via the `httpx[http2]` extra
+    # so that it is visible in this list. PHASE 14 EXPERIMENT, 2026-09-18: the router spoke HTTP/1.1
+    # to Anthropic while Claude Code talking directly speaks HTTP/2, and the safety classifier works
+    # on the direct path and fails through the router. If the experiment comes back negative this
+    # line and `http2=True` in `create_client` come out together.
+    "h2>=4.1.0",
     "httpx>=0.28.1",
     # Both are imported directly by src/ rather than only reached through FastAPI: `pydantic` builds
     # every config model, and `starlette` supplies Request, the responses and ClientDisconnect. They

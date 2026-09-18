@@ -28,7 +28,7 @@ from fastapi.testclient import TestClient
 
 from ilirium_llm_router.app import create_app
 from ilirium_llm_router.config import Backend, Config
-from ilirium_llm_router.proxy import peek
+from ilirium_llm_router.proxy import create_client, peek
 
 
 def test_the_startup_probe_is_answered() -> None:
@@ -697,3 +697,46 @@ def test_the_representative_claim_is_named_but_its_value_withheld(
     line = "\n".join(caplog.messages)
     assert "anthropic-ratelimit-unified-representative-claim=<unlisted>" in line
     assert "whatever-this-is" not in line
+
+
+def test_the_probe_endpoint_does_not_spend_the_sample(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Regression, 2026-09-18: it did, on a real run, and the line it wrote said `(none)`.
+
+    Claude Code probes `/api/hello` before its first real call. That endpoint meters nothing, so
+    it can only ever report an empty header set -- which is the same string a rejection prints.
+    A control that samples it answers the opposite of the question it was built to answer.
+    """
+    upstream = Upstream(streamed(200))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.get("/api/hello")
+        assert not [m for m in caplog.messages if "sampling rate-limit headers" in m]
+
+        upstream.reply = streamed(200, headers=RATE_LIMITED)
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    sampled = [m for m in caplog.messages if "sampling rate-limit headers" in m]
+    assert len(sampled) == 1
+    assert "/v1/messages" in sampled[0]
+    assert "retry-after=42" in sampled[0]
+
+
+def test_the_client_offers_http2() -> None:
+    """Phase 14 experiment: the router spoke HTTP/1.1 where the direct path speaks HTTP/2.
+
+    Asserted on the real client factory rather than on the mock transport the other tests use,
+    because `http2=True` is a property of the client and the mock never negotiates anything.
+
+    It NEGOTIATES: httpx offers h2 over ALPN and falls back to 1.1 if the backend declines, so
+    LM Studio is unaffected. If the experiment comes back negative this test goes with it.
+
+    **This assertion reads httpx private attributes** and will break on an httpx upgrade that
+    renames them. That is accepted deliberately: the alternative is asserting nothing, and an
+    experiment nobody can confirm is running is the failure mode this phase has already hit twice.
+    A breakage here means "check how to ask httpx this question now", not "the router is wrong".
+    """
+    import h2  # noqa: F401  -- the stack httpx needs; absent, http2=True is silently inert
+
+    client = create_client()
+    assert client._transport._pool._http2 is True

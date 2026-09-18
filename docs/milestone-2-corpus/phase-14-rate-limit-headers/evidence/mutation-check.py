@@ -122,6 +122,13 @@ MUTATIONS = [
         expect_failing="test_the_unified_family_is_recorded_with_its_values",
         why="the only family a subscription credential is actually metered by stops being valued",
     ),
+    Mutation(
+        name="the probe endpoint can spend the sample again",
+        old='        elif request.url.path.startswith("/v1/messages") and self.headers_sampled.take():',
+        new="        elif self.headers_sampled.take():",
+        expect_failing="test_the_probe_endpoint_does_not_spend_the_sample",
+        why="the control samples /api/hello, reports (none), and reverses the phase's conclusion",
+    ),
     # The accept-encoding experiment, 2026-09-18.
     Mutation(
         name="a streamed request stops asking for identity",
@@ -136,6 +143,14 @@ MUTATIONS = [
         new="        pass",
         expect_failing="test_a_non_streamed_request_relays_the_callers_own_accept_encoding",
         why="the experiment silently stops running while still looking like it does",
+    ),
+    # The HTTP/2 experiment, 2026-09-18, running alongside the accept-encoding one.
+    Mutation(
+        name="http2 is quietly switched back off",
+        old="    return httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False, http2=True)",
+        new="    return httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False)",
+        expect_failing="test_the_client_offers_http2",
+        why="the experiment stops running while the dependency and the comments say it does",
     ),
     Mutation(
         name="the sample skips the allowlist",

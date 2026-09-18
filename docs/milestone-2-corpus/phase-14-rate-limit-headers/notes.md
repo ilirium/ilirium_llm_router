@@ -286,3 +286,58 @@ dependency, so it speaks HTTP/1.1 where Claude Code direct almost certainly spea
 that the remaining suspects are the TLS fingerprint and the re-derived connection headers, and the
 cheaper move at that point is to capture both requests byte for byte rather than keep guessing —
 `procedures/anthropic-auth-check.md` already establishes the technique.
+
+## The `accept-encoding` experiment came back negative
+
+**Run 2026-09-18 11:50 UTC. 16 non-streamed `/v1/messages`, all 429. 7 streamed, all `ok`.**
+Unchanged.
+
+***And the change genuinely ran*** — checked rather than assumed, which matters because "the
+experiment silently did not happen" and "the experiment disproved the hypothesis" look identical
+from the log. **The stored 429 bodies are no longer JSON:** they open `83 38 00 00`, which is not
+gzip, zlib, deflate or zstd, leaving **brotli** — the `br` in Claude Code's own `accept-encoding`
+list. So the router relayed the caller's header, Anthropic compressed the reply, and the rejection
+happened anyway.
+
+**That also demonstrates the second consequence this phase predicted in advance:** the corpus now
+holds those bodies compressed. *`extract` would hand a reader brotli where it used to hand them
+JSON.* **The owner chose to keep the change in place** while the next variable is tested, so the
+cost stands for now and is recorded rather than absorbed.
+
+### And the control had a defect that nearly reversed the conclusion a second time
+
+**The latch was spent on `/api/hello`.** Claude Code probes it before its first real call, the
+router forwards it, it returns 200 — and it meters nothing, so the line read:
+
+```
+anthropic replied 200 to /api/hello, sampling rate-limit headers once: (none)
+```
+
+***`(none)` is the exact string the failure lines print.*** Read at speed that says *"successes
+carry no buckets either"*, which is the opposite of what the 11:19 run measured and would have
+un-done the finding. **So no real control sample was taken on that run at all.**
+
+**Fixed by gating the sample to `/v1/messages`**, with a regression test named for the endpoint and
+a mutation that puts the bug back.
+
+***This is the second time an instrument built to prevent a wrong reading has nearly produced
+one.*** *The first was the allowlist that would have reported nothing on a subscription credential
+and looked correct. Both were caught by comparing a line against a measurement taken minutes
+earlier, and neither by a test — which is worth saying plainly, since sixteen mutations pass.*
+
+## Both variables now flipped together, at the owner's instruction
+
+**`accept-encoding` stays relayed AND the client now offers HTTP/2** — `h2` declared in
+`pyproject.toml`, `http2=True` in `create_client`. *Two variables at once, to be bisected only if
+the pair comes back positive.* **`http2=True` negotiates rather than demands**, offering h2 over
+ALPN and falling back to 1.1, so LM Studio is untouched.
+
+**The test asserts on httpx private attributes** — `client._transport._pool._http2` — and says so
+in its own docstring. *Accepted deliberately: the alternative is asserting nothing, and "an
+experiment nobody can confirm is running" is precisely the failure this phase has now hit twice.*
+
+**What is left if the pair comes back negative:** the TLS fingerprint and the re-derived connection
+headers. **At that point the cheaper move is to stop guessing and capture both requests byte for
+byte** — one throwaway Claude Code session pointed at a listener, which shows the request and then
+fails, against the router's own upstream. *That settles headers and HTTP version factually and
+leaves TLS, which sits below HTTP and cannot be read this way.*
