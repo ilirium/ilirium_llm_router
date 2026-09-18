@@ -1,0 +1,46 @@
+# The attribution is a system-prompt block, not an HTTP header - 2026-09-18
+
+Read out of THIS repository's own corpus, logs/corpus/2026-09-18, with
+`ilirium-llm-router extract --format bodies`. No request was sent and no session was
+driven: the material was already on disk, captured by the router during the day's runs.
+
+REDACTION: no request body is reproduced here. The bodies carry the classifier's transcript
+of a real session - the user's identity, file paths and command text - and none of that is
+needed for the finding. What is reproduced is the attribution line itself, which carries a
+version string and an entrypoint name and nothing else, and the structural facts.
+
+## The finding
+
+Two requests in the whole day carry an attribution line. In both it is system block 0,
+verbatim, INSIDE THE REQUEST BODY:
+
+    x-anthropic-billing-header: cc_version=2.1.267.0a3; cc_entrypoint=sdk-cli;
+
+Both are `claude-opus-5`, `max_tokens: 64000`, `stream: true` - the two `-p` probes the
+phase ran at ~13:0x UTC to compare direct against routed.
+
+That string is a JSON string in `system`. It is NOT an HTTP header, and the router never
+dropped it. `claude --debug api` prints it as an "attribution line" and this phase read
+that as a header for the whole of 2026-09-18.
+
+## The classifier request, with the flag on, 14:52 UTC
+
+    model         claude-sonnet-5
+    max_tokens    64
+    stream        ABSENT - not false, absent
+    system        2 blocks: [0] the security-monitor prompt, [1] "## Session Context"
+    attribution   NONE
+
+## What that settles
+
+- The attribution is a body field. Every router-side experiment that added, imitated or
+  measured an HTTP header of that name was working on the wrong channel and could not
+  have reproduced the client's behaviour whatever it sent.
+- The classifier carries no attribution block at all, with the flag on.
+- No request from an INTERACTIVE session carries one, either shape, flag or no flag.
+  Only the two `-p` (`cc_entrypoint=sdk-cli`) probes do.
+
+## What it does not settle
+
+Why the classifier 429s. Nothing here touches that. It removes a hypothesis and a
+misreading; it supplies no cause.

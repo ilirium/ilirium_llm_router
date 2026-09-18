@@ -952,3 +952,58 @@ client's beta assembly pushes that entry only when the model name does not conta
 **Quota is dead as a hypothesis, twice over.** *The earlier control had the meter at 52% and 59%;
 this one has it at **0.11 and 0.01** — an all-but-empty budget — and the rejections are identical.*
 **Anybody reading the upstream issues should be given this pair rather than either half.**
+
+## The attribution header is not a header, and two sessions of this phase were spent on that
+
+***Retraction, 2026-09-18.*** **The section above claimed the classifier "is the one request shape
+that forces the attribution header".** *The name `forceAttributionHeader` is the client's own and it
+is misleading; the claim built on it is withdrawn, and what replaces it is measured rather than
+read.* **Evidence: `evidence/attribution-is-a-body-field-2026-09-18.txt`.**
+
+### What `g7t` actually returns
+
+**A string, which becomes a system-prompt text block in the request *body*:**
+
+    x-anthropic-billing-header: cc_version=2.1.267.0a3; cc_entrypoint=sdk-cli;
+
+***That is JSON, inside `system`. It is not an HTTP header and it never was.*** **`claude --debug
+api` prints it as "an attribution line" and this phase read that as a header** — the misreading is
+in the 2026-09-18 notes above, and **it survived a capture that looked for the name among
+twenty-one arriving headers and correctly did not find it.** *The absence was read as "withheld" when
+it meant "wrong channel".*
+
+***So C2d could not have worked.*** **It added an HTTP header of a name the client never puts in a
+header.** *The negative result was real; what it tested was not the thing.*
+
+### What the corpus says, and it cost nothing to ask
+
+**`ilirium-llm-router extract --format bodies` over `logs/corpus/2026-09-18`** — material already on
+disk, no session driven, no request sent:
+
+| | |
+|---|---|
+| Requests carrying an attribution line, **whole day** | **2** — both the `-p` probes, `cc_entrypoint=sdk-cli`, streamed |
+| The classifier request at 14:52, **flag on** | `claude-sonnet-5`, `max_tokens: 64`, **`stream` absent**, 2 system blocks, ***no attribution*** |
+| Any request from an **interactive** session | **none carries one**, either shape, flag or no flag |
+
+***This is `for-the-owner.md` entry 3 paying out a second time*** — the corpus answering a question
+nobody had when it was built, three weeks and one wrong hypothesis later. **`BKL-0017` should know
+about it.**
+
+### The shape of the mistake, because it is the same one twice
+
+**Entry 5 was "Anthropic sent this" read as "Anthropic is at fault". Entry 12 was a confirmed
+mechanism read as a confirmed cause. This is a confirmed *name* read as a confirmed *channel*.**
+
+***All three are the same move: a real observation carrying a claim it does not make.*** *And this
+one had a free check available from the first hour — the corpus stores bodies, the bodies were on
+disk, and nobody looked because the word in the name was "header".*
+
+### What survives, and it is less than was claimed
+
+**The gate is real and the flag works** — `x-client-request-id` arrives, measured, and that stands.
+**What does not survive is the reason the flag was worth running.** *The attribution fields it
+restores go into a block the classifier does not carry at all.*
+
+**Hypothesis thirteen is eliminated, and more cleanly than C2d eliminated it:** the attribution
+content is not the cause, **because the classifier sends none in either configuration.**

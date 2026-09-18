@@ -3,8 +3,8 @@
 **One entry per artefact**, per `../../../README.md`'s "Evidence and redaction": what produced it,
 what it proves, what was redacted and how, and whether it can be regenerated.
 
-***Twelve artefacts: four instruments that can be re-run, and eight records of runs that cannot.***
-All eight were produced on **2026-09-18**, by the owner, against **Claude Code 2.1.267** and router
+***Thirteen artefacts: four instruments that can be re-run, and nine records that cannot.*** All
+nine were produced on **2026-09-18**, by the owner, against **Claude Code 2.1.267** and router
 `0.1.0`, on an OAuth subscription credential with `credential: forward`.
 
 ---
@@ -102,6 +102,22 @@ that the function exists and on who calls it.
 **Regenerable, with one caveat that matters.** The script re-runs at no cost, but **the byte offsets
 are a property of one build** and the minified identifiers are that build's own. *Against another
 version, re-run the patterns rather than trusting an offset.*
+
+### `attribution-is-a-body-field-2026-09-18.txt` — read off this project's own corpus
+
+**What produced it.** `ilirium-llm-router extract --format bodies` over `logs/corpus/2026-09-18`.
+***No request sent, no session driven*** — the material was already on disk.
+
+**What it proves.** **The attribution is a *system-prompt block in the request body*, not an HTTP
+header.** *Two of the day's requests carry it, both `-p` probes; the classifier carries none, with
+the flag on; no interactive request carries one at all.* ***So every router-side experiment on a
+header of that name was on the wrong channel*** — C2d included.
+
+**Redaction: no request body is reproduced.** *The bodies hold a real session's transcript — user
+identity, paths, command text — and none of it is needed.* **What is quoted is the attribution line
+itself**, a version string and an entrypoint name, plus the structural facts.
+
+**Regenerable** while the day folder survives, which is what a corpus is for.
 
 ### `first-party-flag-run-2026-09-18.txt` — 14:52 UTC, and it is the record of a near-miss
 
@@ -228,7 +244,7 @@ the Python build, which is the point of keeping the tool beside the record.*
 
 ## What this evidence establishes, and what it does not
 
-***Together these records eliminate eleven hypotheses*** — `accept-encoding`, HTTP/2, a dropped
+***Together these records eliminate thirteen hypotheses*** — `accept-encoding`, HTTP/2, a dropped
 header, an added header, the `anthropic-beta` list, the withheld attribution headers, quota
 exhaustion, request size, the model, the router inventing the rejection, and a non-browser TLS
 fingerprint.

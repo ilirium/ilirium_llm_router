@@ -224,3 +224,45 @@ because the request that would have shown it was never sampled.*
 "Anthropic is at fault"; here the temptation was to read a confirmed **mechanism** as a confirmed
 **cause**.* **Caught by reading the sampled request's byte count against the classifier's before
 writing the conclusion** — 323 against 127,949 — **and not by any check.**
+
+## 13 · REGRET · high · I read a name as a channel, and the corpus could have said so in hour one
+
+**`forceAttributionHeader` is the client's own name for a flag that produces a *system-prompt text
+block*, in the request body.** *Not a header.* **I told you the classifier was "the one request
+shape that forces the attribution header" and built an experiment on it. That is withdrawn.**
+
+***The check that settles it was free and available from the first hour of this phase:*** the
+corpus stores bodies, the bodies were on disk, and `extract --format bodies` finds the string in two
+of the day's requests and in none of the classifier's. **Nobody ran it because the word in the name
+was "header", so the search went to the header capture.**
+
+**It also means C2d never tested what it was built to test.** *It added an HTTP header the client
+never sends as a header. The negative was real; the subject was not.* **Entry 7's imitation
+experiment can come out on those grounds alone** — it is not merely unproductive, it is answering a
+question nobody has.
+
+## 14 · ASK · high · Patching the binary — there is a cheaper version of your idea
+
+**Your idea works in principle and I would not start with it.** *`CE()` reads
+`process.env.ANTHROPIC_BASE_URL` **directly**; unset means first-party. So anything that leaves that
+variable unset while traffic still reaches the router gets you the full first-party client.*
+
+***But `NA()` compares `new URL(e).host` against the literal string `api.anthropic.com`.*** **So a
+hosts entry does the same job with nothing modified:**
+
+| | |
+|---|---|
+| **`/etc/hosts`: `api.anthropic.com → 127.0.0.1`**, router on **443** with a locally-trusted cert (`mkcert`), `ANTHROPIC_BASE_URL` **unset** | Nothing patched, reversible with one line, and **every** `CE()` and `go()` path is first-party, including ones neither of us has read |
+| **Patching the binary** | A 200 MB **code-signed** Bun executable. Changing a string breaks the signature and needs an ad-hoc re-sign; **the bundle is marked `@bun @bytecode`**, so a compiled copy of that code may exist alongside the text and the patch may not take. And a length change shifts every offset after it |
+
+***The hosts route is strictly better on every axis I can see*** — less work, reversible, no
+signature question, and it covers code paths a targeted string patch would miss.
+
+**Why it is worth doing at all, now that entry 13 has killed the attribution hypothesis:** *it is the
+only experiment left that makes the client **fully** first-party while still routing through you.*
+**If the 429 survives that, the entire client-side variable is eliminated** and what remains is the
+TLS fingerprint and connection reuse — entry 8, both of them, and both expensive. **If it goes away,
+the cause is client behaviour keyed on the base URL and `BUG-001` gets a real workaround.**
+
+***It needs a decision before any work:*** it puts a cert in your trust store and redirects a real
+hostname on your machine. **Both are reversible and neither is mine to do without you saying so.**
