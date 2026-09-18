@@ -241,11 +241,21 @@ anything typed.
 
 **`BUG-001` — non-streamed `/v1/messages` are rejected as rate-limited.** Every `POST /v1/messages`
 sent to Anthropic with `stream: false` returns HTTP 429 `rate_limit_error`, while a streamed request
-**2.8× larger** to the same model on the same credential succeeds **0.6 seconds later**. It is not a
-rate limit; it is a categorical rejection of one request shape wearing a rate limit's status code.
-**Claude Code's auto mode is unusable while this holds**, because its safety classifier request is
-non-streaming. The workaround is to prefer the harness's own file tools over shelling out. Full
-measurement in `docs/bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`.
+to the same model on the same credential succeeds seconds later. **It is not quota exhaustion** —
+measured 2026-09-18, on a reply taken twenty-two seconds before five rejections on the same
+connection, every bucket reported `allowed` at 52% of the five-hour window.
+
+***What causes it is not known, and this paragraph used to say it was.*** It claimed *"a categorical
+rejection of one request shape"* — **an assertion about Anthropic that the evidence does not
+support.** The rejections are Anthropic's own, and **the same request succeeds when Claude Code
+talks to Anthropic directly rather than through this router**, which is a fact about the router as
+much as about Anthropic. **Eleven explanations have been eliminated by measurement** and none of
+them was it.
+
+**Claude Code's auto mode is unusable through the router while this holds**, because its safety
+classifier request is non-streaming. The workaround is to prefer the harness's own file tools over
+shelling out. Full measurement in
+`docs/bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`.
 
 **The corpus is off by default.** An absent `logs/corpus/` is correct behaviour, not a failure.
 Nothing under `dir` is created until the switch is on.
@@ -274,7 +284,9 @@ it — so they are in one place.
 - **Other harnesses** — OpenAI Codex, Google Antigravity, GitHub Copilot, JetBrains Junie; Pi,
   Hermes, OpenCode, OpenClaw.
 - **The Anthropic rate-limit response headers**, so a 429 can say *which* limit and *when it clears*
-  rather than only `rate_limit_error`. Planned as Phase 13.
+  rather than only `rate_limit_error`. **Phase 14, in flight.** *This line said "Planned as Phase
+  13" until 2026-09-18; the number moved on 2026-09-04 and three documents were named to be brought
+  true — this was not one of them, and nothing has said "Phase 13" correctly since.*
 - **Picking a local model mid-session, and subagents on local models** — written up and **not
   decided**, in `docs/epd/EPD-001-model-selection-and-mixed-model-sessions.md`.
 - **Token counting for local backends** — LM Studio has no `count_tokens`. Also written up and not

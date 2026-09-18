@@ -14,8 +14,14 @@ Every `POST /v1/messages` sent with `stream: false` to `api.anthropic.com` retur
 `rate_limit_error`, while a streamed request **2.8× larger** to the same model, on the same
 credential, through the same router process, succeeds **0.6 seconds later**.
 
-The 429 is not a rate limit. It is a categorical rejection of one request shape, wearing a rate
-limit's status code.
+***Amended 2026-09-18.*** **The 429 is not quota exhaustion** — that half is now measured rather
+than inferred: a reply twenty-two seconds earlier on the same connection reported every bucket
+`allowed`, at 52% of the five-hour window.
+
+**What this paragraph said next was *"a categorical rejection of one request shape"*, and that is
+incomplete in a way that matters.** *The same request shape **succeeds** when Claude Code talks to
+Anthropic directly.* **The rejection needs the shape AND this router**, and a sentence naming only
+the shape reads as a statement about Anthropic's API that the evidence does not carry.
 
 ## Why it matters here
 
@@ -110,11 +116,17 @@ client-side, the version is the only thing that will identify it.
 
 A 429 writes `rate_limit_error: Error` and nothing more. **Which bucket was hit, and when it clears,
 are in response headers the recorder does not read** — `retry-after` and the `anthropic-ratelimit-*`
-family. That work is **Phase 13** — allocated on the Phase 11 branch and landing in
-`../milestone-2-corpus/implementation-plan.md` with it, so if this document reached `main` first, look
-there after Phase 11 merges. It carries two gates: `calls.csv` taking no new columns is a Milestone 2
-non-goal, and the store's promise of bodies-only-never-headers means a **named header allowlist**
-rather than a copy.
+family. ***That work is Phase 14 and it is done — this paragraph is kept because its prediction was
+exact.*** *It said "Phase 13" until 2026-09-18; the number moved on 2026-09-04 and this file was not
+among the three named to be brought true.*
+
+**Both gates it names held.** `calls.csv` took no new column — *the headers went to the log, and
+where they durably live is still deferred* — and the allowlist is **named, never a copy**: 28 exact
+names, with an unknown `anthropic-ratelimit-*` header reported **by name and never by value**.
+
+**What the recorder now reads is in
+`../milestone-2-corpus/phase-14-rate-limit-headers/evidence/`**, and the section below is what it
+returned.
 
 Until then this document rests on timing and a streaming control — **reconstruction rather than
 measurement**, and honest about it.

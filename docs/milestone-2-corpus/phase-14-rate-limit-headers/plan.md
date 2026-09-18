@@ -162,7 +162,8 @@ further experiments on this branch.** *Their costs are real and are recorded in 
 | Task | |
 |---|---|
 | **12** | `BUG-001` updated with what was measured — and **reported upstream**, which is its own open action and `status.md`'s item 2 |
-| **13** | The register checked against the code, `❓` column empty, per `IDM-008` |
+| **12a** | ***Bring the durable tiers true — added 2026-09-18, because Group E did not have this task and a closing check that is nobody's task is nobody's.*** `reference/observability.md` describes a recorder that now reads response headers; `reference/corpus.md`'s *"bodies only, never headers"* is still true and **worth re-reading against what shipped rather than assumed to be**; `CLAUDE.md` and the root `README.md` carry the commands and the caveats. ***Only for what actually survives the merge*** — an experiment that is reverted changes none of them, and documenting a temporary state in `reference/` is worse than leaving it alone |
+| **13** | The register checked against the code, `❓` column empty, per `IDM-008`. **`anthropic-ratelimit-unified-representative-claim` is expected to still carry its `❓`** — it closes when somebody establishes what the header holds, not when the phase ends |
 | **14** | The review of this phase's finished work, under `IDM-009` |
 | **15** | Close out: `status.md`, the milestone plan's Phase 14 section and its Record table, `branch-index.py --write` after the merge |
 
