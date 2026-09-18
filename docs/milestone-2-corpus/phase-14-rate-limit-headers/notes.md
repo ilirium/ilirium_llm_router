@@ -534,3 +534,63 @@ current process.
 
 ***Recorded before it is resolved, because the assumption's falseness stands on its own*** and does
 not depend on how the remaining question comes out.
+
+## The imitation came back negative, and that closes the attribution class
+
+**Run 2026-09-18 13:04 UTC.** *10 non-streamed `/v1/messages` rejected, 5 streamed `ok`, one
+`client_disconnect` where the client gave up.* **Unchanged.**
+
+***Verified to have actually run, rather than assumed*** — the distinction this phase has been
+bitten by twice:
+
+| | |
+|---|---|
+| Commit `2ecaaec` | 13:03:11 UTC |
+| Router started | 13:04:15 UTC, **64 seconds later**, from this worktree's venv |
+| The venv | `.pth` pointing at this worktree's `src` — an editable install, not a stale copy |
+| The live module | `imitation_headers` present, `BILLING_VERSION_SUFFIX` = `0a3` |
+
+### What is now eliminated
+
+**Ten hypotheses, all by measurement:**
+
+| | |
+|---|---|
+| `accept-encoding: identity` | relayed the caller's own — still 429 |
+| HTTP/1.1 vs HTTP/2 | negotiated h2 — still 429 |
+| A header the router drops | **none is dropped**, computed from the capture |
+| A header the router adds | **none is added** |
+| The `anthropic-beta` list | varies by session and mode; not stable enough to discriminate |
+| The withheld attribution headers | supplied — still 429 |
+| Quota exhaustion | `allowed` at 52% / 59%, twenty-two seconds before five rejections |
+| Request size | 311 bytes rejected, 181 KB accepted |
+| The model | `claude-opus-5` succeeds streamed and fails non-streamed in the same seconds |
+| The router inventing it | every rejection carries a distinct Anthropic `request_id` |
+
+### What is left, and why this phase stops here
+
+**The TLS fingerprint, or a server-side rule neither end of this machine can see.** *Python over
+OpenSSL against Node over BoringSSL — and matching it means replacing the HTTP stack, not adding a
+header.*
+
+***The remaining hypotheses have no cheap discriminator left, and that is the reason to stop rather
+than impatience.*** **Each of the last four experiments eliminated something real**; this one
+eliminated an entire class. **The next one would cost a dependency swap or TLS interception on the
+owner's machine, for a hypothesis with no evidence behind it beyond elimination.**
+
+**What the phase has instead is a complete evidence package**, which is worth more than a guess: a
+paired direct-versus-routed control, request ids for every rejection, the meter reading `allowed`,
+a proof that the router alters no header, and a measured client-side difference keyed on
+`ANTHROPIC_BASE_URL`.
+
+### The three experiments should now come out
+
+**All three are exonerated and none is free:**
+
+| | Why it should go |
+|---|---|
+| `accept-encoding` relayed | **Actively harmful** — the corpus now stores non-streamed responses brotli-compressed, so `extract` hands a reader bytes where it used to hand them JSON |
+| `http2=True` and the `h2` dependency | Buys nothing measured. **`IDM-003` governs dependencies**, and "the official client uses it" is not a justification |
+| The imitation headers | Fabricated attribution sent on every call for **no benefit**, and it is the one change with a terms question attached |
+
+*The owner's call, and it is the last one this phase needs.*
