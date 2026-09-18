@@ -1,0 +1,32 @@
+# The unified meter's VALUES, and a rejection 22 seconds later
+
+Claude Code 2.1.267 - router 0.1.0 - OAuth subscription - HTTP/2 on, accept-encoding relayed
+Run of 2026-09-18 12:13 UTC. Verbatim from logs/telemetry/router.log.
+
+2026-09-18T12:13:39.099+00:00  INFO     anthropic replied 200 to /v1/messages, sampling rate-limit headers once:
+    anthropic-ratelimit-unified-5h-reset=1789741200
+    anthropic-ratelimit-unified-5h-status=allowed
+    anthropic-ratelimit-unified-5h-utilization=0.52
+    anthropic-ratelimit-unified-7d-reset=1789952400
+    anthropic-ratelimit-unified-7d-status=allowed
+    anthropic-ratelimit-unified-7d-utilization=0.59
+    anthropic-ratelimit-unified-fallback-percentage=0.5
+    anthropic-ratelimit-unified-overage-disabled-reason=org_level_disabled_until
+    anthropic-ratelimit-unified-overage-status=rejected
+    anthropic-ratelimit-unified-reset=1789741200
+    anthropic-ratelimit-unified-status=allowed
+    request-id=req_redacted0000000000000015
+    anthropic-ratelimit-unified-fallback=<unlisted>
+    anthropic-ratelimit-unified-representative-claim=<unlisted>
+2026-09-18T12:13:39.101+00:00  INFO     127.0.0.1:56207 - "POST /v1/messages?beta=true HTTP/1.1" 200
+2026-09-18T12:13:39.297+00:00  INFO     127.0.0.1:56209 - "POST /v1/messages?beta=true HTTP/1.1" 200
+
+-- and the five rejections that followed it on the same connection:
+
+2026-09-18T12:13:47.883+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000016
+2026-09-18T12:13:48.681+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000017
+2026-09-18T12:13:49.984+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000018
+2026-09-18T12:13:52.342+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000019
+2026-09-18T12:13:56.673+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000020
+2026-09-18T12:13:57.144+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000021
+2026-09-18T12:13:57.935+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000022

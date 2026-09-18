@@ -341,3 +341,60 @@ headers. **At that point the cheaper move is to stop guessing and capture both r
 byte** — one throwaway Claude Code session pointed at a listener, which shows the request and then
 fails, against the router's own upstream. *That settles headers and HTTP version factually and
 leaves TLS, which sits below HTTP and cannot be read this way.*
+
+## Both variables came back negative, and the meter's values arrived
+
+**Run 2026-09-18 12:13 UTC, HTTP/2 on and `accept-encoding` relayed.** *Both exonerated.*
+
+***And the run is the cleanest statement of the defect yet, because one model does both things in
+the same seconds:***
+
+| `claude-opus-5`, same session | |
+|---|---|
+| **streamed** — 5 calls, up to 212 KB | **all `ok`** |
+| **non-streamed** — 6 calls | **all `429`** |
+
+*So it is not the model, not the size, not the credential, not the moment. `claude-sonnet-5`
+contributes five more non-streamed 429s at 128 KB.*
+
+### The meter had headroom, and this is the sentence the upstream issues need
+
+**The control fired on a `/v1/messages` 200 at 12:13:39 — twenty-two seconds before five
+rejections on the same connection** — and the buckets read:
+
+| | |
+|---|---|
+| `unified-status` | **`allowed`** |
+| `5h-utilization` · `5h-status` | **0.52** · `allowed` |
+| `7d-utilization` · `7d-status` | **0.59** · `allowed` |
+| `fallback-percentage` | 0.5 |
+| `overage-status` · `-disabled-reason` | `rejected` · `org_level_disabled_until` |
+
+***Every bucket says `allowed`, at 52% and 59%.*** **So the 429 is not quota exhaustion, and that
+is now measured rather than argued.** *Frozen as `evidence/unified-meter-values-2026-09-18.txt`,
+with the five rejections that followed it in the same file.*
+
+**`overage-status=rejected` is noted and not leaned on.** *Overage is spending beyond the
+subscription allowance and it is disabled at org level — but utilization is nowhere near a limit,
+so nothing yet connects it to a rejection. Recorded because it is the only value in the set that
+reads like a refusal.*
+
+### The prefix catch earned its place a second time
+
+**`anthropic-ratelimit-unified-fallback` appeared at 12:13 and was not in the 11:19 sample of the
+same account.** *A list frozen an hour earlier was already one short.* Added on the same test as
+the other eleven — it sits in the metering family beside `-fallback-percentage` and its name says
+what kind of thing it is, which is exactly what `-representative-claim` still does not.
+
+### What is left
+
+**`accept-encoding` and HTTP/2 are both out.** Remaining: **the TLS fingerprint** — Python/httpx
+against Node, which sits below HTTP and cannot be read off a plaintext capture — **the re-derived
+`host` and `content-length`**, and ***whatever Claude Code itself does differently when
+`ANTHROPIC_BASE_URL` points somewhere that is not Anthropic***, which this phase has not considered
+until now and which no amount of router-side flipping can reach.
+
+***That last one is the reason to stop flipping variables.*** Four hypotheses have cost four
+sessions and eliminated two. **The byte capture replaces the rest with a diff**, and it can be done
+in two halves: the router already *receives* what Claude Code sends it, so that half costs a log
+line; the direct half needs one throwaway session pointed at a listener.

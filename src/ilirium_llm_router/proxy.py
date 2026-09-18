@@ -125,6 +125,11 @@ RECORDED_RESPONSE_HEADERS = frozenset(
         "anthropic-ratelimit-unified-7d-reset",
         "anthropic-ratelimit-unified-7d-utilization",
         "anthropic-ratelimit-unified-fallback-percentage",
+        # Appeared on 2026-09-18 at 12:13 and NOT in the 11:19 sample of the same account, which is
+        # the prefix catch doing its job a second time. Added on the same test as the eleven above:
+        # it sits in the metering family beside `-fallback-percentage` and cannot plausibly hold a
+        # credential. Unlike `-representative-claim`, its name says what kind of thing it is.
+        "anthropic-ratelimit-unified-fallback",
         "anthropic-ratelimit-unified-overage-status",
         "anthropic-ratelimit-unified-overage-disabled-reason",
         # `anthropic-ratelimit-unified-representative-claim` is DELIBERATELY NOT HERE. It was seen
