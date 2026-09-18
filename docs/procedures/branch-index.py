@@ -229,6 +229,24 @@ DESCRIPTIONS: dict[str, tuple[int | None, int | None, str]] = {
         "caught by any instrument the phase built** while every check was green. Three of the 23 "
         "are checks that passed while testing nothing.",
     ),
+    "feat/phase-14-rate-limit-headers": (
+        2,
+        14,
+        "Recording Anthropic's `retry-after` and `anthropic-ratelimit-*` response headers — "
+        "`BKL-0034`, the reversal of the refusal `BKL-0037`. **Reshaped by the owner on 2026-09-18 "
+        "from an instrument into a diagnosis**: Claude Code's auto mode cannot run its safety "
+        "classifier through the router, because the classifier's request omits `stream` and every "
+        "non-streamed `/v1/messages` comes back `429`. The phase's first finding cost no code and "
+        "no request — **the corpus already held the failing bodies**, three weeks after the "
+        "traffic: the classifier identified by its own system prompt, Claude Code's 311-byte "
+        "`quota` probe as a second casualty, and **every rejection carrying a distinct Anthropic "
+        "`request_id`**, which rules the router out by a stronger route than `BUG-001`'s timing "
+        "argument. The instrument is an explicit seventeen-name allowlist logged at `WARNING`, "
+        "with unlisted `anthropic-ratelimit-*` headers recorded **by name and never by value** — "
+        "a name cannot carry a credential and a value can. **Where the headers durably live is "
+        "deferred**, not skipped: the milestone's `calls.csv` non-goal stands until the owner "
+        "moves it, and the measurement comes first.",
+    ),
     "docs/idm-and-claude-md": (
         2,
         None,
