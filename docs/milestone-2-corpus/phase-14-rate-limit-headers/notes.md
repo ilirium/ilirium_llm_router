@@ -646,3 +646,59 @@ reproducing Bun's BoringSSL build**, which is far outside what this router is.
 
 ***So this line is closed: the hypothesis is plausible, unfalsifiable from this machine, and its fix
 is unavailable.***
+
+## The BoringSSL forwarder — testing the last hypothesis at all
+
+**`evidence/boringssl-forwarder.py`**, built 2026-09-18 on the owner's suggestion of `curl_cffi`
+over a Bun sidecar. *It is the cheaper of the two and it tests a different rule.*
+
+```
+Claude Code -> router -> http://127.0.0.1:<port> (forwarder) -> TLS(chrome) -> api.anthropic.com
+```
+
+**Nothing in the router changes** — `proxy.py` is untouched and this is not on its import path. One
+`base_url` line in the owner's config, and **the credential travels the localhost hop it already
+travels.**
+
+### The fingerprint gate, run before building it
+
+***`curl_cffi` is in the same TLS family as Claude Code and the router is not.***
+
+| vs Claude Code | `curl_cffi` chrome | the router today |
+|---|---|---|
+| Cipher suites shared | **15 of 17, same relative order** | 9 of 17, wrong order |
+| Claude Code's extensions missing | **none — a superset** | two |
+| Supported groups | **identical** | different, 8 against 4 |
+
+**It is not Claude Code's hash and is not meant to be** — `e14cbc3e…` against `5260242a…`, because
+Chrome adds cert compression, ALPS and encrypted-ClientHello that a bare BoringSSL build does not.
+
+| It passes | It fails |
+|---|---|
+| a bot score against **scripted-client** stacks | an **allowlist** of Claude Code's own hash |
+
+*Both outcomes are informative, and a negative one leaves the Bun sidecar as the only way to match
+exactly.*
+
+### And it settles the identification the earlier correction muddled
+
+***Claude Code's hello is BoringSSL-shaped, and the first guess was right for the wrong reason.***
+Same cipher ordering, the same four groups, `status_request` and `SCT` present,
+`encrypt_then_mac` absent — **BoringSSL without Chrome's browser extras**, which is what a Bun build
+produces. *This phase said "Node → BoringSSL", corrected itself to "Node bundles OpenSSL" — true,
+and the machine has no Node — and the measurement then landed back on BoringSSL by a different
+route.*
+
+### Streaming was verified rather than assumed
+
+***A forwarder that buffers would break every streamed call and turn `ttfb_ms` into a measurement of
+itself.*** Checked against a local SSE origin emitting five events 0.4 s apart, with no Anthropic
+traffic at all — `FORWARDER_UPSTREAM` exists for exactly that:
+
+```
++0.07s data: {"n":0}   +0.47s {"n":1}   +0.87s {"n":2}   +1.27s {"n":3}   +1.67s {"n":4}
+```
+
+**Chunk for chunk, spacing preserved.** *`stream=True` on `AsyncSession.request` and
+`aiter_content()` — the API was inspected rather than guessed, after this phase spent two rounds on
+instruments that looked right and measured nothing.*
