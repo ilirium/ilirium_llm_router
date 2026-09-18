@@ -108,6 +108,21 @@ MUTATIONS = [
         why="a session opening with 429s -- the real one did -- never samples a success",
     ),
     Mutation(
+        name="the representative-claim value is recorded after all",
+        old='        "anthropic-ratelimit-unified-overage-disabled-reason",',
+        new='        "anthropic-ratelimit-unified-overage-disabled-reason",\n'
+        '        "anthropic-ratelimit-unified-representative-claim",',
+        expect_failing="test_the_representative_claim_is_named_but_its_value_withheld",
+        why="a value nobody has established the contents of would start being written down",
+    ),
+    Mutation(
+        name="the unified family falls back out of the allowlist",
+        old='        "anthropic-ratelimit-unified-status",',
+        new='        "anthropic-ratelimit-unified-status-NOPE",',
+        expect_failing="test_the_unified_family_is_recorded_with_its_values",
+        why="the only family a subscription credential is actually metered by stops being valued",
+    ),
+    Mutation(
         name="the sample skips the allowlist",
         # Anchored on the success line's own wording: the call to `describe_headers` is identical
         # at both sites, and a mutation that matches twice is refused rather than guessed at.

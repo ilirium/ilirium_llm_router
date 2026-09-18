@@ -109,6 +109,29 @@ RECORDED_RESPONSE_HEADERS = frozenset(
         # known from here and neither can hold a secret.
         "request-id",
         "anthropic-request-id",
+        # The UNIFIED family, which is what a subscription credential is actually metered by.
+        # Discovered 2026-09-18 by the prefix catch below: the twelve above it are the documented
+        # API-key buckets and NOT ONE of them arrives on an OAuth token, so a list built from the
+        # documentation alone would have recorded nothing and looked correct doing it.
+        "anthropic-ratelimit-unified-status",
+        "anthropic-ratelimit-unified-reset",
+        "anthropic-ratelimit-unified-5h-status",
+        "anthropic-ratelimit-unified-5h-reset",
+        "anthropic-ratelimit-unified-5h-utilization",
+        "anthropic-ratelimit-unified-7d-status",
+        "anthropic-ratelimit-unified-7d-reset",
+        "anthropic-ratelimit-unified-7d-utilization",
+        "anthropic-ratelimit-unified-fallback-percentage",
+        "anthropic-ratelimit-unified-overage-status",
+        "anthropic-ratelimit-unified-overage-disabled-reason",
+        # `anthropic-ratelimit-unified-representative-claim` is DELIBERATELY NOT HERE. It was seen
+        # alongside the eleven above and its name does not say what it holds -- "claim" is the
+        # vocabulary of tokens and assertions, not of counters. The eleven are plainly a status, a
+        # timestamp or a number; this one is not plainly anything.
+        #
+        # It keeps being reported BY NAME through the prefix catch, so it is not lost and not
+        # forgotten -- it is waiting for somebody to find out what is in it. Adding a name to this
+        # list is one line; taking a value back out of a log file is not.
     }
 )
 

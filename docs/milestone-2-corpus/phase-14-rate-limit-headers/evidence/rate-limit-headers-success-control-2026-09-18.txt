@@ -1,0 +1,23 @@
+# The control: what a SUCCESSFUL reply carries, measured 2026-09-18
+
+Claude Code 2.1.267 - router 0.1.0 - backend anthropic - credential forward (OAuth subscription)
+Second run, 11:19:50 UTC. Verbatim from logs/telemetry/router.log.
+
+2026-09-18T11:20:21.813+00:00  INFO     anthropic replied 200 to /v1/messages, sampling rate-limit headers once: request-id=req_redacted0000000000000014
+    anthropic-ratelimit-unified-5h-reset=<unlisted>
+    anthropic-ratelimit-unified-5h-status=<unlisted>
+    anthropic-ratelimit-unified-5h-utilization=<unlisted>
+    anthropic-ratelimit-unified-7d-reset=<unlisted>
+    anthropic-ratelimit-unified-7d-status=<unlisted>
+    anthropic-ratelimit-unified-7d-utilization=<unlisted>
+    anthropic-ratelimit-unified-fallback-percentage=<unlisted>
+    anthropic-ratelimit-unified-overage-disabled-reason=<unlisted>
+    anthropic-ratelimit-unified-overage-status=<unlisted>
+    anthropic-ratelimit-unified-representative-claim=<unlisted>
+    anthropic-ratelimit-unified-reset=<unlisted>
+    anthropic-ratelimit-unified-status=<unlisted>
+
+--
+Read against rate-limit-headers-2026-09-18.txt, which is the same instrument on the 429s:
+  success: 12 anthropic-ratelimit-unified-* headers
+  429:      0 rate-limit headers of any family

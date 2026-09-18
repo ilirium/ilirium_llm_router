@@ -62,7 +62,8 @@ through `relay` — so one hook covers all four.
 
 ## Tasks 3–5 — the instrument
 
-**`RECORDED_RESPONSE_HEADERS`, seventeen exact names, plus a prefix catch that records names only.**
+**`RECORDED_RESPONSE_HEADERS`, plus a prefix catch that records names only.** *It opened at
+seventeen names and is twenty-eight now; the count lives in the plan's register, not here.*
 
 ***The prefix catch is this plan's own judgement and is marked unratified in the settled table.***
 The tension it resolves: an allowlist of exact names is the safe thing, and it is also **silently
@@ -94,19 +95,33 @@ that an allowlisted value is present, so it cannot pass by logging nothing.
 
 ## Verified by
 
-- **`uv run pytest`** — **454 passed**, 2026-09-18, in this worktree. *The trunk's count was 448;
-  this phase adds 6.*
+***This section has gone stale twice in one day, both times within hours of being written, and both
+times because the work moved rather than because it was written carelessly.*** *It is the section
+that is read as the phase's sign-off, so it is rewritten rather than appended to. The two superseded
+readings are named at the bottom rather than deleted.*
+
+- **`uv run pytest`** — **460 passed**, 2026-09-18, against the committed `config.yaml`. *The
+  trunk's count was 448; this phase adds 12.*
 - **`make lint`** — clean at the pinned `0.16.1`. *Five `SIM117` nested-`with` findings were fixed
-  rather than ignored; the mutation check was re-run afterwards and still caught 6/6.*
-- **`evidence/mutation-check.py`** — 6/6, exit 0.
-- **Driven against the real thing, 2026-09-18**, by the owner: one Claude Code session, auto mode
-  on, Claude Code **2.1.267**. **It produced the finding** — see Tasks 7–9 below. *This bullet read
-  "Not yet driven against the real thing" until the session ran, three hours after it was written;
-  corrected rather than left, because a "Verified by" line that disagrees with the section under it
-  is the exact defect `status.md` records having carried for thirteen days.*
-- **One control is still not run**, and it bounds the finding rather than decorating it: whether a
-  **successful** reply carries `anthropic-ratelimit-*` headers on this credential. Tasks 7–9 say why
-  it matters and what it would cost.
+  rather than ignored, and the mutation check was re-run afterwards.*
+- **`evidence/mutation-check.py`** — **12/12, exit 0.**
+- **Driven against the real thing twice, 2026-09-18**, by the owner — **Claude Code 2.1.267**. The
+  first run produced the failure measurement; the second produced the control. **Both are frozen in
+  `evidence/`, and together they are the finding.**
+- **One value is deliberately not measured**, and that is a decision rather than a gap:
+  `anthropic-ratelimit-unified-representative-claim`. It is recorded by name only until somebody
+  establishes what it holds.
+- **`config.yaml` carries an uncommitted local override in this worktree** — the corpus switched on,
+  which is how the two runs above captured bodies. **`test_template_matches_the_repository_config`
+  is red while it is in place**, by design: that test compares the shipped starter against the
+  repository's own config, and it is the only thing stopping a new user's template drifting. *The
+  460 above is measured against the committed file.*
+
+*What this section said before, kept because the corrections are the interesting part:* it read
+**"Not yet driven against the real thing"** until the first session ran, and then **"One control is
+still not run"** until the second did. *Both were true when written and false within hours. The
+second is the one worth noticing — it named the missing control precisely enough that running it was
+obvious, which is the only reason the control exists.*
 
 ## Tasks 7–9 — the measurement, and what it does and does not settle
 
@@ -165,3 +180,51 @@ report.*
 **The control is small and is not yet built:** log the rate-limit headers of the **first successful
 reply per process**, once, at `INFO`. One short run then answers it, and the file is not drowned.
 *Proposed to the owner on 2026-09-18 rather than built — `CLAUDE.md`, propose before implementing.*
+
+## The control ran, and it closes the gap the section above left open
+
+**Second run, 2026-09-18 11:19:50 UTC, same versions.** One successful call was enough. Frozen as
+`evidence/rate-limit-headers-success-control-2026-09-18.txt`.
+
+**A successful reply carries twelve rate-limit headers. The 429s carried none.** Same credential,
+same afternoon, minutes apart.
+
+| | Rate-limit headers |
+|---|---|
+| `200` on `/v1/messages` | **12**, the whole `anthropic-ratelimit-unified-*` family |
+| `429` on `/v1/messages`, twelve of them | **0** |
+
+***So the assumption named in the section above is now measured, and it held.*** Anthropic does
+meter this credential, does report the meter on every successful call, and **said `rate_limit_error`
+while reporting nothing at all.** *`BUG-001` can stop hedging: it is not reconstruction any more.*
+
+### The allowlist was wrong and the prefix catch is the only reason anyone knows
+
+***Not one of the twelve documented bucket names arrived.*** `anthropic-ratelimit-requests-*`,
+`-tokens-*`, `-input-tokens-*`, `-output-tokens-*` — **zero of them, on a successful call.** A
+subscription credential is metered by a different family entirely: `anthropic-ratelimit-unified-*`,
+with a 5-hour and a 7-day window, a utilization percentage, an overage status and a fallback
+percentage.
+
+**An allowlist built from the documentation would have recorded nothing and looked correct doing
+it.** The control line would have read `request-id=…` and stopped, and the conclusion drawn from it
+would have been *"a successful reply carries no rate-limit headers either, so the 429's silence
+means nothing"* — **the exact opposite of the truth, reached through a green instrument.**
+
+***This is the unratified position from the settled table earning its place.*** It was argued for on
+the grounds that *"an exact list is silently wrong the day Anthropic adds a bucket"*. **It was
+already wrong on the day it was written**, and the catch is what said so. *The argument was right
+for a reason weaker than the real one: the risk is not that the list goes stale, it is that a list
+copied from documentation never matched this credential at all.*
+
+### What was added, and the one thing deliberately not added
+
+**Eleven of the twelve are now named and will be recorded with their values.** The twelfth,
+`anthropic-ratelimit-unified-representative-claim`, is **held back on purpose**: *"claim" is the
+vocabulary of tokens and assertions, not of counters*, and nobody here has established what it
+holds. **It keeps being reported by name**, so it is neither lost nor forgotten — it is waiting for
+somebody to find out. *Adding a name to the list is one line; taking a value back out of a log file
+is not.*
+
+**Twelve mutations, twelve caught**, including one that adds `representative-claim` to the list and
+one that drops the unified family back out of it.

@@ -622,3 +622,44 @@ def test_a_reply_with_no_rate_limit_headers_still_samples(
 
     sampled = [m for m in caplog.messages if "sampling rate-limit headers" in m]
     assert len(sampled) == 1 and "(none)" in sampled[0]
+
+
+# Discovered 2026-09-18: a subscription credential is metered by `anthropic-ratelimit-unified-*`,
+# and not one of the documented API-key bucket names ever arrives on it.
+
+UNIFIED = {
+    "anthropic-ratelimit-unified-status": "allowed",
+    "anthropic-ratelimit-unified-5h-utilization": "31",
+    "anthropic-ratelimit-unified-7d-status": "allowed",
+    "anthropic-ratelimit-unified-representative-claim": "whatever-this-is",
+}
+
+
+def test_the_unified_family_is_recorded_with_its_values(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    upstream = Upstream(streamed(200, headers=UNIFIED))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    line = "\n".join(caplog.messages)
+    assert "anthropic-ratelimit-unified-status=allowed" in line
+    assert "anthropic-ratelimit-unified-5h-utilization=31" in line
+    assert "anthropic-ratelimit-unified-7d-status=allowed" in line
+
+
+def test_the_representative_claim_is_named_but_its_value_withheld(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Its name is not the vocabulary of counters, and nobody has established what it holds.
+
+    Held back on purpose rather than by oversight: adding a name to the allowlist is one line,
+    and taking a value back out of a log file is not.
+    """
+    upstream = Upstream(streamed(200, headers=UNIFIED))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    line = "\n".join(caplog.messages)
+    assert "anthropic-ratelimit-unified-representative-claim=<unlisted>" in line
+    assert "whatever-this-is" not in line

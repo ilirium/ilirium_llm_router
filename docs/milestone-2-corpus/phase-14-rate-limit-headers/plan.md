@@ -155,9 +155,26 @@ against the real credential. The plan stops at its boundary and says so.
 | `anthropic-ratelimit-output-tokens-limit` · `-remaining` · `-reset` | The output bucket |
 | `request-id` · `anthropic-request-id` | ~~❓~~ **In, both spellings. Closed at Task 2.** The id is in the error *body*, which is how this session identified the 429 as Anthropic's own — but **the body is only on disk when the corpus is enabled, and it is off by default.** The log line has to stand on its own, so the id is worth its row. Both spellings because which one arrives is not known from here, and neither can carry a secret |
 
-*Seventeen names. **`authorization`, `x-api-key` and `set-cookie` are named here as the things the
-list exists to exclude** — a response carries no credential today and the allowlist is what keeps
-that true when one day it does.*
+**And the family that is actually used — added 2026-09-18, after the control measured it.**
+
+| | |
+|---|---|
+| `anthropic-ratelimit-unified-status` · `-reset` | The overall meter |
+| `anthropic-ratelimit-unified-5h-status` · `-5h-reset` · `-5h-utilization` | The 5-hour window |
+| `anthropic-ratelimit-unified-7d-status` · `-7d-reset` · `-7d-utilization` | The 7-day window |
+| `anthropic-ratelimit-unified-fallback-percentage` | |
+| `anthropic-ratelimit-unified-overage-status` · `-overage-disabled-reason` | |
+| `anthropic-ratelimit-unified-representative-claim` | ❓ **and deliberately left open.** Seen on every successful reply and **not added** — *"claim" is the vocabulary of tokens and assertions, not of counters*, and nobody here has established what it holds. **It is reported by name through the prefix catch**, so it is neither lost nor forgotten. *Adding a name is one line; taking a value back out of a log file is not.* **This `❓` closes when somebody finds out, not when the phase ends** |
+
+***Twenty-eight names, and the first seventeen were the wrong ones.*** **Not one of the documented
+API-key buckets arrives on a subscription credential** — measured 2026-09-18, on a successful reply
+carrying twelve `unified` headers and zero of the documented ones. *An allowlist built from the
+documentation would have recorded nothing and looked correct doing it; the prefix catch is the only
+reason anybody knows.*
+
+***`authorization`, `x-api-key` and `set-cookie` are named here as the things the list exists to
+exclude*** — a response carries no credential today and the allowlist is what keeps that true when
+one day it does.*
 
 ### Functions and classes
 
