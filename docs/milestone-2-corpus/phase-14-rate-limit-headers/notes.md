@@ -768,3 +768,43 @@ one phase*** — after the allowlist that would have reported nothing on a subsc
 and the latch spent on `/api/hello`. **All three were instruments built to prevent a wrong
 reading.** *The pattern worth naming: each one tested the thing it was pointed at and none tested
 whether it was pointed at the right thing.*
+
+## A Chrome fingerprint changes nothing either
+
+**Run 2026-09-18 13:41 UTC, through the BoringSSL forwarder with the corrected attribution header.**
+*15 non-streamed `/v1/messages` rejected, 7 streamed `ok`, one `client_disconnect`.* **Unchanged.**
+
+***Verified to have gone through the forwarder and reached Anthropic***, not to have died locally:
+the rejections carry Anthropic `request_id`s — `req_redacted0000000000000023` — and a 200 came back
+through the same hop carrying the full `unified` meter.
+
+**So the bot-score hypothesis is eliminated.** *A TLS handshake that is genuinely
+indistinguishable from Chrome's — BoringSSL family, a superset of Claude Code's extensions, an
+identical group list — is rejected exactly as Python's was.*
+
+**And it clears the doubt the malformed header left**, from the other direction: this run carried a
+**legal** attribution header and was rejected too, so the earlier negative was not an artefact of
+the trailing space.
+
+### Eleven hypotheses, all eliminated by measurement
+
+`accept-encoding` · HTTP/2 · a dropped header · an added header · the `anthropic-beta` list · the
+withheld attribution headers · quota exhaustion · request size · the model · the router inventing
+the rejection · **a non-browser TLS fingerprint**.
+
+### What is left is one test and one unknown
+
+**The exact-fingerprint allowlist.** `curl_cffi` is not Claude Code's hash — it carries cert
+compression, ALPS and encrypted ClientHello that a bare BoringSSL build does not. **Only Bun's own
+build could match**, and *even that is not certain: Bun's `fetch` need not fingerprint identically to
+the Claude Code binary.* **A second forwarder, a runtime to install, and a maybe.**
+
+**And a possibility nothing here has touched:** *connection reuse.* Claude Code direct may put the
+classifier on an HTTP/2 connection that already carried a successful conversation; the router and
+the forwarder pool their own. **Named because it is untested, not because there is evidence for
+it.**
+
+***This is where the diagnosis stops being worth the owner's sessions.*** **Every earlier experiment
+eliminated something; this one eliminated the last cheap thing.** *What the phase has instead is an
+instrument that works, eleven eliminated hypotheses, and an evidence package neither upstream issue
+has.*
