@@ -148,6 +148,35 @@ MUTATIONS = [
         expect_failing="test_a_non_streamed_request_relays_the_callers_own_accept_encoding",
         why="the experiment silently stops running while still looking like it does",
     ),
+    # The imitation experiment, 2026-09-18.
+    Mutation(
+        name="the imitation is sent to LM Studio too",
+        old='            + (imitation_headers(request) if name == "anthropic" else []),',
+        new="            + imitation_headers(request),",
+        expect_failing="test_the_imitation_never_reaches_lmstudio",
+        why="a local backend is handed client attribution it has no use for",
+    ),
+    Mutation(
+        name="the imitation overrides what the caller sent",
+        old='    if "x-anthropic-billing-header" not in present:',
+        new="    if True:",
+        expect_failing="test_the_imitation_never_overrides_what_the_caller_sent",
+        why="a client that sends its own attribution has it silently replaced",
+    ),
+    Mutation(
+        name="an unrecognised client is imitated anyway",
+        old="    if match is None:",
+        new="    if False:",
+        expect_failing="test_an_unrecognised_client_is_not_imitated",
+        why="a guessed shape is sent for a client nothing has ever measured",
+    ),
+    Mutation(
+        name="cc_prompt_id becomes a constant",
+        old="            f\"cc_prompt_id={uuid.uuid4()}; \"",
+        new='            f"cc_prompt_id=00000000-0000-0000-0000-000000000000; "',
+        expect_failing="test_each_call_gets_its_own_prompt_id",
+        why="per-prompt on the direct path, so a constant is a visible tell",
+    ),
     # The arriving-request sampler, 2026-09-18.
     Mutation(
         name="the arriving sampler logs every header by value",

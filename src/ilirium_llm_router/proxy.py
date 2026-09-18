@@ -26,6 +26,8 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import re
+import uuid
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 
@@ -382,7 +384,11 @@ class Proxy:
         outgoing = self.client.build_request(
             request.method,
             target_url(backend.base_url, request),
-            headers=outgoing_headers(request, backend, self.api_keys.get(name), call.stream),
+            headers=outgoing_headers(request, backend, self.api_keys.get(name), call.stream)
+            # Anthropic only: the attribution is about Claude Code's relationship with its own
+            # backend and means nothing to LM Studio, which would just be handed client details it
+            # has no use for.
+            + (imitation_headers(request) if name == "anthropic" else []),
             content=body,
             timeout=backend_timeout(backend),
         )
@@ -687,6 +693,59 @@ def describe_headers(recorded: dict[str, str], unlisted: list[str]) -> str:
     parts = [f"{name}={value}" for name, value in sorted(recorded.items())]
     parts += [f"{name}=<unlisted>" for name in sorted(set(unlisted))]
     return " ".join(parts) if parts else "(none)"
+
+
+# `claude-cli/2.1.267 (external, sdk-cli)` -> version `2.1.267`, entrypoint `sdk-cli`.
+USER_AGENT_SHAPE = re.compile(r"claude-cli/(?P<version>[0-9][^ ]*) \(external, (?P<entry>[^)]+)\)")
+
+# Observed on the direct path and unexplained: the billing header's version carries a `.0a3` suffix
+# the user-agent's does not. Copied rather than invented, and named here so it is visibly a guess.
+BILLING_VERSION_SUFFIX = "0a3"
+
+
+def imitation_headers(request: Request) -> list[tuple[bytes, bytes]]:
+    """The headers Claude Code sends Anthropic directly and WITHHOLDS from a custom base URL.
+
+    **PHASE 14 EXPERIMENT, 2026-09-18, on the owner's instruction.** Measured that day: pointed at
+    `api.anthropic.com` the client computes
+
+        x-anthropic-billing-header: cc_version=2.1.267.0a3; cc_entrypoint=sdk-cli; cch=00000;
+                                    cc_prompt_id=<uuid>
+
+    and pointed at the router it computes the same line truncated after `cc_entrypoint` **and does
+    not send it at all** — confirmed twice, interactive and `-p`, against the router's own capture
+    of the twenty-one headers that do arrive. `x-client-request-id` is withheld the same way.
+
+    **This is imitation and the word is used deliberately.** It makes the router's request carry
+    what the owner's own client would have carried on his own account for his own traffic. It is
+    also, if Anthropic withholds these on purpose, a way around something intentional — which is why
+    it was put to the owner as a decision before being built rather than offered as a fix.
+
+    **What it cannot imitate: the TLS fingerprint.** Python's `ssl` does not expose extension
+    ordering, so a JA3/JA4 match needs a different HTTP stack. If the discriminator is below HTTP
+    this changes nothing, and that is the more likely half of the remaining hypothesis space.
+
+    **Nothing is overridden.** A header the caller already sent is left alone; this only fills gaps.
+    """
+    present = {name.decode("latin-1").lower() for name, _ in request.headers.raw}
+    match = USER_AGENT_SHAPE.match(request.headers.get("user-agent", ""))
+    if match is None:
+        # Not a client we have measured, so there is no shape to imitate and guessing one would be
+        # worse than sending nothing.
+        return []
+
+    added: list[tuple[bytes, bytes]] = []
+    if "x-anthropic-billing-header" not in present:
+        billing = (
+            f"cc_version={match['version']}.{BILLING_VERSION_SUFFIX}; "
+            f"cc_entrypoint={match['entry']}; "
+            f"cch=00000; "
+            f"cc_prompt_id={uuid.uuid4()}; "
+        )
+        added.append((b"x-anthropic-billing-header", billing.encode("latin-1")))
+    if "x-client-request-id" not in present:
+        added.append((b"x-client-request-id", str(uuid.uuid4()).encode("latin-1")))
+    return added
 
 
 def describe_request_headers(request: Request) -> str:

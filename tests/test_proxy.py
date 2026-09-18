@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import logging
+import uuid
 
 import httpx
 import pytest
@@ -817,3 +818,59 @@ def test_the_probe_endpoint_does_not_spend_the_arrival_latch(
         client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
 
     assert len([m for m in caplog.messages if m.startswith("arriving")]) == 1
+
+
+# Phase 14 experiment: imitating what Claude Code withholds from a custom base URL.
+
+def test_the_withheld_attribution_headers_are_supplied_to_anthropic() -> None:
+    upstream = Upstream()
+    with running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    sent = upstream.received.headers
+    assert sent["x-anthropic-billing-header"].startswith(
+        "cc_version=2.1.212.0a3; cc_entrypoint=sdk-cli; cch=00000; cc_prompt_id="
+    )
+    assert uuid.UUID(sent["x-client-request-id"])  # a real uuid, not a placeholder
+
+
+def test_the_imitation_never_reaches_lmstudio() -> None:
+    """The attribution is about Claude Code and Anthropic. LM Studio has no use for any of it."""
+    upstream = Upstream()
+    with running(upstream) as client:
+        client.post("/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert "x-anthropic-billing-header" not in upstream.received.headers
+    assert "x-client-request-id" not in upstream.received.headers
+
+
+def test_the_imitation_never_overrides_what_the_caller_sent() -> None:
+    """Only gaps are filled. A client that sends its own attribution keeps it."""
+    upstream = Upstream()
+    headers = {**CLAUDE_CODE_HEADERS, "x-anthropic-billing-header": "cc_version=theirs;"}
+    with running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=headers)
+
+    assert upstream.received.headers["x-anthropic-billing-header"] == "cc_version=theirs;"
+
+
+def test_an_unrecognised_client_is_not_imitated() -> None:
+    """No measured shape, so nothing to imitate -- and a guessed one is worse than none."""
+    upstream = Upstream()
+    headers = {**CLAUDE_CODE_HEADERS, "user-agent": "curl/8.4.0"}
+    with running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=headers)
+
+    assert "x-anthropic-billing-header" not in upstream.received.headers
+
+
+def test_each_call_gets_its_own_prompt_id() -> None:
+    """`cc_prompt_id` is per prompt on the direct path, so a constant would be a visible tell."""
+    seen = set()
+    upstream = Upstream()
+    with running(upstream) as client:
+        for _ in range(3):
+            upstream.reply = streamed()
+            client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+            seen.add(upstream.requests[-1].headers["x-anthropic-billing-header"])
+    assert len(seen) == 3
