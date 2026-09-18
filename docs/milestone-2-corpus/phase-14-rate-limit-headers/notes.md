@@ -435,3 +435,60 @@ the exact defect Phase 13 shipped: its harness never applied its mutations and l
 a clean run.* Re-anchored on the line above it.
 
 **Nineteen mutations, nineteen caught.**
+
+## The capture landed, and it exonerates the HTTP request entirely
+
+**Run 2026-09-18 12:40 UTC.** Both shapes sampled. Frozen as
+`evidence/arriving-request-headers-2026-09-18.txt`.
+
+### What Claude Code sends the two shapes
+
+***Byte-identical except `anthropic-beta`.*** Same twenty-one headers, same order, same values.
+
+| Shape | `anthropic-beta` |
+|---|---|
+| **non-streamed** (429) | **9** entries |
+| **streamed** (`ok`) | **13** — the same 9, plus `mid-conversation-tool-changes`, `advisor-tool`, `effort`, `structured-outputs` |
+
+**That difference is Claude Code's own and exists on the direct path too**, so it cannot be what the
+router does — *but it is not nothing, and the reason is in the next section.*
+
+### What the router forwards
+
+***Nothing is dropped and nothing is added.*** Computed rather than measured — `outgoing_headers`
+is a pure function, so the arriving list was fed through it and through
+`httpx.build_request` without needing another session:
+
+| | |
+|---|---|
+| Dropped by the router | **none** |
+| Added by the router | **none** |
+
+*`host` and `content-length` are re-derived to the correct values and `connection` is re-added by
+httpx, which is what those three are for.* **Every other header arrives upstream exactly as Claude
+Code wrote it, in the order it wrote it.**
+
+### So the HTTP request is not the difference, and that is a real conclusion
+
+**Four hypotheses have now been eliminated:** `accept-encoding`, HTTP/2, a dropped header, an added
+header. **The request the router sends is the request Claude Code would have sent.**
+
+***What is left is below HTTP.*** The leading candidate is the **TLS fingerprint** — Python/httpx
+over OpenSSL against Node over BoringSSL — which cannot be changed by header work and cannot be read
+off a plaintext capture.
+
+**A rule of the shape *"this client is not the official one AND the body says `stream:false`"*
+would fit every observation this phase has made**, including the one that has been hardest to
+place: *why streamed calls are untouched.* **Stated as a hypothesis with no evidence behind it yet**
+— it is consistent with the data rather than shown by it.
+
+### The two things worth doing next, and neither is another header flip
+
+1. ***Try an API key instead of the subscription token.*** `credential: inject` and `api_key_env`
+   already exist in the config and need no code. **If the 429 disappears, the rule is about
+   subscription credentials reaching Anthropic from something that is not Claude Code** — which is
+   both the answer and a workaround. *If it persists, that whole class is out.*
+2. **The throwaway capture is still worth one session**, for a reason this run created rather than
+   settled: **it would show whether Claude Code sends the same `anthropic-beta` list when it talks
+   to Anthropic directly.** *This phase has been assuming the client behaves identically whatever
+   `ANTHROPIC_BASE_URL` points at, and that assumption has never been checked.*

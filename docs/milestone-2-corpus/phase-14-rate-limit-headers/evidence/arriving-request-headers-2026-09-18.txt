@@ -1,0 +1,21 @@
+# What Claude Code sends the router, by request shape - 2026-09-18 12:40 UTC
+
+Claude Code 2.1.267 - router 0.1.0 - OAuth subscription.
+Values shown only for the seven allowlisted names; everything else is <unlisted> by rule.
+
+2026-09-18T12:40:24.307+00:00  INFO     arriving non-streamed request to /v1/messages: http/1.1 accept=application/json authorization=<unlisted> content-type=application/json user-agent=claude-cli/2.1.267 (external, cli) x-claude-code-session-id=<unlisted> x-stainless-arch=<unlisted> x-stainless-lang=<unlisted> x-stainless-os=<unlisted> x-stainless-package-version=<unlisted> x-stainless-retry-count=<unlisted> x-stainless-runtime=<unlisted> x-stainless-runtime-version=<unlisted> x-stainless-timeout=<unlisted> anthropic-beta=claude-code-20250219,oauth-2025-04-20,context-1m-2025-08-07,interleaved-thinking-2025-05-14,redact-thinking-2026-02-12,thinking-token-count-2026-05-13,context-management-2025-06-27,prompt-caching-scope-2026-01-05,mid-conversation-system-2026-04-07 anthropic-dangerous-direct-browser-access=<unlisted> anthropic-version=2023-06-01 x-app=cli connection=<unlisted> host=<unlisted> accept-encoding=gzip, deflate, br, zstd content-length=<unlisted>
+2026-09-18T12:40:30.992+00:00  INFO     arriving streamed request to /v1/messages: http/1.1 accept=application/json authorization=<unlisted> content-type=application/json user-agent=claude-cli/2.1.267 (external, cli) x-claude-code-session-id=<unlisted> x-stainless-arch=<unlisted> x-stainless-lang=<unlisted> x-stainless-os=<unlisted> x-stainless-package-version=<unlisted> x-stainless-retry-count=<unlisted> x-stainless-runtime=<unlisted> x-stainless-runtime-version=<unlisted> x-stainless-timeout=<unlisted> anthropic-beta=claude-code-20250219,oauth-2025-04-20,context-1m-2025-08-07,interleaved-thinking-2025-05-14,redact-thinking-2026-02-12,thinking-token-count-2026-05-13,context-management-2025-06-27,prompt-caching-scope-2026-01-05,mid-conversation-system-2026-04-07,mid-conversation-tool-changes-2026-07-01,advisor-tool-2026-03-01,effort-2025-11-24,structured-outputs-2025-12-15 anthropic-dangerous-direct-browser-access=<unlisted> anthropic-version=2023-06-01 x-app=cli connection=<unlisted> host=<unlisted> accept-encoding=gzip, deflate, br, zstd content-length=<unlisted>
+
+-- THE ONLY DIFFERENCE between the two shapes is anthropic-beta:
+   non-streamed (429):  9 entries
+   streamed     (ok) : 13 entries -- the same 9 plus
+                       mid-conversation-tool-changes-2026-07-01
+                       advisor-tool-2026-03-01
+                       effort-2025-11-24
+                       structured-outputs-2025-12-15
+
+-- AND the router forwards all of it unchanged. Computed by feeding the list above
+   through outgoing_headers() + httpx.build_request():
+     dropped by the router: none
+     added by the router:   none
+   host and content-length are re-derived; connection is re-added by httpx.
