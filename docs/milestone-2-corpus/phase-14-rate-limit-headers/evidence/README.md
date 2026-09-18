@@ -3,8 +3,8 @@
 **One entry per artefact**, per `../../../README.md`'s "Evidence and redaction": what produced it,
 what it proves, what was redacted and how, and whether it can be regenerated.
 
-***Nine artefacts: three instruments that can be re-run, and six records of runs that cannot.*** All
-six were produced on **2026-09-18**, by the owner, against **Claude Code 2.1.267** and router
+***Eleven artefacts: four instruments that can be re-run, and seven records of runs that cannot.***
+All seven were produced on **2026-09-18**, by the owner, against **Claude Code 2.1.267** and router
 `0.1.0`, on an OAuth subscription credential with `credential: forward`.
 
 ---
@@ -57,7 +57,51 @@ call and turn `ttfb_ms` into a measurement of itself.**
 
 ---
 
+### `binary-extract.sh`
+
+**What it is.** **Four lines of `grep -b -o -F` and `dd`** that print readable context around a
+string inside a **Bun-compiled single-file executable**. *Claude Code ships as one — the JavaScript
+bundle is embedded in **plaintext**, so the binary is greppable and no unpacking, dependency or
+install is involved.*
+
+    ./binary-extract.sh <pattern> [bytes-before] [bytes-after] [max-hits] [binary]
+
+**Why it is worth keeping.** **It reads a file on disk.** *No credential, no request, and none of
+the owner's sessions* — which is what made the finding in the record below cost nothing, against
+five sessions for each of the experiments above it.
+
+***It shipped with a defect and the defect is the reason it is `-F`.*** The first version passed the
+pattern to `grep` as a **regular expression**, so the first pattern containing `[` — a minified
+`[...kr` — died with *"brackets not balanced"* rather than matching. **Caught because one of nine
+fragments came back empty and the count was checked**, not by reading the script.
+
+---
+
 ## The records, in the order they were taken
+
+### `claude-code-first-party-gate-2026-09-18.txt` — read from disk, not from the wire
+
+**What produced it.** `binary-extract.sh` against the installed **Claude Code 2.1.267** binary, nine
+patterns, on 2026-09-18 after every experiment above had already come back negative.
+
+**What it proves.** **`ANTHROPIC_BASE_URL` changes the client, and the client names the switch.**
+`go()` is false whenever that variable is set to any host but `api.anthropic.com`, and
+**`_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL` forces it true** — a declared boolean, listed in the
+client's own config table as a *companion* of `ANTHROPIC_BASE_URL`. **And the auto-mode classifier
+is the one request shape that sets `forceAttributionHeader: true`** — both stages do; the main
+loop's non-streamed path does not.
+
+***What it does not prove: that this is the cause.*** *It is a reading of code, not a measurement of
+a wire.* **The experiment it licenses has not been run** — `for-the-owner.md` entry 10.
+
+**Redaction: none, and none needed** — no identifier and no credential appears in any fragment.
+***Deliberately not copied: the classifier's system prompt***, read while locating the call site. It
+is Anthropic's prompt text, it is long, and **no claim rests on its wording** — only on the fact
+that the function exists and on who calls it.
+
+**Regenerable, with one caveat that matters.** The script re-runs at no cost, but **the byte offsets
+are a property of one build** and the minified identifiers are that build's own. *Against another
+version, re-run the patterns rather than trusting an offset.*
 
 ### `rate-limit-headers-2026-09-18.txt` — 11:02–11:05 UTC
 
@@ -163,15 +207,17 @@ the Python build, which is the point of keeping the tool beside the record.*
 
 ## What this evidence establishes, and what it does not
 
-***Together these six records eliminate eleven hypotheses*** — `accept-encoding`, HTTP/2, a dropped
+***Together these records eliminate eleven hypotheses*** — `accept-encoding`, HTTP/2, a dropped
 header, an added header, the `anthropic-beta` list, the withheld attribution headers, quota
 exhaustion, request size, the model, the router inventing the rejection, and a non-browser TLS
 fingerprint.
 
 ***They do not identify the cause, and nothing here should be read as though they do.***
 
-**Two things remain untested:** an **exact-fingerprint allowlist**, which only Bun's own build could
-match and perhaps not even that; and **connection reuse**, which nothing in this phase has touched.
+**Three things remain untested:** an **exact-fingerprint allowlist**, which only Bun's own build
+could match and perhaps not even that; **connection reuse**, which nothing in this phase has
+touched; and — added 2026-09-18, and the only one of the three that is cheap —
+**`_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL`**, the client-side switch the last record names.
 
 *This section replaced one that said the success control was unmeasured. **It was true when written
 and false within the hour** — the control ran at 11:19 and its record is the third entry above.*

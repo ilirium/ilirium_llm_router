@@ -1,0 +1,63 @@
+# The first-party gate in the Claude Code binary - 2026-09-18
+
+Claude Code 2.1.267, the Bun-compiled single-file executable at the install path, read with
+./binary-extract.sh. Nothing was sent and no credential was used: this is a read of a file on disk.
+
+The JavaScript bundle is embedded in plaintext and is MINIFIED, so the identifiers below are the
+build's own mangled names. Byte offsets are a property of THIS build and are printed only so that
+two hits can be told apart; re-run the script rather than trusting an offset against another
+version.
+
+REDACTION: none needed - no identifier and no credential appears in any fragment. Deliberately NOT
+copied here: the auto-mode classifier's system prompt, read at offset ~168255790 while locating the
+call site. It is Anthropic's prompt text, it is long, and no claim below rests on its wording -
+only on the fact that the function returning it exists and on who calls it.
+
+Fragments are cut mid-token at both ends. That is the tool, not damage.
+
+---------------------------------------------------------------------------
+[1] THE GATE. ANTHROPIC_BASE_URL decides it, and an env var overrides it.
+
+=== offset 160241981 ===
+function nd(){return He()==="firstParty"&&go()}function go(){if(a._CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL)return!0;return CE()}function CE(){let e=process.env.ANTHROPIC_BASE_URL;if(!e)return!0;return NA(e)}function NA(e){try{let t=new URL(e).host;return["api.anthropic.com"].includes(t)}catch{return!1}}function r_e(){return go()||a.CLAUDE_CODE_PROPAGATE_TRACEPARENT}
+export{tQt,FO,b0t,J6e,qg,w0t,jt,_P,er,sC,nQt,$O,E0t,UO,vle,sl
+---------------------------------------------------------------------------
+[2] The override is a declared boolean env var (P.bool() - si).
+
+=== offset 159014296 ===
+_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL:()=>si});var qS=P.bool(),ti=P.bool(),oi=P.bool(),Ei=P.bool(),_i=P.bool(),ri=P.bool(),ei=P.str(),si=P.bool(),ni=P.str(),Ci=P.str(),Oi=P.enum(J),Ai=P.str(),Di=P.str(),ci=P.str(),Ti=P.str(),Li
+---------------------------------------------------------------------------
+[3] ... and the config table lists it as a COMPANION of ANTHROPIC_BASE_URL.
+
+=== offset 159117977 ===
+{endpoint:"ANTHROPIC_BASE_URL",companions:["_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL","ANTHROPIC_CUSTOM_HEADERS"]},{endpoint:"ANTHROPIC_BEDROCK_BASE_URL",selection:"CLAUDE_CODE_USE_BEDROCK",companions
+---------------------------------------------------------------------------
+[4] The same gate withholds x-client-request-id (Jje) ...
+
+=== offset 160839234 ===
+function Jje(e=He()){if(e==="anthropicAws")return a.ANTHROPIC_AWS_BASE_URL===void 0;return e==="firstParty"&&go()}function Aye(){i
+---------------------------------------------------------------------------
+[5] ... and traceparent. Cwr is the per-request header builder using both.
+
+=== offset 168143106 ===
+function Cwr(e,n){let r=Jje(),o=r?sne():void 0,d=e&&(r||Ie(process.env.CLAUDE_CODE_PROPAGATE_TRACEPARENT))?TKe(e):void 0;return qFt(e,{attempt:n,clientRequestId:o}),{headers:{...o&&{[Dq]:o},...d&&{traceparent:d}},clientRequestId:o}}function Uyt(e){if(Rn.CLAUDE_CODE_DISPATCH_V2D??H("tengu_dreamy_fros
+---------------------------------------------------------------------------
+[6] The main loop's NON-STREAMED send. Two more headers on the same predicate.
+
+=== offset 168144295 ===
+e=exs(re,ZCs);Ewr(ue),d(ue),v++;let{headers:me,clientRequestId:_e}=Cwr(e.llmSpan,v);if(e.contextCompactedKindForWire!==void 0&&He()==="firstParty"&&go())me[xRt]=e.contextCompactedKindForWire;if(e.compactionRequestKindForWire!==void 0&&He()==="firstParty"&&go())me[RRt]=e.compactionRequestKindForWire;n.stampDispatchHeader?.(me,nd()&&l$());try{let Se=await M.beta.messages.create({...ue,stream:!1},{signal:n.signal,timeout:y,...Object.keys(me).length>0&&{headers:me}}).withResponse();if(xwr(Se.response),!wDn(Se.data))throw new aNe({data:Se.data,status:Se.response?.status,headers:Se.response?.headers,originating:p});let Ce=Se.res
+---------------------------------------------------------------------------
+[7] THE CLASSIFIER forces the attribution header. Stage 1, max_tokens 64.
+
+=== offset 168334366 ===
+id 0,lo=Nn??void 0,kr=An(bo);Fe={model:y,max_tokens:(M==="fast"?256:64)+Cn,system:r,skipSystemPromptPrefix:!0,forceAttributionHeader:!0,temperature:lTr(),thinking:vt,messages:[...kr,...[]],maxRetries:mbe(),...M!=="fast"&&{stop_sequences:[U?"</severity>":"</block>"]},querySource:"auto_mode",extraBodyParams:iTr(y),extraBetas:sTr(Pl(y))},{raw:We,usage:xe,opts:Fe}=await aTr(E,Fe,G,{toolName:F,classifierModel:y,
+---------------------------------------------------------------------------
+[8] Stage 2 does too, at max_tokens 8192.
+
+=== offset 168336374 ===
+In={model:y,max_tokens:8192+Cn,system:r,skipSystemPromptPrefix:!0,forceAttributionHeader:!0,temperature:lTr(),thinking:vt,messages:Mt,maxRetries:mbe(),querySource:"auto_mode",extraBodyParams:iTr(y),extraBetas:sTr(Pl(y))},{raw:tn,usage:tr,op
+---------------------------------------------------------------------------
+[9] The side-query sender that receives the flag.
+
+=== offset 167267470 ===
+"string")return r;let o=r.find((d)=>d.type==="text");return o?.type==="text"?o.text:""}async function qk(e){let{model:n,system:r,messages:o,tools:d,tool_choice:p,output_format:y,max_tokens:v=1024,maxRetries:E=2,timeout:P,signal:M,skipSystemPromptPrefix:D,forceAttributionHeader:F,temperature:U,thinking:G,stop_sequences:re,extraBodyParams:ue,extraBetas:me,onFe

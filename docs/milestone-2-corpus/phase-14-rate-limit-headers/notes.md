@@ -808,3 +808,91 @@ it.**
 eliminated something; this one eliminated the last cheap thing.** *What the phase has instead is an
 instrument that works, eleven eliminated hypotheses, and an evidence package neither upstream issue
 has.*
+
+## The twelfth hypothesis came from reading the client, and it was free
+
+***Added 2026-09-18, after the section above said the diagnosis had stopped being worth the owner's
+sessions.*** *That sentence was about **experiments**, and it was right about experiments. It was
+wrong to read as "there is nothing left to learn cheaply" — because nothing in this phase had ever
+**read the client**, and the client is the second variable the phase discovered it had on
+2026-09-18 and then went straight back to router-side flips.*
+
+**The owner proposed analysing `github.com/anthropics/claude-code`. That repository is not the
+source** — it is the issue tracker, the docs, the plugins and the examples, with no implementation
+in it, and its `CHANGELOG.md` carries **no dates**, so it cannot even bracket `BUG-001`'s
+2026-08-21 → 2026-08-24 regression window. *Checked rather than assumed.*
+
+**The source was already on the machine.** Claude Code ships as a **Bun-compiled single-file
+executable** with its JavaScript bundle embedded in **plaintext**. `grep -a -b -o -F` plus `dd`
+reads it. **No credential, no request, none of the owner's sessions** — the instrument and the nine
+frozen fragments are `evidence/binary-extract.sh` and
+`evidence/claude-code-first-party-gate-2026-09-18.txt`.
+
+### What the client does with `ANTHROPIC_BASE_URL`, in its own words
+
+    function nd(){return He()==="firstParty"&&go()}
+    function go(){if(a._CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL)return!0;return CE()}
+    function CE(){let e=process.env.ANTHROPIC_BASE_URL;if(!e)return!0;return NA(e)}
+    function NA(e){try{let t=new URL(e).host;return["api.anthropic.com"].includes(t)}catch{return!1}}
+
+**Set `ANTHROPIC_BASE_URL` to any host but `api.anthropic.com` and `go()` is false**, which turns
+off every behaviour gated on it. ***And `_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL` forces it back
+true*** — a declared boolean env var, listed in the client's own config table as a **companion** of
+`ANTHROPIC_BASE_URL`, next to `ANTHROPIC_CUSTOM_HEADERS`.
+
+**This is the experiment C2d was approximating by hand.** *C2d imitated the two attribution fields
+that happened to be visible in `claude --debug api`. This switch restores **everything** the gate
+withholds, at the client, in one variable — and the router fabricates nothing, which also disposes
+of the terms question the imitation carried.*
+
+**Three more things the same gate withholds**, none of which this phase knew to look for:
+
+| | |
+|---|---|
+| `x-client-request-id` | `Jje()` — `firstParty && go()`. **Seen in `--debug api` and never in the twenty-one arriving headers**, and now there is a reason rather than a puzzle |
+| `traceparent` | `r_e()` — `go()` or `CLAUDE_CODE_PROPAGATE_TRACEPARENT` |
+| Two context-compaction wire headers | in the non-streamed send, both on `He()==="firstParty"&&go()` |
+
+### The classifier is the one shape that forces the attribution header
+
+***Both classifier stages set `forceAttributionHeader:!0`*** — stage 1 at `max_tokens:(M==="fast"?256:64)`,
+stage 2 at `8192` — **and so does `auto_mode_critique`. The main loop's non-streamed path does
+not.** *`qk()`, the side-query sender, takes the flag as a parameter.*
+
+**That is a tighter fit to the symptom than "non-streamed" is**, and it is worth stating plainly
+because this phase has spent four days on the wrong noun:
+
+| | Forces the attribution header | Result through the router |
+|---|---|---|
+| The auto-mode classifier | **yes** | **429**, every time |
+| `/v1/messages` streamed | no | 820 of 820 **ok** |
+| `/v1/messages/count_tokens` | no | 66 of 66 **ok** |
+
+***So the failing shape may not be "non-streamed" at all.*** *It may be "the request that forces the
+attribution header" — which is exactly the header `go()` degrades — and the two survivors need no
+special pleading, because neither forces it.*
+
+### What this is not, and the sentence is load-bearing
+
+***This is a reading of code. It is not a measurement of a wire, and it does not identify the
+cause.*** **`x-anthropic-billing-header` appears in none of the twenty-one headers this phase
+captured arriving**, so either that capture was not a classifier request, or the header is withheld
+from the wire entirely when `go()` is false. **Both readings point at the same experiment and
+neither has been run.**
+
+*Written down this way deliberately.* **The phase has already made the mistake of promoting a real
+measurement into a conclusion once** — `for-the-owner.md` entry 5 — and a twelfth hypothesis
+arriving after eleven negatives is exactly when that happens again.
+
+### One thing checked and cleared rather than left hanging
+
+**The SDK posts to `/v1/messages?beta=true`** — `client.beta.messages.create`. ***The router already
+forwards the query string***, `target_url()` at `proxy.py:603`, and `proxy.py:11` names `?beta=true`
+by hand. **Not a miss.** *Checked because "does the router drop the query string" is the obvious
+router-side reading of the same evidence, and it is worth one minute to close.*
+
+### What is left is now one test, one unknown, and one cheap experiment
+
+**Unchanged:** the exact-fingerprint allowlist, and connection reuse. **Added, and it is the only
+cheap one:** set `_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL` and run the classifier through the
+router. *`for-the-owner.md` entry 10 has the procedure and what each outcome means.*

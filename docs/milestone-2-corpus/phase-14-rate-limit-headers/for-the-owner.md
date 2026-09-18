@@ -135,3 +135,47 @@ their own.* **Untested, and named because it is untested.**
 **`BUG-001` now holds the measurements both issues stall on** — the paired control, the meter
 reading `allowed` at 52%, request ids, and the proof that the router alters no header. **Nobody has
 told either issue any of it.** *It was `status.md`'s item 2 before this phase and it still is.*
+
+## 10 · ERRAND · high · One env var, one session — and it is the last cheap experiment
+
+***Only you can run it***, for the same reason entry 1 gave: it needs your credential, your machine
+and a real session with auto mode on.
+
+**What it is.** Claude Code turns off a set of first-party behaviours the moment `ANTHROPIC_BASE_URL`
+points anywhere but `api.anthropic.com` — **and it ships a switch that forces them back on.** Read
+out of the binary on 2026-09-18; the fragments are frozen in
+`evidence/claude-code-first-party-gate-2026-09-18.txt`.
+
+**Why it is worth a session when eleven hypotheses have come back negative.** *Every one of those
+eleven was a **router-side** flip. This is the first client-side one* — and it is the whole class at
+once, rather than the two attribution fields C2d could see in `--debug api` and imitate by hand.
+**It also makes the router fabricate nothing**, which disposes of the terms question the imitation
+headers carry.
+
+**What to do:**
+
+1. `make run` in `to-run-server/`, as at entry 1.
+2. A Claude Code session pointed at the router, with **`_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL=1`**
+   set alongside `ANTHROPIC_BASE_URL`, auto mode **on**, and something that shells out.
+3. `claude --version` recorded. ***The underscore prefix means this is an internal flag***, so it can
+   move between releases and the version is the only thing that will identify which build it held on.
+4. Then stop and hand back — the arriving-header sampler should be read in the same session, to see
+   whether `x-anthropic-billing-header`, `x-client-request-id` and `traceparent` now arrive at all.
+
+**All three outcomes are findings, and none is a wasted session:**
+
+| | |
+|---|---|
+| **The 429 goes away** | The cause is the first-party gate, `BUG-001` gets a workaround it does not have, and the upstream report gets the thing both issues actually lack |
+| **The 429 stays, and the headers now arrive** | The withheld headers are eliminated **as a class**, properly this time — C2d only ever tested two of them |
+| **The 429 stays and the headers still do not arrive** | The client withholds them below the gate, and that is worth knowing before anyone reports this upstream |
+
+***And the `BUG-000` trap applies as it always does:*** an absence of 429s in a quiet session is not
+a pass. **Drive it until a `Bash` call is actually classified**, which on 2026-08-25 took about
+ninety seconds and a `printenv`.
+
+**One thing I could not do and did not work around.** *Two of the binary reads behind this entry were
+blocked mid-analysis by the auto-mode classifier* — the very mechanism this phase exists to
+diagnose. **I stopped and said so rather than finding another route**, so the fragments frozen in
+`evidence/` are what was read before the block and not everything there is to read. *Entry 7's live
+experiments are untouched by any of this.*
