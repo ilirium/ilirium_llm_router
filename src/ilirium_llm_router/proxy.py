@@ -736,12 +736,19 @@ def imitation_headers(request: Request) -> list[tuple[bytes, bytes]]:
 
     added: list[tuple[bytes, bytes]] = []
     if "x-anthropic-billing-header" not in present:
-        billing = (
-            f"cc_version={match['version']}.{BILLING_VERSION_SUFFIX}; "
-            f"cc_entrypoint={match['entry']}; "
-            f"cch=00000; "
-            f"cc_prompt_id={uuid.uuid4()}; "
-        )
+        # No trailing space after the last `;`. An HTTP header value may not end in whitespace,
+        # h11 refuses to serialise one, and the first version of this ended with "; " -- which
+        # reached Anthropic over HTTP/2 without complaint and then broke the moment the egress hop
+        # was plaintext HTTP/1.1, as a 502 the caller saw. Built with a join so the separator cannot
+        # be attached to the last field again by editing one line.
+        billing = "; ".join(
+            (
+                f"cc_version={match['version']}.{BILLING_VERSION_SUFFIX}",
+                f"cc_entrypoint={match['entry']}",
+                "cch=00000",
+                f"cc_prompt_id={uuid.uuid4()}",
+            )
+        ) + ";"
         added.append((b"x-anthropic-billing-header", billing.encode("latin-1")))
     if "x-client-request-id" not in present:
         added.append((b"x-client-request-id", str(uuid.uuid4()).encode("latin-1")))

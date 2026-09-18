@@ -29,7 +29,7 @@ from fastapi.testclient import TestClient
 
 from ilirium_llm_router.app import create_app
 from ilirium_llm_router.config import Backend, Config
-from ilirium_llm_router.proxy import create_client, peek
+from ilirium_llm_router.proxy import create_client, imitation_headers, peek
 
 
 def test_the_startup_probe_is_answered() -> None:
@@ -874,3 +874,25 @@ def test_each_call_gets_its_own_prompt_id() -> None:
             client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
             seen.add(upstream.requests[-1].headers["x-anthropic-billing-header"])
     assert len(seen) == 3
+
+
+def test_every_imitated_header_is_legal_http() -> None:
+    """Regression, 2026-09-18: the billing value ended `"; "` and h11 refuses a trailing space.
+
+    **The existing tests could not see it.** They assert against `MockTransport`, which stores what
+    it is handed and validates nothing -- so the header was malformed for the whole imitation
+    experiment, went to Anthropic over HTTP/2 without complaint, and surfaced as a 502 in the
+    caller's face the moment the egress hop was plaintext HTTP/1.1.
+
+    So this validates through h11 itself rather than through anything this repository wrote.
+    """
+    import h11
+    from starlette.datastructures import Headers
+
+    class _Req:
+        headers = Headers(raw=[(b"user-agent", b"claude-cli/2.1.267 (external, cli)")])
+
+    made = imitation_headers(_Req())  # type: ignore[arg-type]
+    assert made, "nothing was imitated, so this test would pass vacuously"
+    # Raises LocalProtocolError on an illegal name or value.
+    h11.Request(method="POST", target="/v1/messages", headers=[(b"host", b"x")] + made)

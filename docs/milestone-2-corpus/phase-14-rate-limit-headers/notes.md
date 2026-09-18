@@ -726,3 +726,45 @@ look like a browser's has not earned a place in the router's.*
 **Both were exercised rather than assumed**, against the local SSE origin with no Anthropic traffic:
 `make forwarder` resolves the group and starts, the config validates with the right `base_url`, and
 five events 0.4 s apart came through at `+0.07 +0.46 +0.87 +1.27 +1.67`.
+
+## A defect this phase shipped, and what it says about the earlier result
+
+***The imitation's billing header was malformed from the moment it was written.*** It ended
+`"; "` — **a trailing space, which an HTTP header value may not have.** The owner hit it as a
+**502** the first time he ran the forwarder:
+
+```
+LocalProtocolError: Illegal header value b'cc_version=2.1.267.0a3; cc_entrypoint=cli; cch=00000;
+cc_prompt_id=1ee21817-...; '
+```
+
+**Why it took until now to appear.** The router spoke **HTTP/2** to Anthropic, whose header
+handling accepted it; the hop to the forwarder is **plaintext HTTP/1.1**, where `h11` validates and
+refuses. *The same header, legal on one transport and fatal on the other.*
+
+### It weakens the imitation result, and the notes above are amended rather than left
+
+**The 13:04 run reached Anthropic** — 429s with `request_id`s, so the requests went out. **But they
+went out carrying a header no HTTP parser is obliged to accept**, and *nothing here knows whether
+Anthropic parsed it, normalised it, or discarded it.*
+
+***So "the attribution class is eliminated" is weaker than this file said.*** **It is eliminated
+only if Anthropic read the header** — and the one run that would settle it is the next one, which
+carries the corrected header **and** the BoringSSL hop together. *If that comes back positive the
+two will need separating.*
+
+### Four tests and twenty-three mutations did not see it
+
+***Every existing test asserts against `MockTransport`, which stores what it is handed and
+validates nothing.*** *So a malformed header passed four assertions about its own content, including
+one that reads it back and compares a prefix.*
+
+**The new test validates through `h11` itself** rather than through anything this repository wrote,
+and **was checked against the old value** to confirm it fails on it. There is a mutation that puts
+the trailing space back.
+
+***This is `prompt.md`'s "a green check is a claim, not evidence", arriving for the third time in
+one phase*** — after the allowlist that would have reported nothing on a subscription credential,
+and the latch spent on `/api/hello`. **All three were instruments built to prevent a wrong
+reading.** *The pattern worth naming: each one tested the thing it was pointed at and none tested
+whether it was pointed at the right thing.*

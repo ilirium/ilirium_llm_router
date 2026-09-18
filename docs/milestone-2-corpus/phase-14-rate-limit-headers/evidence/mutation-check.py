@@ -171,9 +171,16 @@ MUTATIONS = [
         why="a guessed shape is sent for a client nothing has ever measured",
     ),
     Mutation(
+        name="the billing value regains its trailing space",
+        old='        ) + ";"',
+        new='        ) + "; "',
+        expect_failing="test_every_imitated_header_is_legal_http",
+        why="an illegal header value -- the 502 the caller actually saw",
+    ),
+    Mutation(
         name="cc_prompt_id becomes a constant",
-        old="            f\"cc_prompt_id={uuid.uuid4()}; \"",
-        new='            f"cc_prompt_id=00000000-0000-0000-0000-000000000000; "',
+        old="                f\"cc_prompt_id={uuid.uuid4()}\",",
+        new='                "cc_prompt_id=00000000-0000-0000-0000-000000000000",',
         expect_failing="test_each_call_gets_its_own_prompt_id",
         why="per-prompt on the direct path, so a constant is a visible tell",
     ),
