@@ -398,3 +398,40 @@ until now and which no amount of router-side flipping can reach.
 sessions and eliminated two. **The byte capture replaces the rest with a diff**, and it can be done
 in two halves: the router already *receives* what Claude Code sends it, so that half costs a log
 line; the direct half needs one throwaway session pointed at a listener.
+
+## The arriving-request sampler — the byte capture's cheap half
+
+**The router receives exactly what Claude Code sends it**, so half the "what differs between the
+direct path and the routed one" question costs a log line rather than one of the owner's sessions.
+
+**Two latches, one per shape.** *The pair is the measurement:* the streamed request succeeds and the
+non-streamed one is rejected, so **what the client sends differently between them** is the thing
+being looked for. A single latch would sample whichever arrived first and never the other.
+
+**Safe to point at a request that carries the credential**, and by the rule rather than by a special
+case: `RECORDED_REQUEST_HEADERS` holds seven names whose values may be logged, and **everything
+else is logged by name with `<unlisted>` in place of its value** — `authorization` and `x-api-key`
+included. *A name cannot carry a credential; the same asymmetry the response side already rests on.*
+
+**Order is preserved and duplicates are kept**, which is the one place this differs from
+`describe_headers`. *Header order is exactly the kind of thing that could differ between two
+clients, and sorting it away would hide the quarry.* The HTTP version the client used is logged
+beside it.
+
+### Two things this cost that are worth recording
+
+**An assertion in an existing test was over-broad and the new line exposed it.**
+`test_the_sample_obeys_the_same_allowlist` asserted `"authorization" not in` **every** captured
+message. That passed only because nothing else logged a header name; the arriving sampler prints
+`authorization=<unlisted>`, which is the name with no value and is precisely what it should print.
+**Scoped to the line it is actually about.** *The test was checking the right thing against the
+wrong surface.*
+
+***And the mutation harness refused a mutation instead of passing it, which is the first time its
+central design has fired in anger.*** `return " ".join(parts) if parts else "(none)"` now exists in
+**two** functions, so the anchor matched twice — and the harness reported **"mutation applied: NO —
+matched 2 times"** and a **script failure**, not a caught mutation and not a silent pass. *This is
+the exact defect Phase 13 shipped: its harness never applied its mutations and looked identical to
+a clean run.* Re-anchored on the line above it.
+
+**Nineteen mutations, nineteen caught.**

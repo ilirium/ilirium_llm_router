@@ -640,7 +640,10 @@ def test_the_sample_obeys_the_same_allowlist(caplog: pytest.LogCaptureFixture) -
     with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
         client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
 
-    line = "\n".join(caplog.messages)
+    # Scoped to the reply sampler's own line. Asserting over every message was wrong once the
+    # ARRIVING sampler landed: that one prints `authorization=<unlisted>`, which is the name with
+    # no value and is exactly what it is supposed to print.
+    line = next(m for m in caplog.messages if "sampling rate-limit headers" in m)
     assert "secret-value" not in line
     assert "authorization" not in line
     assert "retry-after=42" in line
@@ -740,3 +743,77 @@ def test_the_client_offers_http2() -> None:
 
     client = create_client()
     assert client._transport._pool._http2 is True
+
+
+# Phase 14, the byte-capture half that costs no session: what Claude Code sends the router.
+
+def test_the_arriving_request_is_sampled_once_per_shape(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Two latches, because the PAIR is the measurement.
+
+    The streamed request succeeds and the non-streamed one is rejected, so what the client sends
+    differently between them is the thing being looked for. One latch would sample whichever
+    arrived first and never the other.
+    """
+    upstream = Upstream(streamed(200))
+    streaming_body = b'{"model":"claude-sonnet-5","stream":true,"messages":[]}'
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        for _ in range(2):
+            upstream.reply = streamed(200)
+            client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+            upstream.reply = streamed(200)
+            client.post("/v1/messages", content=streaming_body, headers=CLAUDE_CODE_HEADERS)
+
+    arriving = [m for m in caplog.messages if m.startswith("arriving")]
+    assert len(arriving) == 2
+    assert sum("non-streamed" in m for m in arriving) == 1
+    assert sum(m.startswith("arriving streamed") for m in arriving) == 1
+
+
+def test_the_arriving_sample_never_logs_the_credential(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The whole reason this is safe to point at a request that carries the token.
+
+    `authorization` is outside RECORDED_REQUEST_HEADERS, so it is named and never valued -- by the
+    rule, not by a special case for it.
+    """
+    upstream = Upstream(streamed(200))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    line = next(m for m in caplog.messages if m.startswith("arriving"))
+    assert "sk-ant-oat01-example" not in line
+    assert "authorization=<unlisted>" in line
+    # ...while the headers that matter for the diff came through with their values.
+    assert f"anthropic-beta={BETA}" in line
+    assert "user-agent=claude-cli/2.1.212 (external, sdk-cli)" in line
+
+
+def test_the_arriving_sample_preserves_header_order() -> None:
+    """Order is a difference a client could have, so sorting it away would hide the quarry."""
+    from starlette.datastructures import Headers
+
+    from ilirium_llm_router.proxy import describe_request_headers
+
+    class _Req:
+        headers = Headers(raw=[(b"x-app", b"cli"), (b"accept", b"*/*"), (b"x-app", b"again")])
+
+    line = describe_request_headers(_Req())  # type: ignore[arg-type]
+    assert line == "x-app=cli accept=*/* x-app=again"
+
+
+def test_the_probe_endpoint_does_not_spend_the_arrival_latch(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Same trap the reply sampler fell into: /api/hello arrives first on every session."""
+    upstream = Upstream(streamed(200))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.get("/api/hello")
+        assert not [m for m in caplog.messages if m.startswith("arriving")]
+
+        upstream.reply = streamed(200)
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert len([m for m in caplog.messages if m.startswith("arriving")]) == 1

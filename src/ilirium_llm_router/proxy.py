@@ -151,6 +151,26 @@ RECORDED_RESPONSE_HEADERS = frozenset(
 # it is why the prefix is `anthropic-ratelimit-` rather than the broader `anthropic-`.
 RECORDED_HEADER_PREFIX = "anthropic-ratelimit-"
 
+# What an ARRIVING request is allowed to say about itself, by value. Everything else is logged by
+# NAME ONLY -- which is what makes this safe to point at a request that carries the credential:
+# `authorization` and `x-api-key` appear in the list of names and never with a value, and they do so
+# because they are absent from this set rather than because anything special-cases them.
+#
+# Phase 14, 2026-09-18. The router receives exactly what Claude Code sends it, so half of the
+# "what differs between the direct path and the routed one" question costs a log line rather than a
+# session. The other half needs a throwaway session pointed at a listener.
+RECORDED_REQUEST_HEADERS = frozenset(
+    {
+        "accept",
+        "accept-encoding",
+        "anthropic-beta",
+        "anthropic-version",
+        "content-type",
+        "user-agent",
+        "x-app",
+    }
+)
+
 # A model can think for minutes, so the usual short read timeout would cut replies off. Connecting
 # should still fail fast: LM Studio simply not running is the common failure.
 #
@@ -237,6 +257,15 @@ class Proxy:
     api_keys: dict[str, str]
     stats: StatsWriter
     corpus: CorpusWriter | None = None
+    arrival_sampled: dict[bool, Once] = field(
+        default_factory=lambda: {True: Once(), False: Once()}
+    )
+    """**One latch per request shape**, keyed by whether the caller asked for a stream.
+
+    Two, not one, because the pair is the measurement: the streamed request succeeds and the
+    non-streamed one is rejected, so *what Claude Code sends differently between them* is a
+    difference worth seeing — and a single latch would sample whichever arrived first and never the
+    other."""
     headers_sampled: Once = field(default_factory=Once)
     """**The control for the failure line below, and it exists to stop one sentence being assumed.**
 
@@ -334,6 +363,22 @@ class Proxy:
     ) -> Response:
         """Send `body` to `backend` unchanged and stream the reply back as it arrives."""
         call.backend = name
+        if request.url.path.startswith("/v1/messages") and self.arrival_sampled[
+            bool(call.stream)
+        ].take():
+            # What Claude Code SENT US, once per shape. The router receives the real thing, so this
+            # half of "what differs between the direct path and the routed one" costs a log line
+            # rather than one of the owner's sessions.
+            #
+            # Path-gated for the reason the reply sampler had to be: `/api/hello` arrives first and
+            # would spend the latch on a probe nobody is asking about.
+            logger.info(
+                "arriving %s request to %s: http/%s %s",
+                "streamed" if call.stream else "non-streamed",
+                request.url.path,
+                request.scope.get("http_version", "?"),
+                describe_request_headers(request),
+            )
         outgoing = self.client.build_request(
             request.method,
             target_url(backend.base_url, request),
@@ -641,6 +686,27 @@ def describe_headers(recorded: dict[str, str], unlisted: list[str]) -> str:
     """
     parts = [f"{name}={value}" for name, value in sorted(recorded.items())]
     parts += [f"{name}=<unlisted>" for name in sorted(set(unlisted))]
+    return " ".join(parts) if parts else "(none)"
+
+
+def describe_request_headers(request: Request) -> str:
+    """What arrived, `name=value` for the allowlist and `name=<unlisted>` for everything else.
+
+    **Order is preserved and duplicates are kept**, which is the one way this differs from
+    `describe_headers` and is deliberate: header order is exactly the kind of thing that could
+    differ between two clients, and sorting it away would hide the thing being looked for.
+
+    Safe to point at a request carrying a credential: `authorization` and `x-api-key` are outside
+    `RECORDED_REQUEST_HEADERS`, so they appear as names with no value — by the rule rather than by a
+    special case.
+    """
+    parts = []
+    for raw_name, raw_value in request.headers.raw:
+        name = raw_name.decode("latin-1").lower()
+        if name in RECORDED_REQUEST_HEADERS:
+            parts.append(f"{name}={raw_value.decode('latin-1')}")
+        else:
+            parts.append(f"{name}=<unlisted>")
     return " ".join(parts) if parts else "(none)"
 
 

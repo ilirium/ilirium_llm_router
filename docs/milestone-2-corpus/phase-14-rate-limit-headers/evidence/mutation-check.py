@@ -73,8 +73,12 @@ MUTATIONS = [
     ),
     Mutation(
         name="an empty header set logs a blank instead of (none)",
-        old='    return " ".join(parts) if parts else "(none)"',
-        new='    return " ".join(parts)',
+        # Anchored on the line above it: `describe_request_headers` ends with the same return, and
+        # the harness refused the ambiguous version rather than guessing which one to break.
+        old='    parts += [f"{name}=<unlisted>" for name in sorted(set(unlisted))]\n'
+        '    return " ".join(parts) if parts else "(none)"',
+        new='    parts += [f"{name}=<unlisted>" for name in sorted(set(unlisted))]\n'
+        '    return " ".join(parts)',
         expect_failing="test_a_rejection_carrying_no_rate_limit_headers_says_so",
         why="'no buckets named' is the finding, and a blank tail reads as a logging failure",
     ),
@@ -143,6 +147,30 @@ MUTATIONS = [
         new="        pass",
         expect_failing="test_a_non_streamed_request_relays_the_callers_own_accept_encoding",
         why="the experiment silently stops running while still looking like it does",
+    ),
+    # The arriving-request sampler, 2026-09-18.
+    Mutation(
+        name="the arriving sampler logs every header by value",
+        old="        if name in RECORDED_REQUEST_HEADERS:",
+        new="        if True:",
+        expect_failing="test_the_arriving_sample_never_logs_the_credential",
+        why="the credential arrives on every request and would go straight into the log file",
+    ),
+    Mutation(
+        name="one arrival latch instead of one per shape",
+        old="        if request.url.path.startswith(\"/v1/messages\") and self.arrival_sampled[\n"
+        "            bool(call.stream)\n"
+        "        ].take():",
+        new='        if request.url.path.startswith("/v1/messages") and self.headers_sampled.take():',
+        expect_failing="test_the_arriving_request_is_sampled_once_per_shape",
+        why="only the shape that arrives first is ever sampled, and the pair IS the measurement",
+    ),
+    Mutation(
+        name="the arriving sampler sorts the headers",
+        old="    return \" \".join(parts) if parts else \"(none)\"\n\n\ndef response_headers",
+        new="    return \" \".join(sorted(parts)) if parts else \"(none)\"\n\n\ndef response_headers",
+        expect_failing="test_the_arriving_sample_preserves_header_order",
+        why="header order is a difference a client could have, and sorting hides the quarry",
     ),
     # The HTTP/2 experiment, 2026-09-18, running alongside the accept-encoding one.
     Mutation(
