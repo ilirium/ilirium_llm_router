@@ -78,6 +78,48 @@ DROPPED_FROM_REQUEST = CONNECTION_HEADERS | {
 # the client holding two of them, which the HTTP spec does not allow.
 DROPPED_FROM_RESPONSE = CONNECTION_HEADERS | {"content-length", "date", "server"}
 
+# What a failed reply is allowed to tell the log about why it failed. An EXPLICIT LIST OF NAMES, and
+# never a copy of the reply's headers: `docs/reference/corpus.md` promises that no credential
+# reaches disk, and the only thing keeping that true when a response one day carries one is that
+# nothing unnamed is ever written. `authorization`, `x-api-key` and `set-cookie` are what this list
+# exists to exclude.
+#
+# Note this is NOT the inverse of DROPPED_FROM_RESPONSE above. That one governs what the *client*
+# receives; this one governs what is *written down*. A header can be in both, in neither, or in one.
+RECORDED_RESPONSE_HEADERS = frozenset(
+    {
+        # How long until the call may be retried.
+        "retry-after",
+        # The four buckets Anthropic meters, each as limit / remaining / reset.
+        "anthropic-ratelimit-requests-limit",
+        "anthropic-ratelimit-requests-remaining",
+        "anthropic-ratelimit-requests-reset",
+        "anthropic-ratelimit-tokens-limit",
+        "anthropic-ratelimit-tokens-remaining",
+        "anthropic-ratelimit-tokens-reset",
+        "anthropic-ratelimit-input-tokens-limit",
+        "anthropic-ratelimit-input-tokens-remaining",
+        "anthropic-ratelimit-input-tokens-reset",
+        "anthropic-ratelimit-output-tokens-limit",
+        "anthropic-ratelimit-output-tokens-remaining",
+        "anthropic-ratelimit-output-tokens-reset",
+        # The id that ties a rejection to Anthropic's own record of it. It is also in the error
+        # body, but the body only reaches disk when the corpus is on -- and the corpus is off by
+        # default, so the log line has to carry it. Both spellings, because which one arrives is not
+        # known from here and neither can hold a secret.
+        "request-id",
+        "anthropic-request-id",
+    }
+)
+
+# A bucket Anthropic adds after this list was written would otherwise be invisible. Its NAME is
+# logged and its VALUE is discarded, so a new one becomes something a person can see and add
+# deliberately -- without the value of anything unnamed ever being written.
+#
+# A name cannot leak a credential; a value can. That asymmetry is the whole of why this is safe, and
+# it is why the prefix is `anthropic-ratelimit-` rather than the broader `anthropic-`.
+RECORDED_HEADER_PREFIX = "anthropic-ratelimit-"
+
 # A model can think for minutes, so the usual short read timeout would cut replies off. Connecting
 # should still fail fast: LM Studio simply not running is the common failure.
 #
@@ -250,6 +292,17 @@ class Proxy:
             # The status is known now; the backend's own wording, if it sends any, is picked up off
             # the tee and filled in when the row is written.
             call.failed("http_error", str(reply.status_code), "")
+            # And the headers say what the body cannot. A 429 body is the single word "Error"; which
+            # bucket was hit and when it clears are here or nowhere. Logged rather than put in a
+            # column: `calls.csv` taking new columns is a Milestone 2 non-goal, and where this
+            # durably lives is not this task's to decide.
+            logger.warning(
+                "%s replied %s to %s: %s",
+                name,
+                reply.status_code,
+                request.url.path,
+                describe_headers(*recorded_headers(reply)),
+            )
 
         relayed = StreamingResponse(
             self.watch(reply, call),
@@ -444,6 +497,40 @@ def outgoing_headers(
     if backend.credential == "inject" and api_key is not None:
         headers.append((b"authorization", f"Bearer {api_key}".encode()))
     return headers
+
+
+def recorded_headers(reply: httpx.Response) -> tuple[dict[str, str], list[str]]:
+    """What a failed reply is allowed to say about why it failed, and what it said unasked.
+
+    Returns the allowlisted headers with their values, and the *names* of any
+    `anthropic-ratelimit-*` header not on the list. The second half is what makes a bucket added
+    after `RECORDED_RESPONSE_HEADERS` was written visible instead of silently dropped; its values
+    are discarded, because a name cannot carry a credential and a value can.
+
+    Reads the reply and changes nothing. The relayed bytes never pass through here -- headers are a
+    separate object from the body stream, so this cannot touch what the caller receives.
+    """
+    recorded: dict[str, str] = {}
+    unlisted: list[str] = []
+    for name, value in reply.headers.multi_items():
+        lowered = name.lower()
+        if lowered in RECORDED_RESPONSE_HEADERS:
+            recorded[lowered] = value
+        elif lowered.startswith(RECORDED_HEADER_PREFIX):
+            unlisted.append(lowered)
+    return recorded, unlisted
+
+
+def describe_headers(recorded: dict[str, str], unlisted: list[str]) -> str:
+    """The log line's payload: `name=value` for what was asked for, bare names for what was not.
+
+    `(none)` rather than an empty string when a reply carried neither, because **that is the
+    interesting case** -- a `rate_limit_error` naming no exhausted bucket is not a rate limit, and a
+    blank tail would read as a logging failure instead of as the finding it is.
+    """
+    parts = [f"{name}={value}" for name, value in sorted(recorded.items())]
+    parts += [f"{name}=<unlisted>" for name in sorted(set(unlisted))]
+    return " ".join(parts) if parts else "(none)"
 
 
 def response_headers(reply: httpx.Response) -> list[tuple[bytes, bytes]]:

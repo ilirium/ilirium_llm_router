@@ -103,7 +103,7 @@ against the real credential. The plan stops at its boundary and says so.
 | Task | |
 |---|---|
 | **3** | `RECORDED_RESPONSE_HEADERS` in `proxy.py` and the extraction function beside `response_headers` |
-| **4** | The log line, at `WARNING`, emitted only when the reply's status is not 2xx |
+| **4** | The log line, at `WARNING`, emitted only when the reply's status is **`>= 400`** — *this row said "not 2xx" until Task 2, which is a different set: it includes 3xx, and the register said `>= 400` in the same document* |
 | **5** | Tests: an allowlisted header is recorded with its value; a header outside the list has **only its name** recorded; a 2xx reply logs nothing |
 | **6** | **Exercise it before committing** — make the extraction wrong and confirm each test fails. `CLAUDE.md`, and Phase 13 shipped three checks that passed while testing nothing |
 
@@ -153,11 +153,11 @@ against the real credential. The plan stops at its boundary and says so.
 | `anthropic-ratelimit-tokens-limit` · `-remaining` · `-reset` | The combined token bucket |
 | `anthropic-ratelimit-input-tokens-limit` · `-remaining` · `-reset` | The input bucket |
 | `anthropic-ratelimit-output-tokens-limit` · `-remaining` · `-reset` | The output bucket |
-| `request-id` | ❓ — **already in the response body**, which is how this session identified the 429 as Anthropic's own. Recording it twice may be redundant; Task 3 decides and this row closes then |
+| `request-id` · `anthropic-request-id` | ~~❓~~ **In, both spellings. Closed at Task 2.** The id is in the error *body*, which is how this session identified the 429 as Anthropic's own — but **the body is only on disk when the corpus is enabled, and it is off by default.** The log line has to stand on its own, so the id is worth its row. Both spellings because which one arrives is not known from here, and neither can carry a secret |
 
-*Sixteen names, plus the `request-id` question. **`authorization`, `x-api-key` and `set-cookie` are
-named here as the things the list exists to exclude** — a response carries no credential today and
-the allowlist is what keeps that true when one day it does.*
+*Seventeen names. **`authorization`, `x-api-key` and `set-cookie` are named here as the things the
+list exists to exclude** — a response carries no credential today and the allowlist is what keeps
+that true when one day it does.*
 
 ### Functions
 

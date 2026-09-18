@@ -8,6 +8,7 @@ bytes and headers it carried when it got there.
 from __future__ import annotations
 
 import json
+import logging
 
 import httpx
 import pytest
@@ -416,3 +417,132 @@ def test_peek_finds_the_model() -> None:
 def test_peek_finds_the_stream_flag(body: bytes, expected: bool | None) -> None:
     """Absent reads as false; only an unparseable body or a non-boolean reads as unknown."""
     assert peek(body).stream is expected
+
+
+# ---------------------------------------------------------------------------------------------
+# Phase 14: what a failed reply is allowed to say about why it failed.
+#
+# A 429 body is the single word "Error". Which bucket was hit and when it clears are in the
+# response headers or nowhere, and the recorder has never read one.
+# ---------------------------------------------------------------------------------------------
+
+RATE_LIMITED = {
+    "retry-after": "42",
+    "anthropic-ratelimit-requests-limit": "1000",
+    "anthropic-ratelimit-requests-remaining": "0",
+    "anthropic-ratelimit-requests-reset": "2026-09-18T12:00:00Z",
+    "request-id": "req_redacted0000000000000001",
+}
+
+
+def test_a_failed_reply_logs_the_allowlisted_headers_with_their_values(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    upstream = Upstream(streamed(429, headers=RATE_LIMITED, chunks=[b'{"type":"error"}']))
+    with (
+        caplog.at_level(logging.WARNING, logger="ilirium_llm_router.proxy"),
+        running(upstream) as client,
+    ):
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    line = "\n".join(caplog.messages)
+    assert "replied 429" in line
+    assert "retry-after=42" in line
+    assert "anthropic-ratelimit-requests-remaining=0" in line
+    assert "request-id=req_redacted0000000000000001" in line
+
+
+def test_a_header_outside_the_allowlist_never_reaches_the_log(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The promise is that nothing unnamed is written. A credential is the case that matters."""
+    upstream = Upstream(
+        streamed(
+            429,
+            headers={
+                **RATE_LIMITED,
+                "authorization": "Bearer sk-secret-value",
+                "set-cookie": "session=secret-value",
+                "anthropic-organization-id": "org_secret_value",
+            },
+            chunks=[b'{"type":"error"}'],
+        )
+    )
+    with (
+        caplog.at_level(logging.WARNING, logger="ilirium_llm_router.proxy"),
+        running(upstream) as client,
+    ):
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    line = "\n".join(caplog.messages)
+    assert "secret-value" not in line
+    assert "authorization" not in line
+    assert "set-cookie" not in line
+    assert "organization" not in line
+    # ...while the allowlisted ones still came through, so this is not passing by logging nothing.
+    assert "retry-after=42" in line
+
+
+def test_an_unlisted_rate_limit_bucket_is_named_but_never_valued(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A bucket Anthropic adds later must become visible without its value being recorded."""
+    upstream = Upstream(
+        streamed(
+            429,
+            headers={**RATE_LIMITED, "anthropic-ratelimit-tokens-per-hour-remaining": "7"},
+            chunks=[b'{"type":"error"}'],
+        )
+    )
+    with (
+        caplog.at_level(logging.WARNING, logger="ilirium_llm_router.proxy"),
+        running(upstream) as client,
+    ):
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    line = "\n".join(caplog.messages)
+    assert "anthropic-ratelimit-tokens-per-hour-remaining=<unlisted>" in line
+    assert "=7" not in line
+
+
+def test_a_rejection_carrying_no_rate_limit_headers_says_so(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The finding this phase is most likely to make, and a blank tail would hide it.
+
+    A `rate_limit_error` that names no exhausted bucket is not a rate limit.
+    """
+    upstream = Upstream(streamed(429, chunks=[b'{"type":"error"}']))
+    with (
+        caplog.at_level(logging.WARNING, logger="ilirium_llm_router.proxy"),
+        running(upstream) as client,
+    ):
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert "replied 429" in "\n".join(caplog.messages)
+    assert "(none)" in "\n".join(caplog.messages)
+
+
+def test_a_successful_reply_logs_nothing(caplog: pytest.LogCaptureFixture) -> None:
+    """Headers are read on failure only. Every call logging its buckets would drown the file."""
+    upstream = Upstream(streamed(200, headers=RATE_LIMITED))
+    with (
+        caplog.at_level(logging.WARNING, logger="ilirium_llm_router.proxy"),
+        running(upstream) as client,
+    ):
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert caplog.messages == []
+
+
+def test_the_relayed_reply_is_untouched_by_reading_its_headers() -> None:
+    """Byte-relay is not negotiable. Reading headers must not change what the caller receives."""
+    upstream = Upstream(streamed(429, headers=RATE_LIMITED, chunks=[b'{"type":"error"}']))
+    with running(upstream) as client:
+        reply = client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert reply.status_code == 429
+    assert reply.content == b'{"type":"error"}'
+    # The client still receives the headers; recording them is a copy, not a move.
+    assert reply.headers["retry-after"] == "42"
+    assert reply.headers["anthropic-ratelimit-requests-remaining"] == "0"
