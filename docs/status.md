@@ -312,7 +312,15 @@ was not a real hazard**, and repeating it would preserve a rule whose justificat
 `method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-**Nothing is in flight.** *Phase 13 was entered here at task 1 and removed at its merge on
+**`feat/phase-14-rate-limit-headers`** — Phase 14, forked from `main` at `ac2976e` on 2026-09-18.
+The Anthropic rate-limit response headers, **reshaped around `BUG-001`'s live symptom**: Claude
+Code's auto mode cannot run its safety classifier through the router, because the classifier's
+request is non-streamed and comes back `429`. *The milestone plan's "Phase 14's plan cannot skip the
+question" — where the headers durably live — is **deferred to Group D on the owner's decision**,
+because the diagnostic form needs no schema. **Group C is the owner's** and cannot be run by a
+session.*
+
+*Phase 13 was entered here at task 1 and removed at its merge on
 2026-09-17; its row is in `reference/branches.md` and its permanent record is its phase note.*
 
 ***Closing this section is not one of `IDM-001`'s three merge steps, and it should be.*** *`dec7c4a`
