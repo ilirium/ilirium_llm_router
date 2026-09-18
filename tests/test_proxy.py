@@ -523,8 +523,8 @@ def test_a_rejection_carrying_no_rate_limit_headers_says_so(
     assert "(none)" in "\n".join(caplog.messages)
 
 
-def test_a_successful_reply_logs_nothing(caplog: pytest.LogCaptureFixture) -> None:
-    """Headers are read on failure only. Every call logging its buckets would drown the file."""
+def test_a_successful_reply_never_warns(caplog: pytest.LogCaptureFixture) -> None:
+    """Nothing is wrong, so nothing warns. The success path logs at INFO and only once -- below."""
     upstream = Upstream(streamed(200, headers=RATE_LIMITED))
     with (
         caplog.at_level(logging.WARNING, logger="ilirium_llm_router.proxy"),
@@ -546,3 +546,79 @@ def test_the_relayed_reply_is_untouched_by_reading_its_headers() -> None:
     # The client still receives the headers; recording them is a copy, not a move.
     assert reply.headers["retry-after"] == "42"
     assert reply.headers["anthropic-ratelimit-requests-remaining"] == "0"
+
+
+# The control for the four tests above. "The 429 carried no rate-limit headers" is only evidence
+# that something is odd if a *successful* reply on the same credential carries some.
+
+INFO = "ilirium_llm_router.proxy"
+
+
+def test_the_first_successful_reply_samples_its_headers_once(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    upstream = Upstream(streamed(200, headers=RATE_LIMITED))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    sampled = [m for m in caplog.messages if "sampling rate-limit headers" in m]
+    assert len(sampled) == 1
+    assert "anthropic-ratelimit-requests-limit=1000" in sampled[0]
+
+
+def test_the_sample_is_taken_only_once_per_process(caplog: pytest.LogCaptureFixture) -> None:
+    """Every call reporting its buckets would drown the file the failures have to be found in."""
+    upstream = Upstream(streamed(200, headers=RATE_LIMITED))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        for _ in range(3):
+            upstream.reply = streamed(200, headers=RATE_LIMITED)
+            client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert len([m for m in caplog.messages if "sampling rate-limit headers" in m]) == 1
+
+
+def test_a_burst_of_failures_does_not_consume_the_sample(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The case the real session produced: it opened with 429s, and a success came later.
+
+    If a failure took the latch, a session shaped like that one would never sample a success at
+    all -- and the control would be silently missing exactly when it is needed.
+    """
+    upstream = Upstream(streamed(429, headers=RATE_LIMITED, chunks=[b'{"type":"error"}']))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        for _ in range(2):
+            upstream.reply = streamed(429, headers=RATE_LIMITED, chunks=[b'{"type":"error"}'])
+            client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+        assert not [m for m in caplog.messages if "sampling rate-limit headers" in m]
+
+        upstream.reply = streamed(200, headers=RATE_LIMITED)
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert len([m for m in caplog.messages if "sampling rate-limit headers" in m]) == 1
+
+
+def test_the_sample_obeys_the_same_allowlist(caplog: pytest.LogCaptureFixture) -> None:
+    """A second place headers are written is a second place a credential could land."""
+    upstream = Upstream(
+        streamed(200, headers={**RATE_LIMITED, "authorization": "Bearer sk-secret-value"})
+    )
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    line = "\n".join(caplog.messages)
+    assert "secret-value" not in line
+    assert "authorization" not in line
+    assert "retry-after=42" in line
+
+
+def test_a_reply_with_no_rate_limit_headers_still_samples(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """`(none)` on a success is the answer that makes the 429's `(none)` mean nothing."""
+    upstream = Upstream(streamed(200))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    sampled = [m for m in caplog.messages if "sampling rate-limit headers" in m]
+    assert len(sampled) == 1 and "(none)" in sampled[0]

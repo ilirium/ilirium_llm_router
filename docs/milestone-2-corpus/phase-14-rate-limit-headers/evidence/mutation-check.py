@@ -9,6 +9,13 @@ applied its mutations, which looks identical to a clean pass. So each mutation r
 separately -- whether the edit landed in the file, and whether the tests then failed. A mutation
 that cannot be applied is a FAILURE of this script, never a pass of the test set.
 
+**What it still cannot tell apart, found by being bitten 2026-09-18.** "the test is vacuous" and
+"the mutation did not do what it claimed" produce the identical report. The allowlist mutation was
+first written as `... and not print(dict(reply.headers))`, which leaks the headers to **stdout** --
+where the assertion, which reads `caplog`, cannot see them. The harness said the test was vacuous.
+**The test was fine; the mutation was.** So a surviving mutation is a prompt to read the mutation
+first and the test second, and the `why` line on each row is what makes that re-reading possible.
+
 Run from the worktree root:  python3 docs/milestone-2-corpus/phase-14-rate-limit-headers/evidence/mutation-check.py
 """
 
@@ -75,8 +82,47 @@ MUTATIONS = [
         name="the log fires on success too",
         old="        if reply.status_code >= 400:",
         new="        if reply.status_code >= 0:",
-        expect_failing="test_a_successful_reply_logs_nothing",
+        expect_failing="test_a_successful_reply_never_warns",
         why="every call would log its buckets and drown the file",
+    ),
+    # The control, added after the first real measurement showed why it was needed.
+    Mutation(
+        name="the latch never fires",
+        old="        if self.fired:\n            return False",
+        new="        if True:\n            return False",
+        expect_failing="test_the_first_successful_reply_samples_its_headers_once",
+        why="the control is silently absent, and the 429's empty header set proves nothing",
+    ),
+    Mutation(
+        name="the latch fires every time",
+        old="        self.fired = True\n        return True",
+        new="        return True",
+        expect_failing="test_the_sample_is_taken_only_once_per_process",
+        why="every successful call logs its buckets, drowning the failure lines",
+    ),
+    Mutation(
+        name="a failure consumes the sample",
+        old="        if reply.status_code >= 400:\n            # The status is known now;",
+        new="        if self.headers_sampled.take() and reply.status_code >= 400:\n            # The status is known now;",
+        expect_failing="test_a_burst_of_failures_does_not_consume_the_sample",
+        why="a session opening with 429s -- the real one did -- never samples a success",
+    ),
+    Mutation(
+        name="the sample skips the allowlist",
+        # Anchored on the success line's own wording: the call to `describe_headers` is identical
+        # at both sites, and a mutation that matches twice is refused rather than guessed at.
+        old='                "%s replied %s to %s, sampling rate-limit headers once: %s",\n'
+        "                name,\n"
+        "                reply.status_code,\n"
+        "                request.url.path,\n"
+        "                describe_headers(*recorded_headers(reply)),",
+        new='                "%s replied %s to %s, sampling rate-limit headers once: %s",\n'
+        "                name,\n"
+        "                reply.status_code,\n"
+        "                request.url.path,\n"
+        "                dict(reply.headers),",
+        expect_failing="test_the_sample_obeys_the_same_allowlist",
+        why="a second place headers are written is a second place a credential could land",
     ),
 ]
 

@@ -171,6 +171,24 @@ class Counters:
         return self.arrived - self.recorded
 
 
+@dataclass
+class Once:
+    """A latch that lets the first caller through and nobody after it.
+
+    Mutable, and held by the frozen `Proxy` the same way `Counters` is — a frozen dataclass can hold
+    something that changes, it just cannot be reassigned.
+    """
+
+    fired: bool = False
+
+    def take(self) -> bool:
+        """True exactly once, for the first caller."""
+        if self.fired:
+            return False
+        self.fired = True
+        return True
+
+
 @dataclass(frozen=True)
 class Proxy:
     """Sends requests onward to a backend and streams the reply back untouched."""
@@ -180,6 +198,16 @@ class Proxy:
     api_keys: dict[str, str]
     stats: StatsWriter
     corpus: CorpusWriter | None = None
+    headers_sampled: Once = field(default_factory=Once)
+    """**The control for the failure line below, and it exists to stop one sentence being assumed.**
+
+    A `429` that names no exhausted bucket is only evidence if a *successful* reply on the same
+    credential names one. Without this, "the rejection carried no rate-limit headers" and "this
+    credential is never sent rate-limit headers" are indistinguishable, and only the first reads
+    like a finding.
+
+    Once per process, on the first reply that is **not** an error — a failure must not consume it,
+    or a session that opens with a burst of 429s never samples a success at all."""
     counters: Counters = field(default_factory=Counters)
     """**Always on, independent of `corpus.enabled`**, and that is why it lives here rather than in
     `corpus.py`. It answers a `calls.csv` question — *was a row never written at all?* — and
@@ -298,6 +326,17 @@ class Proxy:
             # durably lives is not this task's to decide.
             logger.warning(
                 "%s replied %s to %s: %s",
+                name,
+                reply.status_code,
+                request.url.path,
+                describe_headers(*recorded_headers(reply)),
+            )
+        elif self.headers_sampled.take():
+            # The control, once per process. Logged at INFO rather than WARNING because nothing is
+            # wrong, and once rather than always because every call reporting its buckets would
+            # drown the file the failure lines have to be found in.
+            logger.info(
+                "%s replied %s to %s, sampling rate-limit headers once: %s",
                 name,
                 reply.status_code,
                 request.url.path,

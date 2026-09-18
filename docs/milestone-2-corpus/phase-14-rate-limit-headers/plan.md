@@ -159,11 +159,14 @@ against the real credential. The plan stops at its boundary and says so.
 list exists to exclude** — a response carries no credential today and the allowlist is what keeps
 that true when one day it does.*
 
-### Functions
+### Functions and classes
 
 | Name | |
 |---|---|
-| `recorded_headers(reply) -> dict[str, str]` | Beside `response_headers` in `proxy.py`. **Reads a reply it does not modify** — the relayed bytes are untouched, which is byte-relay and not negotiable |
+| `recorded_headers(reply) -> tuple[dict[str, str], list[str]]` | Beside `response_headers` in `proxy.py`. **Reads a reply it does not modify** — the relayed bytes are untouched, which is byte-relay and not negotiable. *Returns two things, not one: the allowlisted headers with values, and the names of unlisted `anthropic-ratelimit-*` ones* |
+| `describe_headers(recorded, unlisted) -> str` | The log line's payload. **`(none)` when a reply carried neither**, because that is the interesting case and a blank would read as a logging failure |
+| `Once` · `Once.take() -> bool` | **Added after the first measurement**, not in the original plan. A latch that is true exactly once. Mutable, held by the frozen `Proxy` the way `Counters` already is |
+| `Proxy.headers_sampled: Once` | The control's latch. *Also added after the measurement — see the row below* |
 
 ### Names it must not collide with
 
@@ -177,8 +180,10 @@ that true when one day it does.*
 
 | | Value |
 |---|---|
-| Log level for the line | `WARNING` |
+| Log level for the failure line | `WARNING` |
 | Status range that triggers it | `>= 400` — *matching `relay`'s existing `reply.status_code >= 400` branch rather than inventing a second threshold* |
+| **Log level for the control line** | **`INFO`** — *nothing is wrong when it fires* |
+| **How often the control fires** | **Once per process**, on the first reply that is **not** an error. *A failure must not consume the latch: the real session of 2026-09-18 opened with a burst of 429s, and a latch a failure could take would have sampled nothing* |
 | New config keys | **None.** The minimal form is deliberately not configurable |
 | New on-disk names | **None in Group B.** Group D may add one, and its rows are written then |
 | Index schema version | **Unchanged at `1`.** Group B touches no index. *If Group D reaches the corpus index this becomes `2`, and that row is written then* |
