@@ -51,6 +51,14 @@ build-backend = "uv_build"
 dev = [
     "pytest>=9.1.1",
 ]
+# PHASE 14 EXPERIMENT, 2026-09-18, and its own group so it is NOT installed by `uv sync` or pulled
+# in by `uv run`. `curl_cffi` exists to make an HTTP client's TLS handshake look like a browser's;
+# it is here to test whether the 429 is a bot score against scripted-client fingerprints, and it is
+# reached only through `make forwarder`. Nothing under `src/` imports it. It comes out with the
+# experiment -- see `docs/method/IDM-003-development-tooling.md` on what earns a dependency.
+experiment = [
+    "curl-cffi>=0.16.3",
+]
 
 [tool.ruff]
 # The codebase is written at 100 columns and always has been; ruff's default is 88. Without this

@@ -4,6 +4,10 @@
 CONFIG ?= config.yaml
 ARGS   ?=
 
+# Phase 14 experiment only. Both of the next two come out when it does.
+PORT   ?= 8799
+FWD    := docs/milestone-2-corpus/phase-14-rate-limit-headers/evidence/boringssl-forwarder.py
+
 # ruff is fetched on demand rather than installed as a dependency, but it is pinned: an unpinned
 # formatter reformats the whole repository the day it changes its mind, and a version bump then
 # arrives disguised as someone's feature branch. This is the version that produced the current
@@ -13,7 +17,7 @@ RUFF   ?= ruff@0.16.1
 
 .DEFAULT_GOAL := help
 
-.PHONY: help sync run check test lint format clean
+.PHONY: help sync run check test lint format clean forwarder run-boringssl
 
 help: ## List the available targets
 	@grep -hE '^[a-z-]+:.*##' $(MAKEFILE_LIST) \
@@ -25,6 +29,12 @@ sync: ## Install dependencies into the local environment
 
 run: ## Start the router
 	uv run ilirium-llm-router -c $(CONFIG)
+
+forwarder: ## Phase 14 experiment: start the BoringSSL egress hop (PORT=8799)
+	uv run --group experiment python $(FWD) $(PORT)
+
+run-boringssl: ## Phase 14 experiment: start the router pointed at the forwarder above
+	uv run ilirium-llm-router -c config-boringssl.yaml
 
 check: ## Validate the config and print it, without starting the server
 	uv run ilirium-llm-router -c $(CONFIG) check

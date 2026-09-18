@@ -702,3 +702,27 @@ traffic at all — `FORWARDER_UPSTREAM` exists for exactly that:
 **Chunk for chunk, spacing preserved.** *`stream=True` on `AsyncSession.request` and
 `aiter_content()` — the API was inspected rather than guessed, after this phase spent two rounds on
 instruments that looked right and measured nothing.*
+
+### Driving it: a target and a config of its own
+
+**`make forwarder` and `make run-boringssl`**, plus **`config-boringssl.yaml`** at the worktree
+root. *The owner asked for both rather than hand-editing anything.*
+
+***The separate config is not a convenience.*** `config.yaml` is compared **byte for byte** against
+the shipped starter by `test_template_matches_the_repository_config`, so **every hand-edit of it
+turns that test red for as long as the edit lives** — which it had been, all afternoon. *A second
+file takes the edit instead and the suite goes green: **474 passed.***
+
+**It differs from `config.yaml` in exactly three marked places** — the egress hop, the corpus on,
+and the 5 MiB body cap matching what the owner had been running. ***Log and corpus paths are
+deliberately identical***, so a run through the forwarder lands in the same files as every earlier
+run and the two can be read against each other.
+
+**`curl_cffi` is its own dependency group**, not `dev`: `uv sync` does not install it, `uv run` does
+not pull it in, nothing under `src/` imports it, and it is reached only through `make forwarder`.
+*`IDM-003` governs what earns a dependency, and a library whose purpose is to make a client's TLS
+look like a browser's has not earned a place in the router's.*
+
+**Both were exercised rather than assumed**, against the local SSE origin with no Anthropic traffic:
+`make forwarder` resolves the group and starts, the config validates with the right `base_url`, and
+five events 0.4 s apart came through at `+0.07 +0.46 +0.87 +1.27 +1.67`.
