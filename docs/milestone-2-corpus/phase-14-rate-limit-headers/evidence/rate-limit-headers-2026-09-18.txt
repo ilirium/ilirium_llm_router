@@ -1,0 +1,19 @@
+# The 429 response headers, measured 2026-09-18
+
+Claude Code 2.1.267 · router 0.1.0 · backend anthropic · credential forward (OAuth subscription)
+Captured by the WARNING line added in Task 4. One driven Claude Code session, auto mode on.
+
+Every line below is verbatim from logs/telemetry/router.log.
+
+2026-09-18T11:02:34.123+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000002
+2026-09-18T11:04:22.105+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000003
+2026-09-18T11:04:42.648+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000004
+2026-09-18T11:04:43.896+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000005
+2026-09-18T11:04:45.012+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000006
+2026-09-18T11:04:47.343+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000007
+2026-09-18T11:04:51.161+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000008
+2026-09-18T11:04:51.555+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000009
+2026-09-18T11:04:52.312+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000010
+2026-09-18T11:04:53.546+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000011
+2026-09-18T11:04:56.023+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000012
+2026-09-18T11:05:00.414+00:00  WARNING  anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000013

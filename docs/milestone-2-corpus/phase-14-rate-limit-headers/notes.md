@@ -99,6 +99,69 @@ that an allowlisted value is present, so it cannot pass by logging nothing.
 - **`make lint`** — clean at the pinned `0.16.1`. *Five `SIM117` nested-`with` findings were fixed
   rather than ignored; the mutation check was re-run afterwards and still caught 6/6.*
 - **`evidence/mutation-check.py`** — 6/6, exit 0.
-- **Not yet driven against the real thing.** *Group C is the owner's, and until it runs this phase
-  has a tested instrument and no measurement.* **Green tests are not a sign-off** — `CLAUDE.md`, and
-  this line says so rather than implying otherwise by omission.
+- **Driven against the real thing, 2026-09-18**, by the owner: one Claude Code session, auto mode
+  on, Claude Code **2.1.267**. **It produced the finding** — see Tasks 7–9 below. *This bullet read
+  "Not yet driven against the real thing" until the session ran, three hours after it was written;
+  corrected rather than left, because a "Verified by" line that disagrees with the section under it
+  is the exact defect `status.md` records having carried for thirteen days.*
+- **One control is still not run**, and it bounds the finding rather than decorating it: whether a
+  **successful** reply carries `anthropic-ratelimit-*` headers on this credential. Tasks 7–9 say why
+  it matters and what it would cost.
+
+## Tasks 7–9 — the measurement, and what it does and does not settle
+
+**The owner ran it on 2026-09-18**, 11:02–11:05 UTC, Claude Code **2.1.267**, router 0.1.0, auto
+mode on. Frozen as `evidence/rate-limit-headers-2026-09-18.txt` and
+`evidence/calls-2026-09-18-redacted.csv`.
+
+### It reproduces, on current versions, unchanged
+
+**12 non-streamed `/v1/messages`, all 429. 8 streamed, all `ok`. Same three minutes, same
+credential.** `BUG-001` was last confirmed 2026-08-25 and its record ended 2026-08-26; **24 days
+later nothing about it has moved.**
+
+***And the retry signature `BUG-001` predicted is there, to the byte.*** Five attempts at
+`claude-sonnet-5` and **128,250** bytes, then five at `claude-opus-5` and **128,248** — *a two-byte
+difference, which is exactly the model-name length difference.* **One user-visible classifier
+failure is ten rows**, plus two 311-byte `quota` probes. A raw 429 count overstates distinct
+failures by an order of magnitude, exactly as that document warns.
+
+**The failing body is the classifier**, confirmed from the corpus rather than inferred: `max_tokens:
+64`, `stream` absent, system prompt opening *"You are a security monitor for autonomous AI coding
+agents"*.
+
+### The finding
+
+**Every one of the twelve 429s carried `request-id` and nothing else.**
+
+```
+anthropic replied 429 to /v1/messages: request-id=req_redacted0000000000000002
+```
+
+**No `retry-after`. No `anthropic-ratelimit-*` header of any kind.** *And not merely none that the
+allowlist knew: an unlisted one would have rendered as `name=<unlisted>`, and none did. The
+allowlist is not what made them absent.*
+
+***A `rate_limit_error` that names no exhausted bucket is not a rate limit.*** That is the sentence
+`BUG-001` has wanted for three weeks, and it is now measured rather than reconstructed — **the
+header line is the measurement the two upstream issues stall on.**
+
+### The control that is missing, and it is the honest limit of the above
+
+***Whether a successful reply on this credential carries `anthropic-ratelimit-*` headers at all is
+unmeasured.*** **The instrument fires only at `>= 400`** — deliberately, so that every call does not
+log its buckets and drown the file — and that decision is precisely what leaves this open.
+
+| | |
+|---|---|
+| **If a 200 carries them** | Anthropic returned `rate_limit_error` while declining to name a bucket **on a credential that normally names one.** The finding is damning |
+| **If a 200 carries none either** | These headers are simply not sent on an OAuth subscription credential, and **their absence on the 429 says nothing at all** |
+
+**Until that is run, "the 429 names no bucket" is a fact and "Anthropic normally names one" is an
+assumption.** *Written down rather than left implicit, because a green instrument and a real finding
+together are exactly the conditions under which an untested premise gets carried into an upstream
+report.*
+
+**The control is small and is not yet built:** log the rate-limit headers of the **first successful
+reply per process**, once, at `INFO`. One short run then answers it, and the file is not drowned.
+*Proposed to the owner on 2026-09-18 rather than built — `CLAUDE.md`, propose before implementing.*

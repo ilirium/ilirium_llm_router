@@ -1,0 +1,23 @@
+timestamp,session_id,agent_id,backend,model,path,stream,input_tokens,output_tokens,cache_read_input_tokens,cache_creation_input_tokens,stop_reason,request_bytes,response_bytes,ttfb_ms,duration_ms,error_status,error_code,error_message,router_version
+2026-09-18T11:02:33.026+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,310,ok,,,0.1.0
+2026-09-18T11:02:33.635+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,488,489,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T11:02:49.627+00:00,session-01,,anthropic,claude-opus-5,/v1/messages,true,2,13,0,73115,end_turn,205970,1908,1409,1925,ok,,,0.1.0
+2026-09-18T11:04:21.265+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,211,ok,,,0.1.0
+2026-09-18T11:04:21.799+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,307,307,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T11:04:32.963+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,true,1175,19,0,0,end_turn,4049,1946,1250,1986,ok,,,0.1.0
+2026-09-18T11:04:32.964+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,true,2,263,67865,5257,tool_use,206025,6241,1365,3976,ok,,,0.1.0
+2026-09-18T11:04:37.970+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,true,2,305,73122,316,tool_use,207493,11464,902,3897,ok,,,0.1.0
+2026-09-18T11:04:42.163+00:00,session-02,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,128250,114,486,486,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T11:04:43.126+00:00,session-02,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,128250,114,770,770,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T11:04:44.704+00:00,session-02,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,128250,114,309,310,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T11:04:46.964+00:00,session-02,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,128250,114,380,381,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T11:04:50.780+00:00,session-02,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,128250,114,382,383,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T11:04:51.170+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128248,114,386,387,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T11:04:51.937+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128248,114,376,377,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T11:04:53.180+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128248,114,367,368,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T11:04:55.544+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128248,114,480,481,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T11:05:00.023+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128248,114,391,392,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-18T11:05:00.467+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,true,2,196,73438,435,tool_use,209185,4367,772,3083,ok,,,0.1.0
+2026-09-18T11:05:36.466+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,true,2,110,73873,3288,tool_use,218395,4584,929,2000,ok,,,0.1.0
+2026-09-18T11:05:39.056+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,true,2,431,77161,145,end_turn,219261,14147,678,6421,ok,,,0.1.0
+2026-09-18T11:05:45.516+00:00,session-02,,anthropic,claude-opus-5,/v1/messages,true,504,16,77306,431,end_turn,221830,2289,994,1607,ok,,,0.1.0

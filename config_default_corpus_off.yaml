@@ -65,7 +65,7 @@ stats:
 # `calls.csv` above is always on because it is cheap and holds nothing sensitive. Neither is true
 # here: bodies hold source code, file contents and anything typed. So this is one switch, and off.
 corpus:
-  enabled: true
+  enabled: false
   dir: logs/corpus
   # The level bodies are stored at -- AND the level the trainer scores a candidate dictionary
   # against the incumbent at, so the comparison cannot drift from what is actually stored. It is
@@ -74,7 +74,7 @@ corpus:
   compress_level_zstd: 9
   # Two limits, because they are checked at two different moments and neither can cover the other.
   # This one bounds peak memory for ONE body, on every chunk while the call runs.
-  body_max_bytes: 5242880     # 5 MiB
+  body_max_bytes: 1048576     # 1 MiB
   # And this one bounds memory for ALL WAITING bodies, once at submit. A thousand ordinary 100 KB
   # bodies are each far under the ceiling and together are 100 MB in the queue.
   queue_max_bytes: 67108864   # 64 MiB
