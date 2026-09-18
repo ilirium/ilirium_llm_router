@@ -50,3 +50,29 @@ were all simply there.
 **That is the corpus doing the job it was built for, on a question nobody had when it was built.**
 Worth knowing when `BKL-0017` asks whether archiving is worth what it costs — this is the other side
 of that ledger, and it is not written down anywhere else.
+
+## 4 · ASK · high · `branch-index.py --write` now deletes a row it must not delete
+
+**Found while checking this phase's own branch description. It is not this phase's doing** — it
+reproduces on a clean `main` with nothing of this branch in the tree.
+
+**What happens:** `temp/to-run-server` has been fast-forwarded to `main`'s exact tip. `resolve()`
+treats a branch whose tip is on the trunk **with nothing between it and the trunk head** as *in
+flight* — correct for a branch just cut and not yet committed to, and wrong for this one. It
+therefore leaves `merged_rows`, and **`--write` silently drops its row from `reference/branches.md`.**
+
+**Why it matters more than one row.** `IDM-001` says of exactly this row: ***"The row exists; do not
+remove it as noise."*** It is the only place that records that `temp/to-run-server` is not work —
+and that the telemetry and corpus `BUG-001` and Phase 11 both rest on were captured through it.
+**And `IDM-001` puts `--write` as the last step of every merge**, so the next merge deletes it
+without anyone looking.
+
+***`--check` does not warn.*** It prints `STALE: branches.md does not match git. Re-run with
+--write.` — the same thing it prints for an ordinary missing row. **A green `--write` followed by a
+commit is what this looks like from the outside.**
+
+**Not fixed here, and not worked around.** The fix is a judgement about what the script should treat
+as in flight, and it belongs on its own branch rather than inside a phase about response headers.
+**`main` is STALE right now** for this reason alone.
+
+*Asked out loud on 2026-09-18. Recorded here because it survives the session.*
