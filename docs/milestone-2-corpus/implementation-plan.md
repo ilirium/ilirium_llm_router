@@ -280,7 +280,10 @@ have shipped the vacuous check.*
 > ***IN FLIGHT since 2026-09-18 on `feat/phase-14-rate-limit-headers`. Not merged.*** **Reshaped by
 > the owner on the day it opened**, from an instrument into a diagnosis of `BUG-001`: Claude Code's
 > auto mode cannot run its safety classifier through the router. **The instrument exists and works;
-> eleven hypotheses are eliminated by measurement and the cause is not identified.**
+> thirteen hypotheses are eliminated by measurement and the cause is not identified.**
+>
+> ***One experiment is built and not run*** — a hosts entry with `mkcert`, so the client is fully
+> first-party while still routed. **It is the last one that does not cost a dependency swap.**
 >
 > ***The question this section says the plan cannot skip is still not answered.*** It was **deferred
 > on the owner's decision**, not skipped — the diagnostic form needs no schema, so the values were

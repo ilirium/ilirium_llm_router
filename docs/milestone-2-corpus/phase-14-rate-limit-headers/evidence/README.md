@@ -270,16 +270,29 @@ the Python build, which is the point of keeping the tool beside the record.*
 
 ## What this evidence establishes, and what it does not
 
-***Together these records eliminate thirteen hypotheses*** — `accept-encoding`, HTTP/2, a dropped
-header, an added header, the `anthropic-beta` list, the withheld attribution headers, quota
-exhaustion, request size, the model, the router inventing the rejection, and a non-browser TLS
-fingerprint.
+***Together these records eliminate thirteen hypotheses***, and they are enumerated rather than
+counted, because ***a count and a list that disagree is this phase's most repeated defect*** —
+including in the sentence this one replaced, which said thirteen above a list of eleven:
+
+| | |
+|---|---|
+| 1–5 | `accept-encoding` · HTTP/2 · a **dropped** header · an **added** header · the `anthropic-beta` list |
+| 6–8 | quota exhaustion · request size · the model |
+| 9–10 | the router inventing the rejection · a **non-browser TLS fingerprint** |
+| 11 | ***the withheld attribution fields.*** **Re-established 2026-09-18 by a sounder route than the one that first claimed it** — `C2d` added an **HTTP header** the client never sends as one, so its negative was real and its subject was not. *What settles it is that **the classifier carries no attribution block in either configuration***|
+| 12 | **the absence of `x-client-request-id`** — it arrives once the first-party flag is set, and the rejection is unchanged |
+| 13 | ***the first-party gate itself***, as far as the flag reaches it: `go()` is true, the wire shows it, and the 429 does not move |
 
 ***They do not identify the cause, and nothing here should be read as though they do.***
 
 **Two things remain untested:** an **exact-fingerprint allowlist**, which only Bun's own build
 could match and perhaps not even that; and **connection reuse**, which nothing in this phase has
 touched.
+
+***And one is built and not run:*** the **hosts entry with `mkcert`**, which makes the client fully
+first-party while still routed — *the two instruments above, `config-hosts.yaml`, and
+`for-the-owner.md` entry 14.* **It is the last experiment that costs neither a dependency swap nor
+a runtime to install.**
 
 ***And one thing was tested and came back inconclusive rather than negative***, which is a third
 state this section did not previously have room for: **`_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL`

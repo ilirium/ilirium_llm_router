@@ -131,7 +131,7 @@ against the real credential. The plan stops at its boundary and says so.
 | **8** | Read the logged headers off `router.log`. **Freeze them into `evidence/`**, redacted per `../../README.md` — a measurement that lives only in one worktree's gitignored `logs/` discharges nothing, which this milestone has recorded once already |
 | **9** | Decide H1 / H2 / neither, in `notes.md`, from the values rather than from the absence of a failure. ***An absence of 429s proves nothing*** — `BUG-000`, and a quiet session looks exactly like a fix |
 
-### Group C2 — eleven hypotheses, eliminated one at a time *(not planned; it happened)*
+### Group C2 — thirteen hypotheses, eliminated one at a time *(not planned; it happened)*
 
 ***This group was not in the plan and is written down after the fact.*** *The phase was chartered
 to record the headers; recording them produced a finding, the finding turned out to rest on an
@@ -146,9 +146,28 @@ unrun control, and the owner ran it. What follows is what that cost.*
 | **C2e** | Capture both TLS `ClientHello`s — `evidence/clienthello-capture.py` | **the premise holds**: the two are trivially distinguishable |
 | **C2f** | A BoringSSL egress hop — `evidence/boringssl-forwarder.py`, `make forwarder` | **negative** — a Chrome fingerprint is rejected exactly as Python's is |
 
+| **C2g** | `_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL=1`, the client's own first-party override | **the flag reaches the wire** — `x-client-request-id` arrives for the first time — **and the 429 does not move** |
+| **C2h** | Read the **client** instead of the router — `evidence/binary-extract.sh` | ***the "attribution header" is a body field***, so `C2d` tested the wrong channel entirely |
+
 ***Nothing from C2a, C2b or C2d is reverted.*** **Owner's decision, 2026-09-18: they stay for
 further experiments on this branch.** *Their costs are real and are recorded in `notes.md` —
 `accept-encoding` most of all.*
+
+### Group C3 — the hosts experiment *(BUILT 2026-09-18, NOT RUN; the owner's)*
+
+***Added after the fact, like C2.*** *The owner chose it over patching the client binary; `CE()`
+reads `ANTHROPIC_BASE_URL` directly, so leaving it unset is what makes the client first-party and a
+hosts entry does that with nothing modified.*
+
+| Task | | |
+|---|---|---|
+| **C3a** | `evidence/tls-terminator.py` — the router has **no TLS**, and 443 is privileged | built, **not run** |
+| **C3b** | `evidence/run-pinned.py` — `/etc/hosts` is machine-wide, so the router would resolve `api.anthropic.com` to **itself** | built, **guards exercised** |
+| **C3c** | `config-hosts.yaml` and `make run-hosts` — *the egress hop removed and **the corpus ON***, without which the run captures no bodies | built |
+| **C3d** | Run it. ***`for-the-owner.md` entry 14 is the runbook*** — and **the hosts line redirects the owner's own session**, so `curl --resolve` proves the chain first | **the owner's, 2026-09-19** |
+
+***If the 429 survives this, the entire client-side variable is eliminated*** and what remains is
+the TLS fingerprint and connection reuse.
 
 ### Group D — the durable home *(NOT STARTED, and still the milestone plan's "cannot skip")*
 
@@ -238,7 +257,10 @@ one day it does.*
 | **Log level for the control line** | **`INFO`** — *nothing is wrong when it fires* |
 | **How often the control fires** | **Once per process**, on the first reply that is **not** an error. *A failure must not consume the latch: the real session of 2026-09-18 opened with a burst of 429s, and a latch a failure could take would have sampled nothing* |
 | New config keys | **None.** The minimal form is deliberately not configurable |
-| New on-disk names | **None in Group B.** Group D may add one, and its rows are written then |
+| New on-disk names | **None in Group B.** *Group D may add one, and its rows are written then.* ***Groups C2 and C3 added six, all of which come out with the experiments*** — see the two rows below |
+| **Experiment files — C2 and C3** | `evidence/clienthello-capture.py` · `evidence/boringssl-forwarder.py` · `evidence/binary-extract.sh` · `evidence/run-pinned.py` · `evidence/tls-terminator.py` · `config-hosts.yaml`. ***None is on the router's import path and none ships*** |
+| **`make` targets** | `forwarder` · `run-boringssl` · **`run-hosts`**. *All three come out with the experiments; the Makefile says so where they are defined* |
+| **Environment variables** | `FORWARDER_UPSTREAM` · `FORWARDER_IMPERSONATE` · **`PINNED_ANTHROPIC_IP`**. ***Read by the experiment scripts only; the router reads none of them*** |
 | Index schema version | **Unchanged at `1`.** Group B touches no index. *If Group D reaches the corpus index this becomes `2`, and that row is written then* |
 
 ---
