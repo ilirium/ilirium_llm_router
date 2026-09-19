@@ -145,6 +145,22 @@ as it lies would label a session's bodies by when each call finished.
   on 2026-08-28. **The self-containment guarantee above is untouched** — it promises a day folder's
   blobs open standalone, and they still do.*
 
+### Two day folders hold response bodies that are compressed *inside* the zstd blob
+
+***`2026-09-18` and the 12:31 slice of `2026-09-19`, in the Phase 14 worktree.*** **Unzstd a
+non-streamed response blob from those days and you get **brotli**, not JSON.** *`extract --format
+bodies` will hand a reader bytes and look broken.*
+
+**Why**: a Phase 14 experiment relayed the caller's `accept-encoding` on non-streamed requests
+instead of forcing `identity`, so Anthropic compressed those replies and the store wrote **what
+arrived**, as it always does. ***The store is not at fault and nothing is lost*** — the bytes are
+exactly what the client received.
+
+**The experiment is off** — `experiments.relay_accept_encoding`, `false` in every committed config
+since 2026-09-19 — **so newer blobs are plain again.** *Requests were never affected; this is the
+response side only.* **Decompress with `brotli` if you are reading those days**, and see
+`../milestone-2-corpus/phase-14-rate-limit-headers/` for what the experiment cost.
+
 ## The write path
 
 **Telemetry never breaks a call, and this is telemetry.** `submit()` runs on the event loop and does

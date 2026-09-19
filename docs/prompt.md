@@ -76,7 +76,10 @@ single easiest mistake to make here.**
    *Three switches went off together, so the run credits the set; the reply encodings narrow it to
    one, but that is mechanism rather than measurement.* **Worth doing before anything goes upstream,
    because the report has to say the router was at fault for half of it.**
-2. ***`content-length` versus compression.*** **The router relays `content-encoding: br` correctly
+2. ***`content-length` versus compression.*** **Both facts are now pinned by tests** —
+   `test_a_compressed_reply_keeps_its_content_encoding` and
+   `test_a_relayed_reply_carries_no_content_length` — *so separating them is a deliberate
+   change to the second rather than a silent change in behaviour.* **The router relays `content-encoding: br` correctly
    — tested — and drops `content-length`, so a compressed reply goes out chunked.** *Keep the
    compression and stop dropping the length: if it then works, the bug is the missing length rather
    than the compression, which is fixable rather than merely avoidable.*
@@ -119,7 +122,7 @@ single easiest mistake to make here.**
 ## What is finished, so nothing is half-done
 
 **The working tree is clean and every finding is committed.** ***Every check re-run at this
-handoff:*** **498 tests, 41/41 mutations, `make lint` clean at the pinned `0.16.1`,
+handoff:*** **500 tests, 43/43 mutations, `make lint` clean at the pinned `0.16.1`,
 `backlog-index --check` at 35 live / 39 ids, `link-check.py` at 112.** ***`branch-index --check`
 is `STALE` and must not be fixed with `--write`*** — entry 4, and it is not this branch's doing.
 

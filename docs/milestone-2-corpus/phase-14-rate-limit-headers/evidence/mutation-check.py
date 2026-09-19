@@ -367,6 +367,23 @@ MUTATIONS = [
         expect_failing="test_an_encoding_the_router_cannot_read_says_so",
         why="`br` would be fed to zlib, and the failure would read as a corrupt body",
     ),
+    # What the CLIENT receives from a compressed reply, 2026-09-19.
+    Mutation(
+        name="content-encoding is dropped from the reply",
+        old='DROPPED_FROM_RESPONSE = CONNECTION_HEADERS | {"content-length", "date", "server"}',
+        new='DROPPED_FROM_RESPONSE = CONNECTION_HEADERS | {"content-length", "date", "server", "content-encoding"}',
+        expect_failing="test_a_compressed_reply_keeps_its_content_encoding",
+        why="the caller is handed compressed bytes with nothing saying so -- the failure mode this "
+        "phase wrongly suspected, and it must stay impossible rather than merely absent",
+    ),
+    Mutation(
+        name="content-length is relayed after all",
+        old='DROPPED_FROM_RESPONSE = CONNECTION_HEADERS | {"content-length", "date", "server"}',
+        new='DROPPED_FROM_RESPONSE = CONNECTION_HEADERS | {"date", "server"}',
+        expect_failing="test_a_relayed_reply_carries_no_content_length",
+        why="separating chunked from compressed is `prompt.md` open item 2 and must be a deliberate "
+        "change to that test, never a silent one",
+    ),
 ]
 
 

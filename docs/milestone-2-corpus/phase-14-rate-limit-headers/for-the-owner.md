@@ -114,7 +114,7 @@ rediscover it:
 
 | In the tree | |
 |---|---|
-| `accept-encoding` relayed for non-streamed | ***The corpus now stores those bodies compressed.*** A stored non-streamed response blob is **brotli, not JSON**, and `extract` will hand a reader bytes |
+| `accept-encoding` relayed for non-streamed | ***WAS TRUE UNTIL 2026-09-19 AND IS NOT NOW.*** While it ran, the corpus stored non-streamed response blobs as **brotli, not JSON** — *`logs/corpus/2026-09-18` and the 12:31 slice of `2026-09-19` still do, so a reader of those days needs brotli.* **The switch is off, so new blobs are plain again — and this experiment turned out to be the cause of the classifier failure.** → entry 20 |
 | `http2=True` and the `h2` dependency | Harmless, buys nothing measured |
 | The imitation headers | Fabricated attribution on every Anthropic call |
 

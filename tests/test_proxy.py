@@ -1188,3 +1188,70 @@ def test_the_catch_all_forwards_a_body_it_cannot_read() -> None:
         )
 
     assert str(upstream.received.url) == "https://api.anthropic.com/api/hello"
+
+
+# Phase 14, 2026-09-19. What the CLIENT receives when a reply arrives compressed. Four documents
+# rest on these two facts -- notes.md, for-the-owner.md entry 20, BUG-001 and the wiki page -- and
+# until this test they rested on a script run once in a shell and never saved.
+
+def test_a_compressed_reply_keeps_its_content_encoding() -> None:
+    """***The router does not break a compressed reply, and this is the evidence for saying so.***
+
+    `content-encoding` is absent from `DROPPED_FROM_RESPONSE`, so it survives the relay and the
+    caller has what it needs to decode. **That matters because the classifier failed on exactly
+    such a reply**, and the temptation was to assume the router had mangled the header. It had not.
+
+    Asserted with `gzip` rather than `br` only so the test client can decode the body; the router
+    never inspects the value, so `br` takes the identical path.
+    """
+    import gzip
+
+    payload = b'{"content":[{"type":"text","text":"<block>no"}]}'
+    blob = gzip.compress(payload)
+    upstream = Upstream(
+        streamed(
+            200,
+            chunks=(blob,),
+            headers={
+                "content-type": "application/json",
+                "content-encoding": "gzip",
+                "content-length": str(len(blob)),
+            },
+        )
+    )
+    with running(upstream, make_config(relay_accept_encoding=True)) as client:
+        reply = client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert reply.headers["content-encoding"] == "gzip"
+    assert reply.content == payload  # the caller could decode it, which is the point
+
+
+def test_a_relayed_reply_carries_no_content_length() -> None:
+    """**The other half, and the open question it belongs to.**
+
+    `content-length` IS dropped, so a relayed reply goes out chunked. Harmless on its own -- every
+    streamed reply in this project's history is chunked and none has ever failed -- but the
+    classifier broke on a reply that was compressed **and** chunked, and which of the two matters
+    has not been separated.
+
+    ***Pinned here so that separating them is a deliberate change to this test rather than a silent
+    change in behaviour.*** `prompt.md`'s open item 2.
+    """
+    import gzip
+
+    blob = gzip.compress(b'{"ok":true}')
+    upstream = Upstream(
+        streamed(
+            200,
+            chunks=(blob,),
+            headers={
+                "content-type": "application/json",
+                "content-encoding": "gzip",
+                "content-length": str(len(blob)),
+            },
+        )
+    )
+    with running(upstream, make_config(relay_accept_encoding=True)) as client:
+        reply = client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert "content-length" not in reply.headers

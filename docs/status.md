@@ -255,7 +255,7 @@ succeeds through the router** — 9 of 9 — **and the paired control clears the
 *Entry 8's two remaining hypotheses, the TLS fingerprint and connection reuse, are eliminated as a
 side effect: **Anthropic saw the router's own fingerprint on both days.***
 
-**Every check on that branch is green** — **498 tests, 41/41 mutations**, `make lint` at the pinned
+**Every check on that branch is green** — **500 tests, 43/43 mutations**, `make lint` at the pinned
 `0.16.1`, `backlog-index --check` at **35 live / 39 ids**, and `link-check.py` at **112 in this
 worktree**. **`BUG-001` is retracted and corrected there**, not on the trunk: its table cleared the
 router with an argument that compares streamed against non-streamed *inside* the router.
