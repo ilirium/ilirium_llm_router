@@ -214,6 +214,13 @@ warm-up existed.*
 
 **Not implemented.** `CLAUDE.md` says propose before implementing, and this is a proposal.
 
+***ANSWERED 2026-09-19 — and you improved the option you picked.*** **You took the second row's
+spirit into the first's shape**: not a size band bolted onto the existing latch, but a key of
+`(path, shape, size band)` — ***with the path part of the key rather than a gate.*** *That is
+strictly more than was offered: the old code refused to sample any path but `/v1/messages`, which is
+the same advance decision one level up, and `/api/hello` is now sampled in its own right instead of
+being excluded.* **Built the same day; see entry 15 for what it cost and what it found.**
+
 ## 12 · REGRET · medium · I let "the flag works" stand in for "the hypothesis holds"
 
 **They are different claims and only the first is measured.** *`x-client-request-id` arriving proves
@@ -363,7 +370,35 @@ if you would rather not repeat step 1.*
 you ran and whether step 4 was green**, and ***say it if it did not reproduce***: that is a result,
 not a failed session.
 
-***One known gap, and it is entry 11's.*** **The arrival sampler will again spend its non-streamed
-latch on whatever arrives first**, which last time was a 323-byte warm-up rather than the 127 KB
-classifier. *The corpus captures every body regardless, so nothing is lost this time* — **but the
-log line will once more describe the wrong request, and entry 11's fix is still unchosen.**
+***That gap is closed — 2026-09-19, and this paragraph is the corrected version.*** **It said the
+sampler would again spend its non-streamed latch on whatever arrived first.** *You chose entry 11's
+fix that morning and it is in the tree, so the warm-up and the classifier are now separate shapes
+and both are logged.* **Nothing in steps 1–7 changes**; the router is run from source, so
+`make run-hosts` picks it up with no rebuild. → entry 15.
+
+## 15 · REGRET · medium · The sampler fix, and a test of mine that passed for the wrong reason
+
+**Entry 11 is discharged. Built 2026-09-19 to your shape** — `(path, streamed?, size band)`, bands
+being the decimal order of magnitude, so the 323-byte warm-up is band 2 and the 127,949-byte
+classifier is band 5. **480 tests, `make lint` clean, and the mutation harness at 32/32.**
+
+***One thing I added that you did not ask for, and the reason is worth a line.*** **The key carries
+the request path and `app.py` registers a catch-all route**, so the key space is whatever a caller
+types — an unbounded set and an unbounded log, where the old two-key dict could not grow at all.
+**It stops at 64 shapes, and reaching the cap is announced on its own log line.** *A silent stop is
+the defect this phase keeps having; a bound that hides itself would have been a fourth instance.*
+
+***The regret is a test I wrote and believed.*** **`test_the_probe_endpoint_cannot_spend_the_messages_latch`
+passed a mutation that deleted the path from the key entirely.** *Its two requests are a bodiless
+`GET /api/hello` and a 71-byte `POST /v1/messages` — **different size bands**, so they stayed apart
+on the band alone and the path assertion rode along for free.* **It asserted the right thing and
+proved none of it.**
+
+***It was caught by the harness and by nothing else*** — the test was green, the code was correct,
+and reading it would not have shown this. **`test_the_path_is_part_of_the_shape_key` now varies
+nothing but the path.** *This is the fourth time in this phase that a check has turned out to be
+aimed at something other than what it claimed, and the first that an instrument caught rather than a
+person.*
+
+**Nothing else in `src/` was touched** — checked with `git diff --stat`, not assumed. *Entry 7's
+three live experiments are untouched and still yours to keep or drop.*

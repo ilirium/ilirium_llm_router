@@ -1007,3 +1007,62 @@ restores go into a block the classifier does not carry at all.*
 
 **Hypothesis thirteen is eliminated, and more cleanly than C2d eliminated it:** the attribution
 content is not the cause, **because the classifier sends none in either configuration.**
+
+## The sampler key, chosen by the owner and wider than what was offered
+
+**2026-09-19, before the hosts experiment ran.** *`for-the-owner.md` entry 11 put three options up
+and the owner took none of them whole.* **What was built is `(path, streamed?, size band)`.**
+
+**The band is the decimal order of magnitude** — `323 -> 2`, `127_949 -> 5` — computed from the
+decimal string rather than `log10`, which is exact at a power of ten where a float is not.
+
+***The part that was not in any of the three options: the path moved into the key.*** **It had been
+a gate** — `request.url.path.startswith("/v1/messages")`, which was entry 6's fix for the latch
+being spent on `/api/hello`. *A gate is the same advance decision one level up: it does not choose
+which request is interesting, it chooses which **path** is, and nothing had established that the
+interesting request would always be on `/v1/messages`.* **`/api/hello` is now sampled in its own
+right rather than excluded, and it still cannot take another shape's slot.**
+
+### The bound, which the owner did not ask for and was told about rather than given
+
+**`app.py` registers a catch-all `/{path:path}`**, so the path in the key is whatever a caller
+types. *The old structure was a dict of two hardcoded keys and could not grow; this one accumulates
+one entry per distinct shape seen, for as long as the process runs.* **It stops at
+`ARRIVAL_SAMPLE_CAP = 64`.**
+
+***And reaching the cap is announced on its own log line.*** **That line is the point, not the
+cap.** *A bound that hides itself is an instrument that quietly stops looking while every line
+already in the file reads as though it were still watching — which is this phase's recurring defect
+and would have been its fourth instance.*
+
+### A test of mine passed a mutation, and it is the fourth instance of the same shape
+
+**`test_the_probe_endpoint_cannot_spend_the_messages_latch` survived a mutation that deleted the
+path from the key entirely.** *Its two requests are a bodiless `GET /api/hello` and a 71-byte
+`POST /v1/messages`* — **different size bands**, so with the path gone they were still two shapes
+and the test still passed. ***It asserted the right thing and proved none of it.***
+
+**Caught by the harness and by nothing else.** *The test was green, the code it was written against
+was correct, and reading it would not have shown this — the flaw is in the relationship between two
+fixture values, not in either the test or the code.* **`test_the_path_is_part_of_the_shape_key`
+varies nothing but the path.**
+
+*The mutation's `why` line records that it survived once and why, per the harness's own rule that a
+surviving mutation is a prompt to read the mutation first and the test second.* **Here the mutation
+was right.**
+
+### What it cost and what is green
+
+**480 tests** — five new, one rewritten — **32/32 mutations** (eight new, one replaced: the old
+"one arrival latch instead of one per shape" was anchored on a line this change deleted, and an
+unapplicable mutation is a failure of the harness rather than a pass of the test set). **`make lint`
+clean at the pinned `0.16.1`.**
+
+***`src/` is otherwise untouched*** — checked with `git diff --stat`. **Entry 7's three live
+experiments are unaffected**, and the router is run from source, so `make run-hosts` picks this up
+with no rebuild and entry 14's setup needs no change.
+
+***Not yet driven against a running router.*** **The tests exercise the real app through
+`TestClient`, which is the whole stack short of a bound port and a log file on disk** — so what is
+unproven is the line reaching `logs/telemetry/router.log`, not the line itself. *`CLAUDE.md` says
+ask before starting a local server, and the owner's experiment was about to bind the machine.*

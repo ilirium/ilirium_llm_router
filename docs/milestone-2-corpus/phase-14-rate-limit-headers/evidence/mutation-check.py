@@ -194,12 +194,74 @@ MUTATIONS = [
     ),
     Mutation(
         name="one arrival latch instead of one per shape",
-        old="        if request.url.path.startswith(\"/v1/messages\") and self.arrival_sampled[\n"
-        "            bool(call.stream)\n"
-        "        ].take():",
-        new='        if request.url.path.startswith("/v1/messages") and self.headers_sampled.take():',
+        old="        if self.arrival_sampled.take(shape):",
+        new="        if self.headers_sampled.take():",
         expect_failing="test_the_arriving_request_is_sampled_once_per_shape",
         why="only the shape that arrives first is ever sampled, and the pair IS the measurement",
+    ),
+    # The shape key gains the path and the size band, 2026-09-19 -- `for-the-owner.md` entry 11.
+    # Every mutation below reintroduces a form of the defect the change was made to fix, and the
+    # 14:52 run is what each one would have produced.
+    Mutation(
+        name="the size band drops out of the shape key",
+        old="        shape = (request.url.path, bool(call.stream), size_band(len(body)))",
+        new="        shape = (request.url.path, bool(call.stream), 0)",
+        expect_failing="test_both_sizes_of_one_shape_are_sampled",
+        why="exactly the 14:52 defect: the 323-byte warm-up takes the slot, the 127,949-byte "
+        "classifier is never sampled, and the run cannot answer its own question",
+    ),
+    Mutation(
+        name="the path drops out of the shape key",
+        old="        shape = (request.url.path, bool(call.stream), size_band(len(body)))",
+        new="        shape = (\"\", bool(call.stream), size_band(len(body)))",
+        expect_failing="test_the_path_is_part_of_the_shape_key",
+        why="the probe and a real call collapse into one shape, which is entry 6's defect again. "
+        "**This mutation survived once**: it was aimed at the probe test, whose two requests differ "
+        "in size as well as path and stay apart on the band alone. The test was vacuous for the "
+        "path and a test that varies nothing else was written",
+    ),
+    Mutation(
+        name="every size lands in the same band",
+        old="    return len(str(length)) - 1",
+        new="    return 0",
+        expect_failing="test_size_band_is_the_decimal_order_of_magnitude",
+        why="the ladder is inert while the key still looks as though it carries a size",
+    ),
+    Mutation(
+        name="the band is off by one at a power of ten",
+        old="    return len(str(length)) - 1",
+        new="    return len(str(length))",
+        expect_failing="test_size_band_is_the_decimal_order_of_magnitude",
+        why="a band ladder nobody can predict is a band ladder nobody can read a log against",
+    ),
+    Mutation(
+        name="the arrival latch fires on every request",
+        old="        if key in self.seen or self.full:\n            return False\n        self.seen.add(key)",
+        new="        if self.full:\n            return False",
+        expect_failing="test_a_second_request_in_the_same_band_is_not_sampled",
+        why="a busy session logs every request it carries and drowns the file",
+    ),
+    Mutation(
+        name="the cap stops bounding the sampler",
+        old="        if key in self.seen or self.full:",
+        new="        if key in self.seen:",
+        expect_failing="test_sampling_stops_at_the_cap_and_says_so",
+        why="the path is caller-chosen and `app.py` has a catch-all, so the set grows without limit",
+    ),
+    Mutation(
+        name="reaching the cap becomes a silent stop",
+        old="        return self.full and self.announced.take()",
+        new="        return False",
+        expect_failing="test_sampling_stops_at_the_cap_and_says_so",
+        why="***the phase's own recurring defect***: an instrument quietly stops looking and every "
+        "line still present reads as though it were still watching",
+    ),
+    Mutation(
+        name="the cap announcement repeats forever",
+        old="        return self.full and self.announced.take()",
+        new="        return self.full",
+        expect_failing="test_sampling_stops_at_the_cap_and_says_so",
+        why="one line per request once the cap is reached, which is the flood the cap prevents",
     ),
     Mutation(
         name="the arriving sampler sorts the headers",

@@ -165,6 +165,7 @@ hosts entry does that with nothing modified.*
 | **C3b** | `evidence/run-pinned.py` — `/etc/hosts` is machine-wide, so the router would resolve `api.anthropic.com` to **itself** | built, **guards exercised** |
 | **C3c** | `config-hosts.yaml` and `make run-hosts` — *the egress hop removed and **the corpus ON***, without which the run captures no bodies | built |
 | **C3d** | Run it. ***`for-the-owner.md` entry 14 is the runbook*** — and **the hosts line redirects the owner's own session**, so `curl --resolve` proves the chain first | **the owner's, 2026-09-19** |
+| **C3e** | ***The sampler key, so this run can be read at all.*** `(path, streamed?, size band)`, bounded at 64 shapes with the stop announced. **Chosen by the owner 2026-09-19** from entry 11's three options, in a shape better than any of them — *the path became part of the key rather than a gate* | **done**, 480 tests, **32/32** mutations |
 
 ***If the 429 survives this, the entire client-side variable is eliminated*** and what remains is
 the TLS fingerprint and connection reuse.
@@ -198,6 +199,7 @@ the TLS fingerprint and connection reuse.
 |---|---|---|
 | `RECORDED_RESPONSE_HEADERS` | `frozenset` of the exact lowercase names below | The allowlist. **Exact names, never a prefix match** — settled position 5 |
 | `RECORDED_HEADER_PREFIX` | `"anthropic-ratelimit-"` | **Names matching this and absent from the allowlist have their name logged and their value discarded.** The unratified position above |
+| `ARRIVAL_SAMPLE_CAP` | `64` | **Added 2026-09-19.** How many distinct arriving shapes are sampled before the sampler stops. *The shape key carries the request path and `app.py` has a catch-all route, so the key space is caller-chosen; the old two-key dict could not grow at all.* **Reaching it is announced on its own line, never silent** |
 
 **The allowlist's members**, and every one is a response header Anthropic documents:
 
@@ -239,6 +241,9 @@ one day it does.*
 | `describe_headers(recorded, unlisted) -> str` | The log line's payload. **`(none)` when a reply carried neither**, because that is the interesting case and a blank would read as a logging failure |
 | `Once` · `Once.take() -> bool` | **Added after the first measurement**, not in the original plan. A latch that is true exactly once. Mutable, held by the frozen `Proxy` the way `Counters` already is |
 | `Proxy.headers_sampled: Once` | The control's latch. *Also added after the measurement — see the row below* |
+| `size_band(length) -> int` | **Added 2026-09-19.** A body's size as an order of magnitude — the count of its decimal digits less one, so `323 -> 2` and `127_949 -> 5`. *Computed from the decimal string rather than `log10`, which is **exact at a power of ten** where a float is not* |
+| `OncePerKey` · `.take(key) -> bool` · `.full` · `.note_full() -> bool` | **Added 2026-09-19.** `Once`'s shape for keys that are **not known in advance**. `take` is true the first time each key arrives and never once `full`; **`note_full` is true exactly once, so the stop is said out loud.** *Separate methods because an instrument that quietly gives up looking is this phase's own recurring defect* |
+| `Proxy.arrival_sampled: OncePerKey` | ***Was `dict[bool, Once]` until 2026-09-19.*** Now keyed on `(path, streamed?, size band)` — `for-the-owner.md` entry 11, the owner's choice, and **the path is part of the key rather than a gate** |
 
 ### Names it must not collide with
 
@@ -256,7 +261,10 @@ one day it does.*
 | Status range that triggers it | `>= 400` — *matching `relay`'s existing `reply.status_code >= 400` branch rather than inventing a second threshold* |
 | **Log level for the control line** | **`INFO`** — *nothing is wrong when it fires* |
 | **How often the control fires** | **Once per process**, on the first reply that is **not** an error. *A failure must not consume the latch: the real session of 2026-09-18 opened with a burst of 429s, and a latch a failure could take would have sampled nothing* |
-| New config keys | **None.** The minimal form is deliberately not configurable |
+| **The arriving sampler's key** | **`(path, streamed?, size band)`** — *`(streamed?)` alone until 2026-09-19, with every path but `/v1/messages` refused* |
+| **The size-band ladder** | **Decimal order of magnitude**, one band per power of ten. *Coarse deliberately: it tells shapes apart rather than measuring them, and the two this phase confused sit three bands apart. A finer ladder costs a log line per band and separates nothing more* |
+| **Arriving lines per run** | **Five to a dozen** in a real session, bounded at **64**. *Exactly two before 2026-09-19, which is how the 14:52 run sampled a warm-up and no classifier* |
+| New config keys | **None.** The minimal form is deliberately not configurable — **`ARRIVAL_SAMPLE_CAP` included**, which is a bound rather than a knob |
 | New on-disk names | **None in Group B.** *Group D may add one, and its rows are written then.* ***Groups C2 and C3 added six, all of which come out with the experiments*** — see the two rows below |
 | **Experiment files — C2 and C3** | `evidence/clienthello-capture.py` · `evidence/boringssl-forwarder.py` · `evidence/binary-extract.sh` · `evidence/run-pinned.py` · `evidence/tls-terminator.py` · `config-hosts.yaml`. ***None is on the router's import path and none ships*** |
 | **`make` targets** | `forwarder` · `run-boringssl` · **`run-hosts`**. *All three come out with the experiments; the Makefile says so where they are defined* |

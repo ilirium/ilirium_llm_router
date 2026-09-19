@@ -772,6 +772,81 @@ def test_the_arriving_request_is_sampled_once_per_shape(
     assert sum(m.startswith("arriving streamed") for m in arriving) == 1
 
 
+def body_of(size: int) -> bytes:
+    """A routable request body of exactly `size` bytes — the model name has to survive the padding."""
+    head = b'{"model":"claude-sonnet-5","messages":[{"role":"user","content":"'
+    tail = b'"}]}'
+    return head + b"x" * (size - len(head) - len(tail)) + tail
+
+
+def test_size_band_is_the_decimal_order_of_magnitude() -> None:
+    """The ladder itself, stated in the two numbers that made it necessary."""
+    from ilirium_llm_router.proxy import size_band
+
+    assert size_band(323) == 2
+    assert size_band(127_949) == 5
+    # Exact at a power of ten, which is where a log10 implementation would be at the mercy of floats.
+    assert [size_band(n) for n in (0, 1, 9, 10, 99, 100, 999, 1_000)] == [0, 0, 0, 1, 1, 2, 2, 3]
+
+
+def test_both_sizes_of_one_shape_are_sampled(caplog: pytest.LogCaptureFixture) -> None:
+    """***The regression test for the defect the whole key change exists to fix.***
+
+    On 2026-09-18 at 14:52 the non-streamed latch was spent on a **323-byte `haiku` warm-up**, and
+    the classifier requests that followed — **127,949 bytes**, same path, same shape — were never
+    sampled. So the run could not answer the question it was run to answer.
+
+    **Same path, same shape, arriving in the order they really arrived in.** A single latch keyed on
+    the shape alone logs one line here; the size band makes it two.
+    """
+    warm_up, classifier = body_of(323), body_of(127_949)
+    upstream = Upstream()
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=warm_up, headers=CLAUDE_CODE_HEADERS)
+        client.post("/v1/messages", content=classifier, headers=CLAUDE_CODE_HEADERS)
+
+    arriving = [m for m in caplog.messages if m.startswith("arriving")]
+    assert len(arriving) == 2
+    assert sum("323 bytes" in m for m in arriving) == 1
+    assert sum("127949 bytes" in m for m in arriving) == 1
+
+
+def test_a_second_request_in_the_same_band_is_not_sampled(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The half that keeps the log small: once per shape, not once per request.
+
+    Two bodies that differ in size but share a band are one shape, or a busy session would log
+    every request it carried.
+    """
+    upstream = Upstream()
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=body_of(200), headers=CLAUDE_CODE_HEADERS)
+        client.post("/v1/messages", content=body_of(999), headers=CLAUDE_CODE_HEADERS)
+
+    assert len([m for m in caplog.messages if m.startswith("arriving")]) == 1
+
+
+def test_sampling_stops_at_the_cap_and_says_so(caplog: pytest.LogCaptureFixture) -> None:
+    """The bound, and the announcement that keeps it from being a silent stop.
+
+    The key carries the request path and `app.py` has a catch-all route, so the key space is
+    whatever a caller types. **An instrument that quietly gives up looking is this phase's own
+    recurring defect** — hence the line, which is the part worth testing.
+    """
+    from ilirium_llm_router.proxy import ARRIVAL_SAMPLE_CAP
+
+    upstream = Upstream()
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        for n in range(ARRIVAL_SAMPLE_CAP + 3):
+            client.post(f"/v1/messages/{n}", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert len([m for m in caplog.messages if m.startswith("arriving")]) == ARRIVAL_SAMPLE_CAP
+    stopped = [m for m in caplog.messages if m.startswith("arrival sampling stopped")]
+    assert len(stopped) == 1
+    assert str(ARRIVAL_SAMPLE_CAP) in stopped[0]
+
+
 def test_the_arriving_sample_never_logs_the_credential(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
@@ -805,19 +880,45 @@ def test_the_arriving_sample_preserves_header_order() -> None:
     assert line == "x-app=cli accept=*/* x-app=again"
 
 
-def test_the_probe_endpoint_does_not_spend_the_arrival_latch(
+def test_the_probe_endpoint_cannot_spend_the_messages_latch(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    """Same trap the reply sampler fell into: /api/hello arrives first on every session."""
-    upstream = Upstream(streamed(200))
+    """The trap the reply sampler fell into: /api/hello arrives first on every session.
+
+    ***This asserted that the probe logs NOTHING until 2026-09-19***, because the sampler refused
+    every path but `/v1/messages`. The path is now part of the key instead, so the probe gets a line
+    of its own and still cannot take the one that matters. **The concern was never that the probe is
+    uninteresting** — it was that it must not consume somebody else's sample, and that is now true
+    by construction rather than by exclusion.
+    """
+    upstream = Upstream()
     with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
         client.get("/api/hello")
-        assert not [m for m in caplog.messages if m.startswith("arriving")]
-
-        upstream.reply = streamed(200)
         client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
 
-    assert len([m for m in caplog.messages if m.startswith("arriving")]) == 1
+    arriving = [m for m in caplog.messages if m.startswith("arriving")]
+    assert len(arriving) == 2
+    assert sum("to /api/hello:" in m for m in arriving) == 1
+    assert sum("to /v1/messages:" in m for m in arriving) == 1
+
+
+def test_the_path_is_part_of_the_shape_key(caplog: pytest.LogCaptureFixture) -> None:
+    """Two requests identical in every way the key looks at **except the path**.
+
+    ***Written because the test above passed a mutation that deleted the path from the key.*** Its
+    probe is a bodiless `GET` and its real call carries 71 bytes, so the two stay distinct on the
+    size band alone and the path assertion rode along for free. **The mutation was right and the
+    test was vacuous** — so this one varies nothing but the path.
+    """
+    upstream = Upstream()
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+        client.post("/api/hello", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    arriving = [m for m in caplog.messages if m.startswith("arriving")]
+    assert len(arriving) == 2
+    assert sum("to /api/hello:" in m for m in arriving) == 1
+    assert sum("to /v1/messages:" in m for m in arriving) == 1
 
 
 # Phase 14 experiment: imitating what Claude Code withholds from a custom base URL.

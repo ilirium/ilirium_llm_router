@@ -173,6 +173,13 @@ RECORDED_REQUEST_HEADERS = frozenset(
     }
 )
 
+# How many distinct arriving request shapes are sampled before the sampler stops.
+#
+# Phase 14, 2026-09-19. The shape key carries the request path and `app.py` has a catch-all route,
+# so the key space is whatever a caller cares to type. A real session produces five to a dozen
+# shapes; this is comfortably above that and still a bound. Reaching it is announced, never silent.
+ARRIVAL_SAMPLE_CAP = 64
+
 # A model can think for minutes, so the usual short read timeout would cut replies off. Connecting
 # should still fail fast: LM Studio simply not running is the common failure.
 #
@@ -250,6 +257,56 @@ class Once:
         return True
 
 
+def size_band(length: int) -> int:
+    """A body's size as an order of magnitude — the count of its decimal digits, less one.
+
+    `323 -> 2`, `127_949 -> 5`. **Coarse on purpose**: it exists to tell request *shapes* apart, not
+    to measure them, and the two this phase confused differ by three bands. A finer ladder buys
+    nothing here and costs a log line per band.
+
+    Computed from the decimal string rather than `log10`, which is exact at a power of ten where a
+    float is not.
+    """
+    return len(str(length)) - 1
+
+
+@dataclass
+class OncePerKey:
+    """A latch per distinct key — true the first time each key is seen, and **bounded**.
+
+    `Once` is the right shape when the keys are known in advance. These are not: the key carries the
+    request path, `app.py` registers a catch-all route, and a path is whatever the caller typed. An
+    unbounded set keyed on that grows for as long as the router runs, so it stops at `cap` keys.
+
+    **The stop is announced rather than silent** — see `note_full`. An instrument that quietly gives
+    up looking is this phase's own recurring defect and it is not being built in again.
+    """
+
+    cap: int = ARRIVAL_SAMPLE_CAP
+    seen: set[tuple[str, bool, int]] = field(default_factory=set)
+    announced: Once = field(default_factory=Once)
+
+    @property
+    def full(self) -> bool:
+        return len(self.seen) >= self.cap
+
+    def take(self, key: tuple[str, bool, int]) -> bool:
+        """True the first time `key` arrives, and never once the cap is full."""
+        if key in self.seen or self.full:
+            return False
+        self.seen.add(key)
+        return True
+
+    def note_full(self) -> bool:
+        """True exactly once, on the first call after the cap filled.
+
+        Separate from `take` so the caller can say out loud that sampling has stopped. It fires on
+        whatever request comes next rather than strictly on a refused new key — the claim being made
+        is *"no further shape will be sampled"*, which is true either way.
+        """
+        return self.full and self.announced.take()
+
+
 @dataclass(frozen=True)
 class Proxy:
     """Sends requests onward to a backend and streams the reply back untouched."""
@@ -259,15 +316,22 @@ class Proxy:
     api_keys: dict[str, str]
     stats: StatsWriter
     corpus: CorpusWriter | None = None
-    arrival_sampled: dict[bool, Once] = field(
-        default_factory=lambda: {True: Once(), False: Once()}
-    )
-    """**One latch per request shape**, keyed by whether the caller asked for a stream.
+    arrival_sampled: OncePerKey = field(default_factory=OncePerKey)
+    """**One latch per request shape**, keyed by `(path, streamed?, size band)`.
 
-    Two, not one, because the pair is the measurement: the streamed request succeeds and the
-    non-streamed one is rejected, so *what Claude Code sends differently between them* is a
-    difference worth seeing — and a single latch would sample whichever arrived first and never the
-    other."""
+    The pair of shapes is the measurement: the streamed request succeeds and the non-streamed one is
+    rejected, so *what Claude Code sends differently between them* is a difference worth seeing, and
+    a single latch would sample whichever arrived first and never the other.
+
+    ***Path and size are in the key because keying on the shape alone was wrong three times.***
+    *A latch decides in advance which request will be interesting.* It went first to `/api/hello`,
+    which was fixed by refusing to sample any other path — and then, on 2026-09-18 at 14:52, to a
+    **323-byte `haiku` warm-up**, while the classifier requests that followed were **127,949 bytes**
+    and none was sampled. **The run could not answer the question it was run to answer.**
+    *`for-the-owner.md` entry 11; the owner chose this fix on 2026-09-19.*
+
+    **Path is part of the key rather than a gate**, which is why the gate is gone: refusing every
+    path but one is the same advance decision, one level up."""
     headers_sampled: Once = field(default_factory=Once)
     """**The control for the failure line below, and it exists to stop one sentence being assumed.**
 
@@ -365,21 +429,27 @@ class Proxy:
     ) -> Response:
         """Send `body` to `backend` unchanged and stream the reply back as it arrives."""
         call.backend = name
-        if request.url.path.startswith("/v1/messages") and self.arrival_sampled[
-            bool(call.stream)
-        ].take():
+        shape = (request.url.path, bool(call.stream), size_band(len(body)))
+        if self.arrival_sampled.take(shape):
             # What Claude Code SENT US, once per shape. The router receives the real thing, so this
             # half of "what differs between the direct path and the routed one" costs a log line
             # rather than one of the owner's sessions.
             #
-            # Path-gated for the reason the reply sampler had to be: `/api/hello` arrives first and
-            # would spend the latch on a probe nobody is asking about.
+            # The byte count is logged because it is what identified the defect this key exists to
+            # fix: 323 against 127,949 is how anyone knows the sampled request was the wrong one.
             logger.info(
-                "arriving %s request to %s: http/%s %s",
+                "arriving %s request to %s: %d bytes http/%s %s",
                 "streamed" if call.stream else "non-streamed",
                 request.url.path,
+                len(body),
                 request.scope.get("http_version", "?"),
                 describe_request_headers(request),
+            )
+        elif self.arrival_sampled.note_full():
+            logger.info(
+                "arrival sampling stopped: %d distinct request shapes seen, which is the cap. "
+                "No further shape will be logged by this process.",
+                self.arrival_sampled.cap,
             )
         outgoing = self.client.build_request(
             request.method,
