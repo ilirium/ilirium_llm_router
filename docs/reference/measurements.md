@@ -133,6 +133,19 @@ and `../wiki/claude-code-first-party-gate.md`, which cite rather than restate th
 | **Verdicts returned: `<block>no` ×5, `<severity>` 10 / 15 / 18 / 25** | 2026-09-19 | the stored response blobs, **brotli** inside zstd | The nine successful replies | Separates *"the call returned 200"* from *"the classifier classified"* — `BUG-000`'s trap, closed with content rather than status |
 | **12 rate-limit headers on a success, 0 on a `429`** | 2026-09-18 | the router's own recorder, `evidence/rate-limit-headers-*-2026-09-18.txt` | One connection, both outcomes | A `429` naming no exhausted bucket is not a rate limit. **The meter read `allowed` at 0.52 / 0.59, and 0.11 / 0.01 in a later run** — quota dead twice over |
 
+## The classifier still fails after the 429 is gone, 2026-09-19
+
+***The second defect, which the 429 was masking.*** *Established by aligning the owner's session
+transcripts —
+`../milestone-2-corpus/phase-14-rate-limit-headers/evidence/claude-code-sessions-to-check-safety-classifier.txt`
+— against the router's own record of the same minutes.*
+
+| Number | Measured | Instrument | Slice | What it is for |
+|---|---|---|---|---|
+| **Session 1: 5 classification events, 5 client-reported failures. Session 2: 2 and 2** | 2026-09-19 | the owner's transcripts against `calls.csv` and the corpus | Two sessions through the router, ~12:31 and ~12:35 UTC | ***The correspondence is exact***, and a stage-1 `<severity>` pair counts as one event. **What the client reports as a failure is what the router served successfully** |
+| **0 classifier requests for every Bash call that succeeded** | 2026-09-19 | the same pair of records | The same two sessions | **Those were allowlist matches** — `echo`, `ls`, `date` never consult the classifier, so their success says nothing about it |
+| **32 streamed replies plain, 13 non-streamed replies brotli** | 2026-09-19 | magic bytes of the stored blobs, `logs/corpus/2026-09-19` | Every `/v1/messages` reply of the day | **The split experiment C2a introduced**, and the classifier is always non-streamed. *The correlation behind the suspicion, not proof of it* |
+
 ## The router itself
 
 | Number | Measured | Instrument | Slice | What it is for |

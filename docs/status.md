@@ -24,9 +24,11 @@ been rejected 119 times the day before** — so what remains is **client-side co
 custom `ANTHROPIC_BASE_URL`.** *The attribution block is the leading candidate and **is not proven
 to be the cause**; the phase says which it is rather than implying otherwise.*
 
-***Two things qualify that and neither is buried.*** **The owner's own transcript reports the
-classifier unavailable in the same two minutes** the router logged six successful classifications —
-unexplained, `for-the-owner.md` entry 18. **And a first-party client gzips some request bodies,
+***Two things qualify that and neither is buried.*** ***The 429 was hiding a second defect and auto
+mode still does not work.*** **Every classifier request the router served with a valid `200` — verdict
+and all — corresponds to a Bash call the client reported as unavailable**, and every call that worked
+sent no request. **The failure is downstream of a correct reply**; the prime suspect is the router's
+own `accept-encoding` experiment, and the test is one line. → `for-the-owner.md` entry 19. **And a first-party client gzips some request bodies,
 which the router cannot route**: two `400`s, *"the request body carries no 'model' field"*, because
 the model peek reads compressed bytes. ***A real `src/` defect, not fixed, and the owner's to
 place.***

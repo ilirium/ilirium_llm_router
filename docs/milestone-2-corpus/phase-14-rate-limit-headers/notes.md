@@ -1286,3 +1286,101 @@ nothing on disk distinguishes them.** **Put to the owner as entry 18.**
 ***What it does not touch:*** **the nine successful classifications and the zero 429s are measured
 and stand.** *What is now uncertain is whether auto mode was usable end to end, which is a stronger
 claim than the one the paired control makes.*
+
+## The 429 was masking a second defect, and the classifier still does not work
+
+***Entry 18 recorded this as unexplained. It is explained.*** **The owner supplied three session
+transcripts — two through the router, one with it off — and aligning them against the router's own
+record of the same minutes settles it.** *Evidence:
+`evidence/claude-code-sessions-to-check-safety-classifier.txt`.*
+
+### How auto mode reaches the classifier at all, which is what makes the log readable
+
+**A Bash call in auto mode takes one of two paths.** *It matches the allowlist — `echo`, `ls`,
+`date` — and is permitted by rule, **consulting no classifier and sending no request**; or it does
+not match, and the classifier is asked, **which is an API call and therefore visible here**.*
+
+***And the classifier is two-staged, which the captured prompts state outright.*** **Stage 1 grades
+harm** — *"Respond with `<severity>N</severity>` ONLY … stage 2 will handle those"* — **stage 2
+decides** — *"Your ENTIRE response MUST begin with `<block>`"*. *A sonnet-then-opus pair two seconds
+apart is **one** classification event.*
+
+### Session 2 aligned, because it is small enough to read whole
+
+*Owner's times are local; the router logs UTC, exactly three hours behind.*
+
+| Call | Time | The owner saw | The router received |
+|---|---|---|---|
+| #1 | 15:34:52 | ok | — |
+| ***#2*** | *(untimed)* | ***unavailable*** | **15:34:56 `<severity>15`, 15:34:58 `<severity>25`** |
+| #3 | 15:35:08 | ok | — |
+| #4 | 15:35:22 | ok | — |
+| #5 | 15:35:24 | ok | — |
+| ***#6*** | 15:35:30 | ***unavailable*** | **15:35:27 `<block>no`** |
+| #7 | 15:35:30 | ok | — |
+| #8 | 15:35:32 | ok | — |
+
+***Three requests all session, falling in exactly the two gaps where a failure was reported and
+nowhere near a call that worked.*** **Session 1 is the same shape larger: five classification
+events, five reported failures**, and its six passing probes were `echo` and `ls`.
+
+### The conclusion, read the other way round
+
+- ***Every command that succeeded sent no classifier request.*** **Allowlist matches** — their
+  success says nothing about the classifier.
+- ***Every classifier request that reached the router corresponds to a command reported as
+  failing.***
+
+**And none of those requests failed at the router.** *Each returned `200` with a real verdict —
+including `<block>no`, which means **allow**.*
+
+***So the sequence was: the client asked whether a command was safe, the router carried the question
+to Anthropic, Anthropic answered "allow", the router carried that back — and the client reported the
+classifier unavailable.*** **The failure is downstream of a correct 200.**
+
+***This corrects the claim in the section above.*** *"Nine classifications succeeded" was true of
+the router and **false of the user's experience**, and the phase said it because it read a status
+code as an outcome.* **The fourth instance of this shape, and the first where the missing check was
+"ask the person who was there".**
+
+### What it costs the central result, and what it does not
+
+***The 429 finding is untouched.*** **119 rejections became zero, and the paired control still
+clears the router of causing them.**
+
+***What is now known is that two defects were stacked and the first was hiding the second.***
+**While every classifier request was being rejected outright, nothing ever reached a 200 body for
+this to show on.**
+
+### The suspect, and it is one of the live experiments
+
+| Reply shape | Encoding | Count |
+|---|---|---|
+| **streamed** | plain | **32** — all worked |
+| **non-streamed** | ***brotli*** | **13** — *every classifier call* |
+
+***Experiment C2a is the only change that alters what a non-streamed reply looks like to the
+client.*** *Before it the router forced `accept-encoding: identity` and non-streamed replies arrived
+as plain JSON.*
+
+***Suspicion, not a finding, and the distinction is the one this phase keeps having to make.***
+**The client advertises `br`, so a correctly relayed brotli reply ought to work** — *meaning either
+the relay mishandles something around it (`content-length` is dropped and the reply goes out
+chunked) or the client's non-streamed path cannot take it.* **Nothing on disk separates those**, and
+the non-streamed title-generation call is compressed too with nobody having checked whether it
+visibly worked.
+
+***The test is one line and one session:*** **put non-streamed back to `identity` and re-run the
+same probes.** *It changes `src/`, so it is proposed rather than done.*
+
+***Entry 7 says all three live experiments are "exonerated". That was about the 429 and it is now
+too strong for C2a.***
+
+### The router-off control, and its limit
+
+**Session 3 bypassed the router — verified rather than taken on trust: `20260919-3` has zero rows in
+`calls.csv`, against 27 and 18 for the other two.** *It reported no classifier failures.*
+
+***It ran four commands, so it shows no failures rather than establishing their absence.*** **A
+ten-probe sweep like Session 1's would make it a control**; as it stands it is consistent with
+router-off being healthy and does not demonstrate it.

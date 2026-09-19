@@ -324,14 +324,30 @@ terminator.** *The full runbook is
 a local CA in the system trust store, and a machine-wide redirect** — *so it is a workaround for a
 person who wants auto mode through a router, not a fix.*
 
-### One thing this does not claim, and a defect found alongside it
+### The 429 was hiding a second defect, and auto mode still does not work
 
-***"The 429 is gone" is not "auto mode is usable end to end".*** **The owner's own session transcript
-for the same two minutes reports the classifier unavailable four times out of ten probes**, naming
-`claude-opus-5[1m]` — *a model that appears nowhere in `calls.csv`, so those attempts produced no
-request this router received.* **The nine classifications and the zero 429s are measured and stand;
-the stronger claim is open.** *`../milestone-2-corpus/phase-14-rate-limit-headers/for-the-owner.md`,
-entry 18.*
+***"The 429 is gone" is not "auto mode is usable end to end", and it is now known not to be.***
+
+**Aligning the owner's session transcripts against the router's record of the same minutes** —
+`../milestone-2-corpus/phase-14-rate-limit-headers/evidence/claude-code-sessions-to-check-safety-classifier.txt`
+— **gives an exact correspondence: every Bash call that succeeded sent no classifier request at all
+(those are allowlist matches), and every classifier request that reached the router corresponds to a
+call the client reported as `claude-opus-5[1m] is temporarily unavailable`.**
+
+***And none of those requests failed at the router.*** **Each returned `200` with a real verdict,
+including `<block>no` — which means *allow*.** *So the client asked whether a command was safe, the
+router carried the question to Anthropic, Anthropic answered "allow", the router carried it back,
+and the client reported the classifier unavailable.* ***The failure is downstream of a correct 200.***
+
+**The prime suspect is the router's own `accept-encoding` experiment**, which is the only change
+that alters what a non-streamed reply looks like to the client — and the classifier is always
+non-streamed. ***Suspicion, not finding***, and the test is one line: force `identity` for
+non-streamed and re-run. → `for-the-owner.md` entry 19.
+
+***None of this touches the 429 result above.*** **Two defects were stacked and the first hid the
+second**: while every classifier request was rejected outright, nothing ever reached a `200` body
+for this to show on. *Counts in `../reference/measurements.md`, "The classifier still fails after
+the 429 is gone".*
 
 ***And a first-party client gzips some request bodies, which this router cannot route.*** **Two
 requests that run were rejected by the router with `400` — "The request body carries no 'model'

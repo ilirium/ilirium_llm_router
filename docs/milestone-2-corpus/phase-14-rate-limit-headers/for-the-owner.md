@@ -120,6 +120,11 @@ rediscover it:
 
 **All three are exonerated. None is reverted. That is your decision and it is recorded as yours.**
 
+***"Exonerated" was about the 429 and it is now too strong for `accept-encoding`.*** **It is the
+prime suspect for the classifier still failing after the 429 went away** — *it is the only change
+that alters what a non-streamed reply looks like to the client, and the classifier is always
+non-streamed.* → **entry 19.**
+
 ## 8 · IDEA · medium · The two things left, and neither is cheap
 
 **The exact-fingerprint allowlist.** `curl_cffi` is Chrome, not Claude Code — it carries three
@@ -545,7 +550,11 @@ your own flag run.
 `git status` is clean** — but nothing stops the next cert landing there. *One line in `.gitignore`
 would; say the word.*
 
-## 18 · ASK · high · Your transcript disagrees with the router's log, and a real defect fell out
+## 18 · ASK · ~~high~~ · Your transcript disagrees with the router's log, and a real defect fell out
+
+> ***The disagreement is ANSWERED — entry 19, 2026-09-19.*** **It was not a second session and not
+> an upstream outage: the router served those classifications correctly and the client rejected
+> the answers.** *The gzip defect below is unchanged and still open.*
 
 ***You left `evidence/claude-code-sessions-to-check-safety-classifier.txt` in the tree and it is
 the most useful thing in the run.*** **It also contradicts what I told you in entry 17**, so here is
@@ -600,3 +609,77 @@ call.**
 **Your file's `## Session 2, 2026-09-19` heading has nothing under it.** *It is untracked, so I have
 left it alone* — **say whether it should be committed as evidence** (it is the only record of the
 client-side view of that run) **or kept out of git.**
+
+## 19 · ASK · high · The 429 was hiding a second defect — auto mode still does not work
+
+***Your three transcripts answered entry 18, and the answer costs me a claim I made in entry 17.***
+**Thank you for writing them down; nothing in the router's own record could have settled this.**
+
+### What the two records say together
+
+**A Bash call in auto mode either matches your allowlist — `echo`, `ls`, `date` — and is permitted
+by rule, *sending no request at all*; or it does not, and the classifier is asked, which is an API
+call and shows up in the router's log.** *And the classifier is two-staged: a `<severity>` pair, then
+a `<block>` decision. A pair is one event.*
+
+**Session 2, whole, your times:**
+
+| Call | Time | You saw | The router received |
+|---|---|---|---|
+| #1 | 15:34:52 | ok | — |
+| ***#2*** | | ***unavailable*** | **15:34:56 `<severity>15`, 15:34:58 `<severity>25`** |
+| #3–#5 | 15:35:08–24 | ok | — |
+| ***#6*** | 15:35:30 | ***unavailable*** | **15:35:27 `<block>no`** |
+| #7–#8 | 15:35:30–32 | ok | — |
+
+***Three requests all session, in exactly the two gaps where you saw a failure.*** **Session 1 is the
+same at larger scale — five events, five failures**, and its six passing probes were `echo` and
+`ls`, which is what you worked out yourself and it was right.
+
+### The conclusion, and it is the reverse of what I told you
+
+- ***Every command that worked sent no classifier request.*** Allowlist matches.
+- ***Every classifier request corresponds to a command you saw fail*** — **and none of them failed at
+  the router.** *Each got `200` with a real verdict, including `<block>no`, which means **allow**.*
+
+***So: you asked to run a command, the router carried the question to Anthropic, Anthropic said
+"allow", the router carried that back, and Claude Code told you the classifier was unavailable.***
+
+**I owe you the correction plainly: entry 17's "nine classifications succeeded" was true of the
+router and false of your experience.** *I read a status code as an outcome, which is the same shape
+as entries 5, 12 and 13 — and this time the check I skipped was **asking the person who was in the
+session**.*
+
+### What survives and what does not
+
+***The 429 result is untouched*** — **119 rejections became zero and the paired control still clears
+the router of causing them.** ***What is new is that two defects were stacked and the first hid the
+second:*** while every classifier request was rejected outright, nothing ever reached a `200` body
+for this to appear on.
+
+### The proposal, and it is one line of `src/` and one session
+
+| Reply shape | Encoding | |
+|---|---|---|
+| **streamed** | plain | **32 today, all worked** |
+| **non-streamed** | ***brotli*** | **13 today — every classifier call** |
+
+***That split is experiment C2a's*** — before it, the router forced `accept-encoding: identity` and
+non-streamed replies arrived as plain JSON.
+
+***I propose putting non-streamed back to `identity` and you re-running the same probes.*** **If the
+failures stop, it is C2a and entry 7 loses one of its three.**
+
+***Stated as suspicion rather than finding:*** **Claude Code advertises `br`, so a correctly relayed
+brotli reply ought to work.** *Either the relay mishandles something around it — `content-length` is
+dropped and the reply goes out chunked — or the client's non-streamed path cannot take it, and
+nothing on disk separates those.*
+
+### And your router-off session is nearly a control
+
+**Session 3 genuinely bypassed the router — I checked rather than trusted the label: `20260919-3` has
+zero rows in `calls.csv` against 27 and 18 for the other two.** *It saw no classifier failures.*
+
+***It ran four commands, so it shows no failures rather than establishing their absence.*** **Ten
+probes like Session 1's would turn it into a real control**, and that is the one thing that would
+make this airtight before anyone reports it anywhere.
