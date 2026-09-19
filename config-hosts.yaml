@@ -19,7 +19,9 @@
 # `test_template_matches_the_repository_config`, and editing it turns the test red for as long as
 # the edit lives.
 #
-# It differs from `config.yaml` in exactly three places, each marked EXPERIMENT below.
+# It differs from `config.yaml` in exactly four places, each marked EXPERIMENT below.
+# (Three until 2026-09-19, when the router's own experiments became config keys and this
+# file started pinning them off rather than inheriting whatever the code did.)
 # Log and corpus paths are deliberately the SAME, so a run through the forwarder lands in the same
 # files as every earlier run and the two can be read against each other.
 
@@ -117,3 +119,18 @@ corpus:
     # these were chosen knowing the slice they were scored on. Training is non-monotonic in both.
     maxdict: 262144
     k: 8000
+
+# EXPERIMENT 4, and it is the point of the 2026-09-19 re-run: ALL THREE ROUTER EXPERIMENTS OFF.
+#
+# Written out rather than left to their defaults ON PURPOSE. This config exists to answer "does the
+# safety classifier work when the router alters nothing discretionary?", and resting the answer on
+# an invisible default is how this phase has already shipped four instruments that measured
+# something other than what they claimed. Pinned here, the run is self-documenting and a later
+# change to the defaults cannot silently move it.
+#
+# `make run-hosts` prints nothing about experiments when they are all off; an EXPERIMENTS ON line
+# at startup means one of these is true and the run is not the control it is meant to be.
+experiments:
+  relay_accept_encoding: false
+  http2_upstream: false
+  imitate_attribution_headers: false

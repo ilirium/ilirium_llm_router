@@ -169,3 +169,38 @@ def test_dotenv_is_read_from_beside_the_config(
     (tmp_path / ".env").write_text("PHASE12_PROBE=probe-value\n", encoding="utf-8")
 
     assert run("check") == 0, "the .env beside the config was not read"
+
+
+# Phase 14, 2026-09-19. The experiment configs are CONTROLS, and a control that can quietly stop
+# being one is this phase's recurring failure -- four instruments so far that measured something
+# other than what they claimed.
+
+@pytest.mark.parametrize("name", ["config.yaml", "config-hosts.yaml", "config-boringssl.yaml"])
+def test_every_committed_config_keeps_the_experiments_off(name: str) -> None:
+    """***Every config in this repository ships the router as a plain byte-relay.***
+
+    `config-hosts.yaml` is the one that matters most: it exists to answer *"does the safety
+    classifier work when the router alters nothing discretionary?"*, and an experiment left on in it
+    would answer a different question while looking like an answer to that one.
+
+    Asserted on the loaded config rather than on the file's text, so pinning a key to `false` and
+    pinning it by omission are both accepted -- what is being guarded is the behaviour, not the
+    spelling.
+    """
+    config = load_config(REPO_ROOT / name)
+    on = [key for key, value in vars(config.experiments).items() if value]
+    assert on == [], f"{name} would run the router with {on} on"
+
+
+def test_the_experiment_configs_pin_the_keys_rather_than_inheriting_them() -> None:
+    """The two experiment configs say it out loud, because that is the point of them.
+
+    A default can be changed in one commit and every config that relied on it moves with it,
+    silently. These two are controls, so they carry the value rather than inherit it -- and this
+    test is what stops the block being dropped as noise later.
+    """
+    for name in ("config-hosts.yaml", "config-boringssl.yaml"):
+        text = (REPO_ROOT / name).read_text(encoding="utf-8")
+        assert "experiments:" in text, f"{name} inherits the defaults instead of pinning them"
+        for key in ("relay_accept_encoding", "http2_upstream", "imitate_attribution_headers"):
+            assert f"{key}: false" in text, f"{name} does not pin {key}"

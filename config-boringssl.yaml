@@ -110,3 +110,11 @@ corpus:
     # these were chosen knowing the slice they were scored on. Training is non-monotonic in both.
     maxdict: 262144
     k: 8000
+
+# All three router experiments OFF, written out rather than left to their defaults so that a run
+# through the forwarder varies the TLS stack and NOTHING ELSE. See config-hosts.yaml for why this
+# block is explicit rather than omitted.
+experiments:
+  relay_accept_encoding: false
+  http2_upstream: false
+  imitate_attribution_headers: false

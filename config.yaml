@@ -86,3 +86,27 @@ corpus:
     # these were chosen knowing the slice they were scored on. Training is non-monotonic in both.
     maxdict: 262144
     k: 8000
+
+# Phase 14's three experiments, EVERY ONE OFF. They are written out rather than left to their
+# defaults because that is the whole value of the block: a reader can tell, from the config alone,
+# that the router is a plain byte-relay. `ilirium-llm-router check` prints EXPERIMENTS ON and names
+# any that are not, and prints nothing when none is.
+#
+# Each one is a deliberate difference from what Claude Code sends when it talks to Anthropic
+# directly, kept switchable rather than deleted so its negative result stays reproducible.
+# docs/milestone-2-corpus/phase-14-rate-limit-headers/ has what each one cost.
+experiments:
+  # Relay the caller's `accept-encoding` on a NON-streamed request instead of forcing `identity`.
+  # With it on, a non-streamed reply arrives compressed and the corpus stores brotli rather than
+  # JSON. Prime suspect for the safety classifier failing through the router after the 429 went
+  # away: it is the only change that alters what a non-streamed reply looks like to the client.
+  relay_accept_encoding: false
+  # Offer HTTP/2 to the backend over ALPN. Negotiates rather than demands. Eliminated twice: the
+  # nine classifier calls Anthropic answered correctly on 2026-09-19 went over HTTP/1.1 both legs.
+  # Inbound is HTTP/1.1 whatever this says -- uvicorn speaks only h11/httptools. See BKL-0039.
+  http2_upstream: false
+  # Add fabricated attribution headers to every Anthropic call. Built on a misreading: the client's
+  # `x-anthropic-billing-header` is a system-prompt block in the request BODY, not an HTTP header.
+  # Worst with a first-party client, which sends its own genuine attribution -- the request then
+  # carries both and they disagree.
+  imitate_attribution_headers: false
