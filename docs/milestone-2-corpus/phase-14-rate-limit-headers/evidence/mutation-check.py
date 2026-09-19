@@ -328,6 +328,45 @@ MUTATIONS = [
         expect_failing="test_the_sample_obeys_the_same_allowlist",
         why="a second place headers are written is a second place a credential could land",
     ),
+    # The gzip peek, 2026-09-19. A first-party client compresses some request bodies and the
+    # router refused them for "carrying no 'model' field" -- the field was there, compressed.
+    Mutation(
+        name="the peek stops decoding and reads the compressed bytes again",
+        old="            for_routing = decoded_for_peek(body, request.headers.get(\"content-encoding\"))",
+        new="            for_routing = body",
+        expect_failing="test_a_gzipped_body_is_routed_by_the_model_inside_it",
+        why="the original defect, restored: a valid request refused for a field it does carry",
+    ),
+    Mutation(
+        name="the DECODED copy is relayed instead of what arrived",
+        old="        return call, body, peeked, unreadable",
+        new="        return call, for_routing, peeked, unreadable",
+        expect_failing="test_a_gzipped_body_is_relayed_still_compressed",
+        why="***byte-relay broken***: the upstream gets bytes the caller never sent, the "
+        "prompt-cache prefix stops matching, and every call starts costing full price",
+    ),
+    Mutation(
+        name="the inflation cap is removed",
+        old="            out = machine.decompress(body, PEEK_MAX_DECOMPRESSED)",
+        new="            out = machine.decompress(body)",
+        expect_failing="test_a_body_that_inflates_past_the_cap_is_refused",
+        why="a few KB of zeros becomes gigabytes of memory, and the catch-all route means the "
+        "caller is not necessarily Claude Code",
+    ),
+    Mutation(
+        name="an unreadable encoding goes back to blaming a missing model field",
+        old="            detail = unreadable or (",
+        new="            detail = None or (",
+        expect_failing="test_an_encoding_the_router_cannot_read_says_so",
+        why="the message that sent a session hunting for a field that was there",
+    ),
+    Mutation(
+        name="an unknown encoding is guessed at rather than refused",
+        old="    if encoding not in PEEKABLE_ENCODINGS:",
+        new="    if False:",
+        expect_failing="test_an_encoding_the_router_cannot_read_says_so",
+        why="`br` would be fed to zlib, and the failure would read as a corrupt body",
+    ),
 ]
 
 

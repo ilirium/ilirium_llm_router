@@ -1056,3 +1056,135 @@ def test_every_imitated_header_is_legal_http() -> None:
     assert made, "nothing was imitated, so this test would pass vacuously"
     # Raises LocalProtocolError on an illegal name or value.
     h11.Request(method="POST", target="/v1/messages", headers=[(b"host", b"x")] + made)
+
+
+# Phase 14, 2026-09-19: a first-party Claude Code gzips some request bodies and the router could
+# not route them. The defect was found in a real run -- two 400s in the owner's session, a title
+# call and a 118 KB conversation turn, both retried uncompressed by the client so nothing was lost
+# and nothing was visible either.
+
+def gzipped(payload: bytes) -> bytes:
+    import gzip
+
+    return gzip.compress(payload)
+
+
+def test_a_gzipped_body_is_routed_by_the_model_inside_it() -> None:
+    """***The defect itself.*** The `model` field is there; the router was reading it compressed."""
+    upstream = Upstream()
+    with running(upstream) as client:
+        client.post(
+            "/v1/messages",
+            content=gzipped(CLAUDE_BODY),
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "gzip"},
+        )
+
+    assert str(upstream.received.url) == "https://api.anthropic.com/v1/messages"
+
+
+def test_a_gzipped_body_is_relayed_still_compressed() -> None:
+    """***The promise worth guarding, and the one a decode-to-peek fix is most likely to break.***
+
+    The decoded copy is for routing only. What arrived is what goes upstream -- byte for byte, or
+    the prompt-cache prefix stops matching and every call costs full price.
+    """
+    body = gzipped(CLAUDE_BODY)
+    upstream = Upstream()
+    with running(upstream) as client:
+        client.post(
+            "/v1/messages",
+            content=body,
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "gzip"},
+        )
+
+    assert upstream.received.content == body
+    assert upstream.received.content != CLAUDE_BODY
+
+
+def test_a_gzipped_local_model_still_goes_to_lmstudio() -> None:
+    """Routing reads the decoded copy, so both destinations have to survive it -- not just the one."""
+    upstream = Upstream()
+    with running(upstream) as client:
+        client.post(
+            "/v1/messages",
+            content=gzipped(LOCAL_BODY),
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "gzip"},
+        )
+
+    assert str(upstream.received.url) == "http://localhost:1234/v1/messages"
+
+
+def test_an_encoding_the_router_cannot_read_says_so() -> None:
+    """*"Carries no 'model' field"* sent a session hunting for a field that was there.
+
+    `br` is refused rather than guessed at: it is not a dependency, and a wrong guess about a
+    compression format looks exactly like a corrupt body.
+    """
+    upstream = Upstream()
+    with running(upstream) as client:
+        reply = client.post(
+            "/v1/messages",
+            content=b"\x00\x01\x02not-brotli",
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "br"},
+        )
+
+    assert reply.status_code == 400
+    message = reply.json()["error"]["message"]
+    assert "'br'-encoded" in message and "cannot read it" in message
+    assert "no 'model' field" not in message
+    assert upstream.requests == []
+
+
+def test_a_body_that_inflates_past_the_cap_is_refused() -> None:
+    """The zip-bomb floor. The catch-all route means the caller is not necessarily Claude Code."""
+    from ilirium_llm_router.proxy import PEEK_MAX_DECOMPRESSED
+
+    upstream = Upstream()
+    bomb = gzipped(b"{" + b" " * (PEEK_MAX_DECOMPRESSED + 1024))
+    assert len(bomb) < 100_000, "the point is that a small body inflates hugely"
+    with running(upstream) as client:
+        reply = client.post(
+            "/v1/messages",
+            content=bomb,
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "gzip"},
+        )
+
+    assert reply.status_code == 400
+    assert "inflates past" in reply.json()["error"]["message"]
+    assert upstream.requests == []
+
+
+def test_a_corrupt_gzip_body_is_refused_by_name() -> None:
+    upstream = Upstream()
+    with running(upstream) as client:
+        reply = client.post(
+            "/v1/messages",
+            content=b"not gzip at all",
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "gzip"},
+        )
+
+    assert reply.status_code == 400
+    assert "did not decompress" in reply.json()["error"]["message"]
+
+
+def test_an_uncompressed_body_is_untouched_by_any_of_this() -> None:
+    """The overwhelmingly common path, asserted so the decoder cannot quietly capture it."""
+    upstream = Upstream()
+    with running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert upstream.received.content == CLAUDE_BODY
+    assert str(upstream.received.url) == "https://api.anthropic.com/v1/messages"
+
+
+def test_the_catch_all_forwards_a_body_it_cannot_read() -> None:
+    """It forwards rather than refuses, so an unreadable body changes nothing about where it goes."""
+    upstream = Upstream()
+    with running(upstream) as client:
+        client.post(
+            "/api/hello",
+            content=b"\x00\x01\x02",
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "br"},
+        )
+
+    assert str(upstream.received.url) == "https://api.anthropic.com/api/hello"

@@ -28,6 +28,7 @@ import json
 import logging
 import re
 import uuid
+import zlib
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 
@@ -350,7 +351,7 @@ class Proxy:
     `calls.csv` is always on while the corpus is opt-in. Built inside the corpus it would be absent
     on the default machine, which is the only machine the question is about."""
 
-    async def begin(self, request: Request) -> tuple[Call, bytes, Peeked]:
+    async def begin(self, request: Request) -> tuple[Call, bytes, Peeked, str | None]:
         """What both entry points do before routing: start the clocks, read the body, peek at it.
 
         `Call` is built first, so both clocks start when the request arrived rather than after the
@@ -382,26 +383,37 @@ class Proxy:
             # body is held whole -- `await request.body()` above already does that -- only *how
             # long*, and that is the cost this line adds.
             call.request_body = body
-        peeked = peek(body)
+        # `for_routing` is a THROWAWAY copy, inflated only if the body arrived compressed. `body`
+        # -- what arrived -- is what gets relayed and what the corpus stores, byte for byte.
+        for_routing = body
+        unreadable: str | None = None
+        try:
+            for_routing = decoded_for_peek(body, request.headers.get("content-encoding"))
+        except BodyUnreadable as exc:
+            unreadable = str(exc)
+        peeked = peek(for_routing) if unreadable is None else Peeked(None, None)
         call.model = peeked.model or ""
         call.stream = peeked.stream
-        return call, body, peeked
+        return call, body, peeked, unreadable
 
     async def messages(self, request: Request) -> Response:
         """`POST /v1/messages` — the call that names a model, so routing is decided from the body."""
-        call, body, peeked = await self.begin(request)
+        call, body, peeked, unreadable = await self.begin(request)
 
         if peeked.model is None:
             # Refused before any backend was chosen, so `backend` stays empty. It still gets a row:
             # a call the router turned away is a call, and a silent gap is worse than blanks.
-            call.failed("http_error", "400", "The request body carries no 'model' field.")
-            self.record(call)
-            return error_response(
-                400,
-                "invalid_request_error",
+            #
+            # `unreadable` separates "the body says nothing about a model" from "the body could not
+            # be read at all" -- which used to print the same sentence and sent a session hunting
+            # for a field that was there, compressed.
+            detail = unreadable or (
                 "The request body carries no 'model' field, so there is no way to tell which "
-                "backend it belongs to.",
+                "backend it belongs to."
             )
+            call.failed("http_error", "400", detail)
+            self.record(call)
+            return error_response(400, "invalid_request_error", detail)
         name, backend = backend_for_model(peeked.model, self.config.backends)
         return await self.relay(request, call, body, name, backend)
 
@@ -412,7 +424,9 @@ class Proxy:
         there is nothing to route on, and Claude Code believes it is talking to Anthropic, so that
         is where such a request goes.
         """
-        call, body, peeked = await self.begin(request)
+        # `unreadable` is ignored here on purpose: this route forwards rather than refuses, so a
+        # body it cannot read changes nothing -- the destination was never going to come from it.
+        call, body, peeked, _ = await self.begin(request)
 
         if peeked.model is None:
             name: BackendName = "anthropic"
@@ -627,6 +641,71 @@ class Proxy:
             )
         except Exception as exc:  # noqa: BLE001 — telemetry must never break a call
             logger.warning("Could not record a call: %s: %s", type(exc).__name__, exc)
+
+
+# How far a compressed request body may be inflated to read `model` out of it.
+#
+# Phase 14, 2026-09-19. Inflating a caller-supplied body is the one place this router can be made to
+# spend memory out of proportion to what arrived -- a few KB of zeros expands to gigabytes -- and
+# the catch-all route means the caller is not necessarily Claude Code. Real bodies are ~140 KB and
+# the largest seen is 671 KB, so this is generous by a factor of six and still bounded.
+#
+# The ORIGINAL bytes are what gets relayed and stored, always. This limit governs the throwaway
+# copy that routing reads, so hitting it costs a 400 rather than a wrong destination.
+PEEK_MAX_DECOMPRESSED = 4 * 1024 * 1024
+
+# What `decoded_for_peek` can undo. `br` and `zstd` are deliberately absent: neither is in the
+# dependency list, and Claude Code sends `gzip`. An encoding outside this set is refused by name
+# rather than guessed at.
+PEEKABLE_ENCODINGS = frozenset({"gzip", "deflate", "x-gzip"})
+
+
+class BodyUnreadable(Exception):
+    """The body could not be inflated far enough to route it, with a reason fit to show a caller."""
+
+
+def decoded_for_peek(body: bytes, content_encoding: str | None) -> bytes:
+    """A copy of `body` inflated far enough to read, or `body` itself when it is not encoded.
+
+    ***The original bytes are never replaced.*** This returns a throwaway used only by `peek`;
+    `relay` forwards what arrived and the corpus stores what arrived, both byte for byte, which is
+    the promise prompt caching rests on.
+
+    **Why this exists.** The router reads `model` out of the body to choose a backend. ***A
+    first-party Claude Code gzips some request bodies*** -- measured 2026-09-19, and one pointed at
+    a custom `ANTHROPIC_BASE_URL` never has in any capture -- so the peek was reading compressed
+    bytes, finding no `model`, and refusing a valid request with *"carries no 'model' field"*. The
+    field was there; the router could not see it.
+
+    Raises `BodyUnreadable` rather than returning the original on failure, so the caller can say
+    *which* of the two things went wrong instead of blaming a missing field for both.
+    """
+    if not content_encoding:
+        return body
+    encoding = content_encoding.strip().lower()
+    if encoding in {"identity", ""}:
+        return body
+    if encoding not in PEEKABLE_ENCODINGS:
+        raise BodyUnreadable(
+            f"the body is {encoding!r}-encoded and this router cannot read it to find the model"
+        )
+
+    # `wbits=47` accepts a gzip or a zlib stream and detects which; `-15` is a raw deflate body,
+    # which some clients send under the name `deflate`. Both are tried because the header does not
+    # distinguish them and guessing wrong looks identical to a corrupt body.
+    for wbits in (47, -15):
+        machine = zlib.decompressobj(wbits)
+        try:
+            out = machine.decompress(body, PEEK_MAX_DECOMPRESSED)
+        except zlib.error:
+            continue
+        if machine.unconsumed_tail:
+            raise BodyUnreadable(
+                f"the {encoding} body inflates past {PEEK_MAX_DECOMPRESSED} bytes, "
+                "which is more than this router will read to find the model"
+            )
+        return out
+    raise BodyUnreadable(f"the body is labelled {encoding} and did not decompress")
 
 
 @dataclass(frozen=True)

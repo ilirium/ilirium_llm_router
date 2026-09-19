@@ -73,6 +73,11 @@ proxy using a hosts-entry workaround will meet it.
 *The client retries uncompressed after a rejection, so a session recovers; the failure is visible
 only in the proxy's own log.*
 
+***What a proxy has to do about it:*** **inflate a throwaway copy to read the field, and relay the
+original bytes untouched.** *Rewriting the body instead breaks any prompt-cache prefix that matches
+on exact bytes.* **Cap the inflation** — a few KB of zeros expands to gigabytes, and a proxy with a
+catch-all route is not only talking to Claude Code. *This router does both, from 2026-09-19.*
+
 ## Why any of this matters to a proxy
 
 **A subscription (OAuth) credential behind a custom base URL has been observed getting `429
