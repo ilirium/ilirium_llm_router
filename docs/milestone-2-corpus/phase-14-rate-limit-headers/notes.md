@@ -1146,3 +1146,143 @@ non-streamed warm-up, `/v1/messages` streamed at **4,168** and **118,395** bytes
 
 ***The 127 KB non-streamed classifier is still unsampled.*** **The session died before auto mode
 classified anything** — so entry 11's question is open for a new reason rather than the old one.
+
+## The hosts experiment ran and the 429 is gone — the phase's central result
+
+***Run by the owner 2026-09-19, 12:30–12:37 UTC, Claude Code 2.1.267*** — the same build as every
+run of 2026-09-18, so **no part of this is a client version difference.** *`ANTHROPIC_BASE_URL`
+unset, auto mode on, the router unchanged on 8787 behind the terminator.*
+
+**Zero `429`s.** *The single `429` a grep finds in the log is the millisecond field of a timestamp.*
+
+### The paired control, from `logs/corpus/*/index.csv`
+
+| | **2026-09-18** — `ANTHROPIC_BASE_URL` set | **2026-09-19** — hosts route, base URL unset |
+|---|---|---|
+| Non-streamed `/v1/messages` over 100 KB | **125** | **9** |
+| Outcome | **119 × `http_error`**, 6 `client_disconnect` | ***9 × `ok`*** |
+| System blocks in the request | **2** | **3** |
+| The attribution block | ***absent in all 125*** | ***present in all 9*** |
+
+**Same credential, same machine, same router build, same egress.** *`config-hosts.yaml` names
+`https://api.anthropic.com` directly with no forwarder hop, so the router's own `httpx` made the
+outbound TLS connection on **both** days.*
+
+### `BUG-000`'s trap is satisfied rather than dodged
+
+***A quiet session looks exactly like a fix, so the classifier was identified rather than assumed.***
+**Three independent marks, all from the wire or the stored body:**
+
+- ***`anthropic-beta` carries `auto-mode-classifier-2026-07-16`*** on those requests — the client
+  naming the thing itself
+- The system prompt opens **"You are a security monitor for autonomous AI coding agents"**
+- `max_tokens: 64`, **`stream` absent entirely**, one message, ~128 KB
+
+**Nine of them, each answered in about 340 bytes.** *This is auto mode classifying and being
+answered, not a session that merely failed to fail.*
+
+### What this establishes
+
+***The router does not cause the rejection.*** **The same router, the same `httpx` egress, the same
+TLS fingerprint presented to Anthropic, carried nine classifier calls successfully today and was
+rejected 119 times yesterday.** *The difference lies entirely in what Claude Code put in the
+request.*
+
+***Both of entry 8's remaining hypotheses fall out of this for free, and both were named as
+expensive:***
+
+| | Why it is eliminated |
+|---|---|
+| **The TLS fingerprint** | **Anthropic saw the *router's* fingerprint on both days.** Same fingerprint, opposite outcomes |
+| **Connection reuse** | The router pooled its own connections identically on both days |
+
+### What this does NOT establish, said plainly because the temptation is the same one as last time
+
+***The attribution block is the leading candidate and is NOT shown to be the cause.*** **Several
+things change together when `ANTHROPIC_BASE_URL` goes away**, and this phase has already read a
+confirmed mechanism as a confirmed cause once — entry 12 — and a confirmed name as a confirmed
+channel — entry 13.
+
+**What narrows it usefully is the 2026-09-18 flag run:** `_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL=1`
+**restored `x-client-request-id` and the 429 did not move**, so that field is eliminated. *The
+attribution block is the one known content difference that survives into today's success.*
+
+### Two things read out of the bodies that bear on entry 7
+
+**The real value is `cc_version=2.1.267.608; cc_entrypoint=cli; cch=<per-request hash>`** — seven
+distinct `cch` values across nine requests, so it is computed rather than static.
+
+***The imitation experiment was fabricating a value that does not match the real one.***
+`BILLING_VERSION_SUFFIX = "0a3"` against the real **`.608`**, and `cc_entrypoint=sdk-cli` against the
+real **`cli`**. **So C2d was wrong in three ways at once** — wrong channel, wrong version suffix,
+wrong entrypoint — *and entry 13 had already established the first.*
+
+### How the corpus was read
+
+***`ilirium-llm-router extract --format bodies --path /v1/messages`, over both day folders.***
+*Material already on disk; no session driven and no request sent.* **This is the third time entry 3's
+observation has paid out** — and the first time the tools were driven against a question the same day
+it arose.
+
+### The verdicts themselves, because "200" is not the same as "it classified"
+
+***Nine responses, decompressed out of the corpus and read.*** **Every one carries a real
+classification**, not an error with a 200 on it:
+
+| | |
+|---|---|
+| `<block>no` | **five times** — `stop_sequence: </block>` |
+| `<severity>10`, `15`, `18`, `25` | **four times** — `stop_sequence: </severity>` |
+
+*Each with a distinct `msg_` id and a plausible `input_tokens` (90 for the severity calls, 158 for
+the block calls).* **So the classifier ran, was answered, and returned a decision.**
+
+***The response bodies are brotli — entry 7's standing cost, met in practice.*** *`zstandard` opens
+the blob and hands back bytes that are still compressed; `brotli` is not in the venv and was
+supplied in an ephemeral overlay rather than added to the project.*
+
+## A router defect the first-party client exposed, and an observation I cannot explain
+
+***Two requests in that run were rejected by the router itself***, `400`, with
+**"The request body carries no 'model' field."** *They are the only non-`ok` outcomes of the day.*
+
+***Both bodies are gzip-compressed.*** **Magic `1f8b0800`.** *Decompressed, they are perfectly
+ordinary:*
+
+| Stored | Decompressed | What it is |
+|---|---|---|
+| **2,152 B** | 4,425 B | The **title-generation** call — `claude-haiku-4-5`, and its text is the owner's own first prompt |
+| **40,541 B** | 118,560 B | A **main conversation turn** — `claude-opus-5`, `max_tokens: 64000`, streamed |
+
+***So the model peek is reading compressed bytes and finding no `model` key.*** **`routing.py`'s
+prefix rule never gets a chance.** *The client retried both uncompressed — the 4,168-byte and
+118,395-byte streamed arrivals twelve milliseconds later are the retries — so the session continued
+and nothing was lost.*
+
+***This is new because the client is first-party.*** **A client pointed at a custom
+`ANTHROPIC_BASE_URL` has never gzipped a request body in any capture this phase holds**; one that
+believes it is talking to Anthropic does. **It is a real defect in `src/` and it is not fixed here**
+— `CLAUDE.md` says propose before implementing, and it is the owner's call whether it belongs in
+this phase at all.
+
+### The thing that does not add up, said rather than smoothed over
+
+***The owner's own session transcript for that window reports the classifier FAILING*** — 
+`claude-opus-5[1m] is temporarily unavailable, so auto mode cannot determine the safety of Bash` —
+**four times out of ten probes, at 15:31–15:32 local, which is 12:31–12:32 UTC.**
+
+***The router's record for that same session and those same two minutes shows six classifier calls,
+all `200`, all carrying verdicts.*** **And no request naming `claude-opus-5[1m]` reached the router
+at all** — zero occurrences of `1m` in the whole of `calls.csv`.
+
+**So the failures the owner saw produced no request that this router ever received**, and the only
+two requests it rejected were the gzip pair above, neither of which is a classifier call.
+
+***I cannot close that gap from here and am not going to guess at it.*** *Three shapes it could
+have — the failing attempts never leaving the client; a second session not traversing this router;
+or the `[1m]` variant being genuinely unavailable upstream and unrelated to `BUG-001`* — **and
+nothing on disk distinguishes them.** **Put to the owner as entry 18.**
+
+***What it does not touch:*** **the nine successful classifications and the zero 429s are measured
+and stand.** *What is now uncertain is whether auto mode was usable end to end, which is a stronger
+claim than the one the paired control makes.*

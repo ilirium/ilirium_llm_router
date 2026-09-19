@@ -166,7 +166,9 @@ hosts entry does that with nothing modified.*
 | **C3c** | `config-hosts.yaml` and `make run-hosts` — *the egress hop removed and **the corpus ON***, without which the run captures no bodies | built |
 | **C3d** | Run it. ***`for-the-owner.md` entry 14 is the runbook*** — and **the hosts line redirects the owner's own session**, so `curl --resolve` proves the chain first | ***RAN 2026-09-19 and LOOPED.*** **67 × 502, no measurement** — `run-pinned.py` patched `socket.getaddrinfo` and the router runs under **uvloop**, which never calls it. Entry 16 |
 | **C3f** | ***Fix the pin and give it a check that can fail.*** `uvloop.Loop.getaddrinfo` patched too, and `verify_the_pin` refuses to start unless the patched resolver is **observed** returning the answer | **done**, exercised by reintroducing the defect: **the address came back correct and the check still refused** |
-| **C3g** | Re-run it | ***the owner's, and nothing else in the phase is ahead of it*** |
+| **C3g** | Re-run it | ***RAN 2026-09-19 12:30 UTC. **The `429` is gone** — 9 classifier requests, **9 × `ok`**, zero 429s on the same client build that produced 119 rejections the day before*** |
+| **C3i** | ***Two things the run turned up that the plan did not ask for*** — a **gzip-encoded request body the router `400`s** because the model peek reads compressed bytes, and the owner's transcript reporting the classifier unavailable while the router logged six successful classifications | **raised, not fixed.** *Entry 18; the first changes `src/` and the second is unexplained* |
+| **C3h** | ***Read the result against 2026-09-18, from the corpus*** — same credential, same router, same egress, and the attribution block **absent in all 125** rejections and **present in all 9** successes | **done.** *Entry 17; and entry 8's two expensive hypotheses fall out free — Anthropic saw the **router's** fingerprint on both days* |
 | **C3e** | ***The sampler key, so this run can be read at all.*** `(path, streamed?, size band)`, bounded at 64 shapes with the stop announced. **Chosen by the owner 2026-09-19** from entry 11's three options, in a shape better than any of them — *the path became part of the key rather than a gate* | **done**, 480 tests, **32/32** mutations |
 
 ***If the 429 survives this, the entire client-side variable is eliminated*** and what remains is
@@ -278,9 +280,13 @@ one day it does.*
 
 ## Done when
 
-- The headers on a real 429 have been **seen, frozen into `evidence/`, and read** — Group C.
+- The headers on a real 429 have been **seen, frozen into `evidence/`, and read** — Group C. ***Done.***
 - **`BUG-001` says which of H1 / H2 / neither the values support**, or says explicitly that it no
-  longer reproduces and on which versions.
+  longer reproduces and on which versions. ***Answered 2026-09-19: neither, and the reason is now
+  measured.*** **H2 is dead** — the same router, egress and TLS fingerprint carried nine classifier
+  calls successfully. **H1 is dead** — Anthropic accepts the identical request shape on the identical
+  credential. ***What is left is client-side content withheld from a custom base URL***, which was
+  not among the two this plan set out to separate.
 - The durable home is chosen **by the owner** and built.
 - The register's `❓` column is empty and Task 13 has checked it against the code.
 

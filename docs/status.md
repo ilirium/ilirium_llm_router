@@ -15,9 +15,21 @@ merged. Work in `/Users/ilirium/Projects/local/ilirium_llm_router/phase-14-rate-
 
 **It was chartered to record the Anthropic rate-limit headers and the owner reshaped it, on the day
 it opened, around a live symptom: Claude Code's auto mode cannot run its safety classifier through
-the router.** The instrument was built, it worked, and **thirteen hypotheses have been eliminated by
-measurement.** *The cause is **not identified**, and the phase says so rather than implying
-otherwise.*
+the router.** The instrument was built, it worked, and **fifteen hypotheses have been eliminated by
+measurement.**
+
+***2026-09-19: the 429 is gone under the hosts route and the router is cleared.*** **The same
+router, `httpx` egress and TLS fingerprint carried nine classifier requests successfully that had
+been rejected 119 times the day before** — so what remains is **client-side content withheld from a
+custom `ANTHROPIC_BASE_URL`.** *The attribution block is the leading candidate and **is not proven
+to be the cause**; the phase says which it is rather than implying otherwise.*
+
+***Two things qualify that and neither is buried.*** **The owner's own transcript reports the
+classifier unavailable in the same two minutes** the router logged six successful classifications —
+unexplained, `for-the-owner.md` entry 18. **And a first-party client gzips some request bodies,
+which the router cannot route**: two `400`s, *"the request body carries no 'model' field"*, because
+the model peek reads compressed bytes. ***A real `src/` defect, not fixed, and the owner's to
+place.***
 
 ***The 2026-09-18 evening session read the client instead of the router***, which nothing in this
 phase had done. **Claude Code ships as a Bun executable with its JavaScript embedded in plaintext**,
@@ -32,7 +44,7 @@ so it is greppable — `evidence/binary-extract.sh`.
 | **The control that broke the conclusion** | **The classifier works direct and fails through the router.** The owner found it by asking why auto mode worked in the session he was reading the finding in |
 | ***The attribution "header" is a body field*** | **Retracted 2026-09-18.** It is a system-prompt block inside the request, not an HTTP header — ***so `C2d` added a header the client never sends as one and tested the wrong channel entirely*** |
 | **The first-party gate, and its switch** | `ANTHROPIC_BASE_URL` naming any host but `api.anthropic.com` turns off first-party behaviour; **`_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL` forces it back.** *Run: it reaches the wire — `x-client-request-id` arrives — and **the 429 does not move*** |
-| ***The next experiment is BUILT and NOT RUN*** | **The hosts entry with `mkcert`**, so the client is fully first-party while still routed. *Two scripts in `evidence/`, plus `config-hosts.yaml` and `make run-hosts`; the owner runs it **2026-09-19**.* ***`for-the-owner.md` entry 14 is the full runbook*** |
+| ***THE HOSTS EXPERIMENT RAN AND THE 429 IS GONE*** | **2026-09-19, Claude Code 2.1.267** — the client fully first-party while still routed. ***9 classifier requests, 9 × `ok`, zero 429s***, against **119 rejections** on the same build the day before. *`for-the-owner.md` entry 17* |
 | **Three experiments are live in `src/`** | **Deliberately not reverted** — owner's decision. *One of them makes the corpus store non-streamed bodies **brotli-compressed***. ***The imitation header can now come out on its own merits***: it imitates a header that is not one |
 | **Group D never started** | Where the headers durably live — the milestone plan's *"Phase 14's plan cannot skip the question"* — **is still deferred** |
 
@@ -148,7 +160,9 @@ arguing.*
 *Changes every phase. Two or three items lifted from `backlog.md` and cited to it — the file itself
 is the full inventory.*
 
-1. **Exercise the corpus tools by hand.** *The owner's, and the phase was shaped around it: task 14
+1. **Exercise the corpus tools by hand.** ***Partly discharged 2026-09-19***, though not the way this
+   item asks: `extract --format bodies` was driven over both day folders to answer the attribution
+   question, and it answered it. **The history-viewer half below is untouched.** *The owner's, and the phase was shaped around it: task 14
    was struck so this would happen after the merge rather than inside it.* Nothing has driven
    `extract` against the real corpus except the author's own scripts.
 
@@ -260,13 +274,18 @@ was not a real hazard**, and repeating it would preserve a rule whose justificat
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
 **`feat/phase-14-rate-limit-headers`** — Phase 14, forked from `main` at `ac2976e` on 2026-09-18,
-**21 commits and not merged.** The Anthropic rate-limit response headers, **reshaped around
+**not merged.** *A commit count stood here and was **eight out** within a day of being written — it said 21 while the branch held 29. **`git rev-list --count main..HEAD` is the answer**, and it is not written down here for the reason `BKL-0007` exists.* The Anthropic rate-limit response headers, **reshaped around
 `BUG-001`'s live symptom**: Claude Code's auto mode cannot run its safety classifier through the
 router, because the classifier's request is non-streamed and comes back `429`.
 
-***Groups A, B and C are done. Group C2 — eleven eliminated hypotheses — was not planned and
+***Groups A, B, C and C3 are done. Group C2 — thirteen eliminated hypotheses — was not planned and
 happened anyway. Group D has not started.*** *Where the headers durably live is still the milestone
 plan's "cannot skip the question", still deferred, and still the owner's.*
+
+***C3 answered the phase's question on 2026-09-19.*** **Under the hosts route the classifier
+succeeds through the router** — 9 of 9 — **and the paired control clears the router entirely.**
+*Entry 8's two remaining hypotheses, the TLS fingerprint and connection reuse, are eliminated as a
+side effect: **Anthropic saw the router's own fingerprint on both days.***
 
 **Every check on that branch is green** — 475 tests, 24 mutations, `make lint`, `backlog-index
 --check`. **`BUG-001` is retracted and corrected there**, not on the trunk: its table cleared the

@@ -1,6 +1,15 @@
 # BUG-001 — Non-streamed `/v1/messages` rejected as rate-limited
 
-**Status: open. Last confirmed 2026-09-18** — reproduced unchanged on Claude Code **2.1.267**.
+**Status: open, with a working workaround and the cause narrowed to the client.**
+**Last reproduced 2026-09-18; NOT reproduced 2026-09-19 under the hosts route** — both on Claude
+Code **2.1.267**.
+
+> ***2026-09-19: the rejection does not happen when Claude Code believes it is talking to
+> Anthropic directly, even though every byte still goes through the router.*** **Nine classifier
+> requests, nine `ok`, zero 429s** — against **119 rejections** on the same build the day before.
+> **The router is cleared by measurement**: same router process, same `httpx` egress, same TLS
+> fingerprint presented to Anthropic on both days. *See "The experiment that moved it" at the
+> foot of this file.*
 
 > ***RETRACTION, 2026-09-18. This document has been clearing the router with a circular argument
 > since it was written, and the row is struck below.*** **The classifier works when Claude Code
@@ -194,3 +203,81 @@ control was run.
 all**, rather than `"stream": false`. Searching a payload for the latter will not find it.*
 
 **Full record:** `../milestone-2-corpus/phase-14-rate-limit-headers/evidence/`.
+
+## The experiment that moved it, run 2026-09-19
+
+***The client was made fully first-party while every byte still went through the router.***
+`/etc/hosts` points `api.anthropic.com` at `127.0.0.1`, a local TLS terminator holds an `mkcert`
+certificate for that name, and the router's own process pins the name to Anthropic's real address so
+it does not forward to itself. **`ANTHROPIC_BASE_URL` is unset**, which is what the client's gate
+actually reads.
+
+| | **2026-09-18**, `ANTHROPIC_BASE_URL` set | **2026-09-19**, hosts route |
+|---|---|---|
+| Non-streamed `/v1/messages` over 100 KB | **125** | **9** |
+| Outcome | **119 × `429`**, 6 `client_disconnect` | ***9 × `ok`*** |
+| System blocks in the request | **2** | **3** |
+| The attribution block in `system` | ***absent in all 125*** | ***present in all 9*** |
+
+**Claude Code 2.1.267 on both days**, same credential, same machine, same router build.
+
+***This satisfies the positive check this document asks for above*** — a non-streamed
+`/v1/messages` of roughly 130 KB to `claude-sonnet-5` and `claude-opus-5` returning **200**, with
+`calls.csv` rows reading `path=/v1/messages`, `stream=false`, `error_status=ok`. **And `BUG-000`'s
+trap does not apply:** the requests carry `anthropic-beta: …,auto-mode-classifier-2026-07-16,…` and
+a system prompt opening *"You are a security monitor for autonomous AI coding agents"*, so the
+classifier demonstrably ran rather than merely failing to fail.
+
+### What this settles
+
+***The router does not cause the rejection.*** **The same router process, the same `httpx` egress
+and the same TLS fingerprint presented to Anthropic carried nine classifier calls on 2026-09-19 that
+were rejected 119 times on 2026-09-18.**
+
+**Two entries in the four-differences table above are therefore dead, and both were the expensive
+ones:**
+
+| | |
+|---|---|
+| **TLS fingerprint** | *Anthropic saw the **router's** fingerprint on both days.* **Same fingerprint, opposite outcomes** |
+| **HTTP/1.1 vs HTTP/2, connection reuse** | The router pooled its own connections identically on both days |
+
+***What is left is client-side: content Claude Code withholds when `ANTHROPIC_BASE_URL` names any
+host but `api.anthropic.com`.***
+
+### What it does NOT settle, and the distinction is the whole history of this file
+
+***The attribution block is the leading candidate and is not shown to be the cause.*** **Several
+behaviours change together when the base URL goes away.** *One of them is already eliminated: on
+2026-09-18 `_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL=1` restored `x-client-request-id` to the wire
+and **the 429 did not move**.* **The attribution block is the one known content difference that
+survives into the 2026-09-19 success.**
+
+### The workaround, which this document has never had
+
+**Leave `ANTHROPIC_BASE_URL` unset and reach the router through a hosts entry and a local TLS
+terminator.** *The full runbook is
+`../milestone-2-corpus/phase-14-rate-limit-headers/for-the-owner.md`, entry 14.* **It needs `sudo`,
+a local CA in the system trust store, and a machine-wide redirect** — *so it is a workaround for a
+person who wants auto mode through a router, not a fix.*
+
+### One thing this does not claim, and a defect found alongside it
+
+***"The 429 is gone" is not "auto mode is usable end to end".*** **The owner's own session transcript
+for the same two minutes reports the classifier unavailable four times out of ten probes**, naming
+`claude-opus-5[1m]` — *a model that appears nowhere in `calls.csv`, so those attempts produced no
+request this router received.* **The nine classifications and the zero 429s are measured and stand;
+the stronger claim is open.** *`../milestone-2-corpus/phase-14-rate-limit-headers/for-the-owner.md`,
+entry 18.*
+
+***And a first-party client gzips some request bodies, which this router cannot route.*** **Two
+requests that run were rejected by the router with `400` — "The request body carries no 'model'
+field" — because the model peek reads the compressed bytes.** *The client retried uncompressed and
+recovered.* **Anyone adopting the workaround above will meet it.**
+
+### For the upstream issues
+
+**This is the thing both of them stall on**, and it is stronger than the streamed/non-streamed pair
+this file has carried since 2026-08-25: ***one client build, one credential, one machine, and the
+only variable is whether the client believes its base URL is Anthropic's.*** **Reporting it is still
+an open action.**

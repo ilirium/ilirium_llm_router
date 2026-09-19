@@ -248,7 +248,12 @@ never sends as a header. The negative was real; the subject was not.* **Entry 7'
 experiment can come out on those grounds alone** — it is not merely unproductive, it is answering a
 question nobody has.
 
-## 14 · ERRAND · high · The hosts experiment — the full runbook for 2026-09-19
+## 14 · ERRAND · ~~high~~ · The hosts experiment — ***DISCHARGED 2026-09-19, and it answered***
+
+> ***Ran on the second attempt and the `429` is gone.*** **Nine classifier requests through the
+> router, all `ok`, zero `429`s anywhere in the run.** *The first attempt looped — entry 16 — and
+> the runbook below is the corrected version, with steps 2 and 4 saying what they can and cannot
+> prove.* **The result is entry 17.** *The text is kept because you may want to run it again.*
 
 ***You chose this over patching the binary and you were right to.*** `CE()` reads
 `process.env.ANTHROPIC_BASE_URL` **directly**, so leaving that variable unset is what makes the
@@ -484,3 +489,114 @@ the old code would have produced 2**, every request sampled before its 502:
 ***Still missing: the 127 KB non-streamed classifier.*** **The session died before auto mode
 classified anything**, so the question entry 11 was fixed to answer is still open — and it is open
 for a new reason rather than the old one.
+
+## 17 · ASK · high · The 429 is gone, and the next move is a decision rather than an experiment
+
+***You ran it at 12:30 UTC on 2026-09-19 and it answered the phase's question.*** **Nine classifier
+requests through the router, every one `ok`, and not one `429` in the whole run** — on **2.1.267**,
+the same build that produced 119 rejections the day before.
+
+| | **2026-09-18**, base URL set | **2026-09-19**, hosts route |
+|---|---|---|
+| Classifier requests | **125** | **9** |
+| Outcome | **119 × `429`** + 6 disconnects | ***9 × `ok`*** |
+| The attribution block | **absent in all 125** | ***present in all 9*** |
+
+***It is genuinely the classifier and not a quiet session.*** **`anthropic-beta` on those requests
+carries `auto-mode-classifier-2026-07-16`** and the system prompt opens *"You are a security monitor
+for autonomous AI coding agents"*. **`BUG-000`'s trap does not apply.**
+
+### What you now have that nobody had yesterday
+
+***The router is cleared, by measurement rather than by argument.*** **Same router, same `httpx`
+egress, same TLS fingerprint to Anthropic — nine successes today, 119 rejections yesterday.**
+
+***And the two expensive hypotheses in entry 8 are dead for free.*** **Anthropic saw the router's TLS
+fingerprint on both days**, and the router pooled its own connections on both days. *Neither needs
+the Bun build, and neither needs another session.*
+
+### What I am NOT telling you, and it matters
+
+***The attribution block is the leading candidate. It is not proven to be the cause.*** **Several
+things move together when `ANTHROPIC_BASE_URL` goes away**, and *this phase has already read a
+mechanism as a cause once and a name as a channel once.* **The honest statement is: the cause is
+client-side content withheld from a custom base URL, and the attribution block is the one known
+difference that survives into today's success** — `x-client-request-id` having been eliminated by
+your own flag run.
+
+### Three decisions, and they are yours
+
+- ***Is `BUG-001` now workaround-complete enough to report upstream?*** **I think yes, and it is the
+  strongest version it will ever have**: a paired control on one client build where the only variable
+  is whether the client believes it is talking to Anthropic directly. *It has been an open action
+  since 2026-08-25.*
+- ***Entry 7's imitation experiment: I would now remove it.*** **The bodies say the real value is
+  `cc_version=2.1.267.608; cc_entrypoint=cli`** and the code fabricates `0a3` / `sdk-cli`. *So it is
+  wrong in three ways — wrong channel per entry 13, wrong version suffix, wrong entrypoint — and it
+  fabricates attribution on every Anthropic call for no remaining reason.* **Still your call.**
+- ***Does the phase chase the last step, or close?*** **Proving the attribution block is the cause
+  would mean the router injecting it into a request the client did not put it in** — *which alters a
+  body byte-for-byte relayed today and breaks prompt-cache prefixes.* **I would not do that without
+  you saying so**, and the phase's chartered question is already answered.
+
+### One housekeeping thing still open
+
+***The `.pem` files were untracked and un-ignored in the worktree root.*** **You moved them, so
+`git status` is clean** — but nothing stops the next cert landing there. *One line in `.gitignore`
+would; say the word.*
+
+## 18 · ASK · high · Your transcript disagrees with the router's log, and a real defect fell out
+
+***You left `evidence/claude-code-sessions-to-check-safety-classifier.txt` in the tree and it is
+the most useful thing in the run.*** **It also contradicts what I told you in entry 17**, so here is
+the disagreement rather than a tidied version of it.
+
+### The two records
+
+| | |
+|---|---|
+| **Your transcript**, 15:31–15:32 local | ***The classifier is down.*** `claude-opus-5[1m] is temporarily unavailable` — **four of ten probes**, reproducing on retry; `echo`/`ls`/`date` passed **by allowlist, never consulting the classifier** |
+| **The router**, 12:31–12:32 UTC, *same session id* | **Six classifier calls, all `200`**, each carrying a real verdict — `<block>no` ×4, `<severity>10`, `<severity>18` |
+
+***And nothing naming `claude-opus-5[1m]` ever reached the router*** — zero matches for `1m` in the
+whole of `calls.csv`.
+
+**So the failures you saw produced no request this router received.** *I can think of three shapes
+— the attempts never left the client, a second session was not traversing this router, or the `[1m]`
+variant was genuinely unavailable upstream and unrelated to any of this.* ***Nothing on disk
+distinguishes them, and you are the only one who can say which session was which.***
+
+**What this does and does not cost entry 17:** *the nine classifications and the zero 429s are
+measured and stand — the paired control is unaffected.* ***What I should not have implied is that
+auto mode was usable end to end***, which is a stronger claim and is now the open question.
+
+### The defect your file led me to
+
+***Two requests that run were rejected by the router itself*** — `400`, **"The request body carries
+no 'model' field."** ***Both bodies are gzip-compressed***, magic `1f8b0800`. Decompressed they are
+ordinary: your **title-generation** call, and a **118 KB main conversation turn**.
+
+**The model peek is reading compressed bytes, so `routing.py`'s prefix rule never runs.** *The client
+retried both uncompressed twelve milliseconds later, which is why your session carried on.*
+
+***This is new because the client is first-party.*** **No capture in this phase has a custom-base-URL
+client gzipping a request body; one that believes it is talking to Anthropic does.** *So anyone who
+adopts the hosts workaround meets it.*
+
+**Not fixed, and it is a decision rather than an obvious patch:**
+
+- ***Decompress to peek*** — read `content-encoding`, inflate a copy, find `model`, **relay the
+  original bytes untouched.** *Byte-relay survives; the cost is inflating up to 5 MB per request*
+- ***Fail more usefully*** — keep the 400 but say *"the body is `gzip`-encoded and this router cannot
+  read it"*, so the next person is not hunting a missing field that is there
+- ***Leave it*** — the client retries uncompressed and recovers on its own
+
+***I would take the first*** — it is the only one where the router does its job — **but it changes
+`src/` in a phase chartered for response headers, so it may belong on its own branch.** **Your
+call.**
+
+### And a smaller thing
+
+**Your file's `## Session 2, 2026-09-19` heading has nothing under it.** *It is untracked, so I have
+left it alone* — **say whether it should be committed as evidence** (it is the only record of the
+client-side view of that run) **or kept out of git.**
