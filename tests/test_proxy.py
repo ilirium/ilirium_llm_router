@@ -138,17 +138,46 @@ def test_a_streamed_request_asks_for_an_uncompressed_reply() -> None:
     assert upstream.received.headers["accept-encoding"] == "identity"
 
 
-def test_a_non_streamed_request_relays_the_callers_own_accept_encoding() -> None:
-    """Phase 14 experiment: the router's last unforced difference from the direct path.
+def test_a_non_streamed_request_forces_identity_by_default() -> None:
+    """***The shipped behaviour, and the one this test exists to pin.***
 
-    The classifier works direct and 429s through the router, on the same credential and client.
-    This is the first variable being flipped -- see the block comment in `outgoing_headers`.
+    The experiment below was live from 2026-09-18 and is **off by default since 2026-09-19**: it
+    came back negative for the 429, and the run that settled that showed the classifier still
+    failing afterwards with this the only change altering what a non-streamed reply looks like.
+    A test that does not mention an experiment tests the router as it ships.
     """
     upstream = Upstream()
     with running(upstream) as client:
         client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
 
+    assert upstream.received.headers["accept-encoding"] == "identity"
+
+
+def test_a_non_streamed_request_relays_the_callers_own_accept_encoding() -> None:
+    """Phase 14 experiment, **on only when asked for**: `relay_accept_encoding`.
+
+    The classifier works direct and 429s through the router, on the same credential and client.
+    This was the first variable flipped -- see the block comment in `outgoing_headers`.
+    """
+    upstream = Upstream()
+    with running(upstream, make_config(relay_accept_encoding=True)) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
     assert upstream.received.headers["accept-encoding"] == "gzip, deflate, br, zstd"
+
+
+def test_the_experiment_never_touches_a_streamed_request() -> None:
+    """Even switched on, a streamed reply still gets `identity` -- the SSE scanner reads raw bytes.
+
+    The half that was never in question, asserted so that turning the experiment on cannot quietly
+    take the scanner with it.
+    """
+    upstream = Upstream()
+    streaming = b'{"model":"claude-sonnet-5","stream":true,"messages":[]}'
+    with running(upstream, make_config(relay_accept_encoding=True)) as client:
+        client.post("/v1/messages", content=streaming, headers=CLAUDE_CODE_HEADERS)
+
+    assert upstream.received.headers["accept-encoding"] == "identity"
 
 
 def test_httpx_supplies_its_own_accept_encoding_when_the_caller_sends_none() -> None:
@@ -158,10 +187,14 @@ def test_httpx_supplies_its_own_accept_encoding_when_the_caller_sends_none() -> 
     a caller's *absence* through the way it passes a value through. It does not matter for the
     experiment -- Claude Code always sends one -- but it is a real floor on how transparent this
     header can be, and finding it in a debugging session later would cost more than the line.
+
+    **Only reachable with the experiment on.** Off, the router appends `identity` itself and httpx
+    never gets the chance -- which is the same fact from the other side and is why that append
+    exists rather than a discard.
     """
     upstream = Upstream()
     headers = {k: v for k, v in CLAUDE_CODE_HEADERS.items() if k != "accept-encoding"}
-    with running(upstream) as client:
+    with running(upstream, make_config(relay_accept_encoding=True)) as client:
         client.post("/v1/messages", content=CLAUDE_BODY, headers=headers)
 
     supplied = upstream.received.headers["accept-encoding"]
@@ -742,8 +775,17 @@ def test_the_client_offers_http2() -> None:
     """
     import h2  # noqa: F401  -- the stack httpx needs; absent, http2=True is silently inert
 
-    client = create_client()
-    assert client._transport._pool._http2 is True
+    assert create_client(http2=True)._transport._pool._http2 is True
+
+
+def test_the_client_speaks_http_1_1_by_default() -> None:
+    """***The shipped behaviour since 2026-09-19.***
+
+    The experiment is eliminated twice over -- the nine classifier calls Anthropic answered
+    correctly on 2026-09-19 went over HTTP/1.1 on both legs -- so the default is off. Inbound is
+    HTTP/1.1 regardless: uvicorn speaks only `h11`/`httptools`. -> `BKL-0039`.
+    """
+    assert create_client()._transport._pool._http2 is False
 
 
 # Phase 14, the byte-capture half that costs no session: what Claude Code sends the router.
@@ -923,9 +965,26 @@ def test_the_path_is_part_of_the_shape_key(caplog: pytest.LogCaptureFixture) -> 
 
 # Phase 14 experiment: imitating what Claude Code withholds from a custom base URL.
 
-def test_the_withheld_attribution_headers_are_supplied_to_anthropic() -> None:
+def test_no_attribution_is_fabricated_by_default() -> None:
+    """***The shipped behaviour, and the reason it is the default.***
+
+    The client's `x-anthropic-billing-header` is a **system-prompt block in the request body**, not
+    an HTTP header, so this experiment tests a channel the client never uses -- and with a
+    first-party client it puts a fabricated header alongside the client's own genuine attribution,
+    disagreeing with it. The router fabricates nothing unless asked.
+    """
     upstream = Upstream()
     with running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    sent = upstream.received.headers
+    assert "x-anthropic-billing-header" not in sent
+    assert "x-client-request-id" not in sent
+
+
+def test_the_withheld_attribution_headers_are_supplied_to_anthropic() -> None:
+    upstream = Upstream()
+    with running(upstream, make_config(imitate_attribution_headers=True)) as client:
         client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
 
     sent = upstream.received.headers
@@ -938,7 +997,7 @@ def test_the_withheld_attribution_headers_are_supplied_to_anthropic() -> None:
 def test_the_imitation_never_reaches_lmstudio() -> None:
     """The attribution is about Claude Code and Anthropic. LM Studio has no use for any of it."""
     upstream = Upstream()
-    with running(upstream) as client:
+    with running(upstream, make_config(imitate_attribution_headers=True)) as client:
         client.post("/v1/messages", content=LOCAL_BODY, headers=CLAUDE_CODE_HEADERS)
 
     assert "x-anthropic-billing-header" not in upstream.received.headers
@@ -949,7 +1008,7 @@ def test_the_imitation_never_overrides_what_the_caller_sent() -> None:
     """Only gaps are filled. A client that sends its own attribution keeps it."""
     upstream = Upstream()
     headers = {**CLAUDE_CODE_HEADERS, "x-anthropic-billing-header": "cc_version=theirs;"}
-    with running(upstream) as client:
+    with running(upstream, make_config(imitate_attribution_headers=True)) as client:
         client.post("/v1/messages", content=CLAUDE_BODY, headers=headers)
 
     assert upstream.received.headers["x-anthropic-billing-header"] == "cc_version=theirs;"
@@ -959,7 +1018,7 @@ def test_an_unrecognised_client_is_not_imitated() -> None:
     """No measured shape, so nothing to imitate -- and a guessed one is worse than none."""
     upstream = Upstream()
     headers = {**CLAUDE_CODE_HEADERS, "user-agent": "curl/8.4.0"}
-    with running(upstream) as client:
+    with running(upstream, make_config(imitate_attribution_headers=True)) as client:
         client.post("/v1/messages", content=CLAUDE_BODY, headers=headers)
 
     assert "x-anthropic-billing-header" not in upstream.received.headers
@@ -969,7 +1028,7 @@ def test_each_call_gets_its_own_prompt_id() -> None:
     """`cc_prompt_id` is per prompt on the direct path, so a constant would be a visible tell."""
     seen = set()
     upstream = Upstream()
-    with running(upstream) as client:
+    with running(upstream, make_config(imitate_attribution_headers=True)) as client:
         for _ in range(3):
             upstream.reply = streamed()
             client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)

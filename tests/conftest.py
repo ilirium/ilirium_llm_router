@@ -14,7 +14,7 @@ import httpx
 from fastapi.testclient import TestClient
 
 from ilirium_llm_router.app import create_app
-from ilirium_llm_router.config import Backend, Backends, Config
+from ilirium_llm_router.config import Backend, Backends, Config, Experiments
 from ilirium_llm_router.stats import CallRecord
 
 CLAUDE_BODY = b'{"model":"claude-sonnet-5","messages":[{"role":"user","content":"hi"}]}'
@@ -112,12 +112,19 @@ class Rows:
         return self.written[0]
 
 
-def make_config(lmstudio: Backend | None = None) -> Config:
+def make_config(lmstudio: Backend | None = None, **experiments: bool) -> Config:
+    """The default config -- and **every Phase 14 experiment off**, as the shipped default is.
+
+    Pass one by name to turn it on for a test: `make_config(relay_accept_encoding=True)`. Keeping
+    the default honest is the point: a test that does not mention an experiment is testing the
+    router as it actually ships.
+    """
     return Config(
         backends=Backends(
             anthropic=Backend(base_url="https://api.anthropic.com", credential="forward"),
             lmstudio=lmstudio or Backend(base_url="http://localhost:1234", credential="strip"),
-        )
+        ),
+        experiments=Experiments(**experiments),
     )
 
 

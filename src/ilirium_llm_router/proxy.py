@@ -189,17 +189,19 @@ ARRIVAL_SAMPLE_CAP = 64
 TIMEOUT = httpx.Timeout(connect=5.0, read=600.0, write=30.0, pool=5.0)
 
 
-def create_client() -> httpx.AsyncClient:
-    """The single HTTP client shared by every request, so connections are reused."""
-    # `http2=True` NEGOTIATES rather than demands: httpx offers h2 over ALPN and falls back to
-    # HTTP/1.1 if the backend does not take it, so LM Studio is unaffected by this.
-    #
-    # PHASE 14 EXPERIMENT, 2026-09-18, running alongside the `accept-encoding` one in
-    # `outgoing_headers` at the owner's instruction -- two variables at once, to be bisected only if
-    # the pair comes back positive. Anthropic's API serves HTTP/2 and Claude Code talking to it
-    # directly uses it; the router did not, and the direct path is the one where the safety
-    # classifier works.
-    return httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False, http2=True)
+def create_client(http2: bool = False) -> httpx.AsyncClient:
+    """The single HTTP client shared by every request, so connections are reused.
+
+    `http2` is `Experiments.http2_upstream` and is **off by default**. It NEGOTIATES rather than
+    demands: httpx offers h2 over ALPN and falls back to HTTP/1.1 if the backend does not take it,
+    so LM Studio is unaffected either way.
+
+    PHASE 14 EXPERIMENT, 2026-09-18, switchable since 2026-09-19. Anthropic's API serves HTTP/2 and
+    Claude Code talking to it directly uses it; the router did not, and the direct path is the one
+    where the safety classifier works. **Eliminated twice**: the nine classifier calls Anthropic
+    answered correctly on 2026-09-19 went over HTTP/1.1 on both legs.
+    """
+    return httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False, http2=http2)
 
 
 def backend_timeout(backend: Backend) -> httpx.Timeout:
@@ -454,11 +456,21 @@ class Proxy:
         outgoing = self.client.build_request(
             request.method,
             target_url(backend.base_url, request),
-            headers=outgoing_headers(request, backend, self.api_keys.get(name), call.stream)
+            headers=outgoing_headers(
+                request,
+                backend,
+                self.api_keys.get(name),
+                call.stream,
+                relay_accept_encoding=self.config.experiments.relay_accept_encoding,
+            )
             # Anthropic only: the attribution is about Claude Code's relationship with its own
             # backend and means nothing to LM Studio, which would just be handed client details it
-            # has no use for.
-            + (imitation_headers(request) if name == "anthropic" else []),
+            # has no use for. Off by default -- it imitates a field the client sends in the BODY.
+            + (
+                imitation_headers(request)
+                if name == "anthropic" and self.config.experiments.imitate_attribution_headers
+                else []
+            ),
             content=body,
             timeout=backend_timeout(backend),
         )
@@ -679,7 +691,12 @@ def target_url(base_url: str, request: Request) -> httpx.URL:
 
 
 def outgoing_headers(
-    request: Request, backend: Backend, api_key: str | None, wants_stream: bool | None = None
+    request: Request,
+    backend: Backend,
+    api_key: str | None,
+    wants_stream: bool | None = None,
+    *,
+    relay_accept_encoding: bool = False,
 ) -> list[tuple[bytes, bytes]]:
     """The incoming headers, minus the ones that described the old connection.
 
@@ -689,8 +706,10 @@ def outgoing_headers(
     The credential is decided by `backend.credential` alone, never by whether a key happens to
     exist. `api_key` carries the value for `inject` and is ignored by the other two modes.
 
-    **`accept-encoding` is forced to `identity` for a streamed reply and relayed untouched
-    otherwise.** *Phase 14 experiment, 2026-09-18 — see the block comment below.*
+    **`accept-encoding` is forced to `identity`**, unless `relay_accept_encoding` is on and the
+    request is **non-streamed**, in which case the caller's own value is relayed. *Phase 14
+    experiment, 2026-09-18, switchable and off by default since 2026-09-19 — see the block comment
+    below.*
     """
     dropped = set(DROPPED_FROM_REQUEST)
     if backend.credential in {"strip", "inject"}:
@@ -715,8 +734,10 @@ def outgoing_headers(
     #      non-streamed response blob stops being readable JSON and becomes gzip. Nothing is lost
     #      and `extract` will need to know.
     #
-    # If the experiment comes back negative, this reverts to one unconditional line.
-    if not wants_stream:
+    # SWITCHED OFF BY DEFAULT since 2026-09-19. It came back negative for the 429, and the run that
+    # settled that also showed the classifier STILL failing afterwards -- with this the only change
+    # that alters what a non-streamed reply looks like to the client. `Experiments` says the rest.
+    if relay_accept_encoding and not wants_stream:
         dropped.discard("accept-encoding")
 
     headers = [
@@ -724,7 +745,11 @@ def outgoing_headers(
         for name, value in request.headers.raw
         if name.decode("latin-1").lower() not in dropped
     ]
-    if wants_stream:
+    # `identity` is APPENDED rather than merely left alone, because `accept-encoding` is in
+    # DROPPED_FROM_REQUEST and httpx substitutes its own when the header is absent -- so dropping it
+    # asks for compression rather than avoiding it. Streamed always; non-streamed unless the
+    # experiment is relaying the caller's own value.
+    if wants_stream or not relay_accept_encoding:
         headers.append((b"accept-encoding", b"identity"))
     if backend.credential == "inject" and api_key is not None:
         headers.append((b"authorization", f"Bearer {api_key}".encode()))

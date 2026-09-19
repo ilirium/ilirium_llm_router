@@ -187,3 +187,36 @@ def test_verify_archive_takes_no_out_by_construction() -> None:
     """It reads, verifies, and reports. `--verify-only` on `extract` named the default and was
     struck; a destination here would re-open the same confusion from the other side."""
     assert rejected("verify-archive", "2026-08-25", "--out", "dump") == 2
+
+
+# Phase 14, 2026-09-19. NOT a parser test, which is this file's stated scope -- put here anyway
+# because it is the command-line *surface*, and because the thing it guards is that an experiment
+# cannot run silently. A reader looking for "what does `check` print" will look here.
+
+def test_check_says_nothing_when_no_experiment_is_on(capsys: pytest.CaptureFixture[str]) -> None:
+    """Silence means the router is a plain byte-relay, which is the shipped state."""
+    from conftest import make_config
+
+    from ilirium_llm_router.cli import _print_experiments
+
+    _print_experiments(make_config())
+    assert capsys.readouterr().out == ""
+
+
+def test_check_names_every_experiment_that_is_on(capsys: pytest.CaptureFixture[str]) -> None:
+    """***The point of the whole block.***
+
+    This phase has twice had an experiment running while a document said it was not. A config key
+    nobody prints is a key nobody checks, so `check` says so out loud and names which.
+    """
+    from conftest import make_config
+
+    from ilirium_llm_router.cli import _print_experiments
+
+    _print_experiments(make_config(relay_accept_encoding=True, imitate_attribution_headers=True))
+    out = capsys.readouterr().out
+    assert "EXPERIMENTS ON:" in out
+    assert "relay_accept_encoding" in out
+    assert "imitate_attribution_headers" in out
+    assert "http2_upstream" not in out  # off, and not listed
+    assert "NOT a plain byte-relay" in out

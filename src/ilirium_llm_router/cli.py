@@ -65,6 +65,7 @@ def main() -> int:
         return 1
 
     _report(config, args.config)
+    _print_experiments(config)
 
     if args.command == "check":
         print("\nConfiguration is valid.")
@@ -681,6 +682,22 @@ def _report_corpus(config: Config) -> None:
         f"samples from {retrain.sample_min_bytes} bytes, "
         f"maxdict {retrain.maxdict}, k {retrain.k}"
     )
+
+
+def _print_experiments(config: Config) -> None:
+    """Name any Phase 14 experiment that is switched on, and say nothing when none is.
+
+    ***The asymmetry is deliberate and is the opposite of the corpus block above.*** *The corpus is
+    printed even when off, because "is the store on?" is a standing question.* **An experiment is a
+    temporary deviation from honest byte-relay, so silence means the router is behaving normally and
+    a line means it is not** — and this phase has now twice had an experiment running while a
+    document said it was not. *A reader who wants the full state has the config file.*
+    """
+    on = [name for name, value in sorted(vars(config.experiments).items()) if value]
+    if not on:
+        return
+    print(f"\nEXPERIMENTS ON: {', '.join(on)}")
+    print("          The router is NOT a plain byte-relay. See config `experiments:`.")
 
 
 def _credential(backend: Backend) -> str:

@@ -136,7 +136,7 @@ MUTATIONS = [
     # The accept-encoding experiment, 2026-09-18.
     Mutation(
         name="a streamed request stops asking for identity",
-        old="    if wants_stream:\n        headers.append((b\"accept-encoding\", b\"identity\"))",
+        old="    if wants_stream or not relay_accept_encoding:\n        headers.append((b\"accept-encoding\", b\"identity\"))",
         new="    if False:\n        headers.append((b\"accept-encoding\", b\"identity\"))",
         expect_failing="test_a_streamed_request_asks_for_an_uncompressed_reply",
         why="the SSE scanner would be handed compressed bytes and silently find no usage",
@@ -148,11 +148,44 @@ MUTATIONS = [
         expect_failing="test_a_non_streamed_request_relays_the_callers_own_accept_encoding",
         why="the experiment silently stops running while still looking like it does",
     ),
+    # The switches, 2026-09-19. Each of these is "the flag is ignored and the experiment runs
+    # anyway", which is the failure a switch actually has: a config key that reads as off while the
+    # behaviour is on is worse than no key at all.
+    Mutation(
+        name="relay_accept_encoding is ignored and the experiment always runs",
+        old="    if relay_accept_encoding and not wants_stream:",
+        new="    if not wants_stream:",
+        expect_failing="test_a_non_streamed_request_forces_identity_by_default",
+        why="the config says the experiment is off and non-streamed replies still arrive compressed",
+    ),
+    Mutation(
+        name="the identity append stops covering the non-streamed default",
+        old="    if wants_stream or not relay_accept_encoding:",
+        new="    if wants_stream:",
+        expect_failing="test_a_non_streamed_request_forces_identity_by_default",
+        why="dropping the header is not the same as forcing identity -- httpx substitutes its own, "
+        "so the request asks for compression while the config says it does not",
+    ),
+    Mutation(
+        name="http2_upstream is ignored and h2 is always offered",
+        old="    return httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False, http2=http2)",
+        new="    return httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False, http2=True)",
+        expect_failing="test_the_client_speaks_http_1_1_by_default",
+        why="an eliminated variable rides along in every later measurement, unasked for",
+    ),
+    Mutation(
+        name="imitate_attribution_headers is ignored and attribution is always fabricated",
+        old='                if name == "anthropic" and self.config.experiments.imitate_attribution_headers',
+        new='                if name == "anthropic"',
+        expect_failing="test_no_attribution_is_fabricated_by_default",
+        why="the router invents billing attribution on every Anthropic call while the config says "
+        "it does not -- and a first-party client is already sending its own, which disagrees",
+    ),
     # The imitation experiment, 2026-09-18.
     Mutation(
         name="the imitation is sent to LM Studio too",
-        old='            + (imitation_headers(request) if name == "anthropic" else []),',
-        new="            + imitation_headers(request),",
+        old='                if name == "anthropic" and self.config.experiments.imitate_attribution_headers',
+        new="                if self.config.experiments.imitate_attribution_headers",
         expect_failing="test_the_imitation_never_reaches_lmstudio",
         why="a local backend is handed client attribution it has no use for",
     ),
@@ -273,7 +306,7 @@ MUTATIONS = [
     # The HTTP/2 experiment, 2026-09-18, running alongside the accept-encoding one.
     Mutation(
         name="http2 is quietly switched back off",
-        old="    return httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False, http2=True)",
+        old="    return httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False, http2=http2)",
         new="    return httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False)",
         expect_failing="test_the_client_offers_http2",
         why="the experiment stops running while the dependency and the comments say it does",

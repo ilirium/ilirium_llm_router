@@ -211,12 +211,69 @@ class Corpus(Strict):
     retrain: Retrain = Field(default_factory=Retrain)
 
 
+class Experiments(Strict):
+    """Phase 14's three live experiments, **every one off by default**.
+
+    They exist because `BUG-001` needed the router varied one flip at a time, and each came back
+    **negative** for the 429. The owner chose on 2026-09-18 to keep them running; on 2026-09-19 that
+    reversed, because a run with the client fully first-party showed the classifier still failing
+    after the 429 was gone — and a router that relays *plus three modifications* cannot be the
+    control that result has to be read against.
+
+    ***Switches rather than deletions, at the owner's choice***, so a flip is one config line rather
+    than git archaeology. **The default is the honest relay**; turning one on is a deliberate act and
+    the config file records which experiment is running.
+
+    *This section is the first configurable thing in the phase and reverses the plan's "the minimal
+    form is deliberately not configurable" — the register says so, and why.*
+    """
+
+    relay_accept_encoding: bool = False
+    """Relay the caller's `accept-encoding` on a **non-streamed** request instead of forcing
+    `identity`.
+
+    ***The standing cost is why this one matters most.*** With it on, a non-streamed reply arrives
+    **compressed**, so the corpus stores brotli rather than JSON and `extract` hands a reader bytes.
+    **It is also the prime suspect** for the classifier failing after the 429 went away: it is the
+    only change that alters what a non-streamed reply looks like to the client, and the classifier
+    is always non-streamed.
+
+    *Streamed requests are unaffected either way — the SSE scanner reads raw bytes and has always
+    required `identity`.*
+    """
+
+    http2_upstream: bool = False
+    """Offer HTTP/2 to the backend over ALPN.
+
+    **Negotiates rather than demands**, so a backend that declines gets HTTP/1.1 and LM Studio is
+    unaffected. *It buys nothing measured and is eliminated twice over: the nine classifier calls
+    Anthropic answered correctly on 2026-09-19 went over HTTP/1.1 on both legs.*
+
+    **Inbound is HTTP/1.1 whatever this says** — uvicorn's implementations are `h11` and
+    `httptools`, neither of which speaks h2. → `BKL-0039`.
+    """
+
+    imitate_attribution_headers: bool = False
+    """Add fabricated attribution headers to every Anthropic call.
+
+    ***Built on a misreading and now known to be wrong three ways over.*** The client's
+    `x-anthropic-billing-header` is a **system-prompt block in the request body, not an HTTP
+    header**, so this tests a channel the client never uses; and the values it invents — `0a3`,
+    `sdk-cli` — disagree with the real ones, `2.1.267.608` and `cli`.
+
+    ***Worst with a first-party client***, which sends its own genuine attribution in the body: the
+    request then carries both, and they contradict each other. **Kept switchable rather than deleted
+    only so the negative result stays reproducible.**
+    """
+
+
 class Config(Strict):
     backends: Backends
     server: Server = Field(default_factory=Server)
     logging: Logging = Field(default_factory=Logging)
     stats: Stats = Field(default_factory=Stats)
     corpus: Corpus = Field(default_factory=Corpus)
+    experiments: Experiments = Field(default_factory=Experiments)
 
     def resolve_paths(self, base_dir: Path) -> None:
         """Make log, stats and corpus paths absolute, against the config file's directory."""

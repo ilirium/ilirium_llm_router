@@ -76,7 +76,9 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         async with AsyncExitStack() as stack:
-            http = client or await stack.enter_async_context(create_client())
+            http = client or await stack.enter_async_context(
+                create_client(http2=config.experiments.http2_upstream)
+            )
             writer = stats
             if writer is None:
                 writer = StatsWriter(config.stats)
