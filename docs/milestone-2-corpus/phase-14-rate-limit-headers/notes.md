@@ -1066,3 +1066,83 @@ with no rebuild and entry 14's setup needs no change.
 `TestClient`, which is the whole stack short of a bound port and a log file on disk** — so what is
 unproven is the line reaching `logs/telemetry/router.log`, not the line itself. *`CLAUDE.md` says
 ask before starting a local server, and the owner's experiment was about to bind the machine.*
+
+## The hosts experiment ran, looped, and the guard for the loop was decorative
+
+**2026-09-19, run by the owner. No measurement.** *Every step taken was the one the runbook asked
+for.* **`logs/telemetry/router.log` holds the whole shape of it:**
+
+| | |
+|---|---|
+| **12:05:00** | Step 4's `curl --resolve` → `/api/hello` → **200**, 252 ms — the real Anthropic |
+| **12:07:46** | Session starts, hosts line in → **every request 502**, `transport_error connect_error`, **4–9 ms** |
+| | **67 × 502, no success.** 70 calls arrived, 70 recorded, 0 lost |
+| **12:12:37** | After teardown, `/api/hello` → **200** again |
+
+***4–9 ms is a local connection.*** **The router resolved `api.anthropic.com` to `127.0.0.1`,
+connected to the terminator, and rejected its mkcert certificate** — `unable to get local issuer
+certificate`, Python's `certifi` bundle having no local CA. ***The loop `run-pinned.py` exists to
+prevent, entered anyway.***
+
+### uvloop does not call `socket.getaddrinfo`
+
+**`run-pinned.py` patched `socket.getaddrinfo`.** *`uvicorn.run` takes `loop="auto"`, uvloop is
+installed, and `Config(loop="auto").get_loop_factory()` returns `uvloop.Loop`.* **uvloop resolves
+natively and never calls the patched function**, so the pin was inert from the first request.
+
+***Measured, not reasoned about.*** *Patch `socket.getaddrinfo`, then call `anyio.getaddrinfo` —
+which is the path `httpx` takes — under each loop in turn:*
+
+| Loop | Patch called |
+|---|---|
+| plain `asyncio` | **yes** |
+| `uvloop` | **no** |
+
+**Fixed by patching `uvloop.Loop.getaddrinfo` as well.** *The class accepts attribute assignment,
+checked before relying on it.* ***Forcing `loop="asyncio"` was the alternative and was not taken***
+— it would change the loop the experiment runs on, and this phase has spent a fortnight removing
+one variable at a time.
+
+### The decorative guard, which is the part worth keeping
+
+***`print(f"[pinned] ...")` ran unconditionally, before anything was resolved.*** **The runbook said
+to stop if that line was missing. It was not missing. It had never meant anything.**
+
+***And step 4 cannot test the pin at all.*** **It runs before `/etc/hosts` exists**, and until the
+hosts entry is in, a pinned router and an unpinned one resolve identically and both reach Anthropic.
+*The 12:05 green and the 12:12 green are the same fact as each other, and neither is the pin.*
+
+**`verify_the_pin` resolves the name through the router's own event loop and refuses to start unless
+the patch is observed returning the answer.** ***Two facts, not one*** — the address has to be right
+**and the patched resolver has to have fired** — *because with no hosts entry an unpatched lookup
+returns the right address too, which is step 4's blindness one level in.*
+
+**Exercised by reintroducing the exact defect.** *Patch only `socket.getaddrinfo`, as the file did
+yesterday:* ***the address came back correct — `160.79.104.10` — and the check refused anyway***,
+naming the loop that ran. **An address-only check would have passed.**
+
+*Also checked: the pin verifying for real, `main()` end to end against a missing config so nothing
+binds, and the loopback guard still returning 2.*
+
+### A documentation defect found while correcting the runbook
+
+**Entry 14 said a plain `dig` would answer `127.0.0.1` once the hosts entry was in.** ***It would
+not — `dig` does not read `/etc/hosts` at all***, it queries a nameserver directly. *Checked against
+`broadcasthost`, which `/etc/hosts` maps to `255.255.255.255` and `dig` cannot see while
+`dscacheutil` can.*
+
+**`@1.1.1.1` stays**, on the other grounds: it makes the answer independent of a VPN or corporate
+resolver. ***The advice held and the reason given for it did not***, which is the same shape as the
+`git add -A` warning `status.md` records dropping.
+
+### What the failed run did produce
+
+***The sampler keyed the same morning paid for itself in the run that failed.*** **18 arrival lines
+where the old code would have produced 2**, every request sampled before its 502: the **323-byte**
+non-streamed warm-up, `/v1/messages` streamed at **4,168** and **118,395** bytes as two bands, and
+***eleven API paths this phase had never seen*** — `/api/claude_cli/bootstrap`, `/api/oauth/usage`,
+`/v1/ultrareview/quota`, `/mcp-registry/v0/servers`, `/api/claude_code_penguin_mode`, and
+`/api/event_logging/v2/batch` at **435,666 bytes**. **The old path gate hid all eleven.**
+
+***The 127 KB non-streamed classifier is still unsampled.*** **The session died before auto mode
+classified anything** — so entry 11's question is open for a new reason rather than the old one.

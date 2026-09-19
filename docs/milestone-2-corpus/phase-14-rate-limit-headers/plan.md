@@ -164,7 +164,9 @@ hosts entry does that with nothing modified.*
 | **C3a** | `evidence/tls-terminator.py` — the router has **no TLS**, and 443 is privileged | built, **not run** |
 | **C3b** | `evidence/run-pinned.py` — `/etc/hosts` is machine-wide, so the router would resolve `api.anthropic.com` to **itself** | built, **guards exercised** |
 | **C3c** | `config-hosts.yaml` and `make run-hosts` — *the egress hop removed and **the corpus ON***, without which the run captures no bodies | built |
-| **C3d** | Run it. ***`for-the-owner.md` entry 14 is the runbook*** — and **the hosts line redirects the owner's own session**, so `curl --resolve` proves the chain first | **the owner's, 2026-09-19** |
+| **C3d** | Run it. ***`for-the-owner.md` entry 14 is the runbook*** — and **the hosts line redirects the owner's own session**, so `curl --resolve` proves the chain first | ***RAN 2026-09-19 and LOOPED.*** **67 × 502, no measurement** — `run-pinned.py` patched `socket.getaddrinfo` and the router runs under **uvloop**, which never calls it. Entry 16 |
+| **C3f** | ***Fix the pin and give it a check that can fail.*** `uvloop.Loop.getaddrinfo` patched too, and `verify_the_pin` refuses to start unless the patched resolver is **observed** returning the answer | **done**, exercised by reintroducing the defect: **the address came back correct and the check still refused** |
+| **C3g** | Re-run it | ***the owner's, and nothing else in the phase is ahead of it*** |
 | **C3e** | ***The sampler key, so this run can be read at all.*** `(path, streamed?, size band)`, bounded at 64 shapes with the stop announced. **Chosen by the owner 2026-09-19** from entry 11's three options, in a shape better than any of them — *the path became part of the key rather than a gate* | **done**, 480 tests, **32/32** mutations |
 
 ***If the 429 survives this, the entire client-side variable is eliminated*** and what remains is
@@ -243,6 +245,7 @@ one day it does.*
 | `Proxy.headers_sampled: Once` | The control's latch. *Also added after the measurement — see the row below* |
 | `size_band(length) -> int` | **Added 2026-09-19.** A body's size as an order of magnitude — the count of its decimal digits less one, so `323 -> 2` and `127_949 -> 5`. *Computed from the decimal string rather than `log10`, which is **exact at a power of ten** where a float is not* |
 | `OncePerKey` · `.take(key) -> bool` · `.full` · `.note_full() -> bool` | **Added 2026-09-19.** `Once`'s shape for keys that are **not known in advance**. `take` is true the first time each key arrives and never once `full`; **`note_full` is true exactly once, so the stop is said out loud.** *Separate methods because an instrument that quietly gives up looking is this phase's own recurring defect* |
+| `verify_the_pin(target, fired) -> bool` | **Added 2026-09-19**, in `evidence/run-pinned.py`. Resolves `api.anthropic.com` through the loop `uvicorn` will pick and **refuses to start the router unless the patched resolver fired**. *Two facts, not one: an unpatched lookup returns the right address too whenever no hosts entry is in* |
 | `Proxy.arrival_sampled: OncePerKey` | ***Was `dict[bool, Once]` until 2026-09-19.*** Now keyed on `(path, streamed?, size band)` — `for-the-owner.md` entry 11, the owner's choice, and **the path is part of the key rather than a gate** |
 
 ### Names it must not collide with

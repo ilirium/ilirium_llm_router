@@ -276,10 +276,15 @@ Claude Code (ANTHROPIC_BASE_URL unset)
 dig +short @1.1.1.1 api.anthropic.com | head -1        # e.g. 160.79.104.10
 ```
 
-***Take it now and write it down.*** **Once the hosts entry exists, a plain `dig` answers
-`127.0.0.1`** — which is the router's own listener, and pointing the router at that is the loop the
-whole design exists to avoid. *`run-pinned.py` refuses a loopback value rather than looping, but do
-not make it do the catching.*
+***Take it now and write it down.*** *`run-pinned.py` refuses a loopback value rather than looping,
+and now also refuses to start unless the pin is observed working — but do not make it do the
+catching.*
+
+***Corrected 2026-09-19: this said a plain `dig` would answer `127.0.0.1` once the hosts entry was
+in. It would not — **`dig` does not read `/etc/hosts` at all**, it queries a nameserver directly.***
+*Checked against `broadcasthost`, which `/etc/hosts` maps and `dig` cannot see.* **Keep `@1.1.1.1`
+anyway**: it makes the answer independent of a VPN or corporate resolver, which is a real hazard
+even though the stated one was not.
 
 ### Step 1 · mkcert, and what it changes
 
@@ -302,8 +307,15 @@ make run-hosts
 ```
 
 *It resolves the address itself via `@1.1.1.1` and starts the router under `run-pinned.py` with
-`config-hosts.yaml`.* **Expect a `[pinned] api.anthropic.com -> …` line on stderr** — ***if that
-line is missing, stop***: the pin did not take and the next step would loop.
+`config-hosts.yaml`.* **Expect a line reading `[pinned] api.anthropic.com -> … , verified by
+resolving it through uvloop.Loop — patch fired via uvloop`.**
+
+***That line now means something, and on 2026-09-19 the old one did not.*** **The script used to
+print `[pinned] …` unconditionally, before doing anything** — so it appeared on the run that failed,
+the runbook said to stop only if it was *missing*, and it was not missing. **It now resolves the
+name through the router's own event loop and refuses to start unless the patched resolver is
+observed returning the answer.** *If the router does not start, read the message: it says which loop
+ran and what the name resolved to.* → entry 16.
 
 **`config-hosts.yaml` is new and it matters:** it is `config-boringssl.yaml` with the egress hop
 removed, so ***the corpus is ON***. *Without it this run captures no bodies, and the corpus is what
@@ -328,11 +340,18 @@ curl --resolve api.anthropic.com:443:127.0.0.1 https://api.anthropic.com/api/hel
 ```
 
 ***This is the step that protects you.*** **`--resolve` redirects only this one command**, so the
-full path — TLS, terminator, router, pinned egress — is exercised while the rest of the machine,
+full path — TLS, terminator, router, egress — is exercised while the rest of the machine,
 ***including the Claude Code session you are reading this in***, still reaches the real Anthropic.
 
-**Do not go past this step until it answers.** *A TLS error here is a certificate problem; a
-`connect_error` in the router's log is the pin; a hang is the terminator.*
+**Do not go past this step until it answers.** *A TLS error here is a certificate problem; a hang is
+the terminator.*
+
+***What it CANNOT test, learned the hard way on 2026-09-19: the pin.*** **This step runs before
+`/etc/hosts` exists, and until then a pinned router and an unpinned one behave identically** — both
+resolve the name normally and reach Anthropic. *It went green at 12:05, the session failed at 12:07
+with every request looping back into the terminator, and it went green again at 12:12 after the
+teardown. **The same fact three times, and never the one that mattered.*** **Step 2's verification
+is what covers the pin now; this step covers everything else.**
 
 ### Step 5 · The hosts entry, last, and knowing what it does
 
@@ -402,3 +421,66 @@ person.*
 
 **Nothing else in `src/` was touched** — checked with `git diff --stat`, not assumed. *Entry 7's
 three live experiments are untouched and still yours to keep or drop.*
+
+## 16 · REGRET · high · The hosts run looped, and the guard that should have caught it was decorative
+
+**You ran it on 2026-09-19 and it produced no measurement.** *Every step you took was the one the
+runbook asked for.* **The fault is in two things I wrote.**
+
+### What happened, from `logs/telemetry/router.log`
+
+| | |
+|---|---|
+| **12:05:00** | Step 4's `curl --resolve` → `/api/hello` → **200**, 252 ms. The real Anthropic |
+| **12:07:46** | Session starts, hosts line in → ***every request 502***, `transport_error connect_error`, **4–9 ms** |
+| **…** | **67 × 502, not one success.** 70 calls arrived, 70 recorded |
+| **12:12:37** | After teardown, `/api/hello` → **200** again |
+
+***4–9 ms is a local connection.*** **The router resolved `api.anthropic.com` to `127.0.0.1`,
+connected to your terminator and refused its mkcert certificate** — `unable to get local issuer
+certificate`, because Python's `certifi` bundle has no local CA. **That is the loop `run-pinned.py`
+exists to prevent.**
+
+### Why the pin was inert
+
+**`run-pinned.py` patched `socket.getaddrinfo`. The router runs under `uvloop`** — `uvicorn.run`
+takes `loop="auto"`, uvloop is installed, and ***uvloop resolves names with its own native resolver
+that never calls `socket.getaddrinfo`.***
+
+*Measured rather than reasoned about: patch `socket.getaddrinfo`, call `anyio.getaddrinfo` under
+each loop — **plain asyncio calls the patch, uvloop does not.*** **Fixed by patching
+`uvloop.Loop.getaddrinfo` as well**, which keeps the experiment on the loop the router really uses
+rather than introducing a second variable.
+
+### The part that is mine rather than uvloop's
+
+***The `[pinned] …` line printed unconditionally, before anything was resolved.*** **The runbook
+told you to stop if it was missing. It was not missing. It has never meant anything.**
+
+***And step 4 cannot test the pin at all*** — it runs before `/etc/hosts` exists, so a pinned router
+and an unpinned one are indistinguishable there. **Your three green checks are one fact repeated,
+and the pin was never among them.**
+
+**`verify_the_pin` now resolves the name through the router's own event loop and refuses to start
+unless the patched resolver is observed doing it.** *Two facts, not one: the address has to be right
+**and the patch has to have fired** — because with no hosts entry an unpatched lookup returns the
+right address too.* ***Exercised by reintroducing the exact defect: the address came back correct
+and the check still refused.***
+
+**This is the fifth green check in this phase aimed at something other than what it claimed** — and
+the first that was load-bearing for one of your sessions rather than for a conclusion.
+
+### What the run DID produce, and it is not nothing
+
+***Your new sampler ran, and it paid for itself in a failed experiment.*** **18 arrival lines where
+the old code would have produced 2**, every request sampled before its 502:
+
+- `/v1/messages` at **323 bytes non-streamed** — the warm-up that ate the only slot last time
+- `/v1/messages` at **4,168** and **118,395 bytes streamed** — two bands, two lines
+- ***Eleven API paths this phase had never seen***, all hidden by the old path gate:
+  `/api/claude_cli/bootstrap`, `/api/oauth/usage`, `/v1/ultrareview/quota`, `/mcp-registry/v0/servers`,
+  `/api/claude_code_penguin_mode`, and `/api/event_logging/v2/batch` at **435,666 bytes**
+
+***Still missing: the 127 KB non-streamed classifier.*** **The session died before auto mode
+classified anything**, so the question entry 11 was fixed to answer is still open — and it is open
+for a new reason rather than the old one.
