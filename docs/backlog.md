@@ -74,6 +74,7 @@ metadata lines and their own heading titles. **Do not type in it.** Change an it
 | `BKL-0030` | 2026-09-02 | open | instruments | `IDM-003` governs the formatter pin and says nothing about the build backend | — | — | `method/IDM-003-development-tooling.md` |
 | `BKL-0031` | — | open | instruments | Static analysis beyond ruff | — | — | `method/IDM-003-development-tooling.md` |
 | `BKL-0034` | 2026-08-24 | open | instruments | Record the Anthropic rate-limit response headers | — | — | BKL-0037 |
+| `BKL-0039` | 2026-09-19 | open | instruments | A protocol matcher, and an HTTP/2-capable inbound | — | — |  |
 | `BKL-0035` | 2026-08-26 | open | dictionaries | Dictionary commands — `list`, `show`, `install` | — | — |  |
 | `BKL-0036` | 2026-08-26 | open | dictionaries | A benchmark: what a dictionary is worth against no dictionary | — | — |  |
 | `BKL-0037` | — | superseded | not-on-this-list | The Anthropic 429 rate-limit headers — refused, then overturned | — | — | BKL-0034 |
@@ -777,7 +778,7 @@ It looks like it can. *Added 2026-08-26 on the owner's instruction, which asked 
 `uuid`s could be
 recovered from local state.* **Checked the same day: yes, for any session driven on this machine.**
 Claude Code keeps its own session records at `~/.claude/projects/<mangled-path>/<session-id>.jsonl`,
-and **all three session ids in the `2026-08-25` corpus index have a file there** — `15b29c2a…`,
+and **all three session ids in the `2026-08-25` corpus index have a file there** — `20260825-1…`,
 `8aa605b9…`, `ad9392ae…`. *(Established by listing filenames only. No session content was read.)*
 
 **There are two uses for that and only one of them is safe.** As an **oracle** it is worth more than
@@ -1017,6 +1018,39 @@ columns"*. **So this needs the non-goal overturned first, or a home that is not 
 same gate the sequence column sits behind.
 
 ---
+
+### BKL-0039 — A protocol matcher, and an HTTP/2-capable inbound
+
+instruments · open · added 2026-09-19
+
+*Added 2026-09-19 at the owner's request, out of Phase 14.* **The router speaks HTTP/1.1 to Claude
+Code and can offer HTTP/2 to Anthropic; Claude Code talking to Anthropic directly uses HTTP/2 on
+both legs.** The idea is to **detect the inbound version and match it outbound** rather than pick
+one and hope.
+
+***Detecting it is already done*** — `request.scope["http_version"]`, which the arrival sampler
+prints on every line it writes. ***Matching it is about ten lines***: hold two `httpx` clients, one
+built with `http2=True` and one without, and choose per request. **`http2=True` only *offers* h2
+over ALPN**, so "never HTTP/2" is guaranteeable and "definitely HTTP/2" is not.
+
+**The reason it is parked rather than built: the input is a constant.** *Uvicorn's only HTTP
+implementations are `h11` and `httptools`, neither of which speaks h2*, so `http_version` is always
+`1.1` and the matcher's second branch can never execute. **It would be testable only against a faked
+scope value and never exercised against a real request** — the shape of defect this phase hit four
+times, and the argument for not shipping a fifth.
+
+***So the real work is the inbound half***: an h2-capable server — Hypercorn, or a reverse proxy in
+front — **plus TLS on the router**, which it deliberately does not have and which is exactly why the
+hosts experiment needed a separate terminator. **That is a change to what the router *is*, and every
+measurement this phase took would need re-running against it.**
+
+**This is capability, not diagnosis.** *HTTP/2 is eliminated as a cause of anything in `BUG-001`:
+the experiment came back negative, and the nine classifier calls Anthropic answered correctly on
+2026-09-19 went over HTTP/1.1 on both legs.* **The outbound half stays one config line away** —
+`experiments.http2_upstream`, off by default.
+
+*Worth doing if* a harness appears that needs h2 inbound, or if a later measurement makes the
+protocol a live variable again. **Nothing waits on it today.**
 
 ## Dictionaries
 
