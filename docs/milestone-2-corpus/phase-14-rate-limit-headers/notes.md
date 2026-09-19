@@ -1384,3 +1384,72 @@ too strong for C2a.***
 ***It ran four commands, so it shows no failures rather than establishing their absence.*** **A
 ten-probe sweep like Session 1's would make it a control**; as it stands it is consistent with
 router-off being healthy and does not demonstrate it.
+
+## The classifier works, and the second defect was the router's own `accept-encoding`
+
+***Run by the owner 2026-09-19, 15:30–15:39 UTC, Claude Code 2.1.267*** — the hosts route as before,
+and the three router experiments switched off. *Session `20260919-4`; the transcript is Session 4 in
+`evidence/claude-code-sessions-to-check-safety-classifier.txt`.*
+
+**35 calls through the router, all `ok`. 16 classifier calls, all `ok`.** *No 429, no gzip `400`,
+nothing refused — the first clean sheet in this phase's record.*
+
+### Why this is a measurement and not a quiet session
+
+***`BUG-000`'s trap is closed from the opposite side to every previous attempt.*** **The classifier
+did not merely fail to fail: it made a discriminating decision.** *The owner drove ten probes shaped
+to match dangerous patterns while being harmless in effect; eight were allowed and **the
+pipe-to-bash one was blocked**.*
+
+**The block is in the router's own record** — 15:37:47, `<severity>68</severity>` with
+`<category>Auto Mode Bypass</category>`, the classifier reasoning that a session deliberately
+probing it matches the bypass pattern. *Neighbouring probes scored 60–65 and were allowed.* ***A
+positive verdict carried through the router is something no absence of failures can imitate.***
+
+### The mechanism, which is why this is attribution rather than correlation
+
+| Reply shape | Before the switch | After |
+|---|---|---|
+| **non-streamed** | ***brotli***, every one | ***PLAIN JSON, all 16*** |
+| streamed | plain | plain |
+
+***Three switches went off together, so the experiment alone attributes the fix to the set.*** **The
+encoding narrows it to one**: `relay_accept_encoding` is the only switch that can change a reply
+body, and the reply bodies are what changed. *`http2_upstream` alters the transport and
+`imitate_attribution_headers` alters the request; neither can turn brotli into JSON.*
+
+### What the router actually does to a compressed reply, tested rather than assumed
+
+**Fed a brotli body with `content-encoding: br`, the client receives:**
+
+    content-type: application/json
+    content-encoding: br
+                                  <- no content-length
+
+***So the router relays the encoding correctly*** — it is not dropped or mangled, and a compliant
+client has what it needs. **What it also does is drop `content-length`**, which is in
+`DROPPED_FROM_RESPONSE`, so the reply goes out **chunked**.
+
+***Why that combination defeats Claude Code is NOT established.*** *The client advertised `br`
+itself; nothing in the logs or the corpus records what it did with the bytes.* **What the data
+narrows it to is a reply that is both compressed and chunked** — streamed replies are chunked too
+and always worked, but were never compressed. **So it is the pairing, not either alone**, and the
+mechanism inside the client is unmeasured.
+
+***The experiment that would separate them is one condition:*** **keep the compression and stop
+dropping `content-length` for non-streamed replies.** *If it then works, the defect is the missing
+length rather than the compression, which is a bug worth fixing rather than a behaviour worth
+forbidding.* **Not built; `CLAUDE.md` says propose first.**
+
+### Where `BUG-001` stands now
+
+**Two defects, stacked, and the first hid the second:**
+
+| | Cause | State |
+|---|---|---|
+| **The 429** | ***Client-side***, gated on `ANTHROPIC_BASE_URL` | **Workaround: the hosts route.** Cause not identified beyond the gate |
+| **The classifier failing afterwards** | ***The router's own `accept-encoding` experiment*** | **Fixed.** Off by default and pinned off in every committed config |
+
+***The second one was ours.*** *It ran for a day, was called "exonerated" in `for-the-owner.md`
+entry 7 on the strength of a negative for the 429, and was only visible once the 429 stopped
+masking it.* **A negative result for one symptom is not a clearance for the component.**

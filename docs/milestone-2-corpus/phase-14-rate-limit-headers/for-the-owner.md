@@ -683,3 +683,72 @@ zero rows in `calls.csv` against 27 and 18 for the other two.** *It saw no class
 ***It ran four commands, so it shows no failures rather than establishing their absence.*** **Ten
 probes like Session 1's would turn it into a real control**, and that is the one thing that would
 make this airtight before anyone reports it anywhere.
+
+## 20 · ERRAND · high · It works — and the second defect was ours
+
+***You drove it 2026-09-19 at 15:30 UTC and the classifier worked.*** **35 calls through the router,
+all `ok`. 16 classifier calls, all `ok`. No 429, no gzip `400`, nothing refused** — the first clean
+sheet in this phase's record. *Session 4 in `evidence/claude-code-sessions-to-check-safety-classifier.txt`.*
+
+### Your test 9 is the best measurement this phase has taken
+
+***It is in the router's own record.*** **15:37:47 — `<severity>68</severity>` with
+`<category>Auto Mode Bypass</category>`**, the classifier reasoning that a session deliberately
+probing it matches the bypass pattern. *Neighbours scored 60–65 and were allowed.*
+
+**Every previous attempt could only show an absence of failures**, which `BUG-000` says proves
+nothing. ***This shows a positive, discriminating decision — eight probes allowed and the
+pipe-to-bash one blocked*** — **and no quiet session can fake that.** *Asking for a block rather
+than a pass was the right instinct and it is the thing that makes this airtight.*
+
+### What fixed it, and it was the router
+
+| Reply shape | Before | After |
+|---|---|---|
+| **non-streamed** | ***brotli***, every one | ***plain JSON, all 16*** |
+| streamed | plain | plain |
+
+***`relay_accept_encoding` is the only switch that can change a reply body***, and the reply bodies
+are what changed. **Three went off together, so the run alone credits the set; the encoding narrows
+it to one.**
+
+***So the second defect was ours, it ran for a day, and entry 7 called it "exonerated".*** **That
+clearance was for the 429 and I let it stand for the component.** *A negative result for one symptom
+is not a clearance, and this is the fifth instance in this phase of a check aimed at something other
+than what it claimed.*
+
+### What is still open on it, and it is small
+
+***Why a compressed reply defeats the client is not established.*** **I tested what the router sends:
+`content-encoding: br` is relayed correctly and `content-length` is dropped, so the reply goes out
+chunked.** *A compliant client has what it needs.* **The data narrows it to compressed AND chunked
+together** — streamed replies are chunked too and always worked — *but the client's side is
+unmeasured and nothing on disk records it.*
+
+**One condition would separate them:** *keep the compression and stop dropping `content-length` for
+non-streamed replies.* **If it then works, the bug is the missing length rather than the
+compression** — worth fixing rather than avoiding. ***Not built.***
+
+### Your other question: making it work with `ANTHROPIC_BASE_URL` set
+
+***The honest answer is that nothing is known to work yet, and there is one cheap test before any
+code.***
+
+**The only candidate the router could supply is the attribution block** — and *it is a text element
+in the `system` array of the body, not a header*, so supplying it means parsing and re-serialising
+the request. **`_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL` is already eliminated**: it restores
+`x-client-request-id` and the 429 did not move.
+
+**The scope is smaller than it looks:** *rewrite only non-streamed Anthropic requests that lack the
+block* — exactly the ones failing today — **so every streamed request keeps byte-relay and its
+prompt cache untouched.**
+
+***Two things could make it fail even if the block is the cause.*** **`cch` is computed per
+request** — seven distinct values across nine — *so a fabricated one fails if it is validated rather
+than merely present.* **And the gate is a class of which two members are known**; there may be
+others.
+
+***So run the subtractive test first:*** **under the hosts route, where it now works, have the
+router STRIP the attribution block and drive a few classifier calls.** *It fabricates nothing and
+reuses the setup you have.* **429 returns → the block is the cause and injection is worth building.
+429 stays away → injection is wasted work and the cause is still unfound.**

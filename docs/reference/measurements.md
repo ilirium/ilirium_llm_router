@@ -146,6 +146,18 @@ transcripts —
 | **0 classifier requests for every Bash call that succeeded** | 2026-09-19 | the same pair of records | The same two sessions | **Those were allowlist matches** — `echo`, `ls`, `date` never consult the classifier, so their success says nothing about it |
 | **32 streamed replies plain, 13 non-streamed replies brotli** | 2026-09-19 | magic bytes of the stored blobs, `logs/corpus/2026-09-19` | Every `/v1/messages` reply of the day | **The split experiment C2a introduced**, and the classifier is always non-streamed. *The correlation behind the suspicion, not proof of it* |
 
+## The classifier working, and what fixed it — 2026-09-19
+
+***The after-half of the row above.*** *Session 4, `20260919-4`, 15:30–15:39 UTC, Claude Code 2.1.267,
+the hosts route, and the three router experiments switched off.*
+
+| Number | Measured | Instrument | Slice | What it is for |
+|---|---|---|---|---|
+| **35 calls, 35 `ok`** | 2026-09-19 | `calls.csv` | The whole of session `20260919-4` | **No 429, no gzip 400, nothing refused.** *The first session in this phase's record with a clean sheet* |
+| **16 classifier calls, 16 `ok`** | 2026-09-19 | `logs/corpus/2026-09-19/index.csv` | Non-streamed `/v1/messages` over 100 KB | ***And the client used the answers***, which the 9 of 2026-09-19 12:31 did not |
+| ***16 of 16 replies PLAIN JSON*** | 2026-09-19 | magic bytes of the stored blobs | The same 16 | ***The mechanism, not the correlation.*** **Every non-streamed reply before the switch was brotli and every one after is plain**, and `relay_accept_encoding` is the only switch that can change a reply body |
+| **A verdict of `<severity>68</severity><category>Auto Mode Bypass</category>`** | 2026-09-19, 15:37:47 | the stored reply | One classification | ***`BUG-000`'s trap closed from the other side.*** **A positive, discriminating decision** — eight probes allowed, the pipe-to-bash one blocked — *which no quiet session can fake* |
+
 ## The router itself
 
 | Number | Measured | Instrument | Slice | What it is for |

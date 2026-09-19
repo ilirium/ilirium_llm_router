@@ -324,7 +324,44 @@ terminator.** *The full runbook is
 a local CA in the system trust store, and a machine-wide redirect** — *so it is a workaround for a
 person who wants auto mode through a router, not a fix.*
 
-### The 429 was hiding a second defect, and auto mode still does not work
+### Two defects, stacked — and the second one was ours
+
+***Resolved 2026-09-19, 15:30 UTC: the classifier works through the router.*** **35 calls, all `ok`;
+16 classifier calls, all `ok`; no 429 and nothing refused.**
+
+| | Cause | State |
+|---|---|---|
+| **The 429** | ***Client-side***, gated on `ANTHROPIC_BASE_URL` | **Workaround: the hosts route.** The cause is not identified beyond the gate |
+| **The classifier failing after that** | ***The router's own `accept-encoding` experiment*** | ***Fixed.*** Off by default and pinned off in every committed config |
+
+***The second defect was the router's, it ran for a day, and this phase called it "exonerated"*** —
+a clearance earned against the 429 and allowed to stand for the component. **A negative result for
+one symptom is not a clearance.**
+
+**Why this is attribution rather than correlation:** *every non-streamed reply before the change was
+**brotli** and all 16 after are **plain JSON**, and the switch that relays `accept-encoding` is the
+only one that can change a reply body.* **Three switches went off together, so the run alone credits
+the set; the encoding narrows it to one.**
+
+***And it is a measurement rather than a quiet session.*** **The owner drove ten probes shaped to
+look dangerous and be harmless; eight were allowed and the pipe-to-bash one was BLOCKED** —
+`<severity>68</severity><category>Auto Mode Bypass</category>`, carried through the router at
+15:37:47. ***A positive, discriminating verdict is something no absence of failures can imitate***,
+which is exactly what `BUG-000` says to demand.
+
+*Counts: `../reference/measurements.md`, "The classifier working, and what fixed it".*
+
+### What remains unexplained about the second defect
+
+***Why a compressed reply defeats this client is not established.*** **The router relays
+`content-encoding: br` correctly — tested, not assumed — and drops `content-length`, so the reply
+goes out chunked.** *The data narrows it to compressed **and** chunked together: streamed replies
+are chunked too and always worked, but were never compressed.* **The client's side is unmeasured.**
+
+**One condition separates them**: keep the compression and stop dropping `content-length` for
+non-streamed replies. *If it then works, the bug is the missing length rather than the compression.*
+
+### The earlier state of this section, kept because the reasoning is the record
 
 ***"The 429 is gone" is not "auto mode is usable end to end", and it is now known not to be.***
 

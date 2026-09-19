@@ -78,6 +78,26 @@ original bytes untouched.** *Rewriting the body instead breaks any prompt-cache 
 on exact bytes.* **Cap the inflation** — a few KB of zeros expands to gigabytes, and a proxy with a
 catch-all route is not only talking to Claude Code. *This router does both, from 2026-09-19.*
 
+## The client cannot use a compressed, chunked reply to a non-streamed call
+
+**Found 2026-09-19, and it cost a day of chasing the wrong thing.** *A proxy that relays the
+client's own `accept-encoding` on a non-streamed `/v1/messages` gets a **brotli** reply from
+Anthropic — and **Claude Code then reports the classifier model as "temporarily unavailable"**,
+while the proxy's log shows a clean `200` carrying a valid verdict.*
+
+***The client advertises `br` itself***, so this is not a missing capability. **What it receives in
+that case is a body that is both compressed and sent without `content-length`** — a proxy that
+re-frames the reply drops the length and the body goes out chunked. *Streamed replies are chunked
+too and work fine, but they are never compressed, so it is the pairing that is untested ground.*
+
+***The mechanism inside the client is unmeasured*** and this page does not claim one. **What is
+measured is the fix: force `accept-encoding: identity` on non-streamed requests and the classifier
+works.** *16 of 16, against 16 of 16 failing before.*
+
+**For a proxy author the rule is the useful part:** ***do not let a non-streamed reply come back
+compressed unless you are also preserving `content-length`.*** *Which of the two matters has not
+been separated.*
+
 ## Why any of this matters to a proxy
 
 **A subscription (OAuth) credential behind a custom base URL has been observed getting `429

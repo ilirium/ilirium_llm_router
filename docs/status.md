@@ -24,8 +24,13 @@ been rejected 119 times the day before** — so what remains is **client-side co
 custom `ANTHROPIC_BASE_URL`.** *The attribution block is the leading candidate and **is not proven
 to be the cause**; the phase says which it is rather than implying otherwise.*
 
-***Two things qualify that and neither is buried.*** ***The 429 was hiding a second defect and auto
-mode still does not work.*** **Every classifier request the router served with a valid `200` — verdict
+***RESOLVED 2026-09-19, 15:30 UTC: the classifier works through the router.*** **35 calls all `ok`,
+16 classifier calls all `ok`, and a *positive* verdict — the owner's pipe-to-bash probe was
+**blocked**, which no quiet session can fake.** ***The second defect was the router's own
+`accept-encoding` experiment***, now off by default and pinned off in every committed config.
+*Every non-streamed reply before the change was brotli; all 16 after are plain.* → entry 20.
+
+***The paragraph below is what stood before that run, and the 429 half of it is unchanged.*** **Every classifier request the router served with a valid `200` — verdict
 and all — corresponds to a Bash call the client reported as unavailable**, and every call that worked
 sent no request. **The failure is downstream of a correct reply**; the prime suspect is the router's
 own `accept-encoding` experiment, and the test is one line. → `for-the-owner.md` entry 19. **And a first-party client gzips some request bodies,
