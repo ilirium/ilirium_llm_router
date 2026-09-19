@@ -10,77 +10,38 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-18 — Phase 14 is open and in flight on `feat/phase-14-rate-limit-headers`.** *Not
-merged. Work in `/Users/ilirium/Projects/local/ilirium_llm_router/phase-14-rate-limit-headers`.*
+**2026-09-19 — Phase 14 is open and in flight on `feat/phase-14-rate-limit-headers`.** *Not merged.
+Work in `/Users/ilirium/Projects/local/ilirium_llm_router/phase-14-rate-limit-headers`.*
 
-**It was chartered to record the Anthropic rate-limit headers and the owner reshaped it, on the day
-it opened, around a live symptom: Claude Code's auto mode cannot run its safety classifier through
-the router.** The instrument was built, it worked, and **fifteen hypotheses have been eliminated by
-measurement.**
+***The phase's question is answered: auto mode's safety classifier now works through the router.***
+*Chartered to record the Anthropic rate-limit headers; reshaped by the owner on the day it opened
+around the live symptom instead.*
 
-***2026-09-19: the 429 is gone under the hosts route and the router is cleared.*** **The same
-router, `httpx` egress and TLS fingerprint carried nine classifier requests successfully that had
-been rejected 119 times the day before** — so what remains is **client-side content withheld from a
-custom `ANTHROPIC_BASE_URL`.** *The attribution block is the leading candidate and **is not proven
-to be the cause**; the phase says which it is rather than implying otherwise.*
+***There were TWO defects, stacked, and the first hid the second.***
 
-***RESOLVED 2026-09-19, 15:30 UTC: the classifier works through the router.*** **35 calls all `ok`,
-16 classifier calls all `ok`, and a *positive* verdict — the owner's pipe-to-bash probe was
-**blocked**, which no quiet session can fake.** ***The second defect was the router's own
-`accept-encoding` experiment***, now off by default and pinned off in every committed config.
-*Every non-streamed reply before the change was brotli; all 16 after are plain.* → entry 20.
+| | Cause | State |
+|---|---|---|
+| **The `429`** | ***Client-side.*** Claude Code withholds things when `ANTHROPIC_BASE_URL` names any host but `api.anthropic.com` | **Worked around**, not fixed: the hosts route makes the client first-party while still routed. **The cause is not identified beyond the gate** |
+| **The classifier failing afterwards** | ***The router's own `accept-encoding` experiment*** — non-streamed replies came back compressed | ***Fixed.*** Off by default, pinned off in every committed config |
 
-***The paragraph below is what stood before that run, and the 429 half of it is unchanged.*** **Every classifier request the router served with a valid `200` — verdict
-and all — corresponds to a Bash call the client reported as unavailable**, and every call that worked
-sent no request. **The failure is downstream of a correct reply**; the prime suspect is the router's
-own `accept-encoding` experiment, and the test is one line. → `for-the-owner.md` entry 19. **And a first-party client gzips some request bodies,
-which the router cannot route**: two `400`s, *"the request body carries no 'model' field"*, because
-the model peek reads compressed bytes. ***A real `src/` defect, not fixed, and the owner's to
-place.***
+**The proof is a *positive* verdict, not an absence of failures.** *The owner drove ten probes
+shaped to look dangerous and be harmless; eight were allowed and the pipe-to-bash one was
+**blocked**, and the block is in the router's own record.* ***That is what `BUG-000` asks for and
+what every earlier attempt lacked.***
 
-***The 2026-09-18 evening session read the client instead of the router***, which nothing in this
-phase had done. **Claude Code ships as a Bun executable with its JavaScript embedded in plaintext**,
-so it is greppable — `evidence/binary-extract.sh`.
+***Fifteen hypotheses are eliminated by measurement.*** **The router is cleared of causing the
+429** — same process, egress and TLS fingerprint on the day it failed and the day it worked.
 
-***What a next session most needs to know, in one line each:***
+***What `src/` looks like now, and it is different from yesterday:*** **the three experiments are
+config keys, all `false`.** *`experiments.relay_accept_encoding`, `.http2_upstream`,
+`.imitate_attribution_headers`.* **`check` prints `EXPERIMENTS ON` and names any that are not.**
+*A gzip request-body defect was fixed the same day; a first-party client compresses some bodies and
+the model peek was reading them compressed.*
 
-| | |
-|---|---|
-| **The instrument works** | An allowlist of response headers, logged on a failure and sampled once on a success. **28 names** and a prefix catch that reports unknown `anthropic-ratelimit-*` **by name, never by value** |
-| **The finding** | A `429` carries **no metering at all**; a `200` on the same connection carries **twelve** `unified` buckets, `allowed` at 52% / 59% — *and at **0.11 / 0.01** in the later run, so quota is dead twice* |
-| **The control that broke the conclusion** | **The classifier works direct and fails through the router.** The owner found it by asking why auto mode worked in the session he was reading the finding in |
-| ***The attribution "header" is a body field*** | **Retracted 2026-09-18.** It is a system-prompt block inside the request, not an HTTP header — ***so `C2d` added a header the client never sends as one and tested the wrong channel entirely*** |
-| **The first-party gate, and its switch** | `ANTHROPIC_BASE_URL` naming any host but `api.anthropic.com` turns off first-party behaviour; **`_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL` forces it back.** *Run: it reaches the wire — `x-client-request-id` arrives — and **the 429 does not move*** |
-| ***THE HOSTS EXPERIMENT RAN AND THE 429 IS GONE*** | **2026-09-19, Claude Code 2.1.267** — the client fully first-party while still routed. ***9 classifier requests, 9 × `ok`, zero 429s***, against **119 rejections** on the same build the day before. *Counts: `reference/measurements.md`; mechanism: `wiki/claude-code-first-party-gate.md`; the diagnosis: `bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`* |
-| **Three experiments are live in `src/`** | **Deliberately not reverted** — owner's decision. *One of them makes the corpus store non-streamed bodies **brotli-compressed***. ***The imitation header can now come out on its own merits***: it imitates a header that is not one |
-| **Group D never started** | Where the headers durably live — the milestone plan's *"Phase 14's plan cannot skip the question"* — **is still deferred** |
-
-*Phase 13 merged 2026-09-17 at `97fd822`; its review stopped its own merge on five method-tier
-findings, all answered by the owner and fixed before it landed.*
-
-**Phase 13, in the one line a session still needs it:** `docs/backlog.md` and
-`docs/backlog-done.md` carry **38 permanent `BKL-NNNN` ids**, one item per `### BKL-NNNN — title`
-heading, and **both tables are generated — do not hand-type in them.**
-`method/IDM-011-the-backlog.md` is canonical, and **a session asks the owner before filing an
-item.**
-
-*The rest of Phase 13's detail was removed from this section on 2026-09-18 — roughly seventy lines
-of execution record. **Every fact in it was checked for a home before it went**: the backlog's shape
-is in `IDM-011` and in `backlog.md`'s own preamble, the inventory ratification and the task-by-task
-record are in `milestone-2-corpus/phase-13-method-and-backlog/`, the commit table is `git log` and
-`reference/branches.md`, and `IDM-001`'s two amendments are stated in `IDM-001`. **This section is
-state; that was archive**, and it was pushing thirty lines before Phase 14 added a word to it.*
-
-**Baselines.** The trunk's test count is **448**. **On the Phase 14 branch it is 475**, with
-`make lint` clean at the pinned `0.16.1`, `24/24` on that phase's mutation harness, and
-`backlog-index --check` green. ***`link-check.py` is worktree-dependent and must never be compared
-across trees*** — **92 on `main`, 112 in the Phase 14 worktree**, and about twenty of that gap is
-untracked per-worktree files rather than content.
-
-*Two Phase 13 paragraphs stood here until 2026-09-18 and were removed with the rest of its record:
-its own `link-check` arithmetic, and a note that this section had been 154 lines. **What `--check`
-does and does not see is `IDM-011`'s to say** and it says it, under "What `--check` cannot see, said
-here so nobody reads its silence as coverage".*
+**Numbers live in `reference/measurements.md`**, mechanism in
+`wiki/claude-code-first-party-gate.md`, the defect in `bugs/BUG-001-…`, and the phase's own record
+in `milestone-2-corpus/phase-14-rate-limit-headers/`. ***`for-the-owner.md` entries 17–20 are the
+live ones.***
 
 ## Where the project is
 
@@ -294,13 +255,16 @@ succeeds through the router** — 9 of 9 — **and the paired control clears the
 *Entry 8's two remaining hypotheses, the TLS fingerprint and connection reuse, are eliminated as a
 side effect: **Anthropic saw the router's own fingerprint on both days.***
 
-**Every check on that branch is green** — 475 tests, 24 mutations, `make lint`, `backlog-index
---check`. **`BUG-001` is retracted and corrected there**, not on the trunk: its table cleared the
+**Every check on that branch is green** — **498 tests, 41/41 mutations**, `make lint` at the pinned
+`0.16.1`, `backlog-index --check` at **35 live / 39 ids**, and `link-check.py` at **112 in this
+worktree**. **`BUG-001` is retracted and corrected there**, not on the trunk: its table cleared the
 router with an argument that compares streamed against non-streamed *inside* the router.
 
-***Three experiments are live in `src/` and are deliberately not reverted*** — owner's decision,
-2026-09-18, to keep experimenting on the branch. **The `accept-encoding` one has a standing cost:
-the corpus stores non-streamed response bodies brotli-compressed.**
+***The three experiments are config keys now, and all three are `false`*** — owner's decision
+2026-09-19, switches rather than deletions so a negative result stays reproducible.
+**`experiments.relay_accept_encoding` was the cause of the second defect**, so the corpus stores
+non-streamed bodies as plain JSON again. *Every committed config pins all three off, and two tests
+enforce it.*
 
 *Phase 13 was entered here at task 1 and removed at its merge on
 2026-09-17; its row is in `reference/branches.md` and its permanent record is its phase note.*
