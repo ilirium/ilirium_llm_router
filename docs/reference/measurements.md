@@ -118,6 +118,21 @@ was recomputed from that file on 2026-08-16; the first six were also recomputed 
 | **Claude Code retries a 502 ten times with backoff** | 2026-07-31 | a live session with LM Studio stopped | One client, one status | A session heals itself when a backend comes back — and **one turn becomes up to ten rows**, so a row count is not a turn count when a backend is down |
 | **`read` bounds silence, not duration: `/drip` ran 6.01 s against `read=2.0` and completed** | 2026-08-07 | `../procedures/read-timeout-semantics.py` | httpx at the pinned version, three timing shapes | Retires "a timeout that resets on progress" as an option — it already is one — and narrows what the 600 s ever bought to "fails if it goes quiet" |
 
+## The first-party gate and the classifier, 2026-09-18 / 19
+
+***The paired control for `BUG-001`.*** *Both rows are the same Claude Code build, credential,
+machine, router process and egress path; **the only variable is whether `ANTHROPIC_BASE_URL` names
+`api.anthropic.com`.** Quoted by `../bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`
+and `../wiki/claude-code-first-party-gate.md`, which cite rather than restate them.*
+
+| Number | Measured | Instrument | Slice | What it is for |
+|---|---|---|---|---|
+| **125 classifier requests, 119 rejected `429`** (6 `client_disconnect`) | 2026-09-18 | `logs/corpus/2026-09-18/index.csv`, read back after the fact | Non-streamed `/v1/messages` over 100 KB, Claude Code **2.1.267**, `ANTHROPIC_BASE_URL` set to the router | The failing half of the control. **A count, not a rate** — the six disconnects are not successes |
+| **9 classifier requests, 9 `ok`** | 2026-09-19 | `logs/corpus/2026-09-19/index.csv` | The same shape and build, reached through `/etc/hosts` + a local TLS terminator with `ANTHROPIC_BASE_URL` **unset** | The succeeding half. ***It is what clears the router***: same process, same `httpx` egress, same TLS fingerprint presented to Anthropic on both days |
+| **The attribution block: absent in all 125, present in all 9** | 2026-09-19 | `ilirium-llm-router extract --format bodies` over both day folders | The `system` array of those same requests | The one known content difference that survives into the success. ***Leading candidate for the cause and not shown to be it*** |
+| **Verdicts returned: `<block>no` ×5, `<severity>` 10 / 15 / 18 / 25** | 2026-09-19 | the stored response blobs, **brotli** inside zstd | The nine successful replies | Separates *"the call returned 200"* from *"the classifier classified"* — `BUG-000`'s trap, closed with content rather than status |
+| **12 rate-limit headers on a success, 0 on a `429`** | 2026-09-18 | the router's own recorder, `evidence/rate-limit-headers-*-2026-09-18.txt` | One connection, both outcomes | A `429` naming no exhausted bucket is not a rate limit. **The meter read `allowed` at 0.52 / 0.59, and 0.11 / 0.01 in a later run** — quota dead twice over |
+
 ## The router itself
 
 | Number | Measured | Instrument | Slice | What it is for |
@@ -195,7 +210,7 @@ figures were 770 rows four hours earlier.*
 | **45** | contiguous calls with no stored request body | `ad9392ae`, calls #225–#269 of 270 | `request_bytes` crosses 1 MiB once — 1,043,805 → 1,047,198 → **1,051,096** — and never returns. **Every long session loses its ending**, and the loss is always the tail |
 | **1,615 records / 1,614 ids** | the first full conversion of the corpus | `jsonl.records` over 36 conversations | **One duplicate `uuid5`**, found by counting output against itself while 378 tests passed. The final reply and the first gap both sat at position `depth` |
 | **11 of 36** | conversations legitimately opening at two messages | all conversations | Why "a conversation that starts too deep began earlier" is **not** a sound missing-day check, and the exact day-set difference is |
-| **26 turns / 12 turns** | misdated; downgraded to the request-side copy | `15b29c2a` converted from its later day only | What omitting a day folder actually costs. **Not truncation** — depth is 337 either way and every message is identical |
+| **26 turns / 12 turns** | misdated; downgraded to the request-side copy | `20260825-1` converted from its later day only | What omitting a day folder actually costs. **Not truncation** — depth is 337 either way and every message is identical |
 | **279 → 277** | mutants over `transcript.py` and `jsonl.py` | `evidence/mutate.py` | The two that disappeared were an unreachable `default=`, deleted as dead code — **the sweep shrank its own denominator** |
 | **105 → 75 survivors** | before and after the fixes | same | **All 5 real logic survivors are dead.** The 4 logic mutants that remain are singular/plural grammar in error text, and ~43 of the 75 are string mutants of the same kind — parked in `backlog.md`, category A |
 | **23 vs 279** | targeted mutations run per task vs the systematic sweep | both | **All 23 targeted died and none surprised**, each having been chosen because a test was expected to catch it. The sweep found 5 real logic defects the targeted run could not, by construction |

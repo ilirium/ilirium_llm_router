@@ -32,6 +32,67 @@ incomplete in a way that matters.** *The same request shape **succeeds** when Cl
 Anthropic directly.* **The rejection needs the shape AND this router**, and a sentence naming only
 the shape reads as a statement about Anthropic's API that the evidence does not carry.
 
+## Where the diagnosis stands — the one-page answer, 2026-09-19
+
+***Why the router could not run the safety classifier is NOT settled. What changed is that the
+question now has one box left in it instead of a field.*** *This section is the synthesis; the
+sections below are how it was arrived at, in order.*
+
+### Ruled out by measurement, not by argument
+
+**Everything the router does to the bytes.** *The same router process, the same `httpx` egress, the
+same TLS fingerprint and the same connection pool carried nine classifier calls on 2026-09-19 and
+were refused 119 times on 2026-09-18.* **So `accept-encoding`, HTTP/2, header rewriting, the TLS
+fingerprint and connection reuse are all dead** — the last two having been the expensive ones nobody
+wanted to test.
+
+**And it is not Anthropic refusing the request *shape*:** the identical shape, on the identical
+credential, succeeds. **Nor quota** — dead twice over, at 0.52 / 0.59 and again at 0.11 / 0.01.
+
+### What is left, and it is one thing
+
+***The discriminator is whether `ANTHROPIC_BASE_URL` names `api.anthropic.com`.*** **When it names
+anything else the client changes what it sends, and the rejection follows.** *That much is measured.*
+
+***Which of those changes triggers it is not.*** **One candidate is already eliminated**: the
+2026-09-18 run with `_CLAUDE_CODE_ASSUME_FIRST_PARTY_BASE_URL=1` put `x-client-request-id` on the
+wire and **the 429 did not move.** **The one that survives into the success is the attribution
+block** — absent in all 125 rejections, present in all 9 successes.
+
+*What the client does and does not withhold is `../wiki/claude-code-first-party-gate.md`'s to say;
+the counts are `../reference/measurements.md`'s. Neither is restated here.*
+
+### A hypothesis that fits, and it is labelled as one
+
+**The rejection says `rate_limit_error` and names no bucket, no `retry-after`, no metering at all**,
+on a connection whose successes carry twelve. ***A 429 that names no exhausted bucket is not really
+a rate limit*** — it is some other refusal wearing one.
+
+**The withheld block is a *billing* header.** *A subscription credential arriving without attribution
+plausibly cannot be billed to the subscription, falls to some default entitlement with no allowance,
+and is refused as `rate_limit_error` — which would explain both the refusal and why it is shaped
+like a quota error while every real bucket reads healthy.*
+
+***This is a story that fits the evidence and is not a finding.*** **This document has three
+retractions in it for exactly that move.**
+
+### What would settle it, in one session
+
+***A subtractive test, which the hosts route is what makes possible.*** **Run first-party as on
+2026-09-19, but have the router strip the attribution block on the way out.** *Everything else stays
+identical — same client, same credential, same first-party posture, same egress.*
+
+| | |
+|---|---|
+| **The 429 returns** | ***The block is the cause***, and this document gets a one-line answer |
+| **The 429 stays away** | **The block is exonerated** and the cause is something else the gate changes |
+
+**The cost is honest: it rewrites a request body**, which breaks byte-relay and the prompt-cache
+prefix for that run — *so it is experiment-only.* ***The additive version — injecting the block when
+the client is gated — is the same test from the other side and would be a workaround if it worked***,
+but it fabricates billing attribution, so **the subtractive one answers the question without
+fabricating anything and should go first.**
+
 ## Why it matters here
 
 **Claude Code's auto mode is unusable while this holds.** Auto mode classifies each tool call for
@@ -220,6 +281,8 @@ actually reads.
 | The attribution block in `system` | ***absent in all 125*** | ***present in all 9*** |
 
 **Claude Code 2.1.267 on both days**, same credential, same machine, same router build.
+
+*The canonical rows for these counts are `../reference/measurements.md`, "The first-party gate and the classifier" — a correction lands there first.*
 
 ***This satisfies the positive check this document asks for above*** — a non-streamed
 `/v1/messages` of roughly 130 KB to `claude-sonnet-5` and `claude-opus-5` returning **200**, with
