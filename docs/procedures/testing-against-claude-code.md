@@ -53,6 +53,22 @@ works. If they land in a single lump, that is a real finding and not a display a
 Use a scratch directory rather than real work. This is a proxy under test and a failure mid-session
 is disruptive.
 
+> ***`CLAUDE_CODE_ATTRIBUTION_HEADER=0` IS UNDER INVESTIGATION AS OF 2026-09-20, AND IT IS THE
+> FIRST THING TO DECIDE BEFORE FOLLOWING THIS STEP.*** **It switches off Claude Code's attribution
+> block, and the absence of that block is what `BUG-001`'s `429` tracks** — *so a session that
+> copies the line below and then measures non-streamed requests is measuring this variable without
+> knowing it.* **That is what happened for three days.**
+>
+> **The line is left in place rather than removed**, because the confirming run has not happened:
+> `milestone-2-corpus/phase-14-rate-limit-headers/for-the-owner.md` entry 22 is a two-minute A/B
+> and only the owner can drive it. ***Until it does: if you are testing anything about non-streamed
+> requests, drop the variable — and say in your notes which way you ran it.***
+>
+> *It appears in four documents — this one, `../../README.md`, `../reference/architecture.md` and
+> `../milestone-1-core/phase-1-proxy/evidence/session-results.md` — and it has been in all of them
+> since 2026-08-07 with no stated reason. Its origin looks like `architecture.md`, where it sits in
+> the block for pointing Claude Code straight at **LM Studio**, and where it makes sense.*
+
 ```bash
 cd /tmp/router-test
 ANTHROPIC_BASE_URL=http://127.0.0.1:8787 CLAUDE_CODE_ATTRIBUTION_HEADER=0 \

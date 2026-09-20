@@ -75,6 +75,21 @@ absence of 429s proves nothing, and 2026-09-19's blocked probe scored 68.**
 - ***Do not rewrite `BUG-001` or `wiki/claude-code-first-party-gate.md`.*** **Both carry banners
   saying what is in doubt and why.** *Replacing one unverified conclusion with another is the move
   that already cost that document three retractions.*
+
+***What WAS corrected at the handoff, because it is a fact rather than a hypothesis:***
+**`reference/measurements.md` said the two halves of its paired control differed only in whether
+`ANTHROPIC_BASE_URL` names `api.anthropic.com`. Two variables differed, so it was never a control** —
+*that holds however the A/B turns out, and the numbers in it are all still good.* **`status.md`'s
+"what is next" item 2 is struck with it**: filing that measurement upstream would have reported our
+own configuration as somebody else's defect.
+
+***And `procedures/testing-against-claude-code.md` now carries a warning above its command block***,
+because **that is the procedure a session follows to drive exactly these sessions** and it
+prescribes the variable. *The line is flagged, not removed.*
+
+***`README.md` and `reference/architecture.md` are deliberately NOT flagged.*** *They are the
+owner's to decide on after the A/B — and in `architecture.md` the variable sits in the **LM Studio**
+block, where it may well belong.*
 - ***Do not read Group C4's 2026-09-20 run as a result about C4.*** **The injection fired zero
   times.** *Every request it could have helped already carried a block, so the run says nothing
   about whether it works.*

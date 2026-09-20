@@ -149,11 +149,17 @@ is the full inventory.*
    to look at first:** whether the fidelity note renders at all, whether a session's several files
    read as separate conversations, and whether the 45 gaps in the largest session look like gaps.
 
-2. **Report `BUG-001` to the two upstream issues.** They are named in
-   `bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`, and both stall on exactly the
-   measurement it contains — a paired control showing a streamed request **2.8× larger** to the same
-   model accepted **0.6 s** after a non-streamed one was rejected. **The document says this is an
-   action, not a finished thing.** It is the only open item here that is not blocked on a decision.
+2. ~~**Report `BUG-001` to the two upstream issues.**~~ ***WITHDRAWN 2026-09-20, owner's decision,
+   and then overtaken.*** **The bug is that the router cannot carry Claude Code's non-streamed
+   requests**, and a client-side cause would not have made it somebody else's to fix. *Enough detail
+   stays in the document for anyone who wants to take it upstream later.*
+
+   ***And the paired control this item rested on was not controlled.*** **`CLAUDE_CODE_ATTRIBUTION_HEADER=0`
+   varied between the two halves as well as `ANTHROPIC_BASE_URL`** — see "Where we stopped". *Filing
+   it upstream would have reported our own configuration as somebody else's defect.*
+
+   **What replaces it: the A/B in `for-the-owner.md` entry 22**, which is two minutes of the owner's
+   time and settles which variable mattered.
    *(This item replaced **"settle whether a tracked permission change takes effect before it
    merges"**, answered 2026-08-25: settings are **session-cached**, inert until restart rather than
    until merge, and the worktree-resolution explanation is dead. Before that, items 1 and 2 replaced

@@ -120,15 +120,27 @@ was recomputed from that file on 2026-08-16; the first six were also recomputed 
 
 ## The first-party gate and the classifier, 2026-09-18 / 19
 
-***The paired control for `BUG-001`.*** *Both rows are the same Claude Code build, credential,
-machine, router process and egress path; **the only variable is whether `ANTHROPIC_BASE_URL` names
-`api.anthropic.com`.** Quoted by `../bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`
-and `../wiki/claude-code-first-party-gate.md`, which cite rather than restate them.*
+***CORRECTED 2026-09-20: IT WAS NOT A CONTROL.*** **A second variable moved with the first.**
+*Every 2026-09-18 run also set **`CLAUDE_CODE_ATTRIBUTION_HEADER=0`**, which this repository's own
+`README.md` has prescribed since 2026-08-07 for pointing Claude Code at the router — and the
+2026-09-19 run did not, because with no base URL set there was no such command line to copy.*
+***That variable is what decides whether the attribution block is sent at all.***
+
+**This is a statement about the experiment's design, not a hypothesis**: two things differed between
+the two halves, so neither row can attribute the outcome to either one. ***Which of them mattered is
+what `for-the-owner.md` entry 22's A/B settles***, and it has not been run.
+
+***The NUMBERS below are all good*** — they were counted off the corpus and the recorder, and
+nothing about them changes. **What is withdrawn is the sentence this paragraph used to open with:**
+*"the only variable is whether `ANTHROPIC_BASE_URL` names `api.anthropic.com`."*
+
+*Quoted by `../bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md` and
+`../wiki/claude-code-first-party-gate.md`, both of which carry the same banner.*
 
 | Number | Measured | Instrument | Slice | What it is for |
 |---|---|---|---|---|
 | **125 classifier requests, 119 rejected `429`** (6 `client_disconnect`) | 2026-09-18 | `logs/corpus/2026-09-18/index.csv`, read back after the fact | Non-streamed `/v1/messages` over 100 KB, Claude Code **2.1.267**, `ANTHROPIC_BASE_URL` set to the router | The failing half of the control. **A count, not a rate** — the six disconnects are not successes |
-| **9 classifier requests, 9 `ok`** | 2026-09-19 | `logs/corpus/2026-09-19/index.csv` | The same shape and build, reached through `/etc/hosts` + a local TLS terminator with `ANTHROPIC_BASE_URL` **unset** | The succeeding half. ***It is what clears the router***: same process, same `httpx` egress, same TLS fingerprint presented to Anthropic on both days |
+| **9 classifier requests, 9 `ok`** | 2026-09-19 | `logs/corpus/2026-09-19/index.csv` | The same shape and build, reached through `/etc/hosts` + a local TLS terminator with `ANTHROPIC_BASE_URL` **unset** — ***and `CLAUDE_CODE_ATTRIBUTION_HEADER` unset with it*** | ***It still clears the router***, which needs only that both days used the same process, egress and TLS fingerprint — **that part is unaffected by the second variable.** *What it does NOT establish is which of the two client-side variables produced the difference* |
 | **The attribution block: absent in all 125, present in all 9** | 2026-09-19 | `ilirium-llm-router extract --format bodies` over both day folders | The `system` array of those same requests | The one known content difference that survives into the success. ***Leading candidate for the cause and not shown to be it*** |
 | **Verdicts returned: `<block>no` ×5, `<severity>` 10 / 15 / 18 / 25** | 2026-09-19 | the stored response blobs, **brotli** inside zstd | The nine successful replies | Separates *"the call returned 200"* from *"the classifier classified"* — `BUG-000`'s trap, closed with content rather than status |
 | **12 rate-limit headers on a success, 0 on a `429`** | 2026-09-18 | the router's own recorder, `evidence/rate-limit-headers-*-2026-09-18.txt` | One connection, both outcomes | A `429` naming no exhausted bucket is not a rate limit. **The meter read `allowed` at 0.52 / 0.59, and 0.11 / 0.01 in a later run** — quota dead twice over |

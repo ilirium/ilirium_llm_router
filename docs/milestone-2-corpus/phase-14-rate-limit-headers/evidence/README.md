@@ -279,7 +279,7 @@ including in the sentence this one replaced, which said thirteen above a list of
 | 1–5 | `accept-encoding` · HTTP/2 · a **dropped** header · an **added** header · the `anthropic-beta` list |
 | 6–8 | quota exhaustion · request size · the model |
 | 9–10 | the router inventing the rejection · a **non-browser TLS fingerprint** |
-| 11 | ***the withheld attribution fields.*** **Re-established 2026-09-18 by a sounder route than the one that first claimed it** — `C2d` added an **HTTP header** the client never sends as one, so its negative was real and its subject was not. *What settles it is that **the classifier carries no attribution block in either configuration***|
+| 11 | ***the withheld attribution fields.*** ***(2026-09-20: what did the withholding is now in doubt — `CLAUDE_CODE_ATTRIBUTION_HEADER=0` was set on every base-URL run. The elimination below stands; the word "withheld" no longer implies the client chose to. See `../notes.md`.)*** **Re-established 2026-09-18 by a sounder route than the one that first claimed it** — `C2d` added an **HTTP header** the client never sends as one, so its negative was real and its subject was not. *What settles it is that **the classifier carries no attribution block in either configuration***|
 | 12 | **the absence of `x-client-request-id`** — it arrives once the first-party flag is set, and the rejection is unchanged |
 | 13 | ***the first-party gate itself***, as far as the flag reaches it: `go()` is true, the wire shows it, and the 429 does not move |
 

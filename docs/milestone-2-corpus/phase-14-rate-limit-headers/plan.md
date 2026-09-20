@@ -385,6 +385,10 @@ Group C4's field table for what each omission costs and why it is cheaper than t
   calls successfully. **H1 is dead** — Anthropic accepts the identical request shape on the identical
   credential. ***What is left is client-side content withheld from a custom base URL***, which was
   not among the two this plan set out to separate.
+  ***AMENDED 2026-09-20: that last clause is not supported.*** **The runs it rests on varied
+  `CLAUDE_CODE_ATTRIBUTION_HEADER` as well as `ANTHROPIC_BASE_URL`**, so "withheld from a custom base
+  URL" attributes to one variable what two could explain. *H1 and H2 stay dead — neither depended on
+  it.* **`C4g` is what closes this line.**
 - The durable home is chosen **by the owner** and built.
 - The register's `❓` column is empty and Task 13 has checked it against the code.
 
