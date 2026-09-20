@@ -1520,3 +1520,69 @@ classifier and the haiku auxiliaries.** *Those two want **different** suffixes, 
 between that and a model-to-suffix table inferred from a single day. **The table would look like
 knowledge and be a guess**, so the hardcoded value is the honest one, and the docstring has to say
 which requests it mislabels.
+
+## The main conversation is streamed, which answers a question the phase had not asked yet
+
+***The owner asked whether `cc_prev_req` and `cc_prompt_id` should be injected for the main
+conversation — explicitly about a later phase, not this one.*** **Checking it corrected a claim
+this plan had carried for a few hours.**
+
+### The correction first
+
+***`cc_version=2.1.267.608` was written down as "knowingly wrong for the haiku auxiliaries, which
+are also non-streamed". The haiku auxiliaries are STREAMED*** — all 14 — **so the injection, which
+fires only on non-streamed requests, never touches one.** *The caveat was real and aimed at the
+wrong set.*
+
+| Suffix | | `stream` |
+|---|---|---|
+| ***`.608`*** | the classifier | ***absent*** — the only non-streamed call site ever seen carrying a block |
+| `.daa` | haiku auxiliaries | **`true`**, 14 of 14 |
+| `.d18` | main conversation | **`true`**, 45 of 45 |
+| `.682` | opus-5, not a classification | **`true`**, 13 of 13 |
+
+**The tail the hardcoded value is a guess for is smaller and different from what was written**: on
+2026-09-18, **9 non-streamed `claude-opus-5` requests and 1 haiku** that were not classifications,
+plus 13 whose `model` could not be read at all — *the gzip bodies*. ***No non-streamed request other
+than the classifier has ever been observed carrying a block***, so what they would send is unknown
+rather than known-different.
+
+### Why the answer to the owner's question is no
+
+***The main conversation is streamed, and a streamed request has never been rejected*** — **0 of 16,
+0 of 230, 0 of 145** across the measured days, and 104 of them on the broken day itself. **It is not
+broken, so there is nothing to fix.**
+
+***And injecting into it would cost three things that the non-streamed path does not pay:***
+
+- ***The prompt cache.*** **The `system` array is the cache prefix**, so prepending a block changes
+  it and **every turn of the main conversation misses.** *That is the expensive traffic — the bodies
+  run to 128 KB and up.*
+- ***Byte-relay on the large requests.*** **Parse and re-serialise per turn**, on bodies three orders
+  of magnitude larger than a classifier call, **on the event loop** — the hazard
+  `wiki/` already records.
+- ***A moving target to keep in sync.*** *Two hardcoded fields are cheap to maintain; five fields
+  with turn detection and id chaining is a small state machine tracking a client nobody here
+  controls.* **The owner's own principle — imitate rather than reverse-engineer, because this will
+  change — argues against every field beyond the minimum.**
+
+### If the gate ever extends to streamed requests, here is what is and is not knowable
+
+***`cc_prev_req` is the one field the router could supply TRUTHFULLY, and it already captures the
+input.*** **It is a real `req_011C…` id Anthropic issued for the previous reply**, and
+`RECORDED_RESPONSE_HEADERS` **already allowlists both spellings** — `request-id` and
+`anthropic-request-id`. *Remember the last reply's id per `(session_id, agent_id)`, both of which
+are already columns, and the next request's chain is the real one rather than a fabrication.*
+**Being on both legs is exactly what makes a proxy able to do this honestly.**
+
+***`cc_prompt_id` could only be minted, not known.*** **A UUID, repeating across the requests of one
+turn** — `3aeae808-…` and `5e7fbe21-…` each appear on several. *The router would have to infer where
+a turn begins, which it can only do by watching the `messages` array grow.* **Feasible and
+inferential**, and worth nothing unless presence alone is what is checked.
+
+***`cch` stays uncomputable.*** *Per turn, 5 hex, algorithm unknown.* **20 bits is small enough that
+somebody could try to identify it offline against the corpus's paired samples** — *and that is the
+digging the owner has ruled out, for a payoff that is a guess either way.*
+
+***So the contingency is: one field truthfully, one minted, one impossible.*** **If that day comes,
+the honest move is to reconsider whether the approach is still viable — not to add a fourth guess.**
