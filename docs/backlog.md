@@ -75,6 +75,7 @@ metadata lines and their own heading titles. **Do not type in it.** Change an it
 | `BKL-0031` | — | open | instruments | Static analysis beyond ruff | — | — | `method/IDM-003-development-tooling.md` |
 | `BKL-0034` | 2026-08-24 | open | instruments | Record the Anthropic rate-limit response headers | — | — | BKL-0037 |
 | `BKL-0039` | 2026-09-19 | open | instruments | A protocol matcher, and an HTTP/2-capable inbound | — | — |  |
+| `BKL-0040` | 2026-09-20 | open | instruments | `content-length` is dropped from every reply, so every reply is chunked | — | — |  |
 | `BKL-0035` | 2026-08-26 | open | dictionaries | Dictionary commands — `list`, `show`, `install` | — | — |  |
 | `BKL-0036` | 2026-08-26 | open | dictionaries | A benchmark: what a dictionary is worth against no dictionary | — | — |  |
 | `BKL-0037` | — | superseded | not-on-this-list | The Anthropic 429 rate-limit headers — refused, then overturned | — | — | BKL-0034 |
@@ -1051,6 +1052,39 @@ the experiment came back negative, and the nine classifier calls Anthropic answe
 
 *Worth doing if* a harness appears that needs h2 inbound, or if a later measurement makes the
 protocol a live variable again. **Nothing waits on it today.**
+
+### BKL-0040 — `content-length` is dropped from every reply, so every reply is chunked
+
+instruments · open · added 2026-09-20
+
+*Added 2026-09-20 at the owner's request, out of Phase 14.* **`content-length` is in
+`DROPPED_FROM_RESPONSE` (`../src/ilirium_llm_router/proxy.py:85`), unconditionally**, so a reply
+the router relays goes out **chunked** even when its length was known before a byte was sent.
+
+**For a streamed reply that is correct and unavoidable** — the length genuinely is not known. **For
+a non-streamed one it is neither**: the body is fully buffered, the upstream supplied a length, and
+the router discards it.
+
+***It is filed as a defect rather than a preference because a client has already been defeated by
+it.*** **Phase 14's second defect was a non-streamed reply that was compressed *and* chunked**, and
+Claude Code reported the classifier unavailable on every one. *The compression was switched off and
+the symptom went away, so **the chunking half was never separated** — see
+`bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`.* **What the data supports is that
+the pairing defeats the client; neither half alone was tested.**
+
+***The separating experiment is one condition:*** **relay a compressed non-streamed reply and keep
+its `content-length`.** *If the client then copes, the defect is the missing length rather than the
+compression* — **which is worth fixing rather than worth avoiding**, because avoiding it costs the
+router the ability to relay compressed replies at all.
+
+**Two tests pin the present behaviour** — `test_a_relayed_reply_carries_no_content_length` and
+`test_a_compressed_reply_keeps_its_content_encoding` — *so changing it is a deliberate edit to a
+test rather than a silent change in behaviour.* **That is why both were written**, in `c54f45c`,
+after four documents were found resting on a measurement with no instrument behind it.
+
+***This outlives `BUG-001`.*** **Any client that cannot take a chunked reply meets it**, whatever
+the encoding, and nothing in the router's record would name the cause. *Phase 14 did not fix it
+because the phase's own symptom disappeared for an unrelated reason.*
 
 ## Dictionaries
 
