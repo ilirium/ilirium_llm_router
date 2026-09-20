@@ -76,6 +76,7 @@ metadata lines and their own heading titles. **Do not type in it.** Change an it
 | `BKL-0034` | 2026-08-24 | open | instruments | Record the Anthropic rate-limit response headers | — | — | BKL-0037 |
 | `BKL-0039` | 2026-09-19 | open | instruments | A protocol matcher, and an HTTP/2-capable inbound | — | — |  |
 | `BKL-0040` | 2026-09-20 | open | instruments | `content-length` is dropped from every reply, so every reply is chunked | — | — |  |
+| `BKL-0041` | 2026-09-20 | open | instruments | `branch-index.py --write` should not be able to delete a row silently | — | — | BKL-0040 |
 | `BKL-0035` | 2026-08-26 | open | dictionaries | Dictionary commands — `list`, `show`, `install` | — | — |  |
 | `BKL-0036` | 2026-08-26 | open | dictionaries | A benchmark: what a dictionary is worth against no dictionary | — | — |  |
 | `BKL-0037` | — | superseded | not-on-this-list | The Anthropic 429 rate-limit headers — refused, then overturned | — | — | BKL-0034 |
@@ -1085,6 +1086,34 @@ after four documents were found resting on a measurement with no instrument behi
 ***This outlives `BUG-001`.*** **Any client that cannot take a chunked reply meets it**, whatever
 the encoding, and nothing in the router's record would name the cause. *Phase 14 did not fix it
 because the phase's own symptom disappeared for an unrelated reason.*
+
+### BKL-0041 — `branch-index.py --write` should not be able to delete a row silently
+
+instruments · open · added 2026-09-20 · see BKL-0040
+
+*Added 2026-09-20 at the owner's request, out of Phase 14.* **`--write` regenerates the table by
+replacing it**, so a branch that stops being classified as merged simply **loses its row**, and
+nothing says one went. ***`--check` reports `STALE` and not which row is at risk***, which is why
+the live instance went unnoticed from 2026-09-18 until somebody read the code.
+
+**The live instance is fixed separately and this item is the class.** *`temp/to-run-server` is
+`main` pinned into a worktree; it was fast-forwarded to the trunk's tip, `resolve()` cannot
+distinguish that from a branch cut at the trunk's head with no commits yet — **they are
+topologically identical** — and in-flight branches are excluded from the derived table by design.
+Phase 14 makes the pin **declared** in the descriptions file, which is the only place the fact
+exists.* → `milestone-2-corpus/phase-14-rate-limit-headers/for-the-owner.md` entry 4.
+
+***The guard is the general answer and it is not the same work:*** **`--write` should never remove a
+row without saying so** — print what would go, and require a person to agree. *`IDM-001` puts
+`--write` as the last step of every merge, which is the one moment nobody is reading its output*,
+so the mechanism has to refuse rather than the reader having to notice.
+
+**`--check` should name the row too**, for the same reason: *`STALE` is true of a table that gained
+a row and of a table that lost one, and only one of those is a defect.*
+
+***Not urgent and nothing waits on it.*** **The declared pin removes the only known case**, so this
+is about the next one — and a derived index that can silently drop a row is the shape of defect that
+`IDM-001` chose a derived index to avoid.
 
 ## Dictionaries
 

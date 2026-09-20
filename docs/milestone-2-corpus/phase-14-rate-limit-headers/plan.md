@@ -153,6 +153,13 @@ unrun control, and the owner ran it. What follows is what that cost.*
 further experiments on this branch.** *Their costs are real and are recorded in `notes.md` —
 `accept-encoding` most of all.*
 
+***REVERSED 2026-09-20, and the reason is different from the one that put them here.*** **All three
+come out before the merge** — owner's decision: *an experiment that failed is dead code on the
+trunk, and dead code does not improve readability.* **The 2026-09-18 reason was reproducibility**,
+and it is met a different way: **once this branch is merged the switches live in history**, so a
+negative result can be re-run from `git show` without any of it sitting in `src/`. *Merging is what
+makes deleting them safe, which is why the two decisions arrived together.* → Group E, task **16**.
+
 ### Group C3 — the hosts experiment *(BUILT 2026-09-18, NOT RUN; the owner's)*
 
 ***Added after the fact, like C2.*** *The owner chose it over patching the client binary; `CE()`
@@ -177,6 +184,54 @@ hosts entry does that with nothing modified.*
 ***If the 429 survives this, the entire client-side variable is eliminated*** and what remains is
 the TLS fingerprint and connection reuse.
 
+***It did not survive, so this sentence never came due.*** **C3g answered it — the 429 is gone** —
+and *the two hypotheses it names were eliminated as a side effect rather than by a test*: Anthropic
+saw the **router's own** TLS fingerprint on both days, and the router pooled its own connections on
+both. **Neither needed the Bun build, and neither needed another session.** → `for-the-owner.md`
+entry 17.
+
+### Group C4 — supply what the client withholds *(not planned; it happened)*
+
+***A child of C rather than a new letter, and the reason is precedent.*** **C2 and C3 were both
+unplanned groups that grew out of the measurement, and both took their parent's letter and a
+digit.** *This grows out of C3 in the same way — the hosts route is what made the block visible, and
+this supplies it — so `C4` keeps every group's letter in execution order.* **`E` is already `close`
+and a new top-level letter would have to run before it**, which is the thing the lettering exists to
+prevent. *Tasks carry letter suffixes for the same reason C2's and C3's do: they were not numbered
+in advance.*
+
+***The goal is the product, not the diagnosis.*** **Owner's decision 2026-09-20: the router is to
+work with `ANTHROPIC_BASE_URL` set**, which is how a person points a client at a proxy, and the
+hosts route is a machine-wide edit that no user should need. *The subtractive test `BUG-001` asks
+for — strip the block and see the 429 return — **is not run**: the additive version answers the same
+question from the other side and leaves a working router if it succeeds.*
+
+| Task | | |
+|---|---|---|
+| **C4a** | ***`src/ilirium_llm_router/backend_anthropic.py`*** — the block's constants and the one function that builds it. **A new module rather than more of `proxy.py`**, owner's decision 2026-09-20: *`proxy.py` is protocol-neutral and these are one backend's facts, hardcoded, with the docstrings carrying what was measured* |
+| **C4b** | **`experiments.add_claude_code_hidden_attribution_block`**, `false` by default, named by `check` like the other three |
+| **C4c** | ***Inject on non-streamed Anthropic requests that LACK the block, and on nothing else.*** *Streamed requests keep byte-relay and their prompt cache untouched; a request that already carries one is never touched* |
+| **C4d** | Tests, **exercised by mutation** — `CLAUDE.md`, and this phase has now shipped five checks aimed at something other than what they claimed |
+| **C4e** | ***Drive a session — the owner's, and it cannot be run by a session.*** **Condition A: no `cch`.** *Condition B, only if A fails: a `cch` as well.* **`BUG-000` applies — the run needs a probe that is genuinely BLOCKED**, not an absence of failures |
+| **C4f** | Record the result in `notes.md` and `for-the-owner.md`, and say which condition answered it |
+
+#### What goes in the block, and what deliberately does not
+
+***Every row is measured, over 99 blocks on two corpus days.*** *Instrument:
+`evidence/attribution-block-anatomy.sh`.*
+
+| Field | | |
+|---|---|---|
+| `cc_version` | ***`2.1.267.608`, hardcoded*** | **The suffix is a call site, not a build number** — five values on one install in one day, and `.608` is every classifier request and nothing else. **It is in no header, no body field and no handshake**, so it cannot be derived. ***It is knowingly wrong for the haiku auxiliaries***, which send `.daa` and are also non-streamed; the docstring has to say so. *A model-to-suffix table would look like knowledge and be a guess from one day* |
+| `cc_entrypoint` | ***`cli`, hardcoded*** | `sdk-cli` under `-p`, `cli` interactively. **The `-p` path is not the one that is broken** |
+| `cch` | ***OMITTED in condition A*** | **Per conversation turn, not per request** — the classifier's two stages share one, and so do two main-conversation calls in one turn. **It cannot be computed.** *A hardcoded one would repeat on every request, which is visibly unlike a client that sent 74 distinct values in 97 blocks — so a stale `cch` is worse than none.* ***The two-field form is a shape the client itself sends***: the `-p` blocks carry no `cch` at all |
+| `cc_prompt_id` | ***NEVER injected*** | **Neither kind of request this touches ever carries one** — 0 of 25 classifier, 0 of 14 haiku auxiliaries. *Adding one would make the request look **less** like the real thing, not more* |
+| `cc_prev_req` | ***NEVER injected*** | The same, and worse: **it is a real `req_011C…` id Anthropic issued for the previous reply.** *Fabricating it invents an identifier that refers to something, which is the one kind of invention with no honest version* |
+
+***So the injected block is two fields, and that is a shape the client sends.*** **Nothing here is
+fabricated; the two hardcoded values are Claude Code's own, and the three fields we cannot know are
+left out rather than guessed.**
+
 ### Group D — the durable home *(NOT STARTED, and still the milestone plan's "cannot skip")*
 
 | Task | |
@@ -188,8 +243,12 @@ the TLS fingerprint and connection reuse.
 
 | Task | |
 |---|---|
-| **12** | `BUG-001` updated with what was measured — and **reported upstream**, which is its own open action and `status.md`'s item 2 |
+| **12** | `BUG-001` updated with what was measured — ~~and **reported upstream**~~. ***The upstream report is WITHDRAWN, 2026-09-20***, owner's decision: **the bug is that the router cannot carry Claude Code's non-streamed requests**, and a cause that is client-side does not make it somebody else's to fix. *Enough detail stays in the document for anyone who wants to take it upstream later.* **Consequence: the isolation test is not worth a session**, so `relay_accept_encoding`'s authorship of the second defect stays an inference and the document must say so rather than state it as a finding |
 | **12a** | ***Bring the durable tiers true — added 2026-09-18, because Group E did not have this task and a closing check that is nobody's task is nobody's.*** `reference/observability.md` describes a recorder that now reads response headers; `reference/corpus.md`'s *"bodies only, never headers"* is still true and **worth re-reading against what shipped rather than assumed to be**; `CLAUDE.md` and the root `README.md` carry the commands and the caveats. ***Only for what actually survives the merge*** — an experiment that is reverted changes none of them, and documenting a temporary state in `reference/` is worse than leaving it alone |
+| **16** | ***Remove the three failed experiments*** — `relay_accept_encoding`, `http2_upstream`, `imitate_attribution_headers` — **and everything that exists only to serve them**: `config-boringssl.yaml`, `make forwarder`, `make run-boringssl`, and **five tests plus a `conftest.py` helper** (`test_cli_init.py:179` and `:195`, `test_cli.py:196` and `:206`, `test_proxy.py:169`, `conftest.py:115`). *Reversal of the 2026-09-18 position; see Group C2* |
+| **17** | ***Graduate the survivor out of `experiments`*** into the Anthropic backend's own config, **if C4e answered yes**. *If it answered no it is removed with the other three and this row records that instead* — **either way the `experiments` block itself goes**, and with it `check`'s `EXPERIMENTS ON` line. ***Something at startup must still say the router is modifying requests***, because the survivor breaks byte-relay exactly as the experiments did, and `reference/design-decisions.md` has to record that exception |
+| **18** | ***Promote the hosts-route tools rather than deleting them*** — `tools/tls-terminator/`, a `make` target, and the root `README.md` saying **why it exists and how to use it**: *the fallback for when the attribution trick stops working, and the instrument for finding out what replaced it.* **It is a pair, not a script** — the terminator needs `escape-the-hosts-file.py` beside it, or the loop closes and the router forwards to itself. *Renames: `evidence/run-pinned.py` → `escape-the-hosts-file.py`, `make run-hosts` → `make run-in-the-middle`* |
+| **19** | ***Fix `branch-index.py` before task 15 needs it.*** **A branch fast-forwarded to trunk's tip and a branch cut from trunk's head with no commits are topologically identical**, so `resolve()` cannot tell `temp/to-run-server` from work in flight and `--write` drops its row — *the only record that the branch is not work.* **The fix is declarative**: the descriptions file already names branches by hand, so a branch is *declared* a worktree pin there and the tool honours it. → `for-the-owner.md` entry 4. *The never-delete guard is **`BKL-0041`** and is not this phase's* |
 | **13** | The register checked against the code, `❓` column empty, per `IDM-008`. **`anthropic-ratelimit-unified-representative-claim` is expected to still carry its `❓`** — it closes when somebody establishes what the header holds, not when the phase ends |
 | **14** | The review of this phase's finished work, under `IDM-009` |
 | **15** | Close out: `status.md`, the milestone plan's Phase 14 section and its Record table, `branch-index.py --write` after the merge |
@@ -257,6 +316,28 @@ one day it does.*
 | `verify_the_pin(target, fired) -> bool` | **Added 2026-09-19**, in `evidence/run-pinned.py`. Resolves `api.anthropic.com` through the loop `uvicorn` will pick and **refuses to start the router unless the patched resolver fired**. *Two facts, not one: an unpatched lookup returns the right address too whenever no hosts entry is in* |
 | `Proxy.arrival_sampled: OncePerKey` | ***Was `dict[bool, Once]` until 2026-09-19.*** Now keyed on `(path, streamed?, size band)` — `for-the-owner.md` entry 11, the owner's choice, and **the path is part of the key rather than a gate** |
 
+### Module constants — `src/ilirium_llm_router/backend_anthropic.py` *(added 2026-09-20, Group C4)*
+
+***A new module, owner's decision.*** *`proxy.py` is protocol-neutral; these are one backend's
+facts, and hardcoding them means the docstrings carry the measurement that justifies each one.*
+
+| Name | Value | |
+|---|---|---|
+| `ATTRIBUTION_PREFIX` | `"x-anthropic-billing-header: "` | **The literal text that opens the block.** *It looks like an HTTP header and is not one — it is the start of a string inside the `system` array, and reading it as a header cost this phase two sessions* |
+| `CC_VERSION` | `"2.1.267.608"` | ***Claude Code 2.1.267, and `.608` is the auto-mode safety classifier's call site*** — not a build number. **Knowingly wrong for the haiku auxiliaries**, which send `.daa` |
+| `CC_ENTRYPOINT` | `"cli"` | Interactive. *`sdk-cli` is the `-p` path and is not the one that fails* |
+
+***No `cch`, no `cc_prompt_id`, no `cc_prev_req` constants exist***, and that is deliberate — see
+Group C4's field table for what each omission costs and why it is cheaper than the alternative.
+
+### Functions and classes — `backend_anthropic.py` *(added 2026-09-20, Group C4)*
+
+| Name | |
+|---|---|
+| `attribution_block() -> str` | The two-field block, built from the constants above. **Takes no argument**, because nothing in the request can inform any field it carries |
+| `carries_attribution(body) -> bool` | **Whether a parsed body's `system` array already holds a block.** *A request that has one is never touched* |
+| `with_attribution(body) -> bytes` | **Parse, prepend the block to `system`, re-serialise.** ***The one place this router does not relay a request byte for byte*** — confined to non-streamed Anthropic requests that lack the block, behind a key that is off by default |
+
 ### Names it must not collide with
 
 | Existing | |
@@ -276,10 +357,11 @@ one day it does.*
 | **The arriving sampler's key** | **`(path, streamed?, size band)`** — *`(streamed?)` alone until 2026-09-19, with every path but `/v1/messages` refused* |
 | **The size-band ladder** | **Decimal order of magnitude**, one band per power of ten. *Coarse deliberately: it tells shapes apart rather than measuring them, and the two this phase confused sit three bands apart. A finer ladder costs a log line per band and separates nothing more* |
 | **Arriving lines per run** | **Five to a dozen** in a real session, bounded at **64**. *Exactly two before 2026-09-19, which is how the 14:52 run sampled a warm-up and no classifier* |
-| New config keys | ***Three, and this reverses a stated position.*** **`experiments.relay_accept_encoding` · `.http2_upstream` · `.imitate_attribution_headers`, every one defaulting to `false`.** *This row said **None** — "the minimal form is deliberately not configurable" — and that was right for the **instrument**, which is still not configurable. **It is wrong for the experiments**, which are not the minimal form: they are three deliberate modifications to the relay, and on 2026-09-19 the owner chose switches over deleting them so a negative result stays reproducible.* **`ARRIVAL_SAMPLE_CAP` is still a bound rather than a knob and stays out** |
+| New config keys | ***AMENDED 2026-09-20: four are introduced and one survives.*** **`experiments.add_claude_code_hidden_attribution_block` is added by Group C4**, and at task 17 it **moves out of `experiments` into the Anthropic backend's own config** while the other three are deleted. ***The `experiments` block itself does not survive the merge***, so this row's count is a count of what the phase *introduced*, never of what ships. *The reason given below — switches over deletion, so a negative result stays reproducible — was reversed on 2026-09-20: a merged branch keeps them in history, which serves the same end without dead code on the trunk.* |
+| New config keys *(as written 2026-09-18)* | ***Three, and this reverses a stated position.*** **`experiments.relay_accept_encoding` · `.http2_upstream` · `.imitate_attribution_headers`, every one defaulting to `false`.** *This row said **None** — "the minimal form is deliberately not configurable" — and that was right for the **instrument**, which is still not configurable. **It is wrong for the experiments**, which are not the minimal form: they are three deliberate modifications to the relay, and on 2026-09-19 the owner chose switches over deleting them so a negative result stays reproducible.* **`ARRIVAL_SAMPLE_CAP` is still a bound rather than a knob and stays out** |
 | New on-disk names | **None in Group B.** *Group D may add one, and its rows are written then.* ***Groups C2 and C3 added six, all of which come out with the experiments*** — see the two rows below |
-| **Experiment files — C2 and C3** | `evidence/clienthello-capture.py` · `evidence/boringssl-forwarder.py` · `evidence/binary-extract.sh` · `evidence/run-pinned.py` · `evidence/tls-terminator.py` · `config-hosts.yaml`. ***None is on the router's import path and none ships*** |
-| **`make` targets** | `forwarder` · `run-boringssl` · **`run-hosts`**. *All three come out with the experiments; the Makefile says so where they are defined* |
+| **Experiment files — C2 and C3** | `evidence/clienthello-capture.py` · `evidence/boringssl-forwarder.py` · `evidence/binary-extract.sh` · `evidence/clienthello-capture.py` · `evidence/binary-extract.sh` · **`evidence/escape-the-hosts-file.py`** *(named `run-pinned.py` until 2026-09-20)* · `evidence/tls-terminator.py` · `config-hosts.yaml`. ***None is on the router's import path.*** ~~**and none ships**~~ — ***that stops being true at task 18***: the terminator and the escape script **are promoted to `tools/tls-terminator/`** as the documented fallback, with `config-boringssl.yaml` and the forwarder deleted instead |
+| **`make` targets** | `forwarder` · `run-boringssl` · **`run-hosts`**. ~~*All three come out with the experiments*~~ — ***amended 2026-09-20: two come out and one is kept.*** **`forwarder` and `run-boringssl` are deleted at task 16**; **`run-hosts` is renamed `run-in-the-middle` and stays**, because the hosts route remains the fallback for when the attribution trick stops working. *A target for the promoted tool is added at task 18* |
 | **Environment variables** | `FORWARDER_UPSTREAM` · `FORWARDER_IMPERSONATE` · **`PINNED_ANTHROPIC_IP`**. ***Read by the experiment scripts only; the router reads none of them*** |
 | Index schema version | **Unchanged at `1`.** Group B touches no index. *If Group D reaches the corpus index this becomes `2`, and that row is written then* |
 
@@ -299,9 +381,20 @@ one day it does.*
 
 ## Not in this phase
 
-- **Fixing whatever the diagnosis finds**, if the fix is client-side or Anthropic's. *This phase
-  measures and reports; `BUG-001` is a bug the router did not cause and may not be able to fix.*
-- **Changing the relay.** Nothing here alters a byte the client receives.
+- ~~**Fixing whatever the diagnosis finds**, if the fix is client-side or Anthropic's.~~ ***STRUCK
+  2026-09-20.*** **The phase fixes it** — Group C4 — *and the framing that made this a non-goal is
+  withdrawn with it: the cause being client-side does not make the router's inability to carry the
+  request somebody else's problem.*
+- ~~**Changing the relay.** Nothing here alters a byte the client receives.~~ ***STRUCK, and it had
+  already stopped being true before today.*** **C2a changed what the client received** — non-streamed
+  replies arrived brotli for a day — **and C3k changed the peek.** *Group C4 goes further and rewrites
+  a request body, which is the first deliberate exception to byte-relay this router has.* **It is
+  opt-in, off by default, and confined to non-streamed Anthropic requests that lack the block**;
+  `reference/design-decisions.md` records the exception at task 17.
+- **The subtractive attribution test** — stripping the block to watch the 429 return. *`BUG-001` asks
+  for it and Group C4 answers the same question additively, leaving a working router if it succeeds.*
+- **The `relay_accept_encoding` isolation test.** *Worth a session only if the report goes upstream,
+  and it no longer does — see task 12.*
 - **`BKL-0017`**, whether archiving slows a call — the milestone's third failure mode, and a
   separate measurement.
 
