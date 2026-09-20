@@ -752,3 +752,61 @@ others.
 router STRIP the attribution block and drive a few classifier calls.** *It fabricates nothing and
 reuses the setup you have.* **429 returns → the block is the cause and injection is worth building.
 429 stays away → injection is wasted work and the cause is still unfound.**
+
+## 21 · ERRAND · high · The fix is built — one session, one environment variable, and it answers
+
+***Group C4 is in and every check is green.*** **The router now puts back the attribution block
+Claude Code withholds**, and this is the run that says whether that is enough. *Only you can drive
+it: it needs your credential and your machine.*
+
+### Why this one is cheap in a way the last three were not
+
+***No `/etc/hosts`, no TLS terminator, no `sudo`, no DNS pin, no second terminal.*** **One
+environment variable, the way anybody would point a client at a proxy.** *That is the whole point —
+if it works, the hosts route stops being the supported path and becomes the fallback.*
+
+### The run
+
+1. **`make run-with-attribution`** — terminal 1.
+   ***Startup MUST print `EXPERIMENTS ON: add_claude_code_hidden_attribution_block`.*** **If it does
+   not, stop**: the config did not take and the run measures nothing. *That line is the only
+   confirmation available before the first request.*
+2. **`ANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude`** — terminal 2, **auto mode ON**.
+3. **`claude --version`**, recorded. *`BUG-001` asks for it by name, and 2.1.267 is what every
+   measurement in this phase is against — **a different build makes this a different experiment**.*
+4. ***Drive the ten-probe sweep, not a smoke test.*** **`BUG-000`: an absence of failures is what
+   every earlier attempt produced and it proved nothing every time.** *Your 2026-09-19 session is
+   the shape to repeat — commands that look dangerous and are harmless, including **one that is
+   genuinely blocked**.*
+5. **Stop, and hand back.** *Reading `router.log` and `calls.csv` is a session's job and does not
+   need you.*
+
+### What counts as an answer, and it is not "it worked"
+
+| | |
+|---|---|
+| ***The pass*** | **No 429 on non-streamed calls, AND a probe that comes back BLOCKED with the verdict in the router's own record.** *Eight allowed and one blocked is what made 2026-09-19 airtight* |
+| ***The fail*** | **429s return.** *Then the block alone is not enough — and the next thing to try is condition B, which adds a `cch`. **One line**, because the constant is already there to not-use* |
+| ***The trap*** | **No 429s and no blocked probe.** ***That is not a pass.*** *It is the shape of result this phase has mistaken for success four times* |
+
+### Three things to know while it runs
+
+- ***The corpus will NOT show the injected block.*** **It stores what arrived**, and the block is
+  added after that. *The proof it fired is the `attribution block added to /v1/messages: N bytes in,
+  M out` line in `router.log`.* **If that line never appears, the injection never ran** — and the
+  log says why for every request it declined.
+- ***This changes the prompt-cache prefix for the requests it touches.*** **Non-streamed only**, so
+  the main conversation keeps byte-relay and its cache. *The classifier has no cache worth keeping.*
+- ***Only one switch moved.*** *2026-09-19 flipped three at once and could only credit the set. This
+  run changes exactly one thing, so whatever it shows is attributable without an argument.*
+
+### What I am not claiming
+
+***It may fail, and the honest reasons are known in advance.*** **The block we send has two fields
+and a real one has three to five.** *`cch` is per conversation turn and cannot be computed — a
+hardcoded one would repeat on every request, which no real client does, so it is omitted rather than
+faked.* **The two-field form is a shape the client itself sends** — the `-p` probes carry no `cch` —
+*so it is an observed shape rather than an invention, which is the most that can be said for it.*
+
+**And the gate is a class of which we know two members.** *There may be others, and then no block
+helps.*

@@ -1,0 +1,171 @@
+# Phase 14, Group C4: does putting the attribution block back make the safety classifier work?
+#
+#   Claude Code  ->  http://127.0.0.1:8787   [ANTHROPIC_BASE_URL, plainly set]
+#                ->  this router, which adds the block the client withheld
+#                ->  https://api.anthropic.com
+#
+# WHY. Claude Code decides it is first-party by comparing `new URL(base).host` against the literal
+# string `api.anthropic.com`. Pointed anywhere else it WITHHOLDS its attribution block, and every
+# non-streamed /v1/messages then comes back 429 -- so auto mode's safety classifier cannot run.
+# This config asks whether the router supplying that block is enough to undo it.
+#
+# THE CONTRAST WITH config-hosts.yaml IS THE POINT. That one wins by making the client believe it
+# is talking to Anthropic: /etc/hosts, a TLS terminator on 443, sudo, and a DNS pin to break the
+# resolution loop. THIS ONE NEEDS NONE OF THAT -- one environment variable, the way anybody would
+# point a client at a proxy. If it works, the hosts route stops being the supported path and
+# becomes the fallback.
+#
+# HOW.  make run-with-attribution                      # terminal 1
+#       ANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude    # terminal 2, auto mode ON
+#       for-the-owner.md entry 21 is the full runbook, including what counts as an answer.
+#
+# WHAT COUNTS AS AN ANSWER. Not "no errors". BUG-000: an absence of failures is what every earlier
+# attempt in this phase produced, and it proved nothing every time. The run needs a probe that is
+# genuinely BLOCKED, with the verdict in the router's own record.
+#
+# THIS FILE IS THE EXPERIMENT AND COMES OUT WITH IT, like config-hosts.yaml. It exists so
+# `config.yaml` never has to be hand-edited: that file is compared byte for byte against the
+# shipped starter by `test_template_matches_the_repository_config`, and editing it turns the test
+# red for as long as the edit lives.
+#
+# It differs from `config.yaml` in exactly three places, each marked EXPERIMENT below. Log and
+# corpus paths are deliberately the SAME, so this run lands in the same files as every earlier one
+# and the two can be read against each other.
+
+# Configuration for ilirium_llm_router.
+#
+# There is deliberately no model list here. Routing is a rule in code: a model named `claude-…`
+# goes to Anthropic, anything else goes to LM Studio. New models on either side need no change here.
+#
+# Relative paths below are resolved against the directory holding this file.
+
+server:
+  host: 127.0.0.1
+  port: 8787
+
+backends:
+  # `credential` is the only knob, and it has three modes:
+  #
+  #   forward   pass the credential arriving from the caller through untouched
+  #   strip     remove it
+  #   inject    remove it and send the key named by `api_key_env` instead
+  #
+  # `api_key_env` is required by `inject` and forbidden by the other two. Both contradictions are
+  # refused at startup rather than resolved silently.
+
+  # `read_timeout` is how long a backend may stay *silent* before the call is abandoned. It is not
+  # a budget for the whole reply: every chunk that arrives restarts it, measured 2026-08-07 in
+  # docs/milestone-1-core/phase-5-config-and-timeouts/evidence/. So it bounds silence, never
+  # duration.
+
+  # Models named `claude-…`.
+  anthropic:
+    base_url: https://api.anthropic.com
+    # The arriving credential is the real one and Anthropic accepts it, so the router holds no key
+    # of its own. See docs/procedures/anthropic-auth-check.md.
+    credential: forward
+    # Measured median time to first byte is 1426 ms — over successful streamed /v1/messages calls,
+    # which is the slice that number means — so ten minutes of silence already means something is
+    # wrong rather than slow.
+    read_timeout: 600
+
+  # Every other model.
+  lmstudio:
+    base_url: http://localhost:1234
+    # A real Anthropic token is of no use to a local server and should not be handed to something
+    # that might write it to a log.
+    credential: strip
+    # Prefilling a large prompt is silent while it works: 27924 tokens took 197 s, and a ~41000-token
+    # request was still going when the old shared 600 s killed it
+    # (docs/milestone-1-core/phase-4-lmstudio-parity/notes.md).
+    read_timeout: 1800
+    # If LM Studio's "Require Authentication" is switched on, this takes two lines: change the mode
+    # above to `inject` and name the variable holding the key here.
+    # api_key_env: LMSTUDIO_API_KEY
+
+logging:
+  level: INFO
+  file: logs/telemetry/router.log
+  max_bytes: 10485760   # 10 MiB
+  backup_count: 5
+
+stats:
+  file: logs/telemetry/calls.csv
+  max_bytes: 5242880    # 5 MiB
+  backup_count: 10
+
+# The body store. Opt-in, off by default, and nothing under `dir` is created until it is on.
+#
+# `calls.csv` above is always on because it is cheap and holds nothing sensitive. Neither is true
+# here: bodies hold source code, file contents and anything typed. So this is one switch, and off.
+corpus:
+  # EXPERIMENT 1: on, so the run captures bodies and can be read against 2026-09-18's.
+  #
+  # NOTE, and it matters when reading the result: the corpus stores WHAT ARRIVED, not what was
+  # sent. A body here will NOT carry the injected block -- that is deliberate, and the proof the
+  # injection fired is the `attribution block added` line in router.log.
+  enabled: true
+  dir: logs/corpus
+  # The level bodies are stored at -- AND the level the trainer scores a candidate dictionary
+  # against the incumbent at, so the comparison cannot drift from what is actually stored. It is
+  # NOT the level a dictionary is trained at; that is TRAIN_LEVEL = 3, measured to move the ratio
+  # by 0.03%. 9 was measured by Task 6: 94% of level 19's dicted ratio for an eighth of the cost.
+  compress_level_zstd: 9
+  # Two limits, because they are checked at two different moments and neither can cover the other.
+  # This one bounds peak memory for ONE body, on every chunk while the call runs.
+  # EXPERIMENT 2: 5 MiB rather than the shipped 1 MiB, matching the owner's running setup and
+  # config-hosts.yaml, so the two runs can be compared without a size cutoff between them.
+  body_max_bytes: 5242880     # 5 MiB
+  # And this one bounds memory for ALL WAITING bodies, once at submit. A thousand ordinary 100 KB
+  # bodies are each far under the ceiling and together are 100 MB in the queue.
+  queue_max_bytes: 67108864   # 64 MiB
+  # Everything below runs offline, in its own thread, and never in the path of a call.
+  retrain:
+    window_days: 1            # a MINIMUM; 0 disables automatic retraining entirely
+    sample_min_bytes: 1024
+    # Both provisional rather than measured-optimal: the corpus has no usable validation split, so
+    # these were chosen knowing the slice they were scored on. Training is non-monotonic in both.
+    maxdict: 262144
+    k: 8000
+
+# Phase 14's three experiments, EVERY ONE OFF. They are written out rather than left to their
+# defaults because that is the whole value of the block: a reader can tell, from the config alone,
+# that the router is a plain byte-relay. `ilirium-llm-router check` prints EXPERIMENTS ON and names
+# any that are not, and prints nothing when none is.
+#
+# Each one is a deliberate difference from what Claude Code sends when it talks to Anthropic
+# directly, kept switchable rather than deleted so its negative result stays reproducible.
+# docs/milestone-2-corpus/phase-14-rate-limit-headers/ has what each one cost.
+experiments:
+  # Relay the caller's `accept-encoding` on a NON-streamed request instead of forcing `identity`.
+  # With it on, a non-streamed reply arrives compressed and the corpus stores brotli rather than
+  # JSON. Prime suspect for the safety classifier failing through the router after the 429 went
+  # away: it is the only change that alters what a non-streamed reply looks like to the client.
+  relay_accept_encoding: false
+  # Offer HTTP/2 to the backend over ALPN. Negotiates rather than demands. Eliminated twice: the
+  # nine classifier calls Anthropic answered correctly on 2026-09-19 went over HTTP/1.1 both legs.
+  # Inbound is HTTP/1.1 whatever this says -- uvicorn speaks only h11/httptools. See BKL-0039.
+  http2_upstream: false
+  # Add fabricated attribution headers to every Anthropic call. Built on a misreading: the client's
+  # `x-anthropic-billing-header` is a system-prompt block in the request BODY, not an HTTP header.
+  # Worst with a first-party client, which sends its own genuine attribution -- the request then
+  # carries both and they disagree.
+  imitate_attribution_headers: false
+  # Put back the attribution block Claude Code withholds when ANTHROPIC_BASE_URL names any host but
+  # api.anthropic.com -- the reason every non-streamed /v1/messages comes back 429 and auto mode's
+  # safety classifier cannot run through a proxy. Turn this on if the classifier reports itself
+  # unavailable. THE ONE DELIBERATE EXCEPTION TO BYTE-RELAY: a request it applies to is parsed,
+  # given one more element in its `system` array, and re-serialised, so its prompt-cache prefix
+  # changes. Narrowed to the Anthropic backend, non-streamed, uncompressed, and bodies that do not
+  # already carry a block -- streamed requests were never refused and keep byte-relay untouched.
+  # Two hardcoded fields and three deliberate omissions: see backend_anthropic.py, and
+  # docs/bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md.
+  #
+  # EXPERIMENT 3, AND IT IS THE ONE UNDER TEST. The other three above stay OFF on purpose: the
+  # 2026-09-19 run flipped three switches at once and could only credit the set, and the
+  # encoding had to narrow it afterwards. This run changes exactly one thing.
+  #
+  # `check` will print EXPERIMENTS ON naming this key. That line is correct here and is the
+  # confirmation the config took -- its ABSENCE means the router is relaying unchanged and the
+  # run measures nothing.
+  add_claude_code_hidden_attribution_block: true

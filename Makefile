@@ -19,7 +19,8 @@ RUFF   ?= ruff@0.16.1
 
 .DEFAULT_GOAL := help
 
-.PHONY: help sync run check test lint format clean forwarder run-boringssl run-hosts
+.PHONY: help sync run check test lint format clean forwarder run-boringssl run-hosts \
+        run-with-attribution
 
 help: ## List the available targets
 	@grep -hE '^[a-z-]+:.*##' $(MAKEFILE_LIST) \
@@ -40,6 +41,19 @@ run-boringssl: ## Phase 14 experiment: start the router pointed at the forwarder
 
 # The address is resolved HERE rather than inside the router, because once the hosts entry exists a
 # plain lookup answers 127.0.0.1 and the router would forward to itself. @1.1.1.1 ignores the file.
+# Group C4's run, and the contrast with `run-hosts` below is the point of it. That one needs
+# /etc/hosts, a TLS terminator on 443, sudo and a DNS pin to break the resolution loop. This one
+# needs a single environment variable -- the way anybody would point a client at a proxy:
+#
+#     ANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude      # auto mode ON
+#
+# So there is no pin and no second terminal here: with the base URL set, `api.anthropic.com`
+# resolves normally and the router reaches the real one. Startup MUST print
+# `EXPERIMENTS ON: add_claude_code_hidden_attribution_block`; if it does not, the config did not
+# take and the run measures nothing.
+run-with-attribution: ## Phase 14 experiment: the router puts back the attribution block (C4e)
+	uv run ilirium-llm-router -c config-attribution.yaml
+
 run-hosts: ## Phase 14 experiment: the router behind the hosts entry, api.anthropic.com pinned
 	PINNED_ANTHROPIC_IP="$${PINNED_ANTHROPIC_IP:-$$(dig +short @1.1.1.1 api.anthropic.com | head -1)}" \
 		uv run python $(PIN) -c config-hosts.yaml
