@@ -1630,3 +1630,94 @@ wrong — the harness working exactly as designed.*
 ***`C4e`: one session, `ANTHROPIC_BASE_URL` set, the experiment on.*** **Condition A is what is
 built — two fields, no `cch`.** *`BUG-000` applies: the run needs a probe that is genuinely
 **blocked**, not an absence of failures.*
+
+## C4e ran, tested nothing, and found the cause of three days' work in this repository's own README
+
+***Run by the owner 2026-09-20, 15:57–15:59 UTC, Claude Code 2.1.267, `config-attribution.yaml`.***
+**24 calls. The injection fired ZERO times.**
+
+    0 × "attribution block added"
+    9 × NOT added: the body already carries an attribution block
+    2 × NOT added: the body carries no 'system' field
+
+***Every request it could have helped already carried a block.*** **So nothing Group C4 built was
+exercised, and this run says nothing about whether it works.**
+
+### What arrived instead, and it matches neither earlier day
+
+**The blocks carry `cc_version` and `cc_entrypoint` and nothing else — no `cch`.**
+
+| Day | Base URL | Blocks | `cch` | Non-streamed |
+|---|---|---|---|---|
+| 2026-09-18 | set | ***none*** | — | **119 × 429** |
+| 2026-09-19 | unset, hosts route | 97 | ***yes*** | all ok |
+| ***2026-09-20*** | **set** | **19** | ***no*** | **classifier ok** |
+
+***They are the client's, not the router's.*** **The router logged "already carries" before touching
+anything, and the suffixes are per-call-site** — `.608` on the nine classifier calls, `.d18` on the
+conversation, `.daa` on a haiku call. *The injection hardcodes `.608` and would have stamped it on
+all of them.*
+
+### The cause, and the owner found it
+
+***`CLAUDE_CODE_ATTRIBUTION_HEADER=0`.*** **It is in this repository's own `README.md`, in the
+documented command for pointing Claude Code at the router, and it has been there since `7cd90f9` on
+2026-08-07** — *six weeks before this phase opened.*
+
+**It is in four documents**: `README.md`, `reference/architecture.md`,
+`procedures/testing-against-claude-code.md` — ***the procedure a session follows to drive exactly
+these sessions*** — and `milestone-1-core/phase-1-proxy/evidence/session-results.md`. ***Not one of
+them says why.*** *The commit that introduced it calls it "the two environment variables Claude Code
+needs" and stops there.*
+
+***Its origin is visible in `architecture.md`, where it sits in the block for pointing Claude Code
+straight at LM STUDIO*** — **where suppressing Anthropic billing attribution makes obvious sense.**
+*From there it was copied into the router quick start and the test procedure, where it does not.*
+
+### What that separates, and it is two things the phase had fused into one
+
+- ***The env var governs whether the block is sent at all.***
+- ***First-party posture governs whether `cch` is in it.***
+- **`ANTHROPIC_BASE_URL` does not suppress the block.** *2026-09-20 shows a custom base URL with
+  blocks present.*
+
+### The disproof was in the corpus on day one
+
+***On 2026-09-18, with the base URL set, TWO requests carried attribution*** — the `-p` probes.
+**The section "The attribution header is not a header" recorded exactly that and read it as a
+property of the `-p` entrypoint.** *It was almost certainly that the `-p` command line did not carry
+the env var.* ***A counterexample to "a custom base URL withholds the block" was on disk in the first
+hour, filed under the wrong explanation.***
+
+### What dies and what survives
+
+***Dead:*** **the central claim that Claude Code withholds attribution when `ANTHROPIC_BASE_URL`
+names a non-Anthropic host.** *`BUG-001`'s one-page synthesis, `wiki/claude-code-first-party-gate.md`'s
+premise, and `for-the-owner.md` entries 17 and 20.* **All four are banner-marked, not rewritten** —
+rewriting them before the confirming run would replace one unverified conclusion with another.
+
+***Alive:***
+
+- **The second defect was real and was ours** — `relay_accept_encoding` served brotli to a client
+  that could not take it.
+- **The gzip request-body fix** is a genuine defect any first-party client meets.
+- ***The block ↔ 429 correlation holds perfectly across all three days.*** **What was wrong is only
+  WHY the block was absent**: *the router's operator was removing it, on this repository's own
+  instructions.*
+- **The corpus answered it in an afternoon**, from material already on disk. *Entry 3, paying out a
+  third time.*
+
+### And the run was not a pass on its own terms either
+
+***Nine classifier calls, all stage 1, severities 15 (×7) and 25 (×2).*** **No stage 2 anywhere in
+the run and no `<block>` verdict.** *Severity 25 does not escalate.* ***That is `BUG-000`'s trap and
+entry 21 named it in advance:*** **no 429s and no blocked probe is not a pass.** *2026-09-19's
+blocked probe scored 68.*
+
+**Two 429s remain**, both the client's quota probe — `max_tokens: 1`, **no `system` field**, so it
+can carry no block from the client or from the router. *`with_attribution` declines it by name.*
+
+*(A reading error worth recording: grepping the dump for `<severity>N</severity>` returns nine hits
+in the REQUESTS — they are examples inside the classifier's own prompt. **The real verdicts are
+truncated because `</severity>` is the stop sequence**, so the text ends `<severity>15`. A response
+that looks empty of verdicts is not.)*

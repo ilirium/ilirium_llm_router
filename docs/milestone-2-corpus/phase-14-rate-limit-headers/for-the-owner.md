@@ -810,3 +810,68 @@ faked.* **The two-field form is a shape the client itself sends** — the `-p` p
 
 **And the gate is a class of which we know two members.** *There may be others, and then no block
 helps.*
+
+## 22 · ASK · high · You found it: the block was being switched off by our own README
+
+***`CLAUDE_CODE_ATTRIBUTION_HEADER=0`.*** **You have been setting it every time, because
+`README.md` says to** — and it has said so since 2026-08-07, `7cd90f9`, **six weeks before this
+phase opened.** *No document states a reason. Its origin is visible in
+`reference/architecture.md`, where it sits in the block for pointing Claude Code straight at LM
+Studio — where it makes sense — and from there it was copied into the router's quick start and into
+`procedures/testing-against-claude-code.md`, which is the procedure for driving exactly these
+sessions.*
+
+### The three days read consistently now
+
+| Day | Base URL | The env var | Blocks | `cch` | Non-streamed |
+|---|---|---|---|---|---|
+| 09-18 | set | ***`=0`*** | **none** | — | **119 × 429** |
+| 09-19 | unset, hosts | not used — no base URL to pair it with | 97 | **yes** | all ok |
+| **09-20** | **set** | ***dropped*** | **19** | no | classifier ok |
+
+***That separates two things the phase had fused:*** **the env var decides whether the block is
+sent; first-party posture decides whether `cch` is in it.** *`ANTHROPIC_BASE_URL` suppresses
+nothing, and 09-20 shows it directly.*
+
+***And the disproof was on disk on day one.*** **Two requests on 09-18 carried attribution with the
+base URL set** — the `-p` probes. *The phase recorded them and read them as a quirk of `-p`. They
+were almost certainly just a command line without the env var.*
+
+### What I have NOT done, deliberately
+
+***I have not touched `README.md`.*** **Removing the line is acting on a conclusion with one
+unconfirmed fact in it**, and this phase has done that enough. *It is the first thing the next
+session should do once the run below confirms it.*
+
+***And I have not rewritten `BUG-001` or the wiki page.*** **Both carry a banner saying the central
+claim is in doubt and why.** *Replacing one unverified conclusion with another is the move that cost
+this phase three retractions.*
+
+### The two-minute run that settles it, and it needs you
+
+**Same machine, same session, `ANTHROPIC_BASE_URL` set both times, and the router's own injection
+OFF** (`config.yaml`, not `config-attribution.yaml`):
+
+| **A** | ***with*** `CLAUDE_CODE_ATTRIBUTION_HEADER=0` | **429s return** → the cause is named |
+|---|---|---|
+| **B** | ***without it*** | **429s stay away** → and the fix is deleting a line from a README |
+
+***Please drive harsher probes than 2026-09-20's.*** **Every verdict that day was stage 1, ceiling
+severity 25, and stage 2 never ran** — *so there is still no blocked verdict in the record, which is
+`BUG-000`'s trap and what entry 21 warned about in advance.* **2026-09-19's blocked probe scored 68.**
+
+### One confirmation I need, because I cannot see your environment
+
+***Did you drop `CLAUDE_CODE_ATTRIBUTION_HEADER=0` for the 2026-09-20 run?*** **Everything above
+rests on it.** *Asked rather than inferred, which is the note this repository already keeps.*
+
+### And the good news, which is worth saying plainly
+
+***If run A brings the 429s back, Group C4 is unnecessary and should be deleted rather than
+shipped.*** **A router that needs no code to fix this is a better outcome than an injection that
+works.** *The two-field block, the hardcoded constants, the byte-relay exception — all of it comes
+out, and `BUG-001` closes as an operator-error bug in our own documentation.*
+
+**What that would leave standing is still worth the phase:** *the compression defect was real and
+was ours, the gzip `400` was a genuine bug any first-party client meets, and the corpus answered the
+whole thing in an afternoon from material already on disk.*

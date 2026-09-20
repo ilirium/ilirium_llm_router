@@ -1,8 +1,8 @@
 # The next session's prompt
 
 *The one file in `docs/` allowed to go stale, per `README.md` — which is why it is rewritten at each
-handoff rather than left. **Replaced 2026-09-19 (evening)**, mid-phase rather than at a merge.
-Whatever comes next replaces it again.*
+handoff rather than left. **Replaced 2026-09-20**, mid-phase rather than at a merge. Whatever comes
+next replaces it again.*
 
 ---
 
@@ -11,134 +11,150 @@ Whatever comes next replaces it again.*
 `main`. A session started in `main` sees none of this.* Branch
 `feat/phase-14-rate-limit-headers`, forked from `main` at `ac2976e`.
 
-***The phase's question is ANSWERED and nothing is in flight inside it.*** **Auto mode's safety
-classifier now works through the router**, measured 2026-09-19 with a positive verdict rather than
-an absence of failures. **The working tree is clean and every check is green.** *No experiment is
-set up and waiting, unlike the last two handoffs.*
+***The working tree is clean and every check is green*** — 510 tests, 52/52 mutations, `make lint`
+at the pinned `0.16.1`, `backlog-index --check` at 37 live / 41 ids, `link-check.py` at 112 in this
+worktree. *No commit count is written here; `git rev-list --count main..HEAD` is the answer, and
+this repository has recorded the defect of writing one down seven times.*
 
-*No commit count is written here. A count written at a handoff is wrong at the next commit, and this
-repository has recorded that defect six times — including in `status.md`'s own in-flight section,
-which said 21 while the branch held 29.*
+## Read this first, because it reverses three days of conclusions
+
+***THE PHASE'S CENTRAL FINDING IS IN DOUBT, AND THE LIKELY CAUSE IS THIS REPOSITORY'S OWN
+`README.md`.***
+
+**`CLAUDE_CODE_ATTRIBUTION_HEADER=0` sits in the documented command for pointing Claude Code at the
+router.** *Added 2026-08-07 in `7cd90f9`, six weeks before this phase opened, with no stated reason
+in any of the four documents that carry it.* **It switches off the attribution block whose absence
+this phase spent three days attributing to a client-side gate on `ANTHROPIC_BASE_URL`** — and *the
+owner had been setting it on every run that also set the base URL.*
+
+| Day | Base URL | The env var | Blocks | Non-streamed |
+|---|---|---|---|---|
+| 09-18 | set | ***`=0`*** | **none** | **119 × 429** |
+| 09-19 | unset, hosts route | not used — no base URL to pair it with | 97 | all ok |
+| **09-20** | **set** | ***dropped*** | **19** | classifier ok |
+
+***The two variables were never separated.*** **`ANTHROPIC_BASE_URL` may suppress nothing at all.**
+
+***And the disproof was on disk from the first hour.*** *Two requests on 2026-09-18 carried
+attribution with the base URL set — the `-p` probes. `notes.md` recorded them and read them as a
+quirk of the `-p` entrypoint; they were almost certainly a command line without the env var.*
+
+## What is waiting on the owner, and it is two minutes of their time
+
+**`for-the-owner.md` entry 22 is the runbook.** *Same machine, `ANTHROPIC_BASE_URL` set both times,
+the router's own injection **off** — so `config.yaml`, not `config-attribution.yaml`:*
+
+| **A** | ***with*** `CLAUDE_CODE_ATTRIBUTION_HEADER=0` | **429s return** → the cause is named |
+|---|---|---|
+| **B** | ***without it*** | **429s stay away** → the fix is deleting a line from a README |
+
+***Entry 22 also carries the one question a session cannot answer for itself:*** **did the owner
+drop the variable for the 2026-09-20 run?** *Everything above rests on it, and it was asked rather
+than inferred — the memory note `ask-rather-than-infer-about-the-setup`.*
+
+***Drive harsher probes than 2026-09-20's.*** **Every verdict that day was stage 1, ceiling severity
+25, and stage 2 never ran** — *so there is still no blocked verdict in the record.* **`BUG-000`: an
+absence of 429s proves nothing, and 2026-09-19's blocked probe scored 68.**
 
 ## Read these, in this order
 
 1. **`docs/status.md`** — first, every session. The only file that holds state. *"Where we stopped"
    was rewritten at this handoff and is current.*
-2. **`.../phase-14-rate-limit-headers/for-the-owner.md`** — ***twenty entries; 17, 18, 19 and 20 are
-   the live ones.*** Read it before `plan.md`.
-3. **`docs/bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`** — its top section is a
-   one-page synthesis written for exactly this purpose. **Read that before the phase notes.**
+2. **`.../phase-14-rate-limit-headers/for-the-owner.md`** — ***twenty-two entries; 21 and 22 are the
+   live ones.*** Read it before `plan.md`.
+3. **`docs/bugs/BUG-001-…`** — ***its banner first.*** The one-page synthesis below the banner is
+   the doubted conclusion, kept because the measurements in it are still good.
 4. **`.../phase-14-rate-limit-headers/notes.md`** — long, and written while the work ran. **Read it
-   by section**, per `CLAUDE.md`. *The last four sections are 2026-09-19's.*
+   by section**, per `CLAUDE.md`. *The last three sections are 2026-09-20's.*
 
-## What the phase settled, in the shape that matters
+## What must NOT be done before the A/B run answers
 
-***There were TWO defects, stacked, and the first hid the second.*** **Conflating them is the
-single easiest mistake to make here.**
+- ***Do not edit `README.md`.*** **Removing the env var line is acting on a conclusion with one
+  unconfirmed fact in it.** *It is the first thing to do once entry 22's run confirms it — and then
+  in all four documents that carry it, not only the README.*
+- ***Do not rewrite `BUG-001` or `wiki/claude-code-first-party-gate.md`.*** **Both carry banners
+  saying what is in doubt and why.** *Replacing one unverified conclusion with another is the move
+  that already cost that document three retractions.*
+- ***Do not read Group C4's 2026-09-20 run as a result about C4.*** **The injection fired zero
+  times.** *Every request it could have helped already carried a block, so the run says nothing
+  about whether it works.*
 
-| | Cause | State |
-|---|---|---|
-| **The `429` on non-streamed `/v1/messages`** | ***Client-side.*** Claude Code withholds things when `ANTHROPIC_BASE_URL` names any host but `api.anthropic.com` | **Worked around, not fixed.** The hosts route makes the client first-party while still routed. ***The cause is not identified beyond the gate*** |
-| **The classifier failing after the 429 went away** | ***The router's own `accept-encoding` experiment.*** Non-streamed replies came back **brotli** | ***Fixed.*** Off by default and pinned off in every committed config |
+## Group C4, which is built and may be deleted rather than shipped
 
-**The second one was ours**, it ran for a day, and `for-the-owner.md` entry 7 called it
-*"exonerated"* — a clearance earned against the 429 and allowed to stand for the component.
-***A negative result for one symptom is not a clearance for the thing that produced it.***
+**`src/ilirium_llm_router/backend_anthropic.py`** — the block's constants and the one function that
+builds it, with the measurement behind each hardcoded value in the docstrings.
+**`experiments.add_claude_code_hidden_attribution_block`**, off by default, pinned `false` in all
+four committed configs, named by `check` when on. **The one deliberate exception to byte-relay**,
+narrowed to the Anthropic backend, non-streamed, uncompressed, and bodies with no block already.
 
-## Five things a session will get wrong here
+***If the A/B confirms the env var, all of it comes out.*** **A router that needs no code to fix
+this is a better outcome than an injection that works**, and `for-the-owner.md` entry 22 says so.
 
-- ***"It works" is not one claim.*** **The 429 is worked around; the compression defect is fixed;
-  the CAUSE of the 429 is still unknown.** *Saying the phase "solved `BUG-001`" is wrong on the
-  third.*
-- ***A `200` from the router is not a working classifier.*** **On 2026-09-19 at 12:31 the router
-  served nine classifications with valid verdicts and the client reported every one as
-  unavailable.** *The check that settled it was aligning the owner's transcript against
-  `calls.csv` — **ask the person who was in the session**, and `evidence/claude-code-sessions-to-check-safety-classifier.txt` is that record.*
-- ***An absence of 429s proves nothing*** — `BUG-000`, and this phase spent three runs on it.
-  **What closed it was a `<block>` verdict**: drive probes until one is actually *blocked*, not
-  until nothing fails.
-- ***The three experiments are config keys now and all are `false`.*** **`check` prints
-  `EXPERIMENTS ON` and names any that are not**, and two tests assert every committed config keeps
-  them off. *An `EXPERIMENTS ON` line at startup means the router is not a plain byte-relay and no
-  measurement taken with it is a control.*
+*`config-attribution.yaml` and `make run-with-attribution` drive it. `make check
+CONFIG=config-attribution.yaml` must print `EXPERIMENTS ON` naming exactly that key, or the config
+did not take.*
+
+## Five things a session will still get wrong here
+
+- ***The corpus stores WHAT ARRIVED, not what was sent.*** **A body will never show the injected
+  block.** *The proof it fired is the `attribution block added` line in `router.log`, and the log
+  says why for every request it declined.*
+- ***A `200` from the router is not a working classifier***, and **a status code is not an
+  outcome.** *On 2026-09-19 the router served nine classifications with valid verdicts while the
+  client reported every one unavailable. **Ask the person who was in the session.***
+- ***Grepping for `<severity>N</severity>` finds the classifier's own PROMPT EXAMPLES, not
+  verdicts.*** **The real verdict is truncated — `</severity>` is the stop sequence**, so the text
+  ends `<severity>15`. *A response that looks empty of verdicts is not.*
 - ***`branch-index.py --write` DELETES a row it must not delete, and `--check` says only `STALE`.***
-  **It is STALE right now, here and on a clean `main`, for that reason alone.** *`temp/to-run-server`
-  has been fast-forwarded to `main`'s tip, `resolve()` reads that as in-flight, and `--write` drops
-  its row — the only record that the branch is not work.* **`IDM-001` puts `--write` as the last
-  step of every merge, so the next merge deletes it without anyone looking.** → `for-the-owner.md`
-  entry 4. ***Do not "fix" the STALE with `--write`.***
+  **It is STALE right now, here and on a clean `main`, for that reason alone.** *A branch
+  fast-forwarded to the trunk's tip and one cut from the trunk's head are **topologically
+  identical**, so no topological fix exists — the fix is declarative.* **`IDM-001` puts `--write` as
+  the last step of every merge.** → entry 4, plan task **19**, and **`BKL-0041`** for the general
+  guard. ***Do not "fix" the STALE with `--write`.***
 - **`link-check.py`'s count is a property of the worktree.** **112 here**; `main` was 92 at the last
   merge. *Compare within one tree or not at all.*
 
-## Open, smallest first, and none of it blocks
+## Phase 14's own corpus lives in THIS worktree
 
-1. ***Isolate `relay_accept_encoding`.*** **Turn only that one back on and drive three probes.**
-   *Three switches went off together, so the run credits the set; the reply encodings narrow it to
-   one, but that is mechanism rather than measurement.* **Worth doing before anything goes upstream,
-   because the report has to say the router was at fault for half of it.**
-2. ***`content-length` versus compression.*** **Both facts are now pinned by tests** —
-   `test_a_compressed_reply_keeps_its_content_encoding` and
-   `test_a_relayed_reply_carries_no_content_length` — *so separating them is a deliberate
-   change to the second rather than a silent change in behaviour.* **The router relays `content-encoding: br` correctly
-   — tested — and drops `content-length`, so a compressed reply goes out chunked.** *Keep the
-   compression and stop dropping the length: if it then works, the bug is the missing length rather
-   than the compression, which is fixable rather than merely avoidable.*
-3. ***The subtractive attribution test.*** **Under the hosts route, have the router STRIP the
-   attribution block and drive a few classifier calls.** *It fabricates nothing.* **429 returns →
-   the block is the cause of the gate's effect. 429 stays away → the cause is still unfound.**
-   ***This decides whether item 4 is worth building at all.***
-4. ***Making it work with `ANTHROPIC_BASE_URL` set*** — the owner asked for this directly.
-   **The only candidate is supplying the attribution block, which is a text element in the `system`
-   array of the BODY, not a header**, so it means parsing and re-serialising. *Scope is narrow:
-   rewrite only non-streamed Anthropic requests that lack the block — the ones failing today — so
-   streamed requests keep byte-relay and their prompt cache.* ***Do not build before item 3.***
-   **`cch` is computed per request and the gate is a class of which two members are known**, so it
-   may fail even if the block is the cause.
-5. **`BUG-001` upstream.** *Open since 2026-08-25 and now far stronger than it has ever been: a
-   paired control on one client build where the only variable is whether the client believes its
-   base URL is Anthropic's.* **Both issues are named in the file.**
-6. **Group D has never started** — where the headers durably live, still the milestone plan's
-   *"Phase 14's plan cannot skip the question"*. **Only the owner can overturn the `calls.csv`
-   non-goal.**
-7. **Everything the 2026-09-17 handoff listed is still open**: the corpus tools undriven by hand
-   *(partly discharged — `extract --format bodies` was driven, the history-viewer half was not)*,
-   `BKL-0017`, `EPD-001`, `EPD-002`, `BKL-0007`, and `git fetch origin`.
+**`logs/` is per-worktree and gitignored whole.** ***The 2026-09-18, `-19` and `-20` day folders
+exist only here*** — *`to-run-server/logs/` holds August and nothing of this phase.* **2026-09-18
+and the 12:31 slice of 2026-09-19 hold response blobs that are brotli INSIDE the zstd**, so
+`extract --format bodies` over those days hands a reader bytes; `reference/corpus.md` warns by name.
 
-## What changed in the repository itself, which a session will not expect
+*`evidence/attribution-block-anatomy.sh` reproduces every number in the wiki page's anatomy section —
+saved rather than run in a heredoc, which is the defect `c54f45c` was about.*
 
-- ***Three new config keys***, `experiments.*`, documented in `config.yaml` and its shipped
-  template. **`plan.md`'s register said "New config keys: None" and that row now records the
-  reversal and why.**
-- ***`backlog-index.py`'s order rule changed*** — **ids ascend within a SECTION, not across the
-  file.** *The old rule left exactly one legal position for any new item, the end of the last
-  section, which is "Not on this list, and why". **Nothing had ever been added** since Phase 13
-  numbered all 38 in one bulk pass, so nobody had met it.* **`IDM-011` carries the amendment.**
-- **`BKL-0039`** — a protocol matcher and an HTTP/2-capable inbound. *Parked with the reason:
-  uvicorn speaks only `h11`/`httptools`, so the matcher's second branch could never execute.*
-- **A gzip request-body defect was fixed.** *A first-party client compresses some bodies and the
-  model peek was reading them compressed.* **`decoded_for_peek` inflates a throwaway copy; the
-  original bytes are what get relayed and stored.**
+## What Group E has to do at the merge, and none of it is started
 
-## What is finished, so nothing is half-done
+**Tasks 16–19, in `plan.md`.** *16 removes the three failed experiments and the five tests plus
+`conftest` helper that serve them; 17 graduates or deletes the survivor and kills the `experiments`
+block — **and something at startup must still say the router modifies requests**, because whatever
+survives breaks byte-relay exactly as the experiments did; 18 promotes `tools/tls-terminator/` with
+`escape-the-hosts-file.py` beside it, renames `make run-hosts` to `run-in-the-middle`, and documents
+both in the root `README.md` as the FALLBACK; 19 is `branch-index.py`.*
 
-**The working tree is clean and every finding is committed.** ***Every check re-run at this
-handoff:*** **500 tests, 43/43 mutations, `make lint` clean at the pinned `0.16.1`,
-`backlog-index --check` at 35 live / 39 ids, `link-check.py` at 112.** ***`branch-index --check`
-is `STALE` and must not be fixed with `--write`*** — entry 4, and it is not this branch's doing.
+***Task 12 is amended: the upstream report is WITHDRAWN***, owner's decision. **The bug is that the
+router cannot carry Claude Code's non-streamed requests**, and a client-side cause does not make it
+somebody else's to fix. *Consequence, recorded with it: the `relay_accept_encoding` isolation test
+is not worth a session, so that switch's authorship of the second defect stays an **inference** and
+`BUG-001` must say so rather than assert it.*
 
-*Push state was deliberately not checked at this handoff, on the owner's instruction — as at the
-last two.*
+**Also open and none of it blocks:** *`BKL-0040` (the dropped `content-length`, a latent HTTP defect
+any client could meet), `BKL-0041`, Group D, the corpus tools undriven by hand, `BKL-0017`,
+`EPD-001`, `EPD-002`, `BKL-0007`, and `git fetch origin`.*
 
 ## The working agreement still applies
 
-`CLAUDE.md`, in full. Two were paid for again on 2026-09-19:
+`CLAUDE.md`, in full. Two were paid for again on 2026-09-20:
 
-**Exercise it before committing** — *and the version this phase has now paid for five times:*
-***a green check tells you the instrument works, never that it is aimed correctly.*** **A test
-written this session passed a mutation that deleted half the thing it was asserting**, and it was
-caught by the harness rather than by reading.
+**Exercise it before committing.** ***The mutation harness caught two things reading did not*** — a
+test that passed with its own guard deleted, and a branch no test could reach. *It also had to be
+fixed first: it could only break `proxy.py` and reported a clean run over a module it never touched,
+which is its own documented failure mode.*
 
 **Ask before inferring, and raise it rather than burying it.** ***The owner supplied the thing no
-log could***, twice: the transcripts that showed the classifier failing while the router's record
-said `200`, and the instinct to drive probes until one was **blocked**. → the memory note
-`ask-rather-than-infer-about-the-setup`.
+log could***, a third time: the env var that was switching off the block the whole time. → the
+memory note `ask-rather-than-infer-about-the-setup`.
+
+*Push state was deliberately not checked at this handoff, on the owner's instruction — as at the
+last three.*

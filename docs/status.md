@@ -10,38 +10,44 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-19 — Phase 14 is open and in flight on `feat/phase-14-rate-limit-headers`.** *Not merged.
-Work in `/Users/ilirium/Projects/local/ilirium_llm_router/phase-14-rate-limit-headers`.*
+**2026-09-20 — Phase 14 is open and in flight on `feat/phase-14-rate-limit-headers`.** *Not
+merged. Work in `/Users/ilirium/Projects/local/ilirium_llm_router/phase-14-rate-limit-headers`.*
 
-***The phase's question is answered: auto mode's safety classifier now works through the router.***
-*Chartered to record the Anthropic rate-limit headers; reshaped by the owner on the day it opened
-around the live symptom instead.*
+***THE PHASE'S CENTRAL FINDING IS IN DOUBT, AND THE CAUSE LOOKS LIKE THIS REPOSITORY'S OWN
+README.*** **`CLAUDE_CODE_ATTRIBUTION_HEADER=0` is in `README.md`'s documented command for pointing
+Claude Code at the router, since 2026-08-07** — *and the owner had been setting it on every run that
+also set `ANTHROPIC_BASE_URL`.* **It switches off the attribution block whose absence this phase
+spent three days attributing to a client-side gate.**
 
-***There were TWO defects, stacked, and the first hid the second.***
+***On 2026-09-20, base URL set and that variable dropped, the blocks were present and the classifier
+worked.*** **So the variable and the base URL were never separated**, and `ANTHROPIC_BASE_URL` may
+suppress nothing.
 
-| | Cause | State |
-|---|---|---|
-| **The `429`** | ***Client-side.*** Claude Code withholds things when `ANTHROPIC_BASE_URL` names any host but `api.anthropic.com` | **Worked around**, not fixed: the hosts route makes the client first-party while still routed. **The cause is not identified beyond the gate** |
-| **The classifier failing afterwards** | ***The router's own `accept-encoding` experiment*** — non-streamed replies came back compressed | ***Fixed.*** Off by default, pinned off in every committed config |
+| Day | Base URL | The env var | Blocks | Non-streamed |
+|---|---|---|---|---|
+| 09-18 | set | ***`=0`*** | **none** | **119 × 429** |
+| 09-19 | unset, hosts route | not used | 97 | all ok |
+| **09-20** | **set** | ***dropped*** | **19** | classifier ok |
 
-**The proof is a *positive* verdict, not an absence of failures.** *The owner drove ten probes
-shaped to look dangerous and be harmless; eight were allowed and the pipe-to-bash one was
-**blocked**, and the block is in the router's own record.* ***That is what `BUG-000` asks for and
-what every earlier attempt lacked.***
+***`BUG-001` and `wiki/claude-code-first-party-gate.md` carry banners and are NOT rewritten*** —
+the confirming run is a two-minute paired A/B and only the owner can drive it.
+**`for-the-owner.md` entry 22 is the runbook and the one open question.** ***`README.md` is
+deliberately untouched*** until that run answers.
 
-***Fifteen hypotheses are eliminated by measurement.*** **The router is cleared of causing the
-429** — same process, egress and TLS fingerprint on the day it failed and the day it worked.
+***Group C4 is built and has never been exercised.*** **The injection fired zero times on
+2026-09-20** — every request it could have helped already carried a block. *If the A/B confirms the
+env var, C4 is deleted rather than shipped: a router that needs no code to fix this is the better
+outcome.*
 
-***What `src/` looks like now, and it is different from yesterday:*** **the three experiments are
-config keys, all `false`.** *`experiments.relay_accept_encoding`, `.http2_upstream`,
-`.imitate_attribution_headers`.* **`check` prints `EXPERIMENTS ON` and names any that are not.**
-*A gzip request-body defect was fixed the same day; a first-party client compresses some bodies and
-the model peek was reading them compressed.*
+**What survives regardless:** *the second defect was real and was ours (`relay_accept_encoding`
+served brotli to a client that could not take it); the gzip request-body `400` was a genuine defect;
+and the block ↔ 429 correlation holds across all three days — only the reason for the block's
+absence is in question.*
 
-**Numbers live in `reference/measurements.md`**, mechanism in
+**Numbers live in `reference/measurements.md`**, the block's measured anatomy in
 `wiki/claude-code-first-party-gate.md`, the defect in `bugs/BUG-001-…`, and the phase's own record
-in `milestone-2-corpus/phase-14-rate-limit-headers/`. ***`for-the-owner.md` entries 17–20 are the
-live ones.***
+in `milestone-2-corpus/phase-14-rate-limit-headers/`. ***`for-the-owner.md` entries 21 and 22 are
+the live ones.***
 
 ## Where the project is
 
@@ -195,6 +201,12 @@ reason, which is exactly why the number does not belong in prose.*
 | `logs/corpus/retrain.log` | Three verdicts: `no-complete-day`, then `too-few-samples`, then **`installed`** |
 | `logs/telemetry/calls.csv`, `router.log` | **Exists.** This section said *"does not exist yet"* until 2026-08-25; the router created it on 2026-08-21 |
 
+**`phase-14-rate-limit-headers/logs/` — this phase's, and the only place the 2026-09-18, `-19` and
+`-20` corpora exist.** *`to-run-server/logs/` holds only the August days; a session looking for
+Phase 14's traffic in the live tree will not find it.* **`2026-09-18` and the 12:31 slice of
+`2026-09-19` hold response blobs that are brotli INSIDE the zstd** — `reference/corpus.md` warns
+about it by name, and `extract --format bodies` over those days hands a reader bytes.
+
 **`main/logs/` — historical, 260 KB of corpus plus Phase 9's**
 
 | Path | What it is |
@@ -246,9 +258,15 @@ permanent record of a phase's branch, fork point and merge commit is still its p
 `BUG-001`'s live symptom**: Claude Code's auto mode cannot run its safety classifier through the
 router, because the classifier's request is non-streamed and comes back `429`.
 
-***Groups A, B, C and C3 are done. Group C2 — thirteen eliminated hypotheses — was not planned and
-happened anyway. Group D has not started.*** *Where the headers durably live is still the milestone
-plan's "cannot skip the question", still deferred, and still the owner's.*
+***Groups A, B, C, C3 and C4 are done. Group C2 — thirteen eliminated hypotheses — was not planned
+and happened anyway. Group D has not started.*** *Where the headers durably live is still the
+milestone plan's "cannot skip the question", still deferred, and still the owner's.*
+
+***Group C4 was added 2026-09-20: the router supplies the attribution block the client was not
+sending.*** **Built, tested, and never exercised** — *the 2026-09-20 run found the block already
+present and the injection declined every request.* **Group E gained tasks 16–19** — remove the
+failed experiments, graduate or delete the survivor, promote the hosts-route tools, and fix
+`branch-index.py` before task 15 needs it.
 
 ***C3 answered the phase's question on 2026-09-19.*** **Under the hosts route the classifier
 succeeds through the router** — 9 of 9 — **and the paired control clears the router entirely.**

@@ -200,6 +200,13 @@ and a new top-level letter would have to run before it**, which is the thing the
 prevent. *Tasks carry letter suffixes for the same reason C2's and C3's do: they were not numbered
 in advance.*
 
+***AMENDED 2026-09-20, and the group may not survive it.*** **The block was not being withheld by a
+client-side gate: `CLAUDE_CODE_ATTRIBUTION_HEADER=0` was switching it off**, from this repository's
+own `README.md`, on every run that set the base URL. *If C4g confirms it, **everything in this group
+is deleted** — the module, the config key, the byte-relay exception and its ten tests.* **A router
+that needs no code to fix this is the better outcome**, and the group is left standing only until
+the run answers.
+
 ***The goal is the product, not the diagnosis.*** **Owner's decision 2026-09-20: the router is to
 work with `ANTHROPIC_BASE_URL` set**, which is how a person points a client at a proxy, and the
 hosts route is a machine-wide edit that no user should need. *The subtractive test `BUG-001` asks
@@ -212,8 +219,9 @@ question from the other side and leaves a working router if it succeeds.*
 | **C4b** | **`experiments.add_claude_code_hidden_attribution_block`**, `false` by default, named by `check` like the other three |
 | **C4c** | ***Inject on non-streamed Anthropic requests that LACK the block, and on nothing else.*** *Streamed requests keep byte-relay and their prompt cache untouched; a request that already carries one is never touched* |
 | **C4d** | Tests, **exercised by mutation** — `CLAUDE.md`, and this phase has now shipped five checks aimed at something other than what they claimed |
-| **C4e** | ***Drive a session — the owner's, and it cannot be run by a session.*** **Condition A: no `cch`.** *Condition B, only if A fails: a `cch` as well.* **`BUG-000` applies — the run needs a probe that is genuinely BLOCKED**, not an absence of failures |
-| **C4f** | Record the result in `notes.md` and `for-the-owner.md`, and say which condition answered it |
+| **C4e** | ***RAN 2026-09-20 AND TESTED NOTHING.*** **The injection fired zero times** — every request it could have helped already carried a block, because the client was sending its own. *Condition A was never reached.* **Nine classifier calls, all stage 1, ceiling severity 25, no stage 2 and no `<block>`** — *`BUG-000`'s trap, and entry 21 named it in advance* |
+| **C4f** | ***Done.*** *The result recorded, and the cause of the whole phase with it* |
+| ***C4g*** | ***THE A/B THAT SETTLES IT — the owner's, and not yet run.*** **`CLAUDE_CODE_ATTRIBUTION_HEADER=0` is in this repository's `README.md` and was set on every base-URL run.** *A with it, B without, base URL set both times, the injection off.* **429s return in A → the cause is named and Group C4 is DELETED rather than shipped.** → entry 22 |
 
 #### What goes in the block, and what deliberately does not
 

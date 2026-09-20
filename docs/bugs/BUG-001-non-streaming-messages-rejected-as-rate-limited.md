@@ -1,5 +1,19 @@
 # BUG-001 — Non-streamed `/v1/messages` rejected as rate-limited
 
+> ***IN DOUBT AS OF 2026-09-20, AND THE REASON IS OURS.*** **The claim below — that Claude Code
+> withholds its attribution block when `ANTHROPIC_BASE_URL` names a non-Anthropic host — rests on
+> runs in which the operator was ALSO setting `CLAUDE_CODE_ATTRIBUTION_HEADER=0`**, because this
+> repository's own `README.md` has told him to since 2026-08-07. *On 2026-09-20, with the base URL
+> set and that variable dropped, **the blocks were present and the classifier worked**.*
+>
+> **So the two were never separated**, and `ANTHROPIC_BASE_URL` may suppress nothing at all. *The
+> block ↔ 429 correlation is untouched; what is in doubt is only why the block was absent.*
+>
+> ***Not rewritten, deliberately.*** **The confirming run is a paired A/B the owner can drive in two
+> minutes** — `for-the-owner.md` entry 22 — *and replacing one unverified conclusion with another is
+> the move that already cost this document three retractions.*
+
+
 **Status: open, with a working workaround and the cause narrowed to the client.**
 **Last reproduced 2026-09-18; NOT reproduced 2026-09-19 under the hosts route** — both on Claude
 Code **2.1.267**.
