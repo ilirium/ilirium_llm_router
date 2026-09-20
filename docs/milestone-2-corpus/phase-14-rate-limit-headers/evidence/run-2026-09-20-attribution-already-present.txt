@@ -1,0 +1,74 @@
+The 2026-09-20 run — the one that tested nothing and found the cause
+====================================================================
+
+Frozen 2026-09-20 from `logs/telemetry/`, which is gitignored and per-worktree: a measurement that
+lives only there discharges nothing, and this phase's own Task 8 says so.
+
+Driven by the owner, 15:57-15:59 UTC, Claude Code 2.1.267, `config-attribution.yaml`
+(`experiments.add_claude_code_hidden_attribution_block: true`, corpus on).
+
+REDACTED: session ids are kept because they tie rows to corpus folders; the quota probe's body is
+reproduced with its device_id and account_uuid removed, since neither is needed to read the result.
+
+WHAT IT SHOWS
+  - The injection fired ZERO times. Every request it could have helped already carried a block.
+  - The blocks are the CLIENT'S: per-call-site suffixes (.608 classifier, .d18 conversation,
+    .daa haiku), where the injection hardcodes .608 for everything.
+  - They carry NO cch -- unlike 2026-09-19's 97 blocks, which all did.
+  - Nine classifier calls, all stage 1, ceiling severity 25. No stage 2, no <block> verdict.
+  - The two 429s are the quota probe, which has no `system` field and so can carry no block.
+
+WHY IT MATTERS: `CLAUDE_CODE_ATTRIBUTION_HEADER=0` is in this repository's own README.md and was
+set on every earlier base-URL run. See notes.md and for-the-owner.md entry 22.
+
+--- router.log: every attribution decision ---
+2026-09-20T15:57:01.817+00:00  attribution block NOT added to /v1/messages: the body carries no 'system' field
+2026-09-20T15:57:21.930+00:00  attribution block NOT added to /v1/messages: the body already carries an attribution block
+2026-09-20T15:57:28.526+00:00  attribution block NOT added to /v1/messages: the body already carries an attribution block
+2026-09-20T15:57:30.837+00:00  attribution block NOT added to /v1/messages: the body already carries an attribution block
+2026-09-20T15:57:38.306+00:00  attribution block NOT added to /v1/messages: the body already carries an attribution block
+2026-09-20T15:57:45.151+00:00  attribution block NOT added to /v1/messages: the body already carries an attribution block
+2026-09-20T15:57:49.367+00:00  attribution block NOT added to /v1/messages: the body already carries an attribution block
+2026-09-20T15:57:53.903+00:00  attribution block NOT added to /v1/messages: the body already carries an attribution block
+2026-09-20T15:57:58.745+00:00  attribution block NOT added to /v1/messages: the body already carries an attribution block
+2026-09-20T15:58:03.860+00:00  attribution block NOT added to /v1/messages: the body already carries an attribution block
+2026-09-20T15:59:00.881+00:00  attribution block NOT added to /v1/messages: the body carries no 'system' field
+
+--- calls.csv: all 24 rows, 2026-09-20 ---
+timestamp,session_id,agent_id,backend,model,path,stream,input_tokens,output_tokens,cache_read_input_tokens,cache_creation_input_tokens,stop_reason,request_bytes,response_bytes,ttfb_ms,duration_ms,error_status,error_code,error_message,router_version
+2026-09-20T15:57:01.245+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,267,ok,,,0.1.0
+2026-09-20T15:57:01.816+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,431,434,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-20T15:57:14.682+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,1175,19,0,0,end_turn,4145,1967,1988,2946,ok,,,0.1.0
+2026-09-20T15:57:14.686+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,534,0,73129,tool_use,206123,13923,1483,6943,ok,,,0.1.0
+2026-09-20T15:57:21.926+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42081,298,stop_sequence,128190,585,2438,2442,ok,,,0.1.0
+2026-09-20T15:57:24.485+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,438,73129,4248,tool_use,217260,13632,832,4931,ok,,,0.1.0
+2026-09-20T15:57:28.523+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42379,123,stop_sequence,128448,585,1682,1685,ok,,,0.1.0
+2026-09-20T15:57:30.831+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42502,81,stop_sequence,128634,583,1660,1663,ok,,,0.1.0
+2026-09-20T15:57:32.879+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,391,77377,921,tool_use,219621,9379,1052,5121,ok,,,0.1.0
+2026-09-20T15:57:38.303+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42583,136,stop_sequence,128888,585,1483,1485,ok,,,0.1.0
+2026-09-20T15:57:39.867+00:00,,,anthropic,,/,,,,,,,0,132,30,31,http_error,404,,0.1.0
+2026-09-20T15:57:40.267+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,342,78298,510,tool_use,221508,8127,907,4536,ok,,,0.1.0
+2026-09-20T15:57:45.150+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42719,101,stop_sequence,129099,585,1794,1799,ok,,,0.1.0
+2026-09-20T15:57:47.008+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,141,78808,359,tool_use,223095,5331,905,2057,ok,,,0.1.0
+2026-09-20T15:57:49.364+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42820,80,stop_sequence,129252,583,1744,1745,ok,,,0.1.0
+2026-09-20T15:57:51.474+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,160,79167,319,tool_use,223845,6348,884,2107,ok,,,0.1.0
+2026-09-20T15:57:53.900+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42900,101,stop_sequence,129468,585,2041,2044,ok,,,0.1.0
+2026-09-20T15:57:56.018+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,175,79486,194,tool_use,224356,7285,935,2431,ok,,,0.1.0
+2026-09-20T15:57:58.742+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,43001,113,stop_sequence,129725,585,1613,1616,ok,,,0.1.0
+2026-09-20T15:58:00.738+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,193,79680,398,tool_use,225299,7520,859,2789,ok,,,0.1.0
+2026-09-20T15:58:03.858+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,43114,97,stop_sequence,129933,583,1640,1642,ok,,,0.1.0
+2026-09-20T15:58:05.853+00:00,20260920-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,741,80078,2026,end_turn,229295,17054,1022,9057,ok,,,0.1.0
+2026-09-20T15:59:00.368+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,241,ok,,,0.1.0
+2026-09-20T15:59:00.881+00:00,20260920-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,477,478,http_error,429,rate_limit_error: Error,0.1.0
+
+--- the attribution blocks that ARRIVED (from the corpus; cch would show if present) ---
+   9 x-anthropic-billing-header: cc_version=2.1.267.608; cc_entrypoint=cli;
+   9 x-anthropic-billing-header: cc_version=2.1.267.d18; cc_entrypoint=cli;
+   1 x-anthropic-billing-header: cc_version=2.1.267.daa; cc_entrypoint=cli;
+
+--- the nine classifier verdicts (</severity> is the stop sequence, so the text is truncated) ---
+      7  claude-sonnet-5  <severity>15   stop_sequence=</severity>
+      2  claude-sonnet-5  <severity>25   stop_sequence=</severity>
+
+--- the rejected request, redacted: the quota probe, no 'system' field ---
+{"model":"claude-opus-5","max_tokens":1,"messages":[{"role":"user","content":"quota"}],"metadata":{"user_id":"{\"device_id\":\"<redacted>\",\"account_uuid\":\"<redacted>\",\"session_id\":\"20260920-1-...\"}"}}

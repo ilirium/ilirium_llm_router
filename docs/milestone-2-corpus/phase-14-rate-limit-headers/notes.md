@@ -1634,7 +1634,9 @@ built — two fields, no `cch`.** *`BUG-000` applies: the run needs a probe that
 ## C4e ran, tested nothing, and found the cause of three days' work in this repository's own README
 
 ***Run by the owner 2026-09-20, 15:57–15:59 UTC, Claude Code 2.1.267, `config-attribution.yaml`.***
-**24 calls. The injection fired ZERO times.**
+**24 calls. The injection fired ZERO times.** *Frozen, redacted, in
+`evidence/run-2026-09-20-attribution-already-present.txt` — **`logs/` is gitignored and
+per-worktree**, and Task 8's rule is that a measurement living only there discharges nothing.*
 
     0 × "attribution block added"
     9 × NOT added: the body already carries an attribution block
