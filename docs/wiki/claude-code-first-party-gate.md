@@ -56,8 +56,46 @@ header, so:
 - **A header capture will not find it**, and its absence there means *wrong channel*, not *withheld*
 - **A proxy cannot add it without rewriting the request body**, which breaks byte-relay and any
   prompt-cache prefix that matches on exact bytes
-- `cc_entrypoint` varies by how the client was started — **`cli` interactively, `sdk-cli` under
-  `-p`** — and `cch` **differs per request**, so it is computed rather than a constant
+- **The block has five known fields, not three**, and `cch` is *not* per request — see the anatomy
+  below, which is measured rather than read
+
+### The anatomy, measured over 99 blocks
+
+***Every claim in this subsection comes from the corpus***, not from reading the client: 97 blocks
+captured 2026-09-19 under the hosts route, and the 2 that a `-p` run sent on 2026-09-18 with
+`ANTHROPIC_BASE_URL` set. **Client build 2.1.267 throughout.**
+
+| Field | Seen on | What it is |
+|---|---|---|
+| `cc_version` | **99 / 99** | `2.1.267.<3 hex>` — **the suffix is not a build number**; see below |
+| `cc_entrypoint` | **99 / 99** | **`cli`** interactively (97), **`sdk-cli`** under `-p` (2) |
+| `cch` | **97 / 97** interactive, ***0 / 2*** under `-p` | 5 hex characters. **74 distinct values across 97 blocks** |
+| `cc_prompt_id` | 55 / 97 | a UUID |
+| `cc_prev_req` | 44 / 97 | the previous reply's `req_011C…` id, chaining a turn to its predecessor |
+
+***So the block has at least two shapes.*** **The `-p` form carries `cc_version` and
+`cc_entrypoint` and nothing else** — no `cch` at all — *which matters to anyone reconstructing it:
+the two-field form is one the client itself sends, not an invention.*
+
+***`cch` is per conversation turn, not per request.*** **The classifier is two-staged and both
+stages share one value** — 2026-09-19 session `20260919-1`, requests `00007` (`claude-sonnet-5`) and
+`00008` (`claude-opus-5`), both stage 1, both `cch=f65f6`. *This page said "differs per request"
+until 2026-09-20; that was read off a sample of nine and is corrected here.*
+
+***The `cc_version` suffix identifies the call site, not the build.*** **One install, one build, one
+day, five values** — so nothing in the client's own `user-agent` (`claude-cli/2.1.267`, three
+components) can produce it:
+
+| Suffix | Count | Every request carrying it |
+|---|---|---|
+| ***`.608`*** | **25** | ***the auto-mode safety classifier***, both stages — 18 sonnet, 7 opus |
+| `.d18` | 45 | the main conversation — `claude-opus-5` and `claude-opus-4-8` |
+| `.daa` | 14 | `claude-haiku-4-5-20251001`, the auxiliary calls |
+| `.682` | 13 | `claude-opus-5`, not the classifier |
+| `.0a3` | 2 | the `-p` probes, and the only ones with `cc_entrypoint=sdk-cli` |
+
+**The mapping is clean on this evidence and it is still one client build on two days.** *Treat it as
+what was observed, not as the client's scheme.*
 
 ## A first-party client gzips some request bodies
 

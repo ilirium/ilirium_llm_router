@@ -1453,3 +1453,70 @@ forbidding.* **Not built; `CLAUDE.md` says propose first.**
 ***The second one was ours.*** *It ran for a day, was called "exonerated" in `for-the-owner.md`
 entry 7 on the strength of a negative for the 429, and was only visible once the 429 stopped
 masking it.* **A negative result for one symptom is not a clearance for the component.**
+
+## The attribution block has five fields, and the one that looked like a version is a call site
+
+***Asked by the owner before any code was written, and answered from material already on disk***:
+two corpus days, no session driven, no request sent. **Instrument:
+`evidence/attribution-block-anatomy.sh`**, saved rather than run in a heredoc — *the defect of
+`c54f45c`, not repeated.*
+
+**99 blocks: 97 from 2026-09-19 under the hosts route, 2 from 2026-09-18 with `ANTHROPIC_BASE_URL`
+set.** *The contrast is the measurement — on 2026-09-18 the client withheld the block from
+everything except its two `-p` probes.*
+
+### What the block carries
+
+| Field | Seen on | |
+|---|---|---|
+| `cc_version` | 99 / 99 | `2.1.267.<3 hex>` |
+| `cc_entrypoint` | 99 / 99 | **`cli`** interactive (97), **`sdk-cli`** under `-p` (2) |
+| `cch` | 97 / 97 interactive, ***0 / 2*** under `-p` | 5 hex, **74 distinct across 97** |
+| `cc_prompt_id` | 55 / 97 | a UUID |
+| `cc_prev_req` | 44 / 97 | the previous reply's `req_011C…` id |
+
+***Two of those were unknown to this repository before today.*** **`cc_prompt_id` and `cc_prev_req`
+are named in no document, no note and no evidence file** — the phase read the block as three fields
+because nine samples was all anyone had looked at.
+
+### Two corrections to what was already written down
+
+***`wiki/claude-code-first-party-gate.md` said `cch` "differs per request". It does not.*** **It is
+per conversation turn.** *The classifier is two-staged and both stages share one value* — session
+`20260919-1`, requests `00007` (`claude-sonnet-5`) and `00008` (`claude-opus-5`), both stage 1, both
+`cch=f65f6`. **And it is not a classifier property**: session `20260919-4`, requests `00009` and
+`00010`, `claude-opus-5` and `claude-opus-4-8`, neither a classification, sharing `cch=4d681`.
+
+***And `cch` is not universal.*** **The two `-p` blocks carry none at all**, so the two-field form is
+a shape the client itself sends. *Anyone reconstructing the block without a `cch` is reproducing an
+observed shape rather than inventing one — which is what makes the cheap version of the injection
+defensible.*
+
+### The suffix is not a build number, and this is the load-bearing finding
+
+***One install, one build, one day, five values.*** **The suffix tracks the call site:**
+
+| Suffix | | |
+|---|---|---|
+| ***`.608`*** | **25** | ***every auto-mode safety classifier request, both stages*** — 18 sonnet, 7 opus, and nothing else |
+| `.d18` | 45 | the main conversation — `claude-opus-5`, `claude-opus-4-8` |
+| `.daa` | 14 | `claude-haiku-4-5-20251001`, the auxiliary calls |
+| `.682` | 13 | `claude-opus-5`, not the classifier |
+| `.0a3` | 2 | the `-p` probes, and the only `sdk-cli` ones |
+
+***This kills deriving the version from the `user-agent`, which two sessions of this phase proposed
+and I put in writing twice.*** **The header is `claude-cli/2.1.267 (external, cli)` — three
+components.** *The block wants four, and the fourth is in no header, no body field and no
+handshake.* **It can only be hardcoded or configured**, and the owner has chosen hardcoded.
+
+***The mapping is clean and it is one build on two days.*** *Recorded as what was observed, never as
+the client's scheme — the distinction entries 5, 12, 13 and 20 were each written for.*
+
+### What it means for the injection
+
+**The requests that need the block are the non-streamed ones the client strips it from — today the
+classifier and the haiku auxiliaries.** *Those two want **different** suffixes, `.608` and `.daa`.*
+***A single hardcoded value is therefore knowingly wrong for one of them***, and the choice is
+between that and a model-to-suffix table inferred from a single day. **The table would look like
+knowledge and be a guess**, so the hardcoded value is the honest one, and the docstring has to say
+which requests it mislabels.
