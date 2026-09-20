@@ -28,6 +28,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[4]
 PROXY = ROOT / "src" / "ilirium_llm_router" / "proxy.py"
+ANTHROPIC = ROOT / "src" / "ilirium_llm_router" / "backend_anthropic.py"
 TESTS = "tests/test_proxy.py"
 
 
@@ -40,6 +41,10 @@ class Mutation:
     new: str
     expect_failing: str
     why: str
+    # Which file to break. **Added 2026-09-20 with Group C4**, which put the block's construction in
+    # `backend_anthropic.py`: a harness hardcoded to one file reports a clean run over code it never
+    # touched, and that is this script's own documented failure mode rather than a new one.
+    file: Path = PROXY
 
 
 MUTATIONS = [
@@ -384,6 +389,80 @@ MUTATIONS = [
         why="separating chunked from compressed is `prompt.md` open item 2 and must be a deliberate "
         "change to that test, never a silent one",
     ),
+    # --- Group C4: the attribution block, added 2026-09-20 -------------------------------------
+    #
+    # Nine tests went in with it and every one of them asserts an ABSENCE for some input -- byte
+    # equality, or a field that must not appear. **An absence is the easiest thing in this
+    # repository to assert vacuously**, which is why each mutation below makes the router do the
+    # thing the test says it must not.
+    Mutation(
+        name="the block is appended last instead of first",
+        old='    payload["system"] = [{"type": "text", "text": attribution_block()}, *system]',
+        new='    payload["system"] = [*system, {"type": "text", "text": attribution_block()}]',
+        expect_failing="test_the_attribution_block_is_added_as_the_first_system_element",
+        why="first is where the client puts it, and a block appended last is a different request",
+        file=ANTHROPIC,
+    ),
+    Mutation(
+        name="a cch is invented",
+        old='    return f"{ATTRIBUTION_PREFIX}cc_version={CC_VERSION}; cc_entrypoint={CC_ENTRYPOINT};"',
+        new='    return f"{ATTRIBUTION_PREFIX}cc_version={CC_VERSION}; cc_entrypoint={CC_ENTRYPOINT}; cch=f65f6;"',
+        expect_failing="test_the_injected_block_carries_no_cch_and_no_chaining_fields",
+        why="a hardcoded cch repeats on every request, which no real client does",
+        file=ANTHROPIC,
+    ),
+    Mutation(
+        name="an existing block is no longer noticed",
+        old="    return any(",
+        new="    return False and any(",
+        expect_failing="test_a_body_that_already_carries_a_block_is_left_alone",
+        why="a first-party request would be sent carrying two contradictory blocks",
+        file=ANTHROPIC,
+    ),
+    Mutation(
+        name="the prefix match becomes an equality match",
+        old='        and element["text"].startswith(ATTRIBUTION_PREFIX)',
+        new='        and element["text"] == ATTRIBUTION_PREFIX',
+        expect_failing="test_a_body_that_already_carries_a_block_is_left_alone",
+        why="a real block carries cch, so equality finds nothing and injects a second one",
+        file=ANTHROPIC,
+    ),
+    Mutation(
+        name="a string `system` is rewritten into an array anyway",
+        old='        return None, "the body\'s \'system\' is not an array, so there is nowhere to put a block"',
+        new='        system = []',
+        expect_failing="test_a_string_system_is_left_alone_rather_than_converted",
+        why="turning a string into an array is a larger change to a body than this may make",
+        file=ANTHROPIC,
+    ),
+    Mutation(
+        name="streamed requests are rewritten too",
+        old="            and call.stream is False",
+        new="            and call.stream is not None",
+        expect_failing="test_a_streamed_request_is_never_rewritten",
+        why="every main-conversation turn would miss the prompt cache, for no benefit",
+    ),
+    Mutation(
+        name="the local backend gets one as well",
+        old='            and name == "anthropic"',
+        new="            and True",
+        expect_failing="test_the_local_backend_never_receives_an_attribution_block",
+        why="LM Studio would be handed client details it has no use for",
+    ),
+    Mutation(
+        name="a compressed body is rewritten",
+        old='            if encoding != "identity":',
+        new="            if False:",
+        expect_failing="test_a_compressed_body_is_declined_for_being_compressed_not_unreadable",
+        why="a compressed body would be reported as unreadable, which is the 2026-09-19 misdiagnosis",
+    ),
+    Mutation(
+        name="the switch is on by default",
+        old="            self.config.experiments.add_claude_code_hidden_attribution_block",
+        new="            True",
+        expect_failing="test_a_non_streamed_request_keeps_its_body_byte_for_byte_by_default",
+        why="byte-relay is what the router IS; the exception has to be asked for",
+    ),
 ]
 
 
@@ -399,7 +478,7 @@ def run_tests(selector: str) -> bool:
 
 
 def main() -> int:
-    original = PROXY.read_text()
+    originals = {path: path.read_text() for path in (PROXY, ANTHROPIC)}
 
     if not run_tests("test_a_failed_reply_logs_the_allowlisted_headers_with_their_values"):
         print("BASELINE FAILED — the tests do not pass unmutated. Nothing below means anything.")
@@ -412,26 +491,28 @@ def main() -> int:
         print(f"   why it matters: {mutation.why}")
 
         # FACT ONE, reported on its own: did the edit actually land?
+        original = originals[mutation.file]
         occurrences = original.count(mutation.old)
         if occurrences != 1:
             print(f"   mutation applied: NO — matched {occurrences} times, expected exactly 1")
             print("   RESULT: FAIL (this script is broken, not the test set)\n")
             failures += 1
             continue
-        PROXY.write_text(original.replace(mutation.old, mutation.new))
-        print("   mutation applied: yes")
+        mutation.file.write_text(original.replace(mutation.old, mutation.new))
+        print(f"   mutation applied: yes  ({mutation.file.name})")
 
         # FACT TWO, reported separately: did the test set notice?
         try:
             noticed = not run_tests(mutation.expect_failing)
         finally:
-            PROXY.write_text(original)
+            mutation.file.write_text(original)
 
         print(f"   check failed: {'yes' if noticed else 'NO'}  ({mutation.expect_failing})")
         print(f"   RESULT: {'pass' if noticed else 'FAIL — the test is vacuous'}\n")
         failures += 0 if noticed else 1
 
-    assert PROXY.read_text() == original, "proxy.py was not restored"
+    for path, text in originals.items():
+        assert path.read_text() == text, f"{path.name} was not restored"
     print(f"{len(MUTATIONS) - failures}/{len(MUTATIONS)} mutations were caught.")
     return 1 if failures else 0
 

@@ -1586,3 +1586,47 @@ digging the owner has ruled out, for a payoff that is a guess either way.*
 
 ***So the contingency is: one field truthfully, one minted, one impossible.*** **If that day comes,
 the honest move is to reconsider whether the approach is still viable — not to add a fourth guess.**
+
+## Group C4 is built, and the mutation harness earned its keep twice
+
+**`backend_anthropic.py`, one config key, nine lines of gate in `relay`, ten tests.** *510 tests,
+52/52 mutations, lint clean at the pinned `0.16.1`, `link-check` back to 112 — the two forward
+references resolved when the module landed.*
+
+***The harness found two things reading would not have.*** *Both were caught because a mutation
+walked straight through a green test, which is the one failure mode `CLAUDE.md` says green tests
+cannot report on themselves.*
+
+### One: a test that asserted an absence for the wrong reason
+
+***`test_a_compressed_body_is_relayed_untouched_rather_than_rewritten` passed with its own guard
+deleted.*** **Gzip bytes are not JSON**, so `with_attribution` refused the body anyway and the
+request went out untouched either way. *The test was measuring the JSON parser and reporting it as
+coverage of the encoding check.*
+
+***And the fix is a design change rather than a better assertion.*** **The encoding check now sits
+inside the branch instead of in its condition**, so a declined request says **why** — *"the body
+arrived gzip-encoded"* rather than *"the body is not readable JSON"*. **The second is false: a
+compressed body is perfectly readable.** *That is the exact misdiagnosis that once sent a session
+hunting for a `model` field that was there, compressed, and `decoded_for_peek` exists because of
+it.* ***The test now asserts the reason***, which is what makes the check load-bearing.
+
+### Two: a branch no test could reach
+
+***A mutation rewriting a string `system` into `[]` survived.*** **The suite tested a body with no
+`system` field and never one where `system` is a string** — two different branches, and only the
+first had a test. *The API accepts both shapes.* **Split into two tests.**
+
+### And the harness itself had to be fixed first
+
+***It could only break `proxy.py`.*** **Half of this group lives in a new module**, so the first run
+reported a clean pass over code it never touched — ***which is this script's own documented failure
+mode***, the one it opens by warning about. **`Mutation.file` was added.** *A third mutation then
+reported `matched 0 times` rather than a pass, because the indentation in its `old` string was
+wrong — the harness working exactly as designed.*
+
+### What is left, and it is the owner's
+
+***`C4e`: one session, `ANTHROPIC_BASE_URL` set, the experiment on.*** **Condition A is what is
+built — two fields, no `cch`.** *`BUG-000` applies: the run needs a probe that is genuinely
+**blocked**, not an absence of failures.*

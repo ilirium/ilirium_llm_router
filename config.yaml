@@ -110,3 +110,13 @@ experiments:
   # Worst with a first-party client, which sends its own genuine attribution -- the request then
   # carries both and they disagree.
   imitate_attribution_headers: false
+  # Put back the attribution block Claude Code withholds when ANTHROPIC_BASE_URL names any host but
+  # api.anthropic.com -- the reason every non-streamed /v1/messages comes back 429 and auto mode's
+  # safety classifier cannot run through a proxy. Turn this on if the classifier reports itself
+  # unavailable. THE ONE DELIBERATE EXCEPTION TO BYTE-RELAY: a request it applies to is parsed,
+  # given one more element in its `system` array, and re-serialised, so its prompt-cache prefix
+  # changes. Narrowed to the Anthropic backend, non-streamed, uncompressed, and bodies that do not
+  # already carry a block -- streamed requests were never refused and keep byte-relay untouched.
+  # Two hardcoded fields and three deliberate omissions: see backend_anthropic.py, and
+  # docs/bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md.
+  add_claude_code_hidden_attribution_block: false

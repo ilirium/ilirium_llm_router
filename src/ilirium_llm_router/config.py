@@ -266,6 +266,34 @@ class Experiments(Strict):
     only so the negative result stays reproducible.**
     """
 
+    add_claude_code_hidden_attribution_block: bool = False
+    """Put back the attribution block Claude Code withholds when `ANTHROPIC_BASE_URL` is set.
+
+    ***This is the only one of these that is meant to WORK rather than to be eliminated.*** The
+    other three are experiments whose negative results are their value; this one is a candidate fix
+    for `BUG-001`, and if it succeeds it leaves `experiments` and becomes the Anthropic backend's own
+    setting.
+
+    **It is the one deliberate exception to byte-relay in this router.** *A request it applies to is
+    parsed, given one more element in its `system` array, and re-serialised* — so the bytes the
+    backend receives are not the bytes that arrived, and **the prompt-cache prefix for that request
+    changes**. Four conditions keep that as narrow as it can be:
+
+    - the **Anthropic** backend, since the block means nothing to LM Studio
+    - **non-streamed** only — *streamed requests were never refused (0 of 16, 0 of 230, 0 of 145 on
+      the measured days), they are the large ones, and they are where prompt caching earns its keep*
+    - an **uncompressed** body, because rewriting a compressed one means re-compressing it and a
+      wrong guess about a format is indistinguishable from a corrupt body
+    - a body that **does not already carry a block** — a first-party client sends its own
+
+    ***What goes in it is two hardcoded fields and three deliberate omissions***, all measured; the
+    reasoning lives in `backend_anthropic.py` next to the constants, where a reader meets it before
+    the code that uses them.
+
+    **`check` names it like the others**, and a startup that says nothing about it is a router
+    relaying bytes unchanged.
+    """
+
 
 class Config(Strict):
     backends: Backends

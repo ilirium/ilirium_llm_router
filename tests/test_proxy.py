@@ -7,6 +7,7 @@ bytes and headers it carried when it got there.
 
 from __future__ import annotations
 
+import gzip
 import json
 import logging
 import uuid
@@ -1255,3 +1256,211 @@ def test_a_relayed_reply_carries_no_content_length() -> None:
         reply = client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
 
     assert "content-length" not in reply.headers
+
+
+# --- The attribution block: the one deliberate exception to byte-relay ---------------------------
+#
+# `CLAUDE_BODY` carries no `system` array, so these use their own body. That is deliberate: a body
+# without one is itself a case below, and reusing the shared constant would hide which fact a
+# failure belongs to.
+
+CLASSIFIER_BODY = (
+    b'{"model":"claude-sonnet-5","max_tokens":64,'
+    b'"system":[{"type":"text","text":"You are a security monitor."}],'
+    b'"messages":[{"role":"user","content":"printenv"}]}'
+)
+
+# A real block as the client sends it -- WITH `cch`, which the router's own never carries. This is
+# what makes prefix-matching load-bearing rather than a nicety.
+REAL_BLOCK = "x-anthropic-billing-header: cc_version=2.1.267.608; cc_entrypoint=cli; cch=f65f6;"
+
+
+def _system_of(request: httpx.Request) -> list[dict[str, str]]:
+    return json.loads(request.content)["system"]
+
+
+def test_a_non_streamed_request_keeps_its_body_byte_for_byte_by_default() -> None:
+    """***The shipped behaviour.*** A test that does not name the experiment tests what ships.
+
+    This is the guarantee the whole router rests on, and the experiment below is the first thing
+    that has ever been allowed to break it.
+    """
+    upstream = Upstream()
+    with running(upstream) as client:
+        client.post("/v1/messages", content=CLASSIFIER_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert upstream.received.content == CLASSIFIER_BODY
+
+
+def test_the_attribution_block_is_added_as_the_first_system_element() -> None:
+    """Phase 14, Group C4: `add_claude_code_hidden_attribution_block`.
+
+    **First in the array is where Claude Code puts it** -- measured 2026-09-19, session `20260919-1`,
+    where element 0 is the block and element 1 is the classifier's own prompt. The order is asserted
+    rather than the mere presence, because a block appended last is a different request.
+    """
+    upstream = Upstream()
+    config = make_config(add_claude_code_hidden_attribution_block=True)
+    with running(upstream, config) as client:
+        client.post("/v1/messages", content=CLASSIFIER_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    system = _system_of(upstream.received)
+    assert len(system) == 2
+    assert system[0] == {
+        "type": "text",
+        "text": "x-anthropic-billing-header: cc_version=2.1.267.608; cc_entrypoint=cli;",
+    }
+    assert system[1]["text"] == "You are a security monitor."
+
+
+def test_the_injected_block_carries_no_cch_and_no_chaining_fields() -> None:
+    """***Three omissions, each deliberate, and each one a thing we would otherwise be inventing.***
+
+    `cch` is per conversation turn and cannot be computed; `cc_prompt_id` and `cc_prev_req` are
+    absent from every request this touches, and the second is a real Anthropic-issued id. **Asserted
+    by name so that adding one later is a deliberate act rather than a drift.**
+    """
+    upstream = Upstream()
+    config = make_config(add_claude_code_hidden_attribution_block=True)
+    with running(upstream, config) as client:
+        client.post("/v1/messages", content=CLASSIFIER_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    block = _system_of(upstream.received)[0]["text"]
+    assert "cch=" not in block
+    assert "cc_prompt_id=" not in block
+    assert "cc_prev_req=" not in block
+
+
+def test_the_rest_of_the_body_survives_the_rewrite() -> None:
+    """**Everything but `system` comes out identical.** The rewrite is a re-serialisation, so this
+    is what says the router did not quietly drop or reorder a field the backend needs."""
+    upstream = Upstream()
+    config = make_config(add_claude_code_hidden_attribution_block=True)
+    with running(upstream, config) as client:
+        client.post("/v1/messages", content=CLASSIFIER_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    sent = json.loads(upstream.received.content)
+    original = json.loads(CLASSIFIER_BODY)
+    del sent["system"], original["system"]
+    assert sent == original
+
+
+def test_a_streamed_request_is_never_rewritten() -> None:
+    """***The expensive half, and it is left alone on purpose.***
+
+    A streamed request has never been refused -- 0 of 16, 0 of 230, 0 of 145 on the measured days --
+    it is where the bodies are large, and **the `system` array is the prompt-cache prefix**, so
+    rewriting one would miss the cache on every turn for no benefit at all.
+    """
+    streaming = (
+        b'{"model":"claude-sonnet-5","stream":true,'
+        b'"system":[{"type":"text","text":"You are Claude Code."}],"messages":[]}'
+    )
+    upstream = Upstream()
+    config = make_config(add_claude_code_hidden_attribution_block=True)
+    with running(upstream, config) as client:
+        client.post("/v1/messages", content=streaming, headers=CLAUDE_CODE_HEADERS)
+
+    assert upstream.received.content == streaming
+
+
+def test_a_body_that_already_carries_a_block_is_left_alone() -> None:
+    """A first-party client under the hosts route sends its own, and a second one is not better.
+
+    ***The real block carries `cch` and the router's does not***, so this only passes because the
+    match is on the prefix. An equality test would find nothing here and send two.
+    """
+    body = json.dumps(
+        {
+            "model": "claude-sonnet-5",
+            "system": [
+                {"type": "text", "text": REAL_BLOCK},
+                {"type": "text", "text": "You are a security monitor."},
+            ],
+            "messages": [],
+        }
+    ).encode()
+    upstream = Upstream()
+    config = make_config(add_claude_code_hidden_attribution_block=True)
+    with running(upstream, config) as client:
+        client.post("/v1/messages", content=body, headers=CLAUDE_CODE_HEADERS)
+
+    assert upstream.received.content == body
+    assert len(_system_of(upstream.received)) == 2
+
+
+def test_the_local_backend_never_receives_an_attribution_block() -> None:
+    """It describes Claude Code's relationship with *Anthropic*. LM Studio has no use for it, and
+    handing it client details it did not ask for is the opposite of what this router is."""
+    body = (
+        b'{"model":"qwen3-coder-30b",'
+        b'"system":[{"type":"text","text":"You are helpful."}],"messages":[]}'
+    )
+    upstream = Upstream()
+    config = make_config(add_claude_code_hidden_attribution_block=True)
+    with running(upstream, config) as client:
+        client.post("/v1/messages", content=body, headers=CLAUDE_CODE_HEADERS)
+
+    assert upstream.received.content == body
+
+
+def test_a_body_with_no_system_field_is_left_alone() -> None:
+    """Nothing to put a block into, so the request goes out exactly as it arrived."""
+    upstream = Upstream()
+    config = make_config(add_claude_code_hidden_attribution_block=True)
+    with running(upstream, config) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert upstream.received.content == CLAUDE_BODY
+
+
+def test_a_string_system_is_left_alone_rather_than_converted() -> None:
+    """***A separate case from "no `system` at all", and the mutation harness is why it exists.***
+
+    The API accepts `system` as a plain string as well as an array. **Turning a string into an array
+    is a larger change to a body than this is allowed to make**, so it is declined.
+
+    *The first version of this suite tested only the absent case, and a mutation that rewrote a
+    string `system` into `[]` survived — the test could not reach the branch it was supposed to be
+    guarding.*
+    """
+    body = b'{"model":"claude-sonnet-5","system":"You are a security monitor.","messages":[]}'
+    upstream = Upstream()
+    config = make_config(add_claude_code_hidden_attribution_block=True)
+    with running(upstream, config) as client:
+        client.post("/v1/messages", content=body, headers=CLAUDE_CODE_HEADERS)
+
+    assert upstream.received.content == body
+
+
+def test_a_compressed_body_is_declined_for_being_compressed_not_unreadable(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """***The reason is the assertion, and that is the whole point of this test.***
+
+    A gzip body would be refused by the JSON parse anyway — gzip bytes are not JSON — so asserting
+    only that it goes out untouched passes whether the encoding is checked or not. **A mutation
+    that deleted the check survived exactly that test.**
+
+    What the check actually buys is the *diagnosis*: a compressed body is readable and deliberately
+    declined, not unreadable. **Reporting it as unreadable is the misdiagnosis that once sent a
+    session hunting for a `model` field that was there, compressed** — the day `decoded_for_peek`
+    was written.
+    """
+    compressed = gzip.compress(CLASSIFIER_BODY)
+    headers = {**CLAUDE_CODE_HEADERS, "content-encoding": "gzip"}
+    upstream = Upstream()
+    config = make_config(add_claude_code_hidden_attribution_block=True)
+    with (
+        caplog.at_level(logging.INFO, logger="ilirium_llm_router.proxy"),
+        running(upstream, config) as client,
+    ):
+        client.post("/v1/messages", content=compressed, headers=headers)
+
+    assert upstream.received.content == compressed
+    declined = [
+        r.getMessage() for r in caplog.records if "attribution block NOT added" in r.getMessage()
+    ]
+    assert len(declined) == 1, declined
+    assert "gzip-encoded" in declined[0]
+    assert "readable JSON" not in declined[0]

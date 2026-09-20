@@ -335,8 +335,9 @@ Group C4's field table for what each omission costs and why it is cheaper than t
 | Name | |
 |---|---|
 | `attribution_block() -> str` | The two-field block, built from the constants above. **Takes no argument**, because nothing in the request can inform any field it carries |
-| `carries_attribution(body) -> bool` | **Whether a parsed body's `system` array already holds a block.** *A request that has one is never touched* |
-| `with_attribution(body) -> bytes` | **Parse, prepend the block to `system`, re-serialise.** ***The one place this router does not relay a request byte for byte*** — confined to non-streamed Anthropic requests that lack the block, behind a key that is off by default |
+| `carries_attribution(system: list[Any]) -> bool` | **Whether a `system` array already holds a block.** ***Takes the array, not the body*** — built as `(body)` in this register and changed on contact: the caller has already parsed, and parsing twice to answer one question is the kind of thing `IDM-008` exists to catch. **Matched on the PREFIX**, since a real block carries `cch` and ours does not, and an equality test would find nothing and inject a second one |
+| `with_attribution(body) -> tuple[bytes \| None, str]` | **Parse, prepend the block to `system`, re-serialise.** ***The one place this router does not relay a request byte for byte*** — confined to non-streamed Anthropic requests that lack the block, behind a key off by default. ***Returns TWO things, not the planned `bytes`***, in the shape `recorded_headers` already uses: the body or `None`, **and why not** — *a caller that logs "not added" without saying why is the silent instrument this phase has now been bitten by five times* |
+| `Mutation.file` | **In `evidence/mutation-check.py`, added 2026-09-20.** *The harness could only break `proxy.py`; half of this group lives in a new module, and a harness hardcoded to one file reports a clean run over code it never touched* — **which is that script's own documented failure mode**, not a new one |
 
 ### Names it must not collide with
 

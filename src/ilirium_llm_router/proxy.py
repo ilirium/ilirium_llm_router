@@ -37,6 +37,7 @@ from starlette.background import BackgroundTask
 from starlette.requests import ClientDisconnect, Request
 from starlette.responses import JSONResponse, Response, StreamingResponse
 
+from . import backend_anthropic
 from .config import Backend, Config
 from .corpus import CorpusWriter
 from .observe import (
@@ -467,6 +468,50 @@ class Proxy:
                 "No further shape will be logged by this process.",
                 self.arrival_sampled.cap,
             )
+        # ***The one place this router does not relay a request byte for byte.*** Off by default,
+        # and four conditions narrow it to the requests that `BUG-001` actually breaks: the Anthropic
+        # backend, non-streamed, an uncompressed body, and no block already present.
+        #
+        # `call.stream is False` rather than `not call.stream`: the column is tri-state, and `None`
+        # means the body never parsed or said something non-boolean about `stream`. A request the
+        # router could not read is not one it should rewrite.
+        #
+        # `body` is rebound and `call.request_body` is NOT -- so **the corpus keeps what arrived**
+        # while the wire gets the rewrite. That divergence is deliberate and it is the reason both
+        # outcomes below are logged rather than latched: an instrument that quietly does nothing is
+        # this phase's own recurring defect, and "it never fired" has to be visible in the log.
+        if (
+            self.config.experiments.add_claude_code_hidden_attribution_block
+            and name == "anthropic"
+            and call.stream is False
+        ):
+            # ***The encoding is checked HERE rather than in the condition above, so that a request
+            # it declines still says why.*** A compressed body would be refused by the JSON parse
+            # anyway -- gzip bytes are not JSON -- but it would then be reported as *unreadable*,
+            # which is false and is the exact misdiagnosis that sent a session hunting for a `model`
+            # field that was there, compressed. `decoded_for_peek` exists because of that day.
+            encoding = (request.headers.get("content-encoding") or "identity").lower()
+            if encoding != "identity":
+                rewritten = None
+                refused = (
+                    f"the body arrived {encoding}-encoded, and rewriting it would mean "
+                    f"re-compressing it"
+                )
+            else:
+                rewritten, refused = backend_anthropic.with_attribution(body)
+            if rewritten is None:
+                logger.info(
+                    "attribution block NOT added to %s: %s", request.url.path, refused
+                )
+            else:
+                logger.info(
+                    "attribution block added to %s: %d bytes in, %d out. The corpus stores what "
+                    "arrived; the backend receives this.",
+                    request.url.path,
+                    len(body),
+                    len(rewritten),
+                )
+                body = rewritten
         outgoing = self.client.build_request(
             request.method,
             target_url(backend.base_url, request),
