@@ -1723,3 +1723,67 @@ can carry no block from the client or from the router. *`with_attribution` decli
 in the REQUESTS — they are examples inside the classifier's own prompt. **The real verdicts are
 truncated because `</severity>` is the stop sequence**, so the text ends `<severity>15`. A response
 that looks empty of verdicts is not.)*
+
+## The injection works, and the phase finally ran an experiment instead of watching one
+
+***Driven by the owner 2026-09-21, 10:45–11:09 UTC, Claude Code 2.1.267.*** **Two router instances,
+one restart between them, and `CLAUDE_CODE_ATTRIBUTION_HEADER=0` set in both client sessions** —
+*confirmed by asking, not inferred.* **Frozen in `evidence/run-2026-09-21-the-injection-works.txt`.**
+
+| Instance | Config | Injection | Non-streamed |
+|---|---|---|---|
+| 10:44:51, session `20260921-1` | `config-attribution.yaml` | **ON — fired 12×** | ***12 / 12 ok*** |
+| 10:51:16, session `20260921-2` | `config.yaml` | **off** | ***33 × 429*** |
+
+***One variable differs.*** **The env var, the base URL, the machine, the credential, the client
+build and the model are identical, and the two runs are twenty minutes apart** — *same
+`claude-sonnet-5`, same ~128 KB request, one succeeding and one rejected.*
+
+### Why this is a different kind of result from the three days before it
+
+***Every earlier day OBSERVED the block ↔ 429 correlation. This one INTERVENED on it.*** **Supply
+the block and the rejections stop; withhold it and they return** — *and the thing supplying it was
+the router, on a request the client had already sent without one.*
+
+**The corpus corroborates the direction**: ***zero*** of the arriving bodies carry `cc_version` or
+`cc_entrypoint`. *The corpus stores what arrived, so the block in the twelve successes is the
+router's, added after capture — exactly as Group C4's docstring says it will look.*
+
+**And the only 429 in the first instance is the 311-byte quota probe**, which has no `system` field
+and can carry no block from anybody. *`with_attribution` declines it by name, as on 2026-09-20.*
+
+### What this does to the decision entry 21 had already taken
+
+***Entry 21 planned for C4's own obsolescence*** — *"if the A/B confirms the env var, Group C4 is
+unnecessary and should be deleted rather than shipped."* **That reasoning assumed C4 would remain
+what it was on 2026-09-20: code that had never once run.** *It is no longer that.*
+
+**The README line is still wrong and is still ours to delete.** ***But it is a fix for our own
+documentation, and C4 is a fix for any client that withholds the block for any reason*** — *including
+the LM Studio block in `reference/architecture.md`, where the env var legitimately belongs.* **The
+two are not alternatives, and the "a router that needs no code is a better outcome" argument was
+made when the code had no measured result.** *It has one now. The decision is the owner's and entry
+23 puts it to them.*
+
+### Three things this run does NOT settle
+
+- ***It does not isolate the env var.*** **Both halves had it set.** *What isolates it is this pair
+  read against 2026-09-20 — env var dropped, client's own blocks present, non-streamed ok — and that
+  comparison spans two days. The same-day B half is still unrun and is two minutes.*
+- ***There is still no blocked verdict, for the third run running.*** **All twelve are stage 1,
+  severities 2 to 20, ceiling 20**; *2026-09-19's blocked probe scored 68.* **`BUG-000`'s trap**: *"the
+  classifier works" here means twelve valid stage-1 verdicts and a stop sequence that fired, not a
+  demonstrated block path.*
+- ***It says nothing about `cch`.*** *The injected block has two fields and no `cch`, and the
+  classifier accepted it twelve times — so **whatever the gate checks, it is satisfied by the
+  two-field form**. That is a real finding and it is narrower than "the block works": it holds for
+  the classifier's call site on one afternoon.*
+
+### A correction made while reading this, before it reached a document
+
+***`EXPERIMENTS ON` never appears in `router.log`, and that is not evidence the experiment was
+off.*** **`_print_experiments` is called on the serve path as well as under `check`, but it prints
+to stdout** — *it goes to the owner's terminal and not to the log file.* **The two instances are
+identified instead by what only they could have written**: *`config-attribution.yaml` is the only
+committed config with the key true, instance 1 logged twelve "added" decisions, and instance 2
+logged no attribution decision of any kind and no corpus dictionary line.*

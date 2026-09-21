@@ -3,9 +3,15 @@
 **One entry per artefact**, per `../../../README.md`'s "Evidence and redaction": what produced it,
 what it proves, what was redacted and how, and whether it can be regenerated.
 
-***Fifteen artefacts: six instruments that can be re-run, and nine records that cannot.*** All
-nine were produced on **2026-09-18**, by the owner, against **Claude Code 2.1.267** and router
-`0.1.0`, on an OAuth subscription credential with `credential: forward`.
+***Seventeen artefacts: six instruments that can be re-run, and eleven records that cannot.***
+**Nine of the eleven were produced on 2026-09-18**; the other two are the **2026-09-20** and
+**2026-09-21** runs at the foot of this file. *All were driven by the owner, against **Claude Code
+2.1.267** and router `0.1.0`, on an OAuth subscription credential with `credential: forward`.*
+
+*(This line read "fifteen artefacts ... nine records, all produced on 2026-09-18" until 2026-09-21,
+and had been wrong since the 2026-09-20 run was frozen into this folder without an entry here. **A
+record added without its index entry is the defect this file exists to prevent**, and it is the same
+shape as `BKL-0007`: a count in prose that no tool derives.)*
 
 ---
 
@@ -265,6 +271,44 @@ hellos differ.***
 
 **Regenerable?** **Yes** — re-run the instrument. *The values will move with the client version and
 the Python build, which is the point of keeping the tool beside the record.*
+
+### `run-2026-09-20-attribution-already-present.txt` — 15:57–15:59 UTC
+
+**What produced it.** The owner, driving `make run-with-attribution` with
+`ANTHROPIC_BASE_URL` set and ***`CLAUDE_CODE_ATTRIBUTION_HEADER=0` dropped*** — though nobody knew
+that was the variable at the time. **Frozen from `logs/telemetry/`**, which is gitignored and
+per-worktree.
+
+**What it proves.** ***That Group C4 tested nothing***: the injection fired **zero** times, because
+every request it could have helped already carried the client's own block. *The blocks carry
+per-call-site suffixes where the injection hardcodes one, and carry no `cch`.* **What it found
+instead is the cause of three days' work** — the env var in this repository's own `README.md`.
+
+**Regenerable?** **No.** *It is a record of one session on one afternoon.*
+
+---
+
+### `run-2026-09-21-the-injection-works.txt` — 10:45–11:09 UTC, and it is an INTERVENTION
+
+**What produced it.** The owner, driving two client sessions twenty minutes apart against two router
+instances — `config-attribution.yaml` then `config.yaml` — with ***`CLAUDE_CODE_ATTRIBUTION_HEADER=0`
+set in BOTH***, confirmed by asking rather than inferred. **Frozen from `logs/telemetry/`**; the
+first instance's bodies are also in `logs/corpus/2026-09-21/`, which is per-worktree and gitignored.
+
+**What it proves.** ***That the block's absence CAUSES the 429, rather than merely accompanying
+it.*** **Injection on: twelve non-streamed calls, twelve 200s, and the twelve "attribution block
+added" decisions in the log. Injection off: thirty-three 429s.** *One variable, same hour, same
+machine, same model, same ~128 KB request.* **It is also the first time Group C4 was ever
+exercised** — *entry 21 asked for exactly this run and 2026-09-20 did not deliver it.*
+
+***What it does NOT prove, and the file says so in its own header:*** **it does not isolate the env
+var**, since both halves had it set — *that rests on reading this pair against 2026-09-20, a
+comparison spanning two days.* **And there is still no blocked verdict**: all twelve are stage 1,
+ceiling severity 20, against 2026-09-19's 68. *`BUG-000`'s trap, for the third run running.*
+
+**Regenerable?** **No** — but *the pair it belongs to is*, and the missing B half is two minutes.
+
+---
 
 ---
 

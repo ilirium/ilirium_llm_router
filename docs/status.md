@@ -10,44 +10,49 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-20 — Phase 14 is open and in flight on `feat/phase-14-rate-limit-headers`.** *Not
+**2026-09-21 — Phase 14 is open and in flight on `feat/phase-14-rate-limit-headers`.** *Not
 merged. Work in `/Users/ilirium/Projects/local/ilirium_llm_router/phase-14-rate-limit-headers`.*
 
-***THE PHASE'S CENTRAL FINDING IS IN DOUBT, AND THE CAUSE LOOKS LIKE THIS REPOSITORY'S OWN
-README.*** **`CLAUDE_CODE_ATTRIBUTION_HEADER=0` is in `README.md`'s documented command for pointing
-Claude Code at the router, since 2026-08-07** — *and the owner had been setting it on every run that
-also set `ANTHROPIC_BASE_URL`.* **It switches off the attribution block whose absence this phase
-spent three days attributing to a client-side gate.**
+***THE BLOCK'S ABSENCE IS NOW A CAUSE, NOT A CORRELATION — AND GROUP C4 WORKS.*** **On 2026-09-21
+the owner drove two sessions twenty minutes apart with `CLAUDE_CODE_ATTRIBUTION_HEADER=0` set in
+both**, *confirmed by asking*, **differing only in whether the router supplied the attribution
+block:**
 
-***On 2026-09-20, base URL set and that variable dropped, the blocks were present and the classifier
-worked.*** **So the variable and the base URL were never separated**, and `ANTHROPIC_BASE_URL` may
-suppress nothing.
+| Run | Injection | Non-streamed |
+|---|---|---|
+| 10:45, `config-attribution.yaml` | **ON — fired 12×** | ***12 / 12 ok*** |
+| 11:04, `config.yaml` | **off** | ***33 × 429*** |
 
-| Day | Base URL | The env var | Blocks | Non-streamed |
-|---|---|---|---|---|
-| 09-18 | set | ***`=0`*** | **none** | **119 × 429** |
-| 09-19 | unset, hosts route | not used | 97 | all ok |
-| **09-20** | **set** | ***dropped*** | **19** | classifier ok |
+***Every earlier day observed the correlation; this one intervened on it.*** **Group C4 had never
+once been exercised before this run** — *2026-09-20's attempt found the block already present and
+declined every request.* **Frozen in `evidence/run-2026-09-21-the-injection-works.txt`**, since
+`logs/` is gitignored and per-worktree.
 
-***`BUG-001` and `wiki/claude-code-first-party-gate.md` carry banners and are NOT rewritten*** —
-the confirming run is a two-minute paired A/B and only the owner can drive it.
-**`for-the-owner.md` entry 22 is the runbook and the one open question.** ***`README.md` is
-deliberately untouched*** until that run answers.
+***What is still NOT settled: which variable removed the block.*** **Both halves had the env var
+set**, so isolating it means reading this pair against 2026-09-20 — *a comparison spanning two days.*
+**The same-day B half — `config.yaml`, env var dropped — is unrun and is two minutes.**
+***`for-the-owner.md` entry 23 is the runbook; 21, 22 and 23 are the live entries.***
 
-***Group C4 is built and has never been exercised.*** **The injection fired zero times on
-2026-09-20** — every request it could have helped already carried a block. *If the A/B confirms the
-env var, C4 is deleted rather than shipped: a router that needs no code to fix this is the better
-outcome.*
+***`README.md`, `BUG-001` and `wiki/claude-code-first-party-gate.md` are still untouched*** — *the
+env var's line is still ours to delete, and the confirming half has not run.*
+
+***And C4's fate is now a decision rather than a consequence.*** **Entry 21 said to delete it if the
+env var proved to be the cause; that was written when C4 had never run.** *The README fixes our own
+documentation; C4 fixes any client that arrives without a block — including the LM Studio case in
+`reference/architecture.md`, where the env var genuinely belongs.* **Entry 23 puts it to the owner.**
+
+***Still no blocked verdict, three runs running.*** **All twelve 2026-09-21 verdicts are stage 1,
+ceiling severity 20; 2026-09-20's nine were stage 1, ceiling 25.** *2026-09-19's blocked probe scored
+68.* **`BUG-000`'s trap**: *"the classifier works" means valid stage-1 verdicts, not a demonstrated
+block path.*
 
 **What survives regardless:** *the second defect was real and was ours (`relay_accept_encoding`
 served brotli to a client that could not take it); the gzip request-body `400` was a genuine defect;
-and the block ↔ 429 correlation holds across all three days — only the reason for the block's
-absence is in question.*
+and the block ↔ 429 relation now holds across four days, with its direction measured on the last.*
 
 **Numbers live in `reference/measurements.md`**, the block's measured anatomy in
 `wiki/claude-code-first-party-gate.md`, the defect in `bugs/BUG-001-…`, and the phase's own record
-in `milestone-2-corpus/phase-14-rate-limit-headers/`. ***`for-the-owner.md` entries 21 and 22 are
-the live ones.***
+in `milestone-2-corpus/phase-14-rate-limit-headers/`.
 
 ## Where the project is
 
@@ -269,8 +274,10 @@ and happened anyway. Group D has not started.*** *Where the headers durably live
 milestone plan's "cannot skip the question", still deferred, and still the owner's.*
 
 ***Group C4 was added 2026-09-20: the router supplies the attribution block the client was not
-sending.*** **Built, tested, and never exercised** — *the 2026-09-20 run found the block already
-present and the injection declined every request.* **Group E gained tasks 16–19** — remove the
+sending.*** ***Exercised for the first time on 2026-09-21, and it works*** — **twelve injections,
+twelve non-streamed 200s, against 33 × 429 with the injection off and everything else held.** *The
+2026-09-20 run found the block already present and declined every request, which is why this
+sentence read "never exercised" for a day.* **Group E gained tasks 16–19** — remove the
 failed experiments, graduate or delete the survivor, promote the hosts-route tools, and fix
 `branch-index.py` before task 15 needs it.
 

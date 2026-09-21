@@ -875,3 +875,47 @@ out, and `BUG-001` closes as an operator-error bug in our own documentation.*
 **What that would leave standing is still worth the phase:** *the compression defect was real and
 was ours, the gzip `400` was a genuine bug any first-party client meets, and the corpus answered the
 whole thing in an afternoon from material already on disk.*
+
+## 23 · ASK · high · Your two runs proved the injection works — and B is still two minutes away
+
+***You ran the A half and something better at the same time.*** **The 10:45 session and the 11:04
+session differ in exactly one thing — whether the router supplied the attribution block — and the
+non-streamed calls flip from 12/12 ok to 33 × 429.** *`CLAUDE_CODE_ATTRIBUTION_HEADER=0` was set in
+both, which you confirmed, and that is what makes it a single-variable test.*
+
+| 10:45 · `config-attribution.yaml` | injection **ON**, fired 12× | ***12 / 12 ok*** |
+|---|---|---|
+| **11:04 · `config.yaml`** | injection **off** | ***33 × 429*** |
+
+***That is the C4e run entry 21 asked for and 2026-09-20 did not deliver.*** **Group C4 has now been
+exercised, and it works.** *Frozen in `evidence/run-2026-09-21-the-injection-works.txt`.*
+
+### What it changes, and it is a decision rather than a measurement
+
+***Entry 21 said C4 should be deleted if the env var turned out to be the cause.*** **That was
+written when C4 had never run.** *The README line is still wrong and still ours to delete — but that
+fixes our documentation, while C4 fixes any client that arrives without a block, including the LM
+Studio case in `reference/architecture.md` where the env var genuinely belongs.*
+
+***I have not deleted anything, and I have not touched `README.md`, `BUG-001` or the wiki page.***
+**Both halves of the env-var question still rest on a comparison across two days.**
+
+### The two minutes that close it — run B, and it is one command
+
+**The router is already on `config.yaml` from your 11:04 run.** *Leave it up.*
+
+```sh
+ANTHROPIC_BASE_URL=http://localhost:8787 claude
+```
+
+***No `CLAUDE_CODE_ATTRIBUTION_HEADER`.*** **Auto mode on.** *If the non-streamed calls stay clean,
+the env var is named same-day, same-config, one variable — and the README fix follows in all four
+documents.*
+
+### And the thing that has now gone wrong three runs in a row
+
+***Please drive one genuinely blocked probe.*** **Every verdict on 09-20 and again on 09-21 was
+stage 1 — ceiling severity 20 yesterday, 25 the day before — and stage 2 has never run.**
+*2026-09-19's blocked probe scored 68.* **`BUG-000`: no 429s and no blocked verdict is not a pass**,
+and it is the shape this phase has mistaken for success four times. *A command that is actually
+refused, not one that merely looks alarming.*

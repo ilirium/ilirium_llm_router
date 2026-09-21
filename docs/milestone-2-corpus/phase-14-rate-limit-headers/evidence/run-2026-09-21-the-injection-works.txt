@@ -1,0 +1,153 @@
+The 2026-09-21 pair — the injection fired, and the block's absence is now a CAUSE
+=================================================================================
+
+Frozen 2026-09-21 from `logs/telemetry/`, which is gitignored and per-worktree: a measurement that
+lives only there discharges nothing, and this phase's own Task 8 says so.
+
+Driven by the owner, 10:45-11:09 UTC, Claude Code 2.1.267. TWO router instances, one restart
+between them, and ***`CLAUDE_CODE_ATTRIBUTION_HEADER=0` set in BOTH client sessions*** —
+confirmed by the owner when asked, not inferred.
+
+  10:44:51  instance 1  `config-attribution.yaml`  injection ON,  corpus ON   -> session 20260921-1
+  10:51:16  instance 2  `config.yaml`              injection OFF, corpus OFF  -> session 20260921-2
+
+  How each instance is identified, since the config path is not logged: `config-attribution.yaml`
+  is the ONLY committed config with `add_claude_code_hidden_attribution_block: true`, and instance 1
+  logged twelve "attribution block added" decisions. Instance 2 logged no attribution decision of
+  any kind -- not even a "NOT added" -- and printed no corpus dictionary line at startup, which is
+  `config.yaml` (attribution false, corpus false). `EXPERIMENTS ON` goes to stdout on the serve
+  path and so appears in neither log; its absence here is not evidence either way.
+
+REDACTED: session ids are kept because they tie rows to corpus folders. No bodies are reproduced.
+
+WHAT IT SHOWS — and it is the first INTERVENTION in this phase rather than an observation
+  - ONE variable differs between the two sessions: whether the router supplied the attribution
+    block. The env var, the base URL, the machine, the credential, the client build and the model
+    are identical, and the two runs are twenty minutes apart.
+  - Instance 1: the injection fired 12 times and ALL TWELVE non-streamed calls returned 200.
+    Group C4 had never once been exercised before this run.
+  - Instance 2: 33 x 429 on non-streamed. The 2026-09-18 pattern, reproduced.
+  - The corpus confirms the client was withholding: ZERO of the arriving request bodies carry
+    `cc_version` / `cc_entrypoint`. The corpus stores what ARRIVED, so the block in the twelve
+    successful calls is the router's, added after capture.
+  - The only 429 in instance 1 is the 311-byte quota probe, which has no `system` field and so can
+    carry no block from anybody. It has 429'd on every day of this phase.
+
+WHAT IT DOES NOT SHOW
+  - NO BLOCKED VERDICT, for the third run running. All twelve verdicts are stage 1, severities 2 to
+    20, ceiling 20. 2026-09-19's blocked probe scored 68. `BUG-000`'s trap: an absence of failures
+    is not a pass, and "the classifier works" here means twelve valid stage-1 verdicts, not a
+    demonstrated block path.
+  - It does not isolate the ENV VAR. Both sessions had it set. What isolates the env var is this
+    pair read against 2026-09-20 (env var dropped, blocks present, non-streamed ok) -- a comparison
+    that still spans two days. The same-day B half, `config.yaml` with the env var dropped, is
+    still unrun.
+
+--- router.log: every attribution decision, 2026-09-21 ---
+2026-09-21T10:45:09.733+00:00 attribution block NOT added to /v1/messages: the body carries no 'system' field
+2026-09-21T10:46:00.636+00:00 attribution block added to /v1/messages: 127847 bytes in, 129444 out
+2026-09-21T10:46:03.662+00:00 attribution block added to /v1/messages: 128081 bytes in, 129678 out
+2026-09-21T10:46:10.020+00:00 attribution block added to /v1/messages: 128300 bytes in, 129897 out
+2026-09-21T10:46:12.725+00:00 attribution block added to /v1/messages: 128492 bytes in, 130089 out
+2026-09-21T10:46:25.504+00:00 attribution block added to /v1/messages: 128735 bytes in, 130332 out
+2026-09-21T10:46:42.121+00:00 attribution block added to /v1/messages: 128953 bytes in, 130550 out
+2026-09-21T10:46:48.511+00:00 attribution block added to /v1/messages: 129260 bytes in, 130857 out
+2026-09-21T10:46:58.197+00:00 attribution block added to /v1/messages: 129460 bytes in, 131057 out
+2026-09-21T10:47:04.223+00:00 attribution block added to /v1/messages: 129626 bytes in, 131223 out
+2026-09-21T10:47:10.071+00:00 attribution block added to /v1/messages: 129899 bytes in, 131496 out
+2026-09-21T10:47:15.526+00:00 attribution block added to /v1/messages: 130127 bytes in, 131724 out
+2026-09-21T10:47:20.007+00:00 attribution block added to /v1/messages: 130383 bytes in, 131980 out
+
+--- router.log: the two instances ---
+2026-09-21T10:44:51.242+00:00 Router 0.1.0 starting on 127.0.0.1:8787
+2026-09-21T10:44:51.342+00:00 Corpus: compressing against dictionary req-2026-09-19T115933Z-3d86319b.dict (dictID 3d86319b)
+2026-09-21T10:51:08.933+00:00 corpus: 27 calls | stored 54 (4178855 → 434586 bytes), dropped 0, too_large 0, error 0 | pending 0, peak 260929, queue_ms max 2
+2026-09-21T10:51:16.379+00:00 Router 0.1.0 starting on 127.0.0.1:8787
+
+--- the twelve verdicts, instance 1 (corpus response bodies, paired to telemetry by size) ---
+timestamp  response_bytes  stop_reason  verdict (truncated: </severity> is the stop sequence)
+10:46:00 584 stop_sequence  <severity>2
+10:46:03 585 stop_sequence  <severity>20
+10:46:10 583 stop_sequence  <severity>15
+10:46:12 582 stop_sequence  <severity>8
+10:46:25 584 stop_sequence  <severity>5
+10:46:42 585 stop_sequence  <severity>15
+10:46:48 585 stop_sequence  <severity>10
+10:46:58 585 stop_sequence  <severity>10
+10:47:04 582 stop_sequence  <severity>5
+10:47:10 585 stop_sequence  <severity>10
+10:47:15 585 stop_sequence  <severity>15
+10:47:20 585 stop_sequence  <severity>10
+
+--- calls.csv: all 69 rows, 2026-09-21, in timestamp order ---
+timestamp,session_id,agent_id,backend,model,path,stream,input_tokens,output_tokens,cache_read_input_tokens,cache_creation_input_tokens,stop_reason,request_bytes,response_bytes,ttfb_ms,duration_ms,error_status,error_code,error_message,router_version
+2026-09-21T10:45:09.110+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,277,ok,,,0.1.0
+2026-09-21T10:45:09.732+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,490,492,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T10:45:55.457+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,473,0,73131,tool_use,206027,12861,1466,6025,ok,,,0.1.0
+2026-09-21T10:45:55.473+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,1175,19,0,0,end_turn,4049,1933,1406,2391,ok,,,0.1.0
+2026-09-21T10:46:00.633+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42081,171,stop_sequence,127847,584,2216,2217,ok,,,0.1.0
+2026-09-21T10:46:03.660+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42252,101,stop_sequence,128081,585,1535,1536,ok,,,0.1.0
+2026-09-21T10:46:05.241+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,502,73131,4138,tool_use,216895,13796,900,5631,ok,,,0.1.0
+2026-09-21T10:46:10.014+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42353,94,stop_sequence,128300,583,2093,2094,ok,,,0.1.0
+2026-09-21T10:46:12.720+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42447,83,stop_sequence,128492,582,1534,1535,ok,,,0.1.0
+2026-09-21T10:46:14.583+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,894,77269,1027,tool_use,219660,16429,1119,11861,ok,,,0.1.0
+2026-09-21T10:46:25.500+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42530,103,stop_sequence,128735,584,2258,2259,ok,,,0.1.0
+2026-09-21T10:46:27.824+00:00,,,anthropic,,/,,,,,,,0,132,30,32,http_error,404,,0.1.0
+2026-09-21T10:46:42.114+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42633,106,stop_sequence,128953,585,1696,1698,ok,,,0.1.0
+2026-09-21T10:46:44.171+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,296,78296,1014,tool_use,223344,9414,816,4052,ok,,,0.1.0
+2026-09-21T10:46:48.507+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42739,157,stop_sequence,129260,585,2394,2395,ok,,,0.1.0
+2026-09-21T10:46:51.222+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,424,79310,504,tool_use,225050,8770,1087,6661,ok,,,0.1.0
+2026-09-21T10:46:58.195+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42896,103,stop_sequence,129460,585,1519,1520,ok,,,0.1.0
+2026-09-21T10:47:00.161+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,242,79814,1576,tool_use,229220,7187,1078,3760,ok,,,0.1.0
+2026-09-21T10:47:04.219+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,42999,86,stop_sequence,129626,582,2431,2433,ok,,,0.1.0
+2026-09-21T10:47:06.991+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,191,81390,426,tool_use,230761,7658,1107,2786,ok,,,0.1.0
+2026-09-21T10:47:10.067+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,43085,131,stop_sequence,129899,585,1698,1700,ok,,,0.1.0
+2026-09-21T10:47:12.093+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,238,81816,288,tool_use,231451,7821,998,3144,ok,,,0.1.0
+2026-09-21T10:47:15.523+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,43216,106,stop_sequence,130127,585,1607,1612,ok,,,0.1.0
+2026-09-21T10:47:17.484+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,186,82104,1799,tool_use,235498,7350,958,2234,ok,,,0.1.0
+2026-09-21T10:47:20.003+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-sonnet-5,/v1/messages,false,90,9,43322,124,stop_sequence,130383,585,1674,1676,ok,,,0.1.0
+2026-09-21T10:47:21.991+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,2,919,83903,1620,end_turn,238342,22587,1066,12022,ok,,,0.1.0
+2026-09-21T10:50:34.426+00:00,20260921-0000-4000-8000-000000000001,,anthropic,claude-opus-5,/v1/messages,true,94,86,85523,919,end_turn,241550,4472,1204,2526,ok,,,0.1.0
+2026-09-21T10:59:04.730+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,245,ok,,,0.1.0
+2026-09-21T10:59:05.284+00:00,20260921-0000-4000-8000-000000000003,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,389,391,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:04:37.227+00:00,,,anthropic,,/api/hello,,,,,,,0,0,,264,ok,,,0.1.0
+2026-09-21T11:04:37.821+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,311,114,478,478,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:04:40.120+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,true,1302,19,0,0,end_turn,4451,1941,2005,2941,ok,,,0.1.0
+2026-09-21T11:04:40.122+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,true,2,4222,67865,4650,tool_use,204309,48368,1917,56237,ok,,,0.1.0
+2026-09-21T11:05:34.145+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,128264,114,494,496,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:35.074+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,128264,114,376,377,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:36.244+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,128264,114,397,398,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:38.197+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,128264,114,454,454,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:42.337+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-sonnet-5,/v1/messages,false,,,,,,128264,114,404,405,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:42.760+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128262,114,400,403,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:43.594+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128262,114,410,411,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:44.923+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128262,114,416,418,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:46.909+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128262,114,384,386,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:50.332+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128262,114,426,427,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:51.084+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128805,114,386,388,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:51.900+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128805,114,397,399,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:53.241+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128805,114,392,393,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:55.162+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128805,114,463,465,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:05:59.473+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,128805,114,409,411,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:00.332+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129099,114,376,376,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:01.205+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129099,114,390,390,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:02.397+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129099,114,390,395,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:04.319+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129099,114,408,409,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:07.860+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129099,114,417,418,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:08.367+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,true,2,347,72515,5407,tool_use,221845,7784,1591,4972,ok,,,0.1.0
+2026-09-21T11:06:13.777+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129205,114,386,387,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:14.650+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129205,114,321,324,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:15.930+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129205,114,439,441,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:17.919+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129205,114,324,325,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:21.811+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129205,114,385,386,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:22.230+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,true,2,387,77922,477,tool_use,223915,5032,1931,7002,ok,,,0.1.0
+2026-09-21T11:06:31.061+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,true,2,180,78399,514,tool_use,226127,7255,1722,3562,ok,,,0.1.0
+2026-09-21T11:06:35.686+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129311,114,424,429,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:36.605+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129311,114,396,397,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:37.955+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129311,114,380,384,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:40.147+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129311,114,480,481,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:43.639+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,false,,,,,,129311,114,455,456,http_error,429,rate_limit_error: Error,0.1.0
+2026-09-21T11:06:44.173+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,true,2,1157,78913,310,end_turn,227542,26810,1429,17545,ok,,,0.1.0
+2026-09-21T11:09:27.175+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,true,2,586,79223,1187,end_turn,231950,15985,2097,8410,ok,,,0.1.0
+2026-09-21T11:09:35.604+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,true,504,8,80410,586,end_turn,234993,1803,1371,1511,ok,,,0.1.0
+2026-09-21T11:12:35.935+00:00,20260921-0000-4000-8000-000000000002,,anthropic,claude-opus-5,/v1/messages,true,94,72,80996,0,end_turn,233806,3399,1835,2658,ok,,,0.1.0
