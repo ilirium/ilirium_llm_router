@@ -77,6 +77,7 @@ metadata lines and their own heading titles. **Do not type in it.** Change an it
 | `BKL-0039` | 2026-09-19 | open | instruments | A protocol matcher, and an HTTP/2-capable inbound | — | — |  |
 | `BKL-0040` | 2026-09-20 | open | instruments | `content-length` is dropped from every reply, so every reply is chunked | — | — |  |
 | `BKL-0041` | 2026-09-20 | open | instruments | `branch-index.py --write` should not be able to delete a row silently | — | — | BKL-0040 |
+| `BKL-0042` | 2026-09-21 | open | instruments | a `config.yaml` variant with the corpus on and every experiment off | — | — |  |
 | `BKL-0035` | 2026-08-26 | open | dictionaries | Dictionary commands — `list`, `show`, `install` | — | — |  |
 | `BKL-0036` | 2026-08-26 | open | dictionaries | A benchmark: what a dictionary is worth against no dictionary | — | — |  |
 | `BKL-0037` | — | superseded | not-on-this-list | The Anthropic 429 rate-limit headers — refused, then overturned | — | — | BKL-0034 |
@@ -1114,6 +1115,29 @@ a row and of a table that lost one, and only one of those is a defect.*
 ***Not urgent and nothing waits on it.*** **The declared pin removes the only known case**, so this
 is about the next one — and a derived index that can silently drop a row is the shape of defect that
 `IDM-001` chose a derived index to avoid.
+
+### BKL-0042 — a `config.yaml` variant with the corpus on and every experiment off
+
+instruments · open · added 2026-09-21
+
+*Out of Phase 14's run B, and noticed because it cost that run its verdicts.* **The one run that
+settled the phase's central question is the one whose bodies are gone.**
+
+***The committed configs offer no way to capture a corpus while the router is a plain byte-relay.***
+`config.yaml` has every experiment off **and the corpus off**; `config-attribution.yaml` has the
+corpus on **and an experiment on**. *So a run that must be a byte-relay to mean anything — which is
+what an isolation run IS — cannot store what it carried.*
+
+**Run B's five classifier calls returned `stop_reason: stop_sequence`, so each carried a real
+verdict, and not one of them can be read.** *`BUG-000`'s open question — whether a blocked verdict
+ever comes back through the router — needed exactly those bodies.*
+
+***The fix is a config file and nothing else.*** *No code: the corpus and the experiments are
+already independent switches, and this is only the combination nobody committed.*
+
+**Not urgent.** *The next isolation run is what it costs, and by then the phase may be merged and
+the experiments gone — at which point `config.yaml` itself becomes this config and the item
+closes.*
 
 ## Dictionaries
 

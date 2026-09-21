@@ -1787,3 +1787,73 @@ to stdout** — *it goes to the owner's terminal and not to the log file.* **The
 identified instead by what only they could have written**: *`config-attribution.yaml` is the only
 committed config with the key true, instance 1 logged twelve "added" decisions, and instance 2
 logged no attribution decision of any kind and no corpus dictionary line.*
+
+## Run B: the env var is named, and A and B turned out to share a process
+
+***Driven by the owner 2026-09-21, 11:27–11:40 UTC, session `20260921-4`, Claude Code 2.1.267.***
+**`ANTHROPIC_BASE_URL` set to the router and `CLAUDE_CODE_ATTRIBUTION_HEADER` ABSENT** — *not empty;
+tested with `${VAR+x}` on entry and again on exit, which is the distinction that matters and which
+no router-side record could have made.* **The owner's protocol and report are frozen beside the
+router-side record in `evidence/`.**
+
+***Five non-streamed classifier calls, five 200s, zero 429s.***
+
+### The thing that makes this stronger than the A/B asked for
+
+***A and B were served by the same router PROCESS.*** **The instance that started at 10:51:16 served
+run A at 11:04 and run B at 11:27, with no restart between them and no attribution decision logged
+in either.** *So the two halves differ in one environment variable in the client's environment —
+not in config, not in build, not in process lifetime, not even in uptime.* **Entry 22 asked for the
+same machine and the same session; what it got was the same process.**
+
+### Why this is not drift, quota recovery, or the passage of time
+
+***The day runs ok → 429 → ok, in that order, inside one hour:***
+
+| 10:45 | the **router** supplies the block | **12 non-streamed ok** |
+|---|---|---|
+| **11:04** | **nothing supplies it** | ***33 × 429*** |
+| **11:27** | the **client** supplies its own | **5 non-streamed ok** |
+
+**A quota that recovered would not have failed in the middle.** *A drift would not have tracked the
+variable in both directions.* ***The 429 follows the block's absence forwards and backwards, and the
+thing that removes the block is the environment variable in this repository's own README.***
+
+### So `BUG-001`'s cause is named, and it was ours
+
+***`CLAUDE_CODE_ATTRIBUTION_HEADER=0`.*** **In `README.md` since `7cd90f9`, 2026-08-07, six weeks
+before the phase opened, with no stated reason in any of the four documents that carry it.** *The
+router was never at fault for the 429; it was carrying a client the operator had configured to
+withhold the field the backend gates on.*
+
+### What run B does NOT show, and the corpus is the reason
+
+***The five verdicts are unreadable.*** **`config.yaml` has the corpus off, so the bodies were never
+stored** — *`stop_reason: stop_sequence` proves each call carried a real verdict, and the 584/585
+byte responses are the same size class as every stage-1 verdict measured on 09-20 and 09-21, which
+is suggestive and is **not** a reading of a severity.*
+
+*(Worth noticing rather than fixing: the run that settles the phase's central question is the one
+whose bodies are gone, because the config that isolates the variable is also the config with the
+store off. **`config-attribution.yaml` is the only committed config with corpus on AND an
+experiment on.** A `config.yaml` variant with the corpus on and every experiment off would have
+cost nothing and kept the verdicts — that is `BKL-0042`.)*
+
+### The report's block is the OTHER classifier, and the distinction matters
+
+***The owner's report records a server-side `[cyber]` refusal with a request ID and reads it as the
+classifier's block path.*** **It is a real block and it is a different mechanism from the one this
+phase measures:**
+
+- ***`BUG-001`'s subject is Claude Code's auto-mode COMMAND classifier*** — **the non-streamed
+  `claude-sonnet-5` call with `</severity>` as its stop sequence**, scoring a shell command the
+  agent wants to run. *That is the call that 429'd. A blocked verdict means a severity high enough
+  that auto mode refuses to run the **command**.*
+- ***What the report observed is Anthropic's API-side safeguard*** refusing a **request** outright,
+  on the streamed main conversation.
+
+**Both are real; only the first is what this phase has been measuring.** ***So `BUG-000`'s trap is
+still not discharged, four runs in*** — *and the blocked verdict it wants needs no adversarial
+content whatsoever.* **It wants a shell command auto mode declines to run**, *which is what
+2026-09-19's probe at severity 68 was.* **The report's withdrawn probe 15 was reaching for something
+else, and was right to be withdrawn.**

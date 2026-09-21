@@ -919,3 +919,53 @@ stage 1 — ceiling severity 20 yesterday, 25 the day before — and stage 2 has
 *2026-09-19's blocked probe scored 68.* **`BUG-000`: no 429s and no blocked verdict is not a pass**,
 and it is the shape this phase has mistaken for success four times. *A command that is actually
 refused, not one that merely looks alarming.*
+
+## 24 · ASK · high · Run B named it. Four documents carry the line and they are four different kinds of document
+
+***It is confirmed.*** **Run A and run B were served by the same router process — no restart between
+them — and they differ in one environment variable in your shell.** *33 × 429 with
+`CLAUDE_CODE_ATTRIBUTION_HEADER=0`; zero without it, five classifier calls clean.* **Your report
+carries the half the router cannot see: the variable was ABSENT, not empty, tested with `${VAR+x}`
+on entry and on exit.** *Both halves and your protocol are frozen in `evidence/`.*
+
+***`BUG-001`'s cause is our own documentation.*** **The router was never at fault for the 429** —
+*it was carrying a client we had told you to configure to withhold the field the backend gates on.*
+
+### The decision, and it is not "delete the line from four files"
+
+**They carry the same line and they are not the same kind of document:**
+
+| `README.md` | the router quick start | ***delete it*** — it is wrong here and it is what cost the phase three days |
+|---|---|---|
+| `procedures/testing-against-claude-code.md` | the procedure for driving these very sessions | ***delete it*** — it is flagged today, and a flag is not a fix |
+| `reference/architecture.md` | the **LM Studio** block | ***probably KEEP*** — pointing Claude Code at LM Studio is the one place suppressing Anthropic billing attribution makes sense, and this is where it was copied FROM |
+| `milestone-1-core/phase-1-proxy/evidence/session-results.md` | **evidence of a run in Phase 1** | ***annotate, never edit*** — it records what was actually run on that day, and editing evidence to remove an inconvenient line is the one thing evidence must not allow |
+
+***I have edited none of them.*** **Tell me which of the four you want touched** and I will do it
+in one pass, with the `architecture.md` and evidence calls as you decide them.
+
+### And C4's fate, which run B did not settle either way
+
+***Entry 21 pre-committed to deleting Group C4 if the env var proved to be the cause. It has.***
+**But C4 is also measured working now, on 09-21 at 10:45, which is the only reason we know the block
+is the mechanism at all.** *The README fix repairs our documentation; C4 repairs any client that
+arrives without a block — including, ironically, the LM Studio configuration in the row above.*
+
+**Both are defensible. What I would not do is delete it silently as a consequence of the A/B** —
+*the argument that pre-committed to deleting it was written when it had never run.*
+
+### One correction to your report, because it changes what is still open
+
+***The `[cyber]` refusal you observed is a different classifier from the one this phase measures.***
+**Yours is Anthropic's API-side safeguard refusing a request outright, with a request ID.**
+*`BUG-001`'s subject is Claude Code's auto-mode **command** classifier — the non-streamed
+`claude-sonnet-5` call with `</severity>` as its stop sequence, scoring a shell command before the
+agent runs it.* **That is the call that 429'd.**
+
+***So the blocked verdict is still missing, four runs in — and it needs no adversarial content
+whatsoever.*** **It wants a shell command that auto mode declines to run**, *the way 2026-09-19's
+probe scored 68.* **Your withdrawn probe 15 was reaching for something else and was right to be
+withdrawn.** *Nothing blocks on this; it is `BUG-000`'s open question, not the phase's.*
+
+*(And run B's own five verdicts are unreadable — `config.yaml` has the corpus off, so the one run
+that settled the phase is the one whose bodies were never stored. Filed as **`BKL-0042`**.)*

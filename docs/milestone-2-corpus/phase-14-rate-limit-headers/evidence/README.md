@@ -3,9 +3,9 @@
 **One entry per artefact**, per `../../../README.md`'s "Evidence and redaction": what produced it,
 what it proves, what was redacted and how, and whether it can be regenerated.
 
-***Seventeen artefacts: six instruments that can be re-run, and eleven records that cannot.***
-**Nine of the eleven were produced on 2026-09-18**; the other two are the **2026-09-20** and
-**2026-09-21** runs at the foot of this file. *All were driven by the owner, against **Claude Code
+***Twenty artefacts: six instruments that can be re-run, and fourteen records that cannot.***
+**Nine of the fourteen were produced on 2026-09-18**; the rest are the **2026-09-20** run and the
+three **2026-09-21** records at the foot of this file. *All were driven by the owner, against **Claude Code
 2.1.267** and router `0.1.0`, on an OAuth subscription credential with `credential: forward`.*
 
 *(This line read "fifteen artefacts ... nine records, all produced on 2026-09-18" until 2026-09-21,
@@ -307,6 +307,49 @@ comparison spanning two days.* **And there is still no blocked verdict**: all tw
 ceiling severity 20, against 2026-09-19's 68. *`BUG-000`'s trap, for the third run running.*
 
 **Regenerable?** **No** — but *the pair it belongs to is*, and the missing B half is two minutes.
+
+---
+
+### `run-2026-09-21-run-b-the-env-var-is-named.txt` — 11:27–11:40 UTC, and it closes the A/B
+
+**What produced it.** The owner, driving one client session with `ANTHROPIC_BASE_URL` set to the
+router and ***`CLAUDE_CODE_ATTRIBUTION_HEADER` absent***. **Frozen from `logs/telemetry/`.**
+
+**What it proves.** ***That the environment variable is the cause of `BUG-001`'s 429.*** **Run A and
+run B were served by the SAME router process** — *the 10:51:16 instance, no restart between them,
+no attribution decision logged in either* — **so the two halves differ in one variable in the
+client's environment.** *33 × 429 with it; zero without it.* **And the day reads ok → 429 → ok
+inside one hour**, *which is not the shape of a recovering quota or a drift.*
+
+***What it does NOT prove: anything about the verdicts.*** **`config.yaml` has the corpus off, so
+run B's five bodies were never stored** — *`stop_reason: stop_sequence` shows each carried a real
+verdict and none can be read.* **`BKL-0042`.**
+
+**Regenerable?** **No.**
+
+---
+
+### `run-2026-09-21-run-b-owner-plan.md` · `run-2026-09-21-run-b-owner-report.md`
+
+**What produced them.** ***The owner's own session, not this one*** — a 15-probe protocol written
+and executed client-side, with the router deliberately **not** contacted as a target.
+
+**What they prove.** ***The one fact no router-side record can establish: the state of the client's
+environment.*** **`CLAUDE_CODE_ATTRIBUTION_HEADER` was UNSET rather than empty**, *tested with
+`${VAR+x}` on entry and again on exit* — **and the whole A/B rests on it.** *They also record the
+shell's health across 14 probes, and the Claude/Anthropic variables that were set.*
+
+***They are kept verbatim rather than summarised***, per this folder's rule: *a record produced
+outside this repository is evidence precisely because nobody here can regenerate it.* **The session
+token in the report was redacted by its author**; *session ids are kept, as everywhere in this
+folder.*
+
+***One reading in the report is corrected rather than edited***, in `../notes.md` and
+`for-the-owner.md` entry 24: **the `[cyber]` refusal it records is Anthropic's API-side safeguard,
+not the auto-mode command classifier `BUG-001` is about.** *The observation is sound; what it is
+evidence OF is narrower than the report takes it to be.*
+
+**Regenerable?** **No** — *and they are the only client-side records in this phase.*
 
 ---
 
