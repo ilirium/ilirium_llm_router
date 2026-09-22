@@ -204,8 +204,8 @@ inherits the wrong picture.***
 than a short one.** Measured 2026-08-26 over all four day indexes:
 
 ```
-2026-08-25:  15b29c2a-3678-450e-8408-598fa7843099   39 calls
-2026-08-26:  15b29c2a-3678-450e-8408-598fa7843099   19 calls
+2026-08-25:  20260825-0000-4000-8000-000000000001   39 calls
+2026-08-26:  20260825-0000-4000-8000-000000000001   19 calls
 ```
 
 **That session id is the session that ratified this plan.** The conversation being used to design the
@@ -218,7 +218,7 @@ it is **misleading**, which is the exact condition this plan names as refuting t
 *"a fidelity loss that makes the viewer's output misleading rather than merely incomplete."*
 
 **Two consequences, both settled as positions 7 and 12.** Day folders are **positional and
-repeatable**, so `extract 2026-08-25 2026-08-26 --session 15b29c2a…` is expressible and
+repeatable**, so `extract 2026-08-25 2026-08-26 --session 20260825-1…` is expressible and
 `extract logs/corpus/2026-*/` extracts everything without needing an `--all` flag or a corpus-root
 concept. And the converter **errors** when a selected session has calls in a folder that was not
 passed, rather than silently reconstructing a partial one. **That error is the whole defence** — it is
@@ -226,7 +226,7 @@ what keeps a cross-day session from failing quietly.
 
 **6 · The real session records exist on this machine, which turns Task 14 from eyeballing into
 diffing.** Claude Code keeps its own records at `~/.claude/projects/<mangled-path>/<session-id>.jsonl`,
-and **all three session ids in the `2026-08-25` index have a file there** — `15b29c2a…`, `8aa605b9…`,
+and **all three session ids in the `2026-08-25` index have a file there** — `20260825-1…`, `8aa605b9…`,
 `ad9392ae…`. *(Established 2026-08-26 by listing filenames only; no session content was read.)*
 
 **Oracle, never input, and the distinction is load-bearing.** A reconstruction can be **diffed against
@@ -522,7 +522,7 @@ role. The ordering now costs nothing and buys nothing, and it is left alone rath
     contains a day of prior conversation"*. **That cannot happen here.** Turns are taken from the
     conversation's *latest* state rather than from per-call deltas, and requests are cumulative — so
     the final call carries the whole conversation and the array is fully expanded whichever folders
-    were passed. Driven on the one real cross-day session, `15b29c2a`, reconstructing from the later
+    were passed. Driven on the one real cross-day session, `20260825-1`, reconstructing from the later
     day alone: **depth 337 either way, and every message identical at every position.**
 
     **What it actually costs was measured, and is enough to keep the error:** **26 turns are
@@ -837,7 +837,7 @@ written; the second is that day finished.
 | **day folders** | **4** — `2026-08-26` appeared | *the "3" one row-group above went stale in a single day* |
 | total index rows | **770** | 10 + 317 + 413 + 30 |
 | populated `agent_id` | **0 of 770** | every row, every folder. The column works; no subagent has ever run |
-| **a session spanning two folders** | `15b29c2a…` — **39** calls on the 25th, **19** on the 26th | the session that ratified this plan |
+| **a session spanning two folders** | `20260825-1…` — **39** calls on the 25th, **19** on the 26th | the session that ratified this plan |
 | distinct sessions | 3 on the 25th, 1 so far on the 26th | plus 3 empty-`session_id` rows on the 25th |
 | **ground-truth session records on disk** | **3 of 3** for the `2026-08-25` index | `~/.claude/projects/…/<session-id>.jsonl`; filenames listed, contents not read |
 

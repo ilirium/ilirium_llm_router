@@ -777,7 +777,7 @@ It looks like it can. *Added 2026-08-26 on the owner's instruction, which asked 
 `uuid`s could be
 recovered from local state.* **Checked the same day: yes, for any session driven on this machine.**
 Claude Code keeps its own session records at `~/.claude/projects/<mangled-path>/<session-id>.jsonl`,
-and **all three session ids in the `2026-08-25` corpus index have a file there** — `15b29c2a…`,
+and **all three session ids in the `2026-08-25` corpus index have a file there** — `20260825-1…`,
 `8aa605b9…`, `ad9392ae…`. *(Established by listing filenames only. No session content was read.)*
 
 **There are two uses for that and only one of them is safe.** As an **oracle** it is worth more than

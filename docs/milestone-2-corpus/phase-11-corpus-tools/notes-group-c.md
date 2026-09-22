@@ -130,7 +130,7 @@ is unchanged. Every comparison breaks on a message whose content never moved.*
 
 **36 conversations across 9 sessions**, keyed by the normalised root message. Each session holds one
 real conversation plus a two-message classifier, a `quota` probe, title generation, and web
-search/fetch calls. Session `15b29c2a` also holds a **66-call subagent conversation** carrying the
+search/fetch calls. Session `20260825-1` also holds a **66-call subagent conversation** carrying the
 parent's `session_id` — finding 4, present and separated.
 
 **It separated the subagent without consulting `agent_id` at all.** That matters because the column
@@ -249,7 +249,7 @@ nothing beyond field names and enumerations was read.*
 **1 · A session is identified by its *filename*, not by `sessionId`.** The loader sets
 `session_id: file_path_str`, and **two files carrying the same `sessionId` are not merged.** This
 closes the question task 12 opened: one file per conversation is safe, and `sessionId` stays verbatim
-in all six of `15b29c2a`'s files. *Had it been the other way, the split would have been undone at the
+in all six of `20260825-1`'s files. *Had it been the other way, the split would have been undone at the
 record layer and the interleaving would have come back.*
 
 **2 · There are ten record types in a real file, not three** — `mode`, `permission-mode`,

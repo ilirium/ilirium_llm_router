@@ -28,7 +28,7 @@ Driven over the live corpus:
 | `--path /v1/messages` | **902** |
 | `--path /v1/messages/count_tokens` | **66** |
 | `--agent a5d7f3de9660cef93` | **67** |
-| `--session 15b29c2a…` **and** `--path /v1/messages` | **253** |
+| `--session 20260825-1…` **and** `--path /v1/messages` | **253** |
 | rows with no `session_id` → `_no-session` | **11** |
 | rows whose `request_ref` is a sentinel | **45** |
 
@@ -68,7 +68,7 @@ which made the decision much cheaper than it first appeared.*
 conversation starts too deep", and **11 of 36 conversations legitimately open at two messages**. A
 threshold that separates 28 from 2 today is a magic number waiting to be wrong.
 
-Checked both ways on the corpus: passing only `2026-08-26` reports that `15b29c2a` also lives in
+Checked both ways on the corpus: passing only `2026-08-26` reports that `20260825-1` also lives in
 `2026-08-25`, and **a session confined to one folder comes back with just that folder** — so it does
 not cry wolf, which is the half that would have made it useless.
 
@@ -112,9 +112,9 @@ the same failure the error exists to prevent one level up. So every selected ses
 Driven through the command a person actually types:
 
 ```
-extract .../2026-08-26 --out … --format jsonl --session 15b29c2a…
+extract .../2026-08-26 --out … --format jsonl --session 20260825-1…
 error: a selected session has calls in a day folder that was not passed.
-  15b29c2a-… also has calls in 2026-08-25
+  20260825-1-… also has calls in 2026-08-25
 ```
 
 **Exit 1, zero files written.**
