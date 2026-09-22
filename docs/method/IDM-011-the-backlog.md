@@ -65,6 +65,23 @@ the section order is deliberate, so ids follow the reading a person actually doe
 is not merely different but unusable**, because several older items carry no recorded date and
 inferring one would freeze a permanent id on a guess.*
 
+***Amended 2026-09-19: ids ascend within a SECTION, not across the whole file.*** **A new item takes
+the next free id and is filed where its subject belongs**, which will usually put it ahead of larger
+ids in later sections. `--check` enforces order per section and says `OUT OF SECTION ORDER` when it
+is broken.
+
+*Why it changed, because the reason is the whole point of writing it down.* **The rule was
+whole-file ascending, and that made the scheme unable to grow.** *Ids are allocated in file order
+and never reused, and a category must match its section — so there was exactly **one** legal
+position for any new item, the end of the last section, whatever it was about. **That section is
+"Not on this list, and why"**, so the first item ever added would have been filed as refused.*
+
+***Nothing had ever been added, which is why nobody noticed.*** **Phase 13 numbered all 38 existing
+items in one bulk pass**, so the file read as ascending *because* it had been numbered from that
+order. **`BKL-0039` was the first id allocated afterwards and it could not be filed where it
+belonged** — found by trying, not by reading. *Per-section ordering is what "the category is the
+section" already implied.*
+
 **Why an id at all.** Items were cited by quoting their bold opening phrase — `../status.md` did it
 and so did phase plans. **A quoted title is not an identifier:** editing a title silently breaks
 every citation of it, nothing checks that, and the break stays invisible until a reader follows one.

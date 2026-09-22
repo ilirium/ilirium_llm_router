@@ -59,6 +59,7 @@ metadata lines and their own heading titles. **Do not type in it.** Change an it
 | `BKL-0015` | 2026-08-19 | open | measurements | What one day of real use actually contains, and where the training floor is | — | — | `epd/EPD-003-capturing-bodies-for-a-corpus.md` |
 | `BKL-0016` | 2026-08-19 | open | measurements | Whether a response dictionary pays | — | — |  |
 | `BKL-0017` | 2026-08-21 | open | measurements | Whether archiving slows a call | — | — |  |
+| `BKL-0043` | 2026-09-22 | open | measurements | Where the rate-limit response headers durably live | — | — |  |
 | `BKL-0018` | — | open | owner-shaped | Prompt-cache warmup probes cost 44% of local wall-clock time | — | — |  |
 | `BKL-0019` | 2026-08-26 | open | owner-shaped | What a reconstructed session cannot contain, and the fix nobody should reach for | — | — |  |
 | `BKL-0020` | 2026-08-18 | open | owner-shaped | Three diagnostics reserved out of Phase 10, deliberately | — | — |  |
@@ -74,6 +75,11 @@ metadata lines and their own heading titles. **Do not type in it.** Change an it
 | `BKL-0030` | 2026-09-02 | open | instruments | `IDM-003` governs the formatter pin and says nothing about the build backend | — | — | `method/IDM-003-development-tooling.md` |
 | `BKL-0031` | — | open | instruments | Static analysis beyond ruff | — | — | `method/IDM-003-development-tooling.md` |
 | `BKL-0034` | 2026-08-24 | open | instruments | Record the Anthropic rate-limit response headers | — | — | BKL-0037 |
+| `BKL-0039` | 2026-09-19 | open | instruments | A protocol matcher, and an HTTP/2-capable inbound | — | — |  |
+| `BKL-0040` | 2026-09-20 | open | instruments | `content-length` is dropped from every reply, so every reply is chunked | — | — |  |
+| `BKL-0041` | 2026-09-20 | open | instruments | `branch-index.py --write` should not be able to delete a row silently | — | — |  |
+| `BKL-0042` | 2026-09-21 | open | instruments | a committed config with the corpus ON | — | — |  |
+| `BKL-0044` | 2026-09-22 | open | instruments | Two more columns: the phase an item was filed in, and whether it is that phase's own debt | — | — |  |
 | `BKL-0035` | 2026-08-26 | open | dictionaries | Dictionary commands — `list`, `show`, `install` | — | — |  |
 | `BKL-0036` | 2026-08-26 | open | dictionaries | A benchmark: what a dictionary is worth against no dictionary | — | — |  |
 | `BKL-0037` | — | superseded | not-on-this-list | The Anthropic 429 rate-limit headers — refused, then overturned | — | — | BKL-0034 |
@@ -563,6 +569,30 @@ from this repository's own numbers:** the local backend's variance is large —
 two-session comparison against LM Studio can be swamped by noise, and the Anthropic rows are the
 tighter instrument.
 
+### BKL-0043 — Where the rate-limit response headers durably live
+
+measurements · open · added 2026-09-22
+
+***Phase 14's Group D, deferred rather than answered, and it is now a live question rather than a
+hypothetical one:*** **the router records those headers again** — `RECORDED_RESPONSE_HEADERS`, at
+`WARNING` on a reply of `400` or worse, with one `INFO` sample of a success per process as the
+control — *and `router.log` is the only place they go.*
+
+**That is enough to read a failure after the fact and not enough to ask a question across failures.**
+*"Which bucket was exhausted on the runs that failed last Tuesday" is a grep over a log file whose
+format nothing guarantees, and the log rotates.*
+
+***Three homes were named when this was Group D, and the choice is the owner's:***
+
+| **A sidecar file** beside `calls.csv` | *Its own schema version, its own columns, and `calls.csv`'s non-goal left intact.* **The most work and the least coupling** |
+| **The corpus day index** | *Ties a header set to the call it came from, which is the join anyone would actually want.* **But it exists only when the corpus is on, and the shipped config has it off** — see `BKL-0042` |
+| **Columns in `calls.csv`** | *The least work and the most reach.* ***Settled position 6 makes `calls.csv` taking new columns a Milestone 2 non-goal, and only the owner can overturn it*** |
+
+**Nothing is blocked on this.** *The headers are recorded; what is missing is a place to ask
+questions of them.* ***And the measurement that would justify the work has not been taken***: nobody
+has yet needed a header set older than the log they were reading.
+
+
 ## Work with an owner-shaped decision behind it
 
 ### BKL-0018 — Prompt-cache warmup probes cost 44% of local wall-clock time
@@ -1017,6 +1047,129 @@ columns"*. **So this needs the non-goal overturned first, or a home that is not 
 same gate the sequence column sits behind.
 
 ---
+
+### BKL-0039 — A protocol matcher, and an HTTP/2-capable inbound
+
+instruments · open · added 2026-09-19
+
+*Out of Phase 14, whose branch is kept unmerged; the full reasoning is in
+`milestone-2-corpus/phase-14-rate-limit-headers/` on `feat/phase-14-rate-limit-headers`.*
+
+**The router speaks HTTP/1.1 to Claude Code and could offer HTTP/2 to Anthropic; Claude Code talking
+to Anthropic directly uses HTTP/2 on both legs.** *The idea is to detect the inbound version and
+match it outbound rather than pick one and hope.*
+
+***Detecting it is already possible*** — `request.scope["http_version"]`. ***Matching it is about ten
+lines***: two `httpx` clients, one built with `http2=True` and one without, chosen per request.
+**`http2=True` only OFFERS h2 over ALPN**, so *"never HTTP/2"* is guaranteeable and *"definitely
+HTTP/2"* is not.
+
+**Why it is parked: the input is a constant.** *Uvicorn's only HTTP implementations are `h11` and
+`httptools`, neither of which speaks h2*, so `http_version` is always `1.1` and the matcher's second
+branch can never execute — **testable only against a faked scope value and never exercised against a
+real request.**
+
+***So the real work is the inbound half***: an h2-capable server — Hypercorn, or a reverse proxy in
+front — **plus TLS on the router**, which it deliberately does not have. *That is a change to what
+the router IS.*
+
+**This is capability, not diagnosis.** *HTTP/2 was eliminated as a cause of anything in `BUG-001` by
+measurement on 2026-09-19.*
+
+### BKL-0040 — `content-length` is dropped from every reply, so every reply is chunked
+
+instruments · open · added 2026-09-20
+
+*Out of Phase 14.* **`DROPPED_FROM_RESPONSE` removes `content-length` from every reply the router
+relays**, so a non-streamed answer that arrived with a known length leaves the router
+chunked. *The header is dropped because the router may change a body's framing, and for a
+**streamed** reply that is correct.*
+
+***For a non-streamed reply it is a latent defect.*** **A client that cannot take a chunked
+response — or that wants the length before reading — meets it**, and nothing in the router's record
+would name the cause. *Nothing known has hit it; it is filed because it was found by reading, not by
+failing.*
+
+***This outlives `BUG-001`.*** *Phase 14 did not fix it because the phase's own symptom turned out to
+have an unrelated cause.*
+
+### BKL-0041 — `branch-index.py --write` should not be able to delete a row silently
+
+instruments · open · added 2026-09-20
+
+*Out of Phase 14, at the owner's request.* **`--write` regenerates the table by replacing it**, so a
+branch that stops being classified as merged simply **loses its row**, and nothing says one went.
+***`--check` reports `STALE` and not which row is at risk.***
+
+***The guard:*** **`--write` should never remove a row without saying so** — print what would go, and
+require a person to agree. *`IDM-001` puts `--write` as the last step of every merge, which is the
+one moment nobody is reading its output*, so the mechanism has to refuse rather than the reader
+having to notice.
+
+**`--check` should name the row too**: *`STALE` is true of a table that gained a row and of a table
+that lost one, and only one of those is a defect.*
+
+### BKL-0042 — a committed config with the corpus ON
+
+instruments · open · added 2026-09-21
+
+*Out of Phase 14, and noticed because it cost a measurement its evidence.* **The run that settled
+that phase's central question is the one whose bodies were never stored.**
+
+***The repository ships exactly one config, and its corpus is off.*** *So any run you later want
+bodies from requires editing `config.yaml` by hand first — which means deciding, before the run,
+that it will be worth keeping.* **That is the decision nobody makes correctly in advance**, and the
+cost is silent: the calls still get a row in `calls.csv`, so nothing looks missing until somebody
+wants a body.
+
+***The fix is a config file and nothing else.*** *The corpus is already a switch; this is only the
+combination nobody committed.* **Or a documented one-line override**, if a second committed config
+is judged worse than a flag.
+
+### BKL-0044 — Two more columns: the phase an item was filed in, and whether it is that phase's own debt
+
+instruments · open · added 2026-09-22
+
+*Owner's request, 2026-09-22.* **The backlog says what an item is and not where it came from.**
+*Reading it, you cannot tell the difference between a follow-up a phase generated about its own
+work — more tests, a feature half-built, a defect found and not fixed — and an unrelated observation
+somebody filed while passing.* ***Those two kinds want different treatment:*** the first is debt that
+comes due when anyone next touches that area; the second is free-floating and may never be worth
+doing at all.
+
+### It is NOT simply "add two columns", and the difference matters
+
+***There is already a `Phase` column, and it already means something else.*** **The grammar accepts
+`· phase <N>` today and the generated table has the column** — *but it is written only on **done**
+items, where it records the phase that **completed** the item.* **All 34 open items have it empty.**
+
+*So the proposal collides with an existing field, and the first decision is what to do about it:*
+
+| **Rename both** | `filed-in-phase N` and `done-in-phase N`, which makes each unambiguous and rewrites every done item's metadata line |
+| **Keep `phase` as done-in** | and add a differently-named field for filed-in. *Cheaper; leaves one field whose name says less than it means* |
+
+### What the second column actually records
+
+**A relation, not a fact** — *whether the item is the filing phase's own work or merely contemporary
+with it.* **Two values are probably enough** (*the phase's own debt* / *filed while passing*), **and
+the wording matters more than the mechanism**, because a value nobody can assign consistently is a
+column of guesses.
+
+### The cost is the back-fill, and it is most of the work
+
+***Forty-two ids exist and nearly all predate the idea.*** **The filed-in phase is usually derivable**
+— an item's `added` date against which phase was in flight then, which `reference/branches.md` and
+the milestone plans can supply — *but some items carry no date at all, and `IDM-011` already refuses
+to infer one, because a guess would freeze into a permanent record.* **The relation column is not
+derivable by any tool**: *somebody has to read each item and decide.*
+
+***So a partial back-fill is the likely shape***, and the item should say so rather than pretend
+otherwise: **fill what is known, leave the rest blank, and never guess.** *A blank that means "nobody
+has said" is honest; a phase number inferred from a date is a fact this repository did not have.*
+
+*Mechanically it is small: two fields in `META`, two columns in the writer, and the checks that
+`IDM-011` describes.* **The work is the forty-two decisions, not the parser.**
+
 
 ## Dictionaries
 
