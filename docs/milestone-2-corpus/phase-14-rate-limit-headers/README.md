@@ -1,7 +1,7 @@
 # Phase 14 — the rate-limit headers, and the bug that turned out to be ours
 
 ***This phase did not merge, and that was a decision rather than an accident.*** **Its branch,
-`feat/phase-14-rate-limit-headers`, is kept unmerged as an archive** — *nothing on it is reverted,
+`unmerged/phase-14-rate-limit-headers`, is kept unmerged as an archive** — *nothing on it is reverted,
 every experiment still runs, and every measurement is still there.* **This file is what `main` keeps
 of it: why it opened, what was done, what was concluded, and what crossed over.**
 

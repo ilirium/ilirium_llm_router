@@ -96,13 +96,14 @@ from pathlib import Path
 #   "pin"     — a worktree parked on the trunk. Not work, never will be, and its tip moves with the
 #               trunk. `temp/to-run-server`.
 #   "archive" — a branch with its own commits that is deliberately NEVER merging, kept for what it
-#               records. `feat/phase-14-rate-limit-headers` is the first.
+#               records, and carrying the `unmerged/` prefix `IDM-001` defines.
+#               `unmerged/phase-14-rate-limit-headers` is the first.
 #
 # **Both are TABLED rather than excluded**, because the table is where a reader looks to find out
 # what a branch is, and "absent" is the one answer that teaches them nothing.
 NOT_IN_FLIGHT: dict[str, str] = {
     "temp/to-run-server": "pin",
-    "feat/phase-14-rate-limit-headers": "archive",
+    "unmerged/phase-14-rate-limit-headers": "archive",
 }
 
 DESCRIPTIONS: dict[str, tuple[int | None, int | None, str]] = {
@@ -300,12 +301,22 @@ DESCRIPTIONS: dict[str, tuple[int | None, int | None, str]] = {
     "feat/phase-14-rate-limit-headers": (
         2,
         14,
-        "The Anthropic rate-limit response headers — and, from its first day, the bug that turned "
-        "out to be ours: `CLAUDE_CODE_ATTRIBUTION_HEADER=0` in this repository's own README, which "
-        "made Claude Code's auto mode unusable through the router. **Deliberately never merged.** "
-        "Its header recorder, its gzip `400` fix and its documentation fix were taken to `main` "
-        "separately; the thirteen eliminated hypotheses, the hosts route, the TLS terminator and a "
-        "working attribution injection are kept here and nowhere else. See "
+        "What Phase 14 shipped: the rate-limit response header recorder it was opened to build, the "
+        "gzip `400` fix — a live defect in `peek`, not experiment scaffolding — and the fix that "
+        "actually resolved `BUG-001`, which was removing `CLAUDE_CODE_ATTRIBUTION_HEADER=0` from "
+        "five of this repository's own documents. **The investigation it came out of is on "
+        "`unmerged/phase-14-rate-limit-headers` and did not merge.** See "
+        "`milestone-2-corpus/phase-14-rate-limit-headers/README.md`.",
+    ),
+    "unmerged/phase-14-rate-limit-headers": (
+        2,
+        14,
+        "The investigation behind `BUG-001`, kept and **deliberately never merged**. Three days on a "
+        "`429` that turned out to be ours: `CLAUDE_CODE_ATTRIBUTION_HEADER=0`, in this repository's "
+        "own README since 2026-08-07, suppressing the attribution block Anthropic gates on. "
+        "Thirteen eliminated hypotheses, a TLS-fingerprint comparison, a hosts route with its own "
+        "terminator and a working attribution injection are kept here and nowhere else; what "
+        "shipped went to `main` on `feat/phase-14-rate-limit-headers`. See "
         "`milestone-2-corpus/phase-14-rate-limit-headers/README.md` and `bugs/BUG-001-…`.",
     ),
     "temp/to-run-server": (

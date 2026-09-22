@@ -11,7 +11,7 @@ is and what is in flight. Three sections, most volatile first.
 the session that wrote it, it has become a document and gets its own file.*
 
 **2026-09-22 — Phase 14 is CLOSED WITHOUT MERGING, and that was a decision.** *Its branch,
-`feat/phase-14-rate-limit-headers`, is kept as an archive and must not be deleted.*
+`unmerged/phase-14-rate-limit-headers`, is kept as an archive and must not be deleted.*
 
 ***The phase opened to record the Anthropic rate-limit response headers and spent three days on a
 `429` that turned out to be ours.*** **`CLAUDE_CODE_ATTRIBUTION_HEADER=0`, in this repository's own
@@ -248,7 +248,7 @@ permanent record of a phase's branch, fork point and merge commit is still its p
 **Nothing is in flight.** *Phase 13 was entered here at task 1 and removed at its merge on
 2026-09-17; its row is in `reference/branches.md` and its permanent record is its phase note.*
 
-***`feat/phase-14-rate-limit-headers` is NOT in flight and is not listed here — it is an archive.***
+***`unmerged/phase-14-rate-limit-headers` is NOT in flight and is not listed here — it is an archive.***
 **A branch that is kept, unmerged, and finished is a third state this section never had**, and it is
 now **declared** in `branch-index.py`'s `NOT_IN_FLIGHT` so the generated table carries a row for it
 rather than excluding it as somebody's unfinished work. *`temp/to-run-server` is declared the same
@@ -278,6 +278,8 @@ look"* — was wrong for two weeks.
 
 **Measured 2026-09-22 rather than reported.** *`origin/main` is at `ac2976e`, identical to local
 `main`.* **`origin/feat/phase-14-rate-limit-headers` is at `4b40063` — 47 of that branch's commits,
+*(the REMOTE still carries the pre-rename name; renaming a branch is local and does not touch
+`origin`)* —
 and a clean ancestor of its tip**, so the remote is behind rather than diverged.
 
 ***The remote still holds that branch's pre-sanitization history.*** **The session ids and request

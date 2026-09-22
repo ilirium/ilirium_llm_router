@@ -1053,7 +1053,7 @@ same gate the sequence column sits behind.
 instruments · open · added 2026-09-19
 
 *Out of Phase 14, whose branch is kept unmerged; the full reasoning is in
-`milestone-2-corpus/phase-14-rate-limit-headers/` on `feat/phase-14-rate-limit-headers`.*
+`milestone-2-corpus/phase-14-rate-limit-headers/` on `unmerged/phase-14-rate-limit-headers`.*
 
 **The router speaks HTTP/1.1 to Claude Code and could offer HTTP/2 to Anthropic; Claude Code talking
 to Anthropic directly uses HTTP/2 on both legs.** *The idea is to detect the inbound version and

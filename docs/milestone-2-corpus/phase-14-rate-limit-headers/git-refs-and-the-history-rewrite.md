@@ -32,7 +32,7 @@ else is invisible to it**, however branch-shaped the name looks.
 
 | Ref | Where it lives | What lists it |
 |---|---|---|
-| `feat/phase-14-rate-limit-headers` | `refs/heads/` | `git branch` |
+| `unmerged/phase-14-rate-limit-headers` | `refs/heads/` | `git branch` |
 | `archive/phase-14-pre-sanitize` | `refs/tags/` | `git tag -l` |
 | `refs/sanitized/phase-14` | *nowhere standard* | `git for-each-ref`, `git show-ref` |
 
@@ -69,7 +69,7 @@ Three separate things happened, and only the first made commits:
 2. ***`git fetch` COPIED those objects into `.bare`.*** *It transferred the commits, trees and blobs
    this repository lacked and then wrote one ref file.* **The clone kept its copy; nothing moved.**
 3. ***`git reset --hard` MOVED A POINTER.*** *It rewrote the 40 bytes in
-   `refs/heads/feat/phase-14-rate-limit-headers` so the branch named the new history instead of the
+   `refs/heads/…/phase-14-rate-limit-headers` so the branch named the new history instead of the
    old.* **No objects were copied at that step** — *both histories were already in the store.*
 
 ***So the pre-rewrite commits were never deleted.*** **They are still in `.bare`, reachable from the
@@ -91,6 +91,13 @@ own copies forward instead.*
 ---
 
 ## 3. Every command, in order
+
+> ***The commands below name the branch `feat/phase-14-rate-limit-headers`, which is what it was
+> called when they ran.*** **It was renamed to `unmerged/phase-14-rate-limit-headers` on 2026-09-22**,
+> *after all of this, when the prefix was made to say that the branch never merges.* **They are not
+> updated**: *a command block that records what was executed stops being a record the moment it is
+> edited to match a later world.*
+
 
 ***Stage 0 — the safety net.***
 

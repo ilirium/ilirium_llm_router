@@ -19,6 +19,7 @@ accepted duplication" — and `../README.md` points here.
 | `chore/<slug>` | tooling, dependencies, formatter bumps |
 | `fix-slop-docs/<slug>` | a documentation defect whose cause is LLM slop |
 | `fix-slop-code/<slug>` | the same, in `src/` |
+| `unmerged/<slug>` | **work that is kept and deliberately never merged** — *see "A phase may close WITHOUT merging" below* |
 
 **The last two name a *cause* rather than a kind of artefact, and that breaks this section's own
 heading on purpose.** *Added 2026-09-02 on the owner's decision.* Everything above answers *what
@@ -38,6 +39,14 @@ silently.
 
 **Both take a phase number like any other prefix** — the rule below is not narrowed for them, though
 numbered slop work would be unusual.
+
+***`unmerged/` breaks the heading a third way, and deliberately: it names a FATE rather than a kind
+of work or a cause.*** **Added 2026-09-22, out of Phase 14.** *Everything on such a branch is
+ordinary `feat/` or `docs/` work by the artefact axis — what the prefix records is that it stops
+here.* **It shares its slug with the `feat/` branch that carried the shipped part to the trunk**,
+because *the slug names the phase and both branches belong to it* — and the phase's folder rule
+below therefore holds for both. **The prefix is what tells them apart in `git branch`, which is the
+one place the generated index is not.**
 
 **Any of them may carry a phase number:**
 
@@ -291,6 +300,11 @@ is kept, unmerged, and neither happens.*
 topologically identical to somebody's unfinished work** — *so it is excluded from the table as
 in-flight, and the reader who goes looking finds nothing.* **Declare it in `NOT_IN_FLIGHT` as an
 `archive`**; it then gets a row like any other, reading `never merged`.
+
+***And give it the `unmerged/` prefix*** — *keeping the slug it shares with the `feat/` branch that
+took the shipped part to the trunk.* **`git branch` is the one view that reads neither the generated
+index nor `status.md`**, so the fate has to be in the name or it is invisible exactly where a person
+looks first.
 
 ***The branch must never be deleted***, which is already this document's rule for merged branches
 and is load-bearing here for a second reason: **a description naming a branch that is gone makes

@@ -40,7 +40,7 @@ with the variable set.*
 
 ## Where the full investigation lives
 
-***Phase 14, on `feat/phase-14-rate-limit-headers`, which is deliberately NOT merged.*** *Three days,
+***Phase 14, on `unmerged/phase-14-rate-limit-headers`, which is deliberately NOT merged.*** *Three days,
 thirteen eliminated hypotheses, a TLS-fingerprint comparison, a hosts-route experiment and a
 working attribution injection are all kept there as an archive.* **See
 `../milestone-2-corpus/phase-14-rate-limit-headers/README.md` for what it contains and why it stayed
