@@ -8,6 +8,7 @@ bytes and headers it carried when it got there.
 from __future__ import annotations
 
 import json
+import logging
 
 import httpx
 import pytest
@@ -416,3 +417,381 @@ def test_peek_finds_the_model() -> None:
 def test_peek_finds_the_stream_flag(body: bytes, expected: bool | None) -> None:
     """Absent reads as false; only an unparseable body or a non-boolean reads as unknown."""
     assert peek(body).stream is expected
+
+
+# --- Phase 14: fixtures for the rate-limit header recorder and the gzip peek ---
+
+INFO = "ilirium_llm_router.proxy"
+
+RATE_LIMITED = {
+    "retry-after": "42",
+    "anthropic-ratelimit-requests-limit": "1000",
+    "anthropic-ratelimit-requests-remaining": "0",
+    "anthropic-ratelimit-requests-reset": "2026-09-18T12:00:00Z",
+    "request-id": "req_redacted0000000000000001",
+}
+
+UNIFIED = {
+    "anthropic-ratelimit-unified-status": "allowed",
+    "anthropic-ratelimit-unified-5h-utilization": "31",
+    "anthropic-ratelimit-unified-7d-status": "allowed",
+    "anthropic-ratelimit-unified-representative-claim": "whatever-this-is",
+}
+
+
+def gzipped(payload: bytes) -> bytes:
+    import gzip
+
+    return gzip.compress(payload)
+
+
+def body_of(size: int) -> bytes:
+    """A routable request body of exactly `size` bytes — the model name has to survive the padding."""
+    head = b'{"model":"claude-sonnet-5","messages":[{"role":"user","content":"'
+    tail = b'"}]}'
+    return head + b"x" * (size - len(head) - len(tail)) + tail
+
+
+# --- Phase 14, Group B: the rate-limit response header recorder ---
+
+def test_a_failed_reply_logs_the_allowlisted_headers_with_their_values(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    upstream = Upstream(streamed(429, headers=RATE_LIMITED, chunks=[b'{"type":"error"}']))
+    with (
+        caplog.at_level(logging.WARNING, logger="ilirium_llm_router.proxy"),
+        running(upstream) as client,
+    ):
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    line = "\n".join(caplog.messages)
+    assert "replied 429" in line
+    assert "retry-after=42" in line
+    assert "anthropic-ratelimit-requests-remaining=0" in line
+    assert "request-id=req_redacted0000000000000001" in line
+
+def test_a_header_outside_the_allowlist_never_reaches_the_log(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The promise is that nothing unnamed is written. A credential is the case that matters."""
+    upstream = Upstream(
+        streamed(
+            429,
+            headers={
+                **RATE_LIMITED,
+                "authorization": "Bearer sk-secret-value",
+                "set-cookie": "session=secret-value",
+                "anthropic-organization-id": "org_secret_value",
+            },
+            chunks=[b'{"type":"error"}'],
+        )
+    )
+    with (
+        caplog.at_level(logging.WARNING, logger="ilirium_llm_router.proxy"),
+        running(upstream) as client,
+    ):
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    line = "\n".join(caplog.messages)
+    assert "secret-value" not in line
+    assert "authorization" not in line
+    assert "set-cookie" not in line
+    assert "organization" not in line
+    # ...while the allowlisted ones still came through, so this is not passing by logging nothing.
+    assert "retry-after=42" in line
+
+def test_an_unlisted_rate_limit_bucket_is_named_but_never_valued(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """A bucket Anthropic adds later must become visible without its value being recorded."""
+    upstream = Upstream(
+        streamed(
+            429,
+            headers={**RATE_LIMITED, "anthropic-ratelimit-tokens-per-hour-remaining": "7"},
+            chunks=[b'{"type":"error"}'],
+        )
+    )
+    with (
+        caplog.at_level(logging.WARNING, logger="ilirium_llm_router.proxy"),
+        running(upstream) as client,
+    ):
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    line = "\n".join(caplog.messages)
+    assert "anthropic-ratelimit-tokens-per-hour-remaining=<unlisted>" in line
+    assert "=7" not in line
+
+def test_a_rejection_carrying_no_rate_limit_headers_says_so(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The finding this phase is most likely to make, and a blank tail would hide it.
+
+    A `rate_limit_error` that names no exhausted bucket is not a rate limit.
+    """
+    upstream = Upstream(streamed(429, chunks=[b'{"type":"error"}']))
+    with (
+        caplog.at_level(logging.WARNING, logger="ilirium_llm_router.proxy"),
+        running(upstream) as client,
+    ):
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert "replied 429" in "\n".join(caplog.messages)
+    assert "(none)" in "\n".join(caplog.messages)
+
+def test_the_relayed_reply_is_untouched_by_reading_its_headers() -> None:
+    """Byte-relay is not negotiable. Reading headers must not change what the caller receives."""
+    upstream = Upstream(streamed(429, headers=RATE_LIMITED, chunks=[b'{"type":"error"}']))
+    with running(upstream) as client:
+        reply = client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert reply.status_code == 429
+    assert reply.content == b'{"type":"error"}'
+    # The client still receives the headers; recording them is a copy, not a move.
+    assert reply.headers["retry-after"] == "42"
+    assert reply.headers["anthropic-ratelimit-requests-remaining"] == "0"
+
+
+# The control for the four tests above. "The 429 carried no rate-limit headers" is only evidence
+# that something is odd if a *successful* reply on the same credential carries some.
+
+INFO = "ilirium_llm_router.proxy"
+
+def test_a_successful_reply_never_warns(caplog: pytest.LogCaptureFixture) -> None:
+    """Nothing is wrong, so nothing warns. The success path logs at INFO and only once -- below."""
+    upstream = Upstream(streamed(200, headers=RATE_LIMITED))
+    with (
+        caplog.at_level(logging.WARNING, logger="ilirium_llm_router.proxy"),
+        running(upstream) as client,
+    ):
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert caplog.messages == []
+
+def test_the_first_successful_reply_samples_its_headers_once(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    upstream = Upstream(streamed(200, headers=RATE_LIMITED))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    sampled = [m for m in caplog.messages if "sampling rate-limit headers" in m]
+    assert len(sampled) == 1
+    assert "anthropic-ratelimit-requests-limit=1000" in sampled[0]
+
+def test_the_sample_is_taken_only_once_per_process(caplog: pytest.LogCaptureFixture) -> None:
+    """Every call reporting its buckets would drown the file the failures have to be found in."""
+    upstream = Upstream(streamed(200, headers=RATE_LIMITED))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        for _ in range(3):
+            upstream.reply = streamed(200, headers=RATE_LIMITED)
+            client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert len([m for m in caplog.messages if "sampling rate-limit headers" in m]) == 1
+
+def test_a_burst_of_failures_does_not_consume_the_sample(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The case the real session produced: it opened with 429s, and a success came later.
+
+    If a failure took the latch, a session shaped like that one would never sample a success at
+    all -- and the control would be silently missing exactly when it is needed.
+    """
+    upstream = Upstream(streamed(429, headers=RATE_LIMITED, chunks=[b'{"type":"error"}']))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        for _ in range(2):
+            upstream.reply = streamed(429, headers=RATE_LIMITED, chunks=[b'{"type":"error"}'])
+            client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+        assert not [m for m in caplog.messages if "sampling rate-limit headers" in m]
+
+        upstream.reply = streamed(200, headers=RATE_LIMITED)
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert len([m for m in caplog.messages if "sampling rate-limit headers" in m]) == 1
+
+def test_the_sample_obeys_the_same_allowlist(caplog: pytest.LogCaptureFixture) -> None:
+    """A second place headers are written is a second place a credential could land."""
+    upstream = Upstream(
+        streamed(200, headers={**RATE_LIMITED, "authorization": "Bearer sk-secret-value"})
+    )
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    # Scoped to the reply sampler's own line rather than to every message, because the assertion
+    # is about what THIS line may contain. On the phase-14 branch a second sampler existed that
+    # legitimately prints `authorization=<unlisted>` -- the name with no value -- and a test that
+    # swept every message failed against it. That sampler is not here; the scoping is kept because
+    # it is the correct scope either way.
+    line = next(m for m in caplog.messages if "sampling rate-limit headers" in m)
+    assert "secret-value" not in line
+    assert "authorization" not in line
+    assert "retry-after=42" in line
+
+def test_a_reply_with_no_rate_limit_headers_still_samples(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """`(none)` on a success is the answer that makes the 429's `(none)` mean nothing."""
+    upstream = Upstream(streamed(200))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    sampled = [m for m in caplog.messages if "sampling rate-limit headers" in m]
+    assert len(sampled) == 1 and "(none)" in sampled[0]
+
+
+# Discovered 2026-09-18: a subscription credential is metered by `anthropic-ratelimit-unified-*`,
+# and not one of the documented API-key bucket names ever arrives on it.
+
+UNIFIED = {
+    "anthropic-ratelimit-unified-status": "allowed",
+    "anthropic-ratelimit-unified-5h-utilization": "31",
+    "anthropic-ratelimit-unified-7d-status": "allowed",
+    "anthropic-ratelimit-unified-representative-claim": "whatever-this-is",
+}
+
+def test_the_unified_family_is_recorded_with_its_values(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    upstream = Upstream(streamed(200, headers=UNIFIED))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    line = "\n".join(caplog.messages)
+    assert "anthropic-ratelimit-unified-status=allowed" in line
+    assert "anthropic-ratelimit-unified-5h-utilization=31" in line
+    assert "anthropic-ratelimit-unified-7d-status=allowed" in line
+
+def test_the_representative_claim_is_named_but_its_value_withheld(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Its name is not the vocabulary of counters, and nobody has established what it holds.
+
+    Held back on purpose rather than by oversight: adding a name to the allowlist is one line,
+    and taking a value back out of a log file is not.
+    """
+    upstream = Upstream(streamed(200, headers=UNIFIED))
+    with caplog.at_level(logging.INFO, logger=INFO), running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    line = "\n".join(caplog.messages)
+    assert "anthropic-ratelimit-unified-representative-claim=<unlisted>" in line
+    assert "whatever-this-is" not in line
+
+# --- Phase 14: the gzip 400 — the model field was there, read compressed ---
+
+def test_a_gzipped_body_is_routed_by_the_model_inside_it() -> None:
+    """***The defect itself.*** The `model` field is there; the router was reading it compressed."""
+    upstream = Upstream()
+    with running(upstream) as client:
+        client.post(
+            "/v1/messages",
+            content=gzipped(CLAUDE_BODY),
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "gzip"},
+        )
+
+    assert str(upstream.received.url) == "https://api.anthropic.com/v1/messages"
+
+def test_a_gzipped_body_is_relayed_still_compressed() -> None:
+    """***The promise worth guarding, and the one a decode-to-peek fix is most likely to break.***
+
+    The decoded copy is for routing only. What arrived is what goes upstream -- byte for byte, or
+    the prompt-cache prefix stops matching and every call costs full price.
+    """
+    body = gzipped(CLAUDE_BODY)
+    upstream = Upstream()
+    with running(upstream) as client:
+        client.post(
+            "/v1/messages",
+            content=body,
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "gzip"},
+        )
+
+    assert upstream.received.content == body
+    assert upstream.received.content != CLAUDE_BODY
+
+def test_a_gzipped_local_model_still_goes_to_lmstudio() -> None:
+    """Routing reads the decoded copy, so both destinations have to survive it -- not just the one."""
+    upstream = Upstream()
+    with running(upstream) as client:
+        client.post(
+            "/v1/messages",
+            content=gzipped(LOCAL_BODY),
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "gzip"},
+        )
+
+    assert str(upstream.received.url) == "http://localhost:1234/v1/messages"
+
+def test_an_encoding_the_router_cannot_read_says_so() -> None:
+    """*"Carries no 'model' field"* sent a session hunting for a field that was there.
+
+    `br` is refused rather than guessed at: it is not a dependency, and a wrong guess about a
+    compression format looks exactly like a corrupt body.
+    """
+    upstream = Upstream()
+    with running(upstream) as client:
+        reply = client.post(
+            "/v1/messages",
+            content=b"\x00\x01\x02not-brotli",
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "br"},
+        )
+
+    assert reply.status_code == 400
+    message = reply.json()["error"]["message"]
+    assert "'br'-encoded" in message and "cannot read it" in message
+    assert "no 'model' field" not in message
+    assert upstream.requests == []
+
+def test_a_body_that_inflates_past_the_cap_is_refused() -> None:
+    """The zip-bomb floor. The catch-all route means the caller is not necessarily Claude Code."""
+    from ilirium_llm_router.proxy import PEEK_MAX_DECOMPRESSED
+
+    upstream = Upstream()
+    bomb = gzipped(b"{" + b" " * (PEEK_MAX_DECOMPRESSED + 1024))
+    assert len(bomb) < 100_000, "the point is that a small body inflates hugely"
+    with running(upstream) as client:
+        reply = client.post(
+            "/v1/messages",
+            content=bomb,
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "gzip"},
+        )
+
+    assert reply.status_code == 400
+    assert "inflates past" in reply.json()["error"]["message"]
+    assert upstream.requests == []
+
+def test_a_corrupt_gzip_body_is_refused_by_name() -> None:
+    upstream = Upstream()
+    with running(upstream) as client:
+        reply = client.post(
+            "/v1/messages",
+            content=b"not gzip at all",
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "gzip"},
+        )
+
+    assert reply.status_code == 400
+    assert "did not decompress" in reply.json()["error"]["message"]
+
+def test_an_uncompressed_body_is_untouched_by_any_of_this() -> None:
+    """The overwhelmingly common path, asserted so the decoder cannot quietly capture it."""
+    upstream = Upstream()
+    with running(upstream) as client:
+        client.post("/v1/messages", content=CLAUDE_BODY, headers=CLAUDE_CODE_HEADERS)
+
+    assert upstream.received.content == CLAUDE_BODY
+    assert str(upstream.received.url) == "https://api.anthropic.com/v1/messages"
+
+def test_the_catch_all_forwards_a_body_it_cannot_read() -> None:
+    """It forwards rather than refuses, so an unreadable body changes nothing about where it goes."""
+    upstream = Upstream()
+    with running(upstream) as client:
+        client.post(
+            "/api/hello",
+            content=b"\x00\x01\x02",
+            headers={**CLAUDE_CODE_HEADERS, "content-encoding": "br"},
+        )
+
+    assert str(upstream.received.url) == "https://api.anthropic.com/api/hello"
+
+
+# Phase 14, 2026-09-19. What the CLIENT receives when a reply arrives compressed. Four documents
+# rest on these two facts -- notes.md, for-the-owner.md entry 20, BUG-001 and the wiki page -- and
+# until this test they rested on a script run once in a shell and never saved.
