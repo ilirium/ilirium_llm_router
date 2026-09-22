@@ -29,9 +29,18 @@ straight at it:
 ```
 ANTHROPIC_BASE_URL=http://localhost:1234
 ANTHROPIC_AUTH_TOKEN=lmstudio
-CLAUDE_CODE_ATTRIBUTION_HEADER=0
 claude --model <lmstudio-model-id>
 ```
+
+> **`CLAUDE_CODE_ATTRIBUTION_HEADER=0` stood in that block until 2026-09-22 and has been removed
+> from it.** *The variable is real and it does something*: it suppresses a block Claude Code adds to
+> the request body identifying itself and its call site. **Against Anthropic that block is load-bearing
+> — suppressing it gets a non-streamed request rejected `429`, which is `BUG-001`** — and this block,
+> pointed at LM Studio, is where the line was copied *from*.
+>
+> ***Whether LM Studio cares either way has never been measured.*** **So it is documented here rather
+> than prescribed**: set it if you have a reason to, and know that the reason cannot be "the router's
+> quick start does it", because that line is gone too.
 
 So both sides of the router speak the *same* protocol, and the router is a **model-name dispatcher /
 reverse proxy**, not a translator:

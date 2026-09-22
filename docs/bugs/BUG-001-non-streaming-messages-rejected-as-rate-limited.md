@@ -1,13 +1,52 @@
 # BUG-001 — Non-streamed `/v1/messages` rejected as rate-limited
 
-**Status: open. Last confirmed 2026-08-25.**
+***Status: RESOLVED 2026-09-22. The cause was this repository's own `README.md`.***
 
-Every `POST /v1/messages` sent with `stream: false` to `api.anthropic.com` returns **HTTP 429**
-`rate_limit_error`, while a streamed request **2.8× larger** to the same model, on the same
-credential, through the same router process, succeeds **0.6 seconds later**.
+**`CLAUDE_CODE_ATTRIBUTION_HEADER=0`.** *Our quick start told the operator to set it, from
+2026-08-07 (`7cd90f9`) until 2026-09-22, with no stated reason in any of the five documents that
+carried it.* **The variable suppresses an attribution block Claude Code puts in the *body* of its
+requests, and Anthropic rejects a non-streamed `POST /v1/messages` that arrives without one.**
 
-The 429 is not a rate limit. It is a categorical rejection of one request shape, wearing a rate
-limit's status code.
+***The router was never at fault.*** *It was faithfully carrying a client our own documentation had
+told the operator to misconfigure.*
+
+## The measurement that named it
+
+**2026-09-21, one machine, one router process, no restart between the two halves** — the only
+difference is one environment variable in the client's shell:
+
+| | `CLAUDE_CODE_ATTRIBUTION_HEADER` | Non-streamed `/v1/messages` |
+|---|---|---|
+| **A** | **`=0`** | ***33 × 429*** |
+| **B** | ***absent*** | **0 × 429**, five classifier calls, all `200` |
+
+***And the mechanism was confirmed separately, by intervention rather than correlation.*** *Twenty
+minutes before run A, with the variable still set, a build that put the block back **from the router
+side** carried twelve non-streamed calls to `200`.* **Supply the block and the rejections stop;
+withhold it and they return.**
+
+*The day reads `ok → 429 → ok` inside one hour, which is not the shape of a recovering quota.*
+
+## What was originally claimed here, and what of it survives
+
+**This document said the 429 was *"a categorical rejection of one request shape"*.** ***That was
+half right and the half it got wrong is the important half:*** *the rejected shape is not "non-streamed"
+— it is **"non-streamed and carrying no attribution block"**, and the block was absent because we
+were switching it off.*
+
+***Everything measured below still stands.*** **The figures, the timings, the retry behaviour and
+the refutation table were all taken correctly** — *they describe, accurately, a router being driven
+with the variable set.*
+
+## Where the full investigation lives
+
+***Phase 14, on `feat/phase-14-rate-limit-headers`, which is deliberately NOT merged.*** *Three days,
+thirteen eliminated hypotheses, a TLS-fingerprint comparison, a hosts-route experiment and a
+working attribution injection are all kept there as an archive.* **See
+`../milestone-2-corpus/phase-14-rate-limit-headers/README.md` for what it contains and why it stayed
+on a branch.**
+
+***The fix that shipped is five documents losing a line.***
 
 ## Why it matters here
 
@@ -85,10 +124,19 @@ the boundary is real**, not an artefact of a truncated file. The regression fall
 and 2026-08-24; nothing in this slice narrows it further, because no traffic was recorded on the 22nd
 or 23rd.
 
-## What would prove it fixed
+## What proved it fixed, and why the bar was set where it was
 
-**An absence of 429s proves nothing** — see `BUG-000-about-these-documents.md`. A quiet session looks
-exactly like a fix. The positive check:
+**An absence of 429s proves nothing** — see `BUG-000-about-these-documents.md`. *A quiet session looks
+exactly like a fix, and this bug produced four of them before it was understood.* **What settled it
+was the paired A/B above**: *not "the 429s went away" but "they returned when the variable came back,
+on the same process."*
+
+***One thing is still missing from the record and is worth naming.*** **No run has yet produced a
+BLOCKED verdict from auto mode's classifier through the router** — *every classifier call measured
+came back at stage 1.* **So the allow path is demonstrated and the block path is assumed.** *It is
+`BUG-000`'s standing warning, and it is not a reason to keep this open.*
+
+The original positive check, which still works:
 
 > Send a `POST /v1/messages` with `stream: false`, a body of roughly 150 KB, to `claude-opus-5`, and
 > get **HTTP 200**. Then confirm in `logs/telemetry/calls.csv` that the row shows `path=/v1/messages`,
@@ -98,18 +146,20 @@ Driving Claude Code with auto mode on produces exactly that request as a side ef
 this was found. **Record the Claude Code version when the check is run** — if the fix turns out to be
 client-side, the version is the only thing that will identify it.
 
-## What the router cannot tell you, and the work that would change it
+## What the router can now tell you, which it could not when this was written
 
-A 429 writes `rate_limit_error: Error` and nothing more. **Which bucket was hit, and when it clears,
-are in response headers the recorder does not read** — `retry-after` and the `anthropic-ratelimit-*`
-family. That work is **Phase 13** — allocated on the Phase 11 branch and landing in
-`../milestone-2-corpus/implementation-plan.md` with it, so if this document reached `main` first, look
-there after Phase 11 merges. It carries two gates: `calls.csv` taking no new columns is a Milestone 2
-non-goal, and the store's promise of bodies-only-never-headers means a **named header allowlist**
-rather than a copy.
+***This section used to say the headers were unread and that the work was Phase 13.*** **Both are
+now wrong**: *the work was **Phase 14**, and it shipped.* **A reply of `400` or worse is logged with
+its `retry-after` and `anthropic-ratelimit-*` values** — `RECORDED_RESPONSE_HEADERS`, an explicit
+allowlist of names rather than a copy, *so the store's bodies-only-never-headers promise holds* —
+**with one sampled successful reply per process as the control.**
 
-Until then this document rests on timing and a streaming control — **reconstruction rather than
-measurement**, and honest about it.
+***That control is what turns "the rejection named no bucket" into a finding rather than a guess.***
+*Without it, "this rejection carried no rate-limit headers" and "this credential is never sent
+them" are indistinguishable, and only the first reads like evidence.*
+
+**Where those headers durably live beyond `router.log` is `BKL-0043`** — *`calls.csv` taking new
+columns is still a Milestone 2 non-goal, and overturning it is the owner's.*
 
 ## Upstream
 
@@ -119,9 +169,13 @@ through a proxy from one the proxy produced:
 - [`anthropics/claude-code#82653`](https://github.com/anthropics/claude-code/issues/82653)
 - [`BerriAI/litellm#30365`](https://github.com/BerriAI/litellm/issues/30365)
 
-**Neither has been told what is in this file.** The paired control — same model, same second, larger
-streamed request accepted — is the thing they lack, and reporting it is an open action rather than
-something already done.
+***Neither was told, and the report is WITHDRAWN*** — **owner's decision, 2026-09-20, and the
+cause found the next day made it the right one.** *What would have been filed is our own
+configuration, reported as somebody else's defect.*
+
+**Enough detail stays in this file for anyone who wants to take the underlying behaviour upstream
+later** — *that a non-streamed `/v1/messages` without an attribution block is refused with a status
+code that misdescribes it is a real observation about the API, and it is not a bug in this router.*
 
 ## A correction to an earlier figure
 

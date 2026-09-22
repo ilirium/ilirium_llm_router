@@ -55,9 +55,15 @@ is disruptive.
 
 ```bash
 cd /tmp/router-test
-ANTHROPIC_BASE_URL=http://127.0.0.1:8787 CLAUDE_CODE_ATTRIBUTION_HEADER=0 \
-  claude --model claude-sonnet-5
+ANTHROPIC_BASE_URL=http://127.0.0.1:8787 claude --model claude-sonnet-5
 ```
+
+> ***Do not add `CLAUDE_CODE_ATTRIBUTION_HEADER=0` to that line.*** **This procedure prescribed it
+> until 2026-09-22**, which means the sessions run to test the router were themselves configured to
+> break it: the variable suppresses the attribution block Claude Code sends in its request body, and
+> a non-streamed `/v1/messages` without one comes back `429`. **A test session that sets it cannot
+> exercise auto mode**, and three days of Phase 14 were spent attributing that to the router. See
+> `../bugs/BUG-001-…`.
 
 No token needs setting. The router injects nothing and holds no secret, so whatever credential
 Claude Code would normally send is what goes out — that is the whole point of *forward for cloud,

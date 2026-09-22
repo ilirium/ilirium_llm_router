@@ -66,6 +66,18 @@ data: {"type":"message_stop"}
 
 # 4. Point Claude Code at it
 
+> ***ANNOTATED 2026-09-22, and the commands below are deliberately NOT edited.*** **They carry
+> `CLAUDE_CODE_ATTRIBUTION_HEADER=0`, which this repository now tells you not to set** — *it
+> suppresses an attribution block Claude Code sends in its request body, and Anthropic rejects a
+> non-streamed `/v1/messages` that arrives without one.* **That is `BUG-001`, and it cost Phase 14
+> three days.**
+>
+> ***This file records what was actually run on 2026-08-04.*** *Editing the command to remove an
+> inconvenient line would make the record say something that did not happen* — **the measurements
+> below stand, and the sessions that produced them were streamed, which is the half the variable
+> does not break.** *`docs/bugs/BUG-001-…` and `milestone-2-corpus/phase-14-rate-limit-headers/`.*
+
+
 ```bash
 ANTHROPIC_BASE_URL=http://127.0.0.1:8787 CLAUDE_CODE_ATTRIBUTION_HEADER=0 \
   claude --model claude-sonnet-5

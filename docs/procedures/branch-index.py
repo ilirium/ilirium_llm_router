@@ -78,6 +78,33 @@ from pathlib import Path
 # no number, which is IDM-001's standing exception. Parsing the name would get that row wrong.
 #
 # `milestone` and `phase` are None when the branch belongs to neither.
+# Branches that are NOT work in flight, declared by hand because git cannot tell.
+#
+# ***This is the fix for a defect that deleted a row every time `--write` ran.*** `resolve()` sorts a
+# branch by its topology, and two different things have the SAME topology: a branch
+# fast-forwarded to the trunk's tip, and a branch cut from the trunk's head with nothing committed
+# to it yet. **They are indistinguishable by construction**, so no topological test can separate
+# them — which means the one piece of information that separates them has to be written down.
+#
+# Without this, `temp/to-run-server` was classified in-flight, excluded from the table, and its row
+# silently removed — **the only record that the branch is a worktree pin and not somebody's unfinished
+# work.** `--check` said `STALE` and did not say which row was at risk. *Found 2026-09-18 by reading;
+# it then fired again on 2026-09-22, on a clean `main`, during routine work.*
+#
+# Two kinds, because they are not the same thing:
+#
+#   "pin"     — a worktree parked on the trunk. Not work, never will be, and its tip moves with the
+#               trunk. `temp/to-run-server`.
+#   "archive" — a branch with its own commits that is deliberately NEVER merging, kept for what it
+#               records. `feat/phase-14-rate-limit-headers` is the first.
+#
+# **Both are TABLED rather than excluded**, because the table is where a reader looks to find out
+# what a branch is, and "absent" is the one answer that teaches them nothing.
+NOT_IN_FLIGHT: dict[str, str] = {
+    "temp/to-run-server": "pin",
+    "feat/phase-14-rate-limit-headers": "archive",
+}
+
 DESCRIPTIONS: dict[str, tuple[int | None, int | None, str]] = {
     "docs/add-claude-md": (
         None,
@@ -270,6 +297,17 @@ DESCRIPTIONS: dict[str, tuple[int | None, int | None, str]] = {
         "`link-check.py`'s headline count is a property of the **worktree** rather than of the "
         "repository — 83 on `main`, 101 in a clean checkout, the whole delta one untracked path.",
     ),
+    "feat/phase-14-rate-limit-headers": (
+        2,
+        14,
+        "The Anthropic rate-limit response headers — and, from its first day, the bug that turned "
+        "out to be ours: `CLAUDE_CODE_ATTRIBUTION_HEADER=0` in this repository's own README, which "
+        "made Claude Code's auto mode unusable through the router. **Deliberately never merged.** "
+        "Its header recorder, its gzip `400` fix and its documentation fix were taken to `main` "
+        "separately; the thirteen eliminated hypotheses, the hosts route, the TLS terminator and a "
+        "working attribution injection are kept here and nowhere else. See "
+        "`milestone-2-corpus/phase-14-rate-limit-headers/README.md` and `bugs/BUG-001-…`.",
+    ),
     "temp/to-run-server": (
         None,
         None,
@@ -358,6 +396,7 @@ class Row:
         self.merged = ""
         self.fast_forward = False
         self.in_flight = False
+        self.declared: str | None = None
 
 
 def resolve(name: str, tip: str, merges: dict[str, str], trunk: list[str]) -> Row:
@@ -410,7 +449,14 @@ def table(rows: list[Row]) -> str:
     ]
     for row in rows:
         milestone, phase, text = DESCRIPTIONS[row.name]
-        opened = f"{row.opened}<br>from `{row.fork[:7]}`" if row.fork else f"{row.opened}<br>*fork lost*"
+        if row.declared == "pin":
+            # A pin's tip moves with the trunk, so every date derived from it is "when the trunk
+            # last moved" wearing the clothes of branch history. Say nothing rather than that.
+            opened = "*not opened as work*<br>*moves with the trunk*"
+        elif row.fork:
+            opened = f"{row.opened}<br>from `{row.fork[:7]}`"
+        else:
+            opened = f"{row.opened}<br>*fork lost*"
         merged = (
             f"{row.merged}<br>`{row.merge[:7]}`"
             if row.merge
@@ -431,6 +477,15 @@ def main() -> int:
     rows = [resolve(name, tip, merges, trunk) for name, tip in branch_tips().items()]
     rows.sort(key=lambda r: r.opened_sort, reverse=True)
 
+    # A declared branch is tabled whatever its topology says. See `NOT_IN_FLIGHT`.
+    for row in rows:
+        kind = NOT_IN_FLIGHT.get(row.name)
+        if kind is None:
+            continue
+        row.in_flight = False
+        row.declared = kind
+        row.merged = "worktree pin" if kind == "pin" else "never merged"
+
     merged_rows = [r for r in rows if not r.in_flight]
     flight = [r for r in rows if r.in_flight]
 
@@ -438,6 +493,8 @@ def main() -> int:
     # quietly turns into a worse `git branch -a`. Refuse instead.
     missing = [r.name for r in merged_rows if r.name not in DESCRIPTIONS]
     stale = [n for n in DESCRIPTIONS if n not in {r.name for r in rows}]
+    # Same rule for a declaration: it names a branch by hand, so it can go stale the same way.
+    stale += [n for n in NOT_IN_FLIGHT if n not in {r.name for r in rows}]
 
     if missing or stale:
         # Refuse to render at all: a half-written table spliced into the file is worse than none.
