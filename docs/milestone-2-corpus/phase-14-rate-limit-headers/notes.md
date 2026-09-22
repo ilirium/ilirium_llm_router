@@ -1857,3 +1857,51 @@ still not discharged, four runs in*** — *and the blocked verdict it wants need
 content whatsoever.* **It wants a shell command auto mode declines to run**, *which is what
 2026-09-19's probe at severity 68 was.* **The report's withdrawn probe 15 was reaching for something
 else, and was right to be withdrawn.**
+
+## The ids in this branch are SYNTHETIC from 2026-09-22 onward
+
+***Every session id and request id in this branch's documents was replaced on 2026-09-22*** —
+owner's decision, as part of closing the phase without merging it. **The originals are not in this
+branch's history**: `ac2976e..HEAD` was rewritten with `git filter-repo`, 55 commits, and the
+pre-rewrite tip is kept as the tag **`archive/phase-14-pre-sanitize`** at `53e0041`.
+
+### What the ids mean now
+
+**`20260921-0000-4000-8000-000000000002` is run A; `…0004` is run B.** *The first field is the day
+and the last digit is the session's index within it, so a reader can still tell which run a row
+belongs to.* **In prose the short form is `20260921-2`**, where the branch previously wrote
+`f60b19a5`. **Request ids are `req_redacted…` with a sequence number**, keeping their length and
+their distinctness — *so "the same request appears in two files" is still visible.*
+
+***The corpus day folders on disk still carry the REAL ids.*** **`logs/` is gitignored and
+per-worktree**, so nothing there was touched and nothing there could be. *The mapping that ties the
+two together is `logs/id-mapping-DO-NOT-COMMIT.txt` — deliberately outside git, and it is the only
+way to correlate a sanitized document with a corpus folder.* **A fresh worktree will not have it.**
+
+### Three things the sweep turned up that a naive one would have missed
+
+- ***Thirty-three standalone eight-character prefixes.*** **The documents say "session
+  `ee10d70d`" in prose and tables**, not only the full UUID — *a full-UUID-only replacement would
+  have left every one of them behind*, including in `reference/measurements.md`, `wiki/`, and
+  `backlog.md`. **They were replaced with a lookahead so the rules are order-independent.**
+- ***Two UUIDs were deliberately NOT replaced.*** **`5791f885-4f45-4b01-bbd1-5ac2631bf167` is
+  `SYNTHETIC_UUID_NAMESPACE`**, a live constant in `src/ilirium_llm_router/jsonl.py` — *replacing it
+  would silently change every id the corpus tools derive* — and `00000000-…-0` is a nil placeholder.
+- ***A real request id was sitting in a TEST FIXTURE.*** `tests/test_proxy.py`'s `RATE_LIMITED`
+  block used `req_011CeMLep…` as sample data, asserted on in the test below it. *Both halves moved
+  together and the suite still passes* — **but it is the one place a sanitization sweep could have
+  broken the build, and it was found by the sweep rather than by reading.**
+
+### What deliberately survives, and why
+
+***`15b29c2a` — the 2026-08-25/26 corpus session — is still in four files here.*** **They are
+phase-11's and phase-13's documents, last modified before this branch was cut**, and *a
+range-restricted rewrite never sees a blob that predates its range.* **Widening the range would have
+rewritten `main`'s ancestors and cost this branch its merge base**, which is a worse outcome than
+one id in documents that are `main`'s anyway. *`main` fixes its own copies forward; this branch is
+an archive taken before that commit, which is a normal thing for an archive to be.*
+
+***And the honest limit:*** **47 of these commits were pushed to GitHub before the rewrite.** *The
+rewrite reaches this machine only.* **The repository is private and visible to one person**, so this
+is hygiene rather than incident response — *and the remote still holds the originals until somebody
+force-pushes, which nothing here has done.*

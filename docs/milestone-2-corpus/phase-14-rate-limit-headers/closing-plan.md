@@ -20,7 +20,7 @@ is ever wanted, it is all here and it all still runs.*
 | **`procedures/testing-against-claude-code.md`** | The same line removed. *This is the procedure a session follows to drive these very sessions — leaving it is the most likely way the bug returns* |
 | **`reference/architecture.md`** | ***The line out of the usage example, and a note added in its place.*** **Owner's call, 2026-09-22, and it is better than the recommendation it overrode**: *whether suppressing attribution to LM Studio is needed or even safe has never been measured*, so the example should not prescribe it — while the variable exists, does something, and is worth documenting as an option for the cases where somebody wants it |
 | **`BUG-001`** | Rewritten on `main` to state the cause and the resolution. *`main`'s copy is the pre-investigation version; this branch's copy is a record of three retractions and does not belong on the trunk* |
-| **The phase summary** | A new `docs/milestone-2-corpus/phase-14-rate-limit-headers/README.md` on `main` — why the phase opened, what was tried, what was concluded, ***what was taken to `main` and what deliberately was not***, and how to reach this branch |
+| **The phase summary** | A new **`README.md` in this phase's folder, on `main`** — why the phase opened, what was tried, what was concluded, ***what was taken to `main` and what deliberately was not***, and how to reach this branch |
 | **`branch-index.py`** | Task 19's fix. ***New work — it was never started***, so this is written fresh rather than cherry-picked |
 | **Phase 1 evidence** | *Annotated, never edited.* A note pointing at the finding; the recorded command stays as it was actually run |
 | **Backlog** | `BKL-0040`, `BKL-0041`, `BKL-0042` ported, plus a new item for Group D |
@@ -87,7 +87,9 @@ the summary first would mean citing hashes that stop existing an hour later.*
     `experiments` and for every Group C/C4 name, and the answer must be nothing.
 11. `README.md` and `procedures/testing-against-claude-code.md` — the line out, with the reason.
 12. `BUG-001` rewritten; Phase 1 evidence annotated.
-13. The phase summary at `docs/milestone-2-corpus/phase-14-rate-limit-headers/README.md`.
+13. The phase summary — a **`README.md` in this phase's folder on `main`**. *Written as prose rather
+    than a path because it does not exist on this branch and never will: `link-check.py` counts a
+    path to a file that is not here as broken, and it would be right.*
 14. `branch-index.py` — task 19's declarative fix. ***It also needs a category it has never had***:
     a branch that is kept, unmerged, and not in flight. *`--check` is `STALE` on a clean `main`
     today for the reason this fix addresses.*

@@ -13,6 +13,20 @@ and had been wrong since the 2026-09-20 run was frozen into this folder without 
 record added without its index entry is the defect this file exists to prevent**, and it is the same
 shape as `BKL-0007`: a count in prose that no tool derives.)*
 
+> ***EVERY SESSION ID AND REQUEST ID BELOW IS SYNTHETIC, from 2026-09-22.*** **The records are
+> otherwise byte-for-byte what was frozen** — *only the identifiers moved, and the rewrite changed
+> no other character in any file here.*
+>
+> **`20260921-0000-4000-8000-000000000002` is run A and `…0004` is run B**; the first field is the
+> day and the last digit the session's index within it. *In prose the short form is `20260921-2`.*
+> **Request ids are `req_redacted…` and keep their distinctness**, so a request appearing in two
+> files can still be matched across them.
+>
+> ***The corpus day folders on disk still carry the real ids***, because `logs/` is gitignored and
+> was never touched. **The mapping lives at `logs/id-mapping-DO-NOT-COMMIT.txt`, outside git**, and
+> it is the only way to tie a record here to a folder there. *A fresh worktree will not have it —
+> which means an id below cannot be used to find a corpus folder without it.* See `../notes.md`.
+
 ---
 
 ## The instruments
