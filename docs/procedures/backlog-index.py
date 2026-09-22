@@ -224,15 +224,33 @@ def validate(live: list[Item], done: list[Item]) -> list[str]:
                 f"{it.id}: CATEGORY {it.category!r} disagrees with its section ({expected!r})"
             )
 
-    # File order, per IDM-011: ids ascend top to bottom **within each file**, not across the two.
+    # File order, per IDM-011: ids ascend top to bottom **within each SECTION**, not across a whole
+    # file and not across the two files.
     #
-    # Not across: a done item moves to `backlog-done.md` and leaves a gap behind it, so the two
-    # files interleave by construction. Checking the concatenation reported `BKL-0004` — the first
-    # item ever moved — as following `BKL-0036`. Found by running it, not by reading it.
+    # Not across the two files: a done item moves to `backlog-done.md` and leaves a gap behind it,
+    # so the two interleave by construction. Checking the concatenation reported `BKL-0004` — the
+    # first item ever moved — as following `BKL-0036`. Found by running it, not by reading it.
+    #
+    # NOT ACROSS A WHOLE FILE, amended 2026-09-19 on the owner's decision, because the previous rule
+    # made the scheme unable to grow. Ids are allocated in file order and never reused, and a
+    # category must match its section — so whole-file ordering left exactly ONE legal position for a
+    # new item, the end of the last section, whatever the item was about. Phase 13 numbered all 38
+    # existing items in one bulk pass, so the file was ascending *because* it had been numbered from
+    # that order, and nothing had ever been added afterwards. `BKL-0039` was the first, and it could
+    # not be filed where it belonged.
+    #
+    # Per-section ordering is what "the category is the section" already implies: an item lands with
+    # its subject, and the ids still ascend everywhere a reader actually compares them.
     for group in (live, done):
-        for a, b in zip(group, group[1:]):
-            if a.id >= b.id:
-                problems.append(f"OUT OF FILE ORDER: {b.id} follows {a.id}")
+        by_section: dict[str, list[Item]] = {}
+        for item in group:
+            by_section.setdefault(item.section, []).append(item)
+        for items in by_section.values():
+            for a, b in zip(items, items[1:]):
+                if a.id >= b.id:
+                    problems.append(
+                        f"OUT OF SECTION ORDER: {b.id} follows {a.id} in {b.section!r}"
+                    )
 
     # A `superseded` item must name what replaced it. `IDM-011` defines the status as "replaced by
     # another item, which the `See` column names", so a superseded item with an empty `See` makes

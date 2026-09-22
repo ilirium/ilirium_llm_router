@@ -98,10 +98,15 @@ against that file's directory instead.
 **Point Claude Code at it**, in another shell:
 
 ```sh
-ANTHROPIC_BASE_URL=http://localhost:8787 \
-CLAUDE_CODE_ATTRIBUTION_HEADER=0 \
-claude
+ANTHROPIC_BASE_URL=http://localhost:8787 claude
 ```
+
+> **Do not set `CLAUDE_CODE_ATTRIBUTION_HEADER=0`.** This README told you to, from 2026-08-07 until
+> 2026-09-22, and it was wrong. The variable suppresses an attribution block Claude Code puts in the
+> *body* of its requests; Anthropic rejects a non-streamed `POST /v1/messages` that arrives without
+> one, returning a `429 rate_limit_error` that is not a rate limit. The visible symptom is that auto
+> mode's safety classifier cannot run through the router. Measured on 2026-09-21 — with the variable
+> set, 33 rejections; without it and nothing else changed, none. See `docs/bugs/BUG-001-…`.
 
 Pick a model with `/model`. Anything starting with `claude-` goes to Anthropic; anything else goes
 to whatever LM Studio has loaded.

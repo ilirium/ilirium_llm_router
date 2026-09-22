@@ -58,8 +58,14 @@ connection rather than leaving it talking to nobody.
 
 ```
 ANTHROPIC_BASE_URL=http://127.0.0.1:8799 ANTHROPIC_AUTH_TOKEN=x \
-  CLAUDE_CODE_ATTRIBUTION_HEADER=0 claude --model local-test
+  claude --model local-test
 ```
+
+> *The 2026-07-31 run below also set `CLAUDE_CODE_ATTRIBUTION_HEADER=0`, and the variable has been
+> dropped from the command rather than from the record.* **It changed nothing here** — *this
+> procedure points at a local stub, and the block that variable suppresses only matters to
+> Anthropic* — **but it was the same copy-paste that put the line in four other documents**, one of
+> which cost Phase 14 three days. *`BUG-001`.*
 
 Measured 2026-07-31: for the unreachable backend Claude Code prints the router's own message and
 **retries ten times with backoff**; for the mid-stream break it prints `API returned an empty or

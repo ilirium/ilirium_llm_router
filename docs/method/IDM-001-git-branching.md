@@ -19,6 +19,7 @@ accepted duplication" — and `../README.md` points here.
 | `chore/<slug>` | tooling, dependencies, formatter bumps |
 | `fix-slop-docs/<slug>` | a documentation defect whose cause is LLM slop |
 | `fix-slop-code/<slug>` | the same, in `src/` |
+| `unmerged/<slug>` | **work that is kept and deliberately never merged** — *see "A phase may close WITHOUT merging" below* |
 
 **The last two name a *cause* rather than a kind of artefact, and that breaks this section's own
 heading on purpose.** *Added 2026-09-02 on the owner's decision.* Everything above answers *what
@@ -38,6 +39,14 @@ silently.
 
 **Both take a phase number like any other prefix** — the rule below is not narrowed for them, though
 numbered slop work would be unusual.
+
+***`unmerged/` breaks the heading a third way, and deliberately: it names a FATE rather than a kind
+of work or a cause.*** **Added 2026-09-22, out of Phase 14.** *Everything on such a branch is
+ordinary `feat/` or `docs/` work by the artefact axis — what the prefix records is that it stops
+here.* **It shares its slug with the `feat/` branch that carried the shipped part to the trunk**,
+because *the slug names the phase and both branches belong to it* — and the phase's folder rule
+below therefore holds for both. **The prefix is what tells them apart in `git branch`, which is the
+one place the generated index is not.**
 
 **Any of them may carry a phase number:**
 
@@ -266,6 +275,54 @@ lines are what make that legible instead of confusing.
 marking the slug means renaming at rejection time — and decision 15 already established that renaming
 a pushed branch costs more than slug agreement is worth. The status line and the milestone-plan row do
 the same job and add no exception to the folder⇄branch rule.
+
+## A phase may close WITHOUT merging, and the branch is then an archive
+
+***Added 2026-09-22, out of Phase 14, and it is a third outcome this document did not have.*** *It
+had two: a plan that is accepted and merged, and a plan that is rejected and **also** merged, marked
+in place. **Both end at the trunk.*** **Phase 14 ended somewhere else.**
+
+**What happened, because the rule is easier to apply with the case in front of you.** *The phase
+built five groups of work; the bug it was chasing turned out to be a line in this repository's own
+`README.md`, and the fix was deleting that line.* **Most of what the branch contained was then
+worth keeping and not worth shipping** — *thirteen eliminated hypotheses, a TLS-fingerprint
+comparison, a hosts route with its own terminator, and a working attribution injection that had
+become unnecessary an hour after it was proved to work.*
+
+***Merging it would have put a byte-relay exception and four experiment configs on the trunk to
+preserve a record.*** **Deleting it would have discarded the record to avoid the code.** *The branch
+is kept, unmerged, and neither happens.*
+
+### The rules, and the first is the one that bites
+
+***A kept branch must be DECLARED, or the tooling will quietly stop listing it.***
+**`procedures/branch-index.py` sorts branches by topology, and a finished-but-unmerged branch is
+topologically identical to somebody's unfinished work** — *so it is excluded from the table as
+in-flight, and the reader who goes looking finds nothing.* **Declare it in `NOT_IN_FLIGHT` as an
+`archive`**; it then gets a row like any other, reading `never merged`.
+
+***And give it the `unmerged/` prefix*** — *keeping the slug it shares with the `feat/` branch that
+took the shipped part to the trunk.* **`git branch` is the one view that reads neither the generated
+index nor `status.md`**, so the fate has to be in the name or it is invisible exactly where a person
+looks first.
+
+***The branch must never be deleted***, which is already this document's rule for merged branches
+and is load-bearing here for a second reason: **a description naming a branch that is gone makes
+`branch-index.py` refuse to render at all.**
+
+***`main` gets a summary, and the summary says what crossed over.*** **A folder under the milestone
+with a `README.md`** — *why the phase opened, what was done, what was concluded, and **explicitly
+what was taken to the trunk and what deliberately was not**.* **Without that last part the trunk
+records an absence and nothing explains it.**
+
+***What crosses over is taken by FEATURE, not by cherry-pick.*** *Phase 14's `proxy.py` differed
+from the trunk's by 591 lines and almost all of it was experiment code.* **Two features were lifted
+out of that and the check was a grep**: *no experiment name may appear in the result, and the ported
+tests must pass on the trunk.* **One test came over that did not belong and the test run caught it**
+— *it was named for the feature being ported and asserted on a different one.*
+
+***And `status.md` closes out the same way as for a merge.*** *The phase leaves "In-flight
+branches"; what it becomes is an archive with a row in the derived index, not an absence.*
 
 ## Where a branch is recorded
 
