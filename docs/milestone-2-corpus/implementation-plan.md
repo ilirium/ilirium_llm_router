@@ -275,7 +275,7 @@ found in the phase's own register check during Group G.**
 runs**, and **three findings reachable only by running something** — so a single-run review would
 have shipped the vacuous check.*
 
-### Phase 14 — the Anthropic rate-limit response headers
+### Phase 14 — the Anthropic rate-limit response headers *(complete, merged 2026-09-22 at `8afdaa1` — the phase branch itself did NOT merge)*
 
 ***Renumbered from 13 to 14 on 2026-09-17.*** *The number was allocated 2026-08-25, and on
 2026-09-04 the owner took **13** for the method-and-backlog phase and moved the headers to **14**.

@@ -5,8 +5,15 @@
 every experiment still runs, and every measurement is still there.* **This file is what `main` keeps
 of it: why it opened, what was done, what was concluded, and what crossed over.**
 
-*Fork point `ac2976e`. The branch is not deleted and must not be —
-`procedures/branch-index.py` refuses to render when a description names a branch that is gone.*
+**Two branches, one phase, one slug:**
+
+| `feat/phase-14-rate-limit-headers` | what shipped | **merged `--no-ff` 2026-09-22 at `8afdaa1`** |
+|---|---|---|
+| `unmerged/phase-14-rate-limit-headers` | the investigation | ***never merged, kept*** |
+
+*Both forked from `main` at `ac2976e`. **Neither may be deleted** — `procedures/branch-index.py`
+refuses to render when a description names a branch that is gone, and the second holds the only
+copy of everything below.*
 
 ## Why it opened
 
