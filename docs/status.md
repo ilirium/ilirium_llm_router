@@ -10,42 +10,49 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-22 — Phase 14 merged at `8afdaa1`. Nothing is in flight.** *Version bumped to
-**0.2.0**, and `../CHANGELOG.md` exists as of this phase.*
+**2026-09-22 — Phase 14 merged at `8afdaa1`. Nothing is in flight. Version `0.2.0`.**
+*`../CHANGELOG.md` is new and is the first release record this project has had.*
 
-***The phase itself closed WITHOUT merging, which is a distinction worth keeping straight.*** **Two
-branches share the slug**: `feat/phase-14-rate-limit-headers` carried what ships and merged;
-**`unmerged/phase-14-rate-limit-headers` holds the investigation and never will.** *`IDM-001` now
-has that third outcome and the `unmerged/` prefix that names it.*
+***The phase merged; the phase's own branch did not.*** **Two branches share the slug** —
+`feat/phase-14-rate-limit-headers` carried what ships, **`unmerged/phase-14-rate-limit-headers`
+holds the investigation and never merges.** *`IDM-001` now has that third outcome and the
+`unmerged/` prefix that names it.* ***Neither branch may be deleted.***
 
-***What the phase found, and it was ours.*** **`CLAUDE_CODE_ATTRIBUTION_HEADER=0`, in this
-repository's own `README.md` since 2026-08-07**, suppresses an attribution block Claude Code sends
-in its request body — *and Anthropic refuses a non-streamed `/v1/messages` that arrives without
-one.* **The router was never at fault.** *Proved 2026-09-21 in both directions: the router supplying
-the block carried 12/12 non-streamed calls, and the same router process gave 33 × 429 with the
-variable and zero without it.* **`BUG-001` is resolved.**
+***What the phase found was ours.*** **`CLAUDE_CODE_ATTRIBUTION_HEADER=0`, in this repository's own
+`README.md` since 2026-08-07**, suppresses an attribution block Claude Code sends in its request
+body — *and Anthropic refuses a non-streamed `/v1/messages` that arrives without one.* **The router
+was never at fault.** *Proved 2026-09-21 in both directions: the router supplying the block carried
+12/12 non-streamed calls, and the same router process gave 33 × 429 with the variable and zero
+without it.* **`BUG-001` is resolved.**
 
-**What shipped:** *the rate-limit header recorder the phase was opened to build; the gzip `400` fix,
-a live defect in `peek` that refused a valid request by naming a field that was present; the line
-removed from **five** documents — the phase's own inventory said four; three tooling fixes; and
-`BKL-0039`–`0044`.*
+**What shipped:** *the rate-limit header recorder; the gzip `400` fix, a live defect in `peek` that
+refused a valid request by naming a field that was present; the line removed from **five**
+documents; three tooling fixes; and `BKL-0039`–`0045`.*
+
+***Closed out after the merge, and the audit found two things a merge does not:*** **Phase 14's own
+task 12a had never run** — *`reference/observability.md` had no section on the recorder that shipped*
+— **and `CLAUDE.md` carried a true claim resting on a reason that had died.** *It said no credential
+reaches disk "because nothing header-shaped is ever written"; headers are written now, to
+`router.log`, and the credential is excluded **by name**.* **The conclusion held and the reason for
+it did not.**
 
 ***The archive branch holds the only copy of what did not ship*** — *Group C4's working attribution
-injection, three failed experiments, the hosts route and its TLS terminator, and the whole
-investigation record.* **Its worktree also holds the only copy of the 2026-09-18 to `-21` corpora
-and the id mapping**, *both in gitignored `logs/`* — **removing that worktree would destroy them.**
+injection, three failed experiments, the hosts route and its TLS terminator, and the investigation
+record.* **Its worktree also holds the only copy of the 2026-09-18 to `-21` corpora and the id
+mapping**, *both in gitignored `logs/`* — **removing that worktree destroys them.**
 
-***The ids on that branch are synthetic.*** *Its history was rewritten 2026-09-22 and the backup tag
-was deleted after the owner ran `reflog expire` and `gc --prune=now`, so the originals are gone from
-this machine.* **`git-refs-and-the-history-rewrite.md` in the phase folder is the write-up.**
+***The ids on that branch are synthetic.*** *Its history was rewritten 2026-09-22; the backup tag
+was deleted and the owner ran `reflog expire --all` and `gc --prune=now`, so the originals are gone
+from this machine and **there is no reflog anywhere in this repository** until new entries
+accumulate.* **`git-refs-and-the-history-rewrite.md` in the phase folder is the write-up.**
 
 ***Still open and deliberately named:*** **no run has produced a BLOCKED verdict from auto mode's
 classifier through the router** — *every classifier call measured came back at stage 1, so the allow
 path is demonstrated and the block path is assumed.* **`BUG-000`.**
 
-*The backlog facts a session still needs:* **`backlog.md` and `backlog-done.md` carry permanent
-`BKL-NNNN` ids, both tables are generated — do not hand-type in them** — *`IDM-011` is canonical,
-and a session asks the owner before filing an item.*
+*The backlog facts a session still needs:* **both tables are generated — do not hand-type in them**
+— *`IDM-011` is canonical, ids ascend within a **section** rather than across the file, and a
+session asks the owner before filing an item.*
 
 ## Where the project is
 
@@ -192,6 +199,12 @@ count** rather than a number written here. That is new since this section was wr
 sentence said "there are three checkouts" until 2026-09-02, when it was two: the phase-11 worktree
 had been removed and nothing that said three was re-run. It is three again today, for a different
 reason, which is exactly why the number does not belong in prose.*
+
+***`to-run-server/config.yaml` IS MODIFIED AND MUST STAY THAT WAY.*** **`corpus.enabled: true`
+and `body_max_bytes: 5 MiB`** — *the owner's live operating config, uncommitted on purpose.*
+**Committing it would flip the shipped default**, *which `reference/corpus.md` keeps off
+deliberately because bodies hold source code and anything typed.* **A dirty tree there is correct;
+do not tidy it.** *Recorded 2026-09-22, having gone unrecorded until a close-out audit found it.*
 
 **`to-run-server/logs/` — the live one, 153 MB** *(re-measured 2026-09-02; it read 93 MB, taken
 2026-08-25)*

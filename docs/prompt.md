@@ -63,8 +63,30 @@ carried it and Phase 1's evidence is annotated rather than edited.*
   `BKL-0043`, *and one of its three options needs settled position 6 overturned, which is the
   owner's alone.*
 
+- ***Nothing says when the version moves, and nothing makes it.*** **`BKL-0045`, filed at the
+  0.2.0 release.** *There is no versioning policy anywhere in this repository — the number has never
+  been argued about because it never moved, and no check can be written until somebody says what a
+  bump means.* **The decision is the owner's and it comes before any tooling.**
+
 **Also open:** *`BKL-0040` (the dropped `content-length`, a latent HTTP defect), `BKL-0041`,
 `BKL-0042`, `BKL-0044`, `BKL-0017`, `BKL-0007`, `EPD-001` and `EPD-002`.*
+
+## What the close-out audit found, after the merge was already done
+
+***Two things a merge does not catch, both found by asking "what else should we update?" rather than
+by any check:***
+
+- ***Phase 14's own task 12a had never run.*** **`reference/observability.md` had no section on the
+  recorder that shipped in it** — *a new observable behaviour landed and the reference tier did not
+  know.* **`reference/corpus.md` was re-read and survives unchanged**, *which is a result rather
+  than an omission: the store is attached to a tee of the body bytes and still never sees a header.*
+- ***`CLAUDE.md` carried a true claim resting on a dead reason.*** *It said no credential reaches
+  disk "because nothing header-shaped is ever written".* **Headers are written now** — *to
+  `router.log`, under an allowlist that excludes the credential **by name**.* **The conclusion held;
+  the reason for it had stopped being true**, which is the harder kind of staleness to see.
+
+***A task in a phase plan that the phase never ran is invisible once the phase merges.*** *Nothing
+re-reads a merged plan.*
 
 ## Five things a session will still get wrong here
 
@@ -74,6 +96,9 @@ carried it and Phase 1's evidence is annotated rather than edited.*
   *a branch that is a worktree pin or an archive is now **declared** in `NOT_IN_FLIGHT`, because a
   pin fast-forwarded to the trunk and a branch cut from the trunk's head are topologically
   identical.* **`BKL-0041` is the general guard and is not done.**
+- ***`to-run-server/config.yaml` is MODIFIED and must stay that way.*** *`corpus.enabled: true`,
+  `body_max_bytes: 5 MiB` — the owner's live operating config, uncommitted on purpose.* **A dirty
+  tree there is correct; committing it would flip the shipped default.**
 - ***A fresh worktree has neither a venv nor `logs/`.*** *`uv run python` does not work in a new
   tree until one is made there.*
 - ***The backlog's ids ascend within a SECTION, not across the file.*** *Amended 2026-09-19;
