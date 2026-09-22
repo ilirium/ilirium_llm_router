@@ -63,6 +63,7 @@ paths were one directory at the moment the project acquired three that genuinely
 ## Layout and commands
 
 ```
+CHANGELOG.md                one entry per version — what shipped, and what is known not to work
 config.yaml                 backend definitions, server, log/stats rotation — no model list
 .env.example / .env         keys named by a backend's `api_key_env`; only `inject` backends need one
 src/ilirium_llm_router/
@@ -144,6 +145,9 @@ Every call leaves two traces: a line in a rotating log that uvicorn's own lines 
 `logs/telemetry/calls.csv` with 20 columns. Usage is read off a **tee** of the passing bytes, never
 by parsing and rebuilding them.
 
+**A reply of `400` or worse leaves a third**, added Phase 14: a `WARNING` naming the rate-limit
+headers it carried, with one `INFO` sample of a successful reply per process as the control.
+
 → `docs/reference/observability.md` — read it before touching the recorder, adding a column, or
 interpreting a row. In particular: telemetry never breaks a call, the CSV is in **completion order**
 so sort before analysing, and nothing body-shaped goes in **the CSV**. *(That last rule was narrowed on
@@ -160,9 +164,15 @@ store holds bodies only, never headers.**
 
 **That last one has two reasons and a session that carries only the first will propose the wrong
 fix.** The one people expect: **a credential never reaches disk** — no `Authorization`, no OAuth
-token, no API key, because nothing header-shaped is ever written. The one they do not: the store is
-attached to a **tee of the body bytes and never sees a header at all**, so capturing headers is not a
-policy switch but a **write-path change**. And the header-derived facts that matter are already
+token, no API key. The one they do not: the store is attached to a **tee of the body bytes and never
+sees a header at all**, so capturing headers is not a policy switch but a **write-path change**.
+
+***The first reason used to be stated as "nothing header-shaped is ever written", and that stopped
+being true in Phase 14.*** **The recorder now writes allowlisted rate-limit headers to
+`router.log`** — *so the credential is kept off disk by an explicit list of names that excludes it,
+not by nothing of that shape existing.* **The conclusion is unchanged and the reason for it is
+not**, which is the distinction worth carrying: *`RECORDED_RESPONSE_HEADERS` is load-bearing, and
+adding a name to it is a decision about what reaches disk.* And the header-derived facts that matter are already
 columns — `session_id` and `agent_id`, read at `observe.py:316`. *Added 2026-08-26.*
 
 ## Anthropic models

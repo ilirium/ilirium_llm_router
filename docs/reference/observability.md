@@ -117,6 +117,46 @@ route*: the reply to an endpoint nobody has enumerated could be anything, and th
 decided by an unknown endpoint" into a known ceiling. At the cap, the row is written with empty token
 columns; the relay is never affected, so the cap can cost observation and never fidelity.
 
+## The rate-limit response headers, on a failed reply
+
+***Added Phase 14, 2026-09-22.*** **A reply whose status is `400` or worse is logged at `WARNING`
+with the rate-limit headers it carried** — *`retry-after` and the `anthropic-ratelimit-*` family.*
+**A `429` body is the single word `Error`; which bucket was hit and when it clears are in the
+headers or nowhere.**
+
+***An explicit allowlist of NAMES, never a copy of the reply's headers.*** **`RECORDED_RESPONSE_HEADERS`
+in `proxy.py`** — *this is the only thing keeping "no credential reaches disk" true now that
+something header-shaped is written at all.* **`authorization`, `x-api-key` and `set-cookie` are what
+the list exists to exclude**, and *a header not on the list is not written even if it looks
+harmless.*
+
+***It is NOT the inverse of `DROPPED_FROM_RESPONSE`.*** *That one governs what the client receives;
+this one governs what is written down.* **A header can be in both, in neither, or in one.**
+
+### The prefix catch, and why it records a name and not a value
+
+**Any `anthropic-ratelimit-*` header NOT on the allowlist is logged by name, with `<unlisted>` where
+its value would be.** *A bucket added upstream after the list was written is then visible instead of
+silently dropped* — **and a name cannot carry a credential while a value can.**
+
+*This is how the `unified` family was found on 2026-09-18: the twelve documented API-key buckets are
+**not one of them sent on an OAuth token**, so a list built from the documentation alone would have
+recorded nothing and looked correct doing it.*
+
+### One successful reply is sampled per process, and it is the control
+
+**At `INFO`, once, on the first `/v1/messages` reply that is not an error.** *Path-gated, because
+Claude Code probes `/api/hello` before its first real call and a latch spent there measures
+nothing.*
+
+***Without this line the failure lines cannot be read.*** **"This rejection carried no rate-limit
+headers" and "this credential is never sent rate-limit headers" are indistinguishable**, *and only
+the first reads like a finding.* **On 2026-09-18 the control printed `(none)` — the exact string the
+failure lines print** — which is why it is path-gated now.
+
+*A reply carrying neither prints `(none)` rather than an empty tail, because that is the interesting
+case and a blank would read as a logging failure.*
+
 ## The line that says whether a call went missing
 
 **On shutdown the router logs one line: `calls: N arrived, N recorded, N lost`.** It is emitted on
