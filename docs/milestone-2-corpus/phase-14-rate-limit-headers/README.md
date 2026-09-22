@@ -70,6 +70,14 @@ run, because we told him to.*
 | **The hosts route and its TLS terminator** | *The fallback if the attribution behaviour ever changes, and the instrument for finding out what replaced it* |
 | **The investigation record** | *`notes.md`, `plan.md`, twenty-four `for-the-owner.md` entries, and an `evidence/` folder of frozen runs* |
 
+## Beside this file
+
+**`git-refs-and-the-history-rewrite.md`** — *written from the owner's questions at the close-out.*
+**How refs and namespaces actually work, why `git branch -a` does not show a tag or an invented
+namespace, why a history rewrite copies commits rather than moving them, and every command the
+sanitization used** — *with the two refs that still hold the pre-rewrite ids and what deleting them
+would mean.*
+
 ## Two things a reader of that branch needs to know
 
 ***Every session id and request id on it is SYNTHETIC***, replaced 2026-09-22. **The real ids are in
