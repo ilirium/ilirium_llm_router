@@ -1,6 +1,6 @@
 # Phase 14 — the Anthropic rate-limit response headers
 
-**Branch:** `feat/phase-14-rate-limit-headers`, forked from `main` at `ac2976e`.
+**Branch:** `unmerged/phase-14-rate-limit-headers`, forked from `main` at `ac2976e`.
 **Merge commit:** *not yet merged.*
 
 **A `feat/` phase: it changes `src/`.** The work is `BKL-0034`, added 2026-08-24 as the reversal of

@@ -1,5 +1,10 @@
 # The next session's prompt
 
+> ***SUPERSEDED 2026-09-22. Phase 14 closed WITHOUT merging.*** **This file describes the phase
+> mid-flight and is kept as the branch left it** — *`main`'s `status.md` and
+> `milestone-2-corpus/phase-14-rate-limit-headers/README.md` are the current account.* **The A/B it
+> asks for was run, twice, and it named the cause.**
+
 *The one file in `docs/` allowed to go stale, per `README.md` — which is why it is rewritten at each
 handoff rather than left. **Replaced 2026-09-20**, mid-phase rather than at a merge. Whatever comes
 next replaces it again.*
@@ -9,7 +14,7 @@ next replaces it again.*
 **Phase 14 is OPEN and IN FLIGHT. Nothing is merged.** Work in
 `/Users/ilirium/Projects/local/ilirium_llm_router/phase-14-rate-limit-headers` — *that worktree, not
 `main`. A session started in `main` sees none of this.* Branch
-`feat/phase-14-rate-limit-headers`, forked from `main` at `ac2976e`.
+`unmerged/phase-14-rate-limit-headers`, forked from `main` at `ac2976e`.
 
 ***The working tree is clean and every check is green*** — 510 tests, 52/52 mutations, `make lint`
 at the pinned `0.16.1`, `backlog-index --check` at 37 live / 41 ids, `link-check.py` at 112 in this

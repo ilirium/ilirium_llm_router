@@ -277,7 +277,8 @@ have shipped the vacuous check.*
 
 ### Phase 14 — the Anthropic rate-limit response headers
 
-> ***IN FLIGHT since 2026-09-18 on `feat/phase-14-rate-limit-headers`. Not merged.*** **Reshaped by
+> ***CLOSED WITHOUT MERGING, 2026-09-22, on `unmerged/phase-14-rate-limit-headers`.*** *Kept as an
+> archive; what shipped went to `main` on `feat/phase-14-rate-limit-headers`.* **Reshaped by
 > the owner on the day it opened**, from an instrument into a diagnosis of `BUG-001`: Claude Code's
 > auto mode cannot run its safety classifier through the router. **The instrument exists and works;
 > thirteen hypotheses are eliminated by measurement and the cause is not identified.**

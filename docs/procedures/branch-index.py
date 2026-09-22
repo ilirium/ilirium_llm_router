@@ -229,7 +229,7 @@ DESCRIPTIONS: dict[str, tuple[int | None, int | None, str]] = {
         "caught by any instrument the phase built** while every check was green. Three of the 23 "
         "are checks that passed while testing nothing.",
     ),
-    "feat/phase-14-rate-limit-headers": (
+    "unmerged/phase-14-rate-limit-headers": (
         2,
         14,
         "Recording Anthropic's `retry-after` and `anthropic-ratelimit-*` response headers — "

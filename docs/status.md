@@ -10,7 +10,9 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-21 — Phase 14 is open and in flight on `feat/phase-14-rate-limit-headers`.** *Not
+**2026-09-22 — Phase 14 is CLOSED WITHOUT MERGING, on `unmerged/phase-14-rate-limit-headers`.**
+*This branch is an archive and `main`'s own `status.md` is the live one. What follows is the state
+as this branch last left it.* *Not
 merged. Work in `/Users/ilirium/Projects/local/ilirium_llm_router/phase-14-rate-limit-headers`.*
 
 ***`BUG-001`'S CAUSE IS NAMED, AND IT IS THIS REPOSITORY'S OWN `README.md`.***
@@ -274,7 +276,7 @@ was not a real hazard**, and repeating it would preserve a rule whose justificat
 `method/IDM-001-git-branching.md`: a hand-maintained list would drift and a derived one cannot. The
 permanent record of a phase's branch, fork point and merge commit is still its phase note.*
 
-**`feat/phase-14-rate-limit-headers`** — Phase 14, forked from `main` at `ac2976e` on 2026-09-18,
+**`unmerged/phase-14-rate-limit-headers`** — Phase 14, forked from `main` at `ac2976e` on 2026-09-18,
 **not merged.** *A commit count stood here and was **eight out** within a day of being written — it said 21 while the branch held 29. **`git rev-list --count main..HEAD` is the answer**, and it is not written down here for the reason `BKL-0007` exists.* The Anthropic rate-limit response headers, **reshaped around
 `BUG-001`'s live symptom**: Claude Code's auto mode cannot run its safety classifier through the
 router, because the classifier's request is non-streamed and comes back `429`.

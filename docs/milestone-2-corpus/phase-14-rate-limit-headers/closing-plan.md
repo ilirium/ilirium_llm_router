@@ -105,7 +105,8 @@ the summary first would mean citing hashes that stop existing an hour later.*
 - ***`branch-index.py` gains a branch category while being fixed for a different defect.*** *Two
   changes in one tool in one pass is how the row it must not delete got deleted in the first place.*
 - ***The remote state is now MEASURED, 2026-09-22, by `git ls-remote` — and it is narrower than
-  feared.*** **`origin/feat/phase-14-rate-limit-headers` is at `4b40063`: 47 of the 54 commits, and
+  feared.*** **`origin/feat/phase-14-rate-limit-headers` is at `4b40063`** *(the remote still carries the
+  pre-rename name — renaming a branch is local and does not touch `origin`)*:  47 of the 54 commits, and
   a clean ancestor of local `HEAD`** — *behind, not diverged.* **The last seven commits — everything
   from `ca05ba1` (Group C4) forward — have never been pushed.**
 
