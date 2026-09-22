@@ -80,6 +80,7 @@ metadata lines and their own heading titles. **Do not type in it.** Change an it
 | `BKL-0041` | 2026-09-20 | open | instruments | `branch-index.py --write` should not be able to delete a row silently | — | — |  |
 | `BKL-0042` | 2026-09-21 | open | instruments | a committed config with the corpus ON | — | — |  |
 | `BKL-0044` | 2026-09-22 | open | instruments | Two more columns: the phase an item was filed in, and whether it is that phase's own debt | — | — |  |
+| `BKL-0045` | 2026-09-22 | open | instruments | Nothing says when the version moves, and nothing makes it | — | — |  |
 | `BKL-0035` | 2026-08-26 | open | dictionaries | Dictionary commands — `list`, `show`, `install` | — | — |  |
 | `BKL-0036` | 2026-08-26 | open | dictionaries | A benchmark: what a dictionary is worth against no dictionary | — | — |  |
 | `BKL-0037` | — | superseded | not-on-this-list | The Anthropic 429 rate-limit headers — refused, then overturned | — | — | BKL-0034 |
@@ -1169,6 +1170,50 @@ has said" is honest; a phase number inferred from a date is a fact this reposito
 
 *Mechanically it is small: two fields in `META`, two columns in the writer, and the checks that
 `IDM-011` describes.* **The work is the forty-two decisions, not the parser.**
+
+
+### BKL-0045 — Nothing says when the version moves, and nothing makes it
+
+instruments · open · added 2026-09-22
+
+*Owner's proposal, 2026-09-22, out of the 0.2.0 release.* **`pyproject.toml`'s version was set at
+Phase 0 and did not move again until 2026-09-22** — *through the body store, the offline tools and
+the installer, all of which changed `src/`.* **A wheel built at any point in Milestone 2 reported
+`0.1.0` while carrying three phases of work it did not have when that number was chosen.**
+
+***And `CHANGELOG.md`, which exists now to stop that repeating, has exactly the same exposure.***
+*Nothing requires it to be written, no tool reads it, and it will go stale at the moment everything
+else does: when a phase lands and nobody is rereading prose.*
+
+### The decision comes first, and it is the owner's
+
+***There is no stated versioning policy anywhere in this repository.*** **Not in `IDM-003`, not in
+`design-decisions.md`, not in the README** — *the number has simply never been argued about, because
+it never moved.* **Until somebody says what a bump MEANS here, no check can be written**, because a
+check needs a rule to enforce:
+
+| **Semver against the router's own surface** | *A config key, a CLI flag or a CSV column is the public API; breaking one is a major* |
+| **Per milestone** | *The version moves when a milestone closes and not otherwise — fewest decisions, and the least information in the number* |
+| **Per phase that touches `src/`** | *Mechanical and checkable: a merge that changed `src/` and left the version alone is a defect* |
+
+### What a guard would look like once there is a rule
+
+***The cheap one is the same shape as `BKL-0028`:*** **a check that fails when the trunk's version
+equals the version at the last merge that touched `src/`.** *Derivable from git, needs no
+bookkeeping, and says nothing about whether the bump is the right SIZE — which is the part only a
+policy can decide.*
+
+***The other half is the changelog***, and it is weaker: **a tool can tell that `CHANGELOG.md` has
+no entry for the current version**, *but not whether the entry is true.* **That is the same limit
+`link-check.py` has** — *it proves a path resolves and not that the sentence around it is right.*
+
+***Where the rule lands matters as much as what it says.*** **`IDM-001`'s merge steps are the
+obvious home** — *`branch-index.py --write` is already the last step of every merge, and this would
+sit beside it* — **but a rule that fires at every merge is wrong if the policy is per-milestone.**
+*Decide the policy, then place it.*
+
+***Nothing is blocked.*** *`0.2.0` is out and the changelog describes it.* **What is missing is the
+thing that makes the next one happen without somebody remembering.**
 
 
 ## Dictionaries
