@@ -10,44 +10,42 @@ is and what is in flight. Three sections, most volatile first.
 *Changes every session. If this section passes ~30 lines, or starts carrying anything that outlives
 the session that wrote it, it has become a document and gets its own file.*
 
-**2026-09-22 — Phase 14 is CLOSED WITHOUT MERGING, and that was a decision.** *Its branch,
-`unmerged/phase-14-rate-limit-headers`, is kept as an archive and must not be deleted.*
+**2026-09-22 — Phase 14 merged at `8afdaa1`. Nothing is in flight.** *Version bumped to
+**0.2.0**, and `../CHANGELOG.md` exists as of this phase.*
 
-***The phase opened to record the Anthropic rate-limit response headers and spent three days on a
-`429` that turned out to be ours.*** **`CLAUDE_CODE_ATTRIBUTION_HEADER=0`, in this repository's own
-`README.md` since 2026-08-07**, suppresses an attribution block Claude Code sends in its request
-body — *and Anthropic refuses a non-streamed `/v1/messages` that arrives without one.* **The router
-was never at fault.** *Proved 2026-09-21 in both directions: supplying the block from the router
-carried 12/12 non-streamed calls, and the same router process gave 33 × 429 with the variable and
-zero without it.*
+***The phase itself closed WITHOUT merging, which is a distinction worth keeping straight.*** **Two
+branches share the slug**: `feat/phase-14-rate-limit-headers` carried what ships and merged;
+**`unmerged/phase-14-rate-limit-headers` holds the investigation and never will.** *`IDM-001` now
+has that third outcome and the `unmerged/` prefix that names it.*
 
-**What came to `main`:** *the header recorder the phase was opened to build; the gzip `400` fix,
-which is a live defect in `peek` and not experiment scaffolding; the line removed from **five**
-documents — the phase's own inventory said four — with Phase 1's evidence **annotated** rather than
-edited; a rewritten `BUG-001`; `BKL-0039`–`0044`; and three tooling fixes made in passing.*
+***What the phase found, and it was ours.*** **`CLAUDE_CODE_ATTRIBUTION_HEADER=0`, in this
+repository's own `README.md` since 2026-08-07**, suppresses an attribution block Claude Code sends
+in its request body — *and Anthropic refuses a non-streamed `/v1/messages` that arrives without
+one.* **The router was never at fault.** *Proved 2026-09-21 in both directions: the router supplying
+the block carried 12/12 non-streamed calls, and the same router process gave 33 × 429 with the
+variable and zero without it.* **`BUG-001` is resolved.**
 
-**What stayed on the branch:** *Group C4's working attribution injection, the three failed
-experiments, the hosts route and its TLS terminator, and the whole investigation record.*
-***`milestone-2-corpus/phase-14-rate-limit-headers/README.md` is the summary and the pointer.***
+**What shipped:** *the rate-limit header recorder the phase was opened to build; the gzip `400` fix,
+a live defect in `peek` that refused a valid request by naming a field that was present; the line
+removed from **five** documents — the phase's own inventory said four; three tooling fixes; and
+`BKL-0039`–`0044`.*
 
-***Two tooling fixes are worth a session's attention because both were load-bearing and neither was
-on anybody's list.*** **`backlog-index.py` required ids to ascend across the whole file**, which —
-with "a category must match its section" — left exactly one legal position for a new item, *the end
-of the last section, which is "Not on this list, and why"*. **`main` could not file a backlog item
-in its right section.** *And `branch-index.py --write` deleted `temp/to-run-server`'s row again on
-2026-09-22, on a clean `main`, during routine work — the row is now **declared** rather than
-inferred, because the two things it confused are topologically identical.*
+***The archive branch holds the only copy of what did not ship*** — *Group C4's working attribution
+injection, three failed experiments, the hosts route and its TLS terminator, and the whole
+investigation record.* **Its worktree also holds the only copy of the 2026-09-18 to `-21` corpora
+and the id mapping**, *both in gitignored `logs/`* — **removing that worktree would destroy them.**
 
-***Still open and deliberately so:*** **no run has yet produced a BLOCKED verdict from auto mode's
-classifier through the router.** *Every classifier call measured came back at stage 1, so the allow
-path is demonstrated and the block path is assumed.* **`BUG-000`'s standing warning.**
+***The ids on that branch are synthetic.*** *Its history was rewritten 2026-09-22 and the backup tag
+was deleted after the owner ran `reflog expire` and `gc --prune=now`, so the originals are gone from
+this machine.* **`git-refs-and-the-history-rewrite.md` in the phase folder is the write-up.**
 
-*Phase 13's entry, which stood here from 2026-09-17: it merged at `97fd822`, its review stopped its
-own merge on five method-tier findings, and all five were answered before it landed.* **The backlog
-facts it left are still the ones a session needs:** *`backlog.md` and `backlog-done.md` carry
-permanent `BKL-NNNN` ids, both tables are generated — **do not hand-type in them** —
-`method/IDM-011-the-backlog.md` is canonical, and **a session asks the owner before filing an
-item.***
+***Still open and deliberately named:*** **no run has produced a BLOCKED verdict from auto mode's
+classifier through the router** — *every classifier call measured came back at stage 1, so the allow
+path is demonstrated and the block path is assumed.* **`BUG-000`.**
+
+*The backlog facts a session still needs:* **`backlog.md` and `backlog-done.md` carry permanent
+`BKL-NNNN` ids, both tables are generated — do not hand-type in them** — *`IDM-011` is canonical,
+and a session asks the owner before filing an item.*
 
 ## Where the project is
 
@@ -59,7 +57,7 @@ belong to the phase note, and each milestone's own index reads its phases in ord
 | | Subject | Phases | State | Read it in |
 |---|---|---|---|---|
 | **1** | The core router — dispatch, byte-relay, observability, failure handling | 1–7 | **complete** 2026-08-07 | `milestone-1-core/README.md`, which carries every branch and merge hash with what each phase settled |
-| **2** | The corpus — capturing bodies for analysis | 8– | **open**, six phases merged — 8 through 13, the last 2026-09-17 | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
+| **2** | The corpus — capturing bodies for analysis | 8– | **open**, seven phases merged — 8 through 14, the last 2026-09-22 | `milestone-2-corpus/implementation-plan.md` **until the milestone closes**; its `README.md` is a closing artefact and does not exist yet |
 
 *Changed 2026-08-17 from a per-phase table of Milestone 1's merge commits, per the `backlog.md` item
 that proposed it. **The hashes are not lost** — each one keeps two to six homes, the fewest being
@@ -89,14 +87,20 @@ settled the storage-infrastructure half; **Phase 10 settled that archiving canno
 a day folder, unpack it elsewhere, and every blob opens and verifies against the digest in its own
 filename. **Whether archiving slows a call is untested**, and is parked as **`BKL-0017`**.
 
-**Six phases done. The first two touched no `src/`** — Phase 8 built the method tier and the
+**Seven phases done. The first two touched no `src/`** — Phase 8 built the method tier and the
 guardrails, Phase 9 decided `EPD-003` and ran the gate that named the claim above — **and Phase 10 is
 the first of this milestone that did**, merging 2026-08-21 as `32c26bb`; Phase 11 built the offline
 tools over the store, merging 2026-08-28 as `7e53f74`; Phase 12 made it installable, merging
 2026-09-02 as `6c75997`; **and Phase 13 touched no `src/` either**, merging 2026-09-17 as
-`97fd822`.
+`97fd822`; **Phase 14 did**, merging 2026-09-22 as `8afdaa1`.
 
-***Fifth instance, 2026-09-17, and it is the cleanest one yet.*** *This paragraph said **five** the
+***SIXTH instance, 2026-09-22, and it is the first one caught before the merge was announced rather
+than after.*** **This paragraph and the milestone row above both said "six … through 13" while Phase
+14 sat merged in the same file**, *found while bringing three documents true at the close-out.* **The
+item is `BKL-0007` and the count of instances is now itself a number in prose that will go stale** —
+*which is the joke the item has been making for five entries.*
+
+***Fifth instance, 2026-09-17, and it was the cleanest one until this.*** *This paragraph said **five** the
 moment Phase 13 landed — the phase whose own `BKL-0007` is about this sentence, whose review found
 three other stale counts, and which corrected this file twice on the way. **It still went stale at
 the merge**, because a merge is the one moment nobody is rereading prose. The item's argument no

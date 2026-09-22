@@ -42,11 +42,14 @@ analysing.
 session reached both backends, and a local model drove real work through the router — tool use, file
 editing, running commands, multi-turn conversation.
 
-**Milestone 2 is open — the corpus, four phases in.** The router can archive the bodies it carries
+**Milestone 2 is open — the corpus, seven phases in.** The router can archive the bodies it carries
 as opaque, content-addressed, per-call files compressed against a shared dictionary, and read them
-back out into something a person can read.
+back out into something a person can read. **It also records the Anthropic rate-limit response
+headers** on a failed reply, so a `429` can say which bucket was hit and when it clears.
 
-**448 tests.** What it costs is the honest part: prompt caching cuts time to first byte by 4× on a
+**Version 0.2.0** — `CHANGELOG.md` says what is in it.
+
+**469 tests.** What it costs is the honest part: prompt caching cuts time to first byte by 4× on a
 repeated local prefix, and a local model spends **minutes** prefilling where Anthropic answers in a
 second.
 
@@ -83,7 +86,7 @@ your `PATH` you will never see it; if it was not, the next command is `command n
 it works in an empty directory:
 
 ```sh
-ilirium-llm-router --version      # ilirium-llm-router 0.1.0
+ilirium-llm-router --version      # ilirium-llm-router 0.2.0
 mkdir ~/router && cd ~/router
 ilirium-llm-router init           # writes config.yaml and .env.example here
 ilirium-llm-router check          # validates it and prints what it means
@@ -244,13 +247,18 @@ anything typed.
 
 ## Bugs and caveats
 
-**`BUG-001` — non-streamed `/v1/messages` are rejected as rate-limited.** Every `POST /v1/messages`
-sent to Anthropic with `stream: false` returns HTTP 429 `rate_limit_error`, while a streamed request
-**2.8× larger** to the same model on the same credential succeeds **0.6 seconds later**. It is not a
-rate limit; it is a categorical rejection of one request shape wearing a rate limit's status code.
-**Claude Code's auto mode is unusable while this holds**, because its safety classifier request is
-non-streaming. The workaround is to prefer the harness's own file tools over shelling out. Full
-measurement in `docs/bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`.
+**`BUG-001` — RESOLVED 2026-09-22, and the cause was this README.** Non-streamed
+`POST /v1/messages` came back `429 rate_limit_error`, which made Claude Code's auto mode unusable
+through the router — its safety classifier request is non-streaming. **The cause was
+`CLAUDE_CODE_ATTRIBUTION_HEADER=0`, which this file told you to set from 2026-08-07 until
+2026-09-22.** It suppresses an attribution block Claude Code sends in its request *body*, and
+Anthropic refuses a non-streamed request that arrives without one. **The router was never at fault.**
+Do not set that variable; see the note under *Quick start*. Full measurement in
+`docs/bugs/BUG-001-non-streaming-messages-rejected-as-rate-limited.md`.
+
+**No run has yet produced a BLOCKED verdict from auto mode's classifier through the router.** Every
+classifier call measured came back at stage 1, so the allow path is demonstrated and the block path
+is assumed. Named here rather than left for somebody to discover.
 
 **The corpus is off by default.** An absent `logs/corpus/` is correct behaviour, not a failure.
 Nothing under `dir` is created until the switch is on.
@@ -278,8 +286,9 @@ it — so they are in one place.
   directions**, which is the one thing this design does not do today.
 - **Other harnesses** — OpenAI Codex, Google Antigravity, GitHub Copilot, JetBrains Junie; Pi,
   Hermes, OpenCode, OpenClaw.
-- **The Anthropic rate-limit response headers**, so a 429 can say *which* limit and *when it clears*
-  rather than only `rate_limit_error`. Planned as Phase 13.
+- ~~**The Anthropic rate-limit response headers.**~~ ***Shipped in 0.2.0***, Phase 14 rather than
+  the Phase 13 this line promised. *Where they durably live beyond `router.log` is still open —
+  `BKL-0043`.*
 - **Picking a local model mid-session, and subagents on local models** — written up and **not
   decided**, in `docs/epd/EPD-001-model-selection-and-mixed-model-sessions.md`.
 - **Token counting for local backends** — LM Studio has no `count_tokens`. Also written up and not

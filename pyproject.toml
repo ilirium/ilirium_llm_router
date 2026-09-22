@@ -1,6 +1,6 @@
 [project]
 name = "ilirium-llm-router"
-version = "0.1.0"
+version = "0.2.0"
 description = "Routes one coding harness to Anthropic and locally served models at the same time."
 readme = "README.md"
 authors = [

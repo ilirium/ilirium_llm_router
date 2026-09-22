@@ -1,101 +1,103 @@
 # The next session's prompt
 
 *The one file in `docs/` allowed to go stale, per `README.md` — which is why it is rewritten at each
-handoff rather than left. **Replaced 2026-09-17**, at Phase 13's merge. Whatever comes next replaces
+handoff rather than left. **Replaced 2026-09-22**, at Phase 14's merge. Whatever comes next replaces
 it again.*
 
 ---
 
-**Phase 13 merged 2026-09-17 at `97fd822`. Nothing is in flight.** Work in `main`:
-`/Users/ilirium/Projects/local/ilirium_llm_router/main`. **No phase is open, so there is no phase
-worktree to start in** — that is different from the last four handoffs.
+**Phase 14 merged 2026-09-22 at `8afdaa1`. Nothing is in flight.** Work in `main`:
+`/Users/ilirium/Projects/local/ilirium_llm_router/main`. *No phase is open, so there is no phase
+worktree to start in.*
 
-**The first decision of the next session is which phase to open, and that is the owner's.** *Phase
-14 is allocated to the Anthropic rate-limit headers but not chosen; the list under "Open" below is
-what is waiting, and two of those items are decisions rather than work.*
+***The version is 0.2.0 and `../CHANGELOG.md` is new.*** *It is the first bump the project has ever
+had — `0.1.0` was set at Phase 0 and carried the body store, the tools and the installer without
+moving.*
 
-**`phase-13-method-and-backlog/` is still on disk** and can be removed whenever you like. ***Its
-branch must not be deleted*** — `branch-index.py` refuses to render when a description names a
-branch that is gone, which breaks the next merge. **Removing the tree is safe; removing the branch
-is not.**
+**The first decision of the next session is which phase to open, and that is the owner's.**
 
-*No commit count is written here. A count written at a handoff is wrong at the next commit, and this
-repository has recorded that defect five times.*
+## Read this first, because Phase 14 ended in an unusual shape
 
-## Read these, in this order
+***The phase merged. The phase's own branch did not.*** **Two branches share the slug**, and telling
+them apart matters:
 
-1. **`docs/status.md`** — first, every session. The only file that holds state.
-2. **`docs/backlog.md`** — **it has changed shape completely.** Every item is now a
-   `### BKL-NNNN — title` heading with a metadata line under it, and the table at the top is
-   **generated**. `docs/backlog-done.md` is new and holds the four done items.
-3. **`docs/method/IDM-011-the-backlog.md`** before touching either file.
+| `feat/phase-14-rate-limit-headers` | what shipped | merged at `8afdaa1` |
+|---|---|---|
+| **`unmerged/phase-14-rate-limit-headers`** | the investigation | ***never merges, never delete it*** |
 
-## What is in force now that was not before
+***`milestone-2-corpus/phase-14-rate-limit-headers/README.md` is the summary and the pointer.***
+**`IDM-001` has the rules** — *a phase may close without merging; the branch is declared in
+`branch-index.py`'s `NOT_IN_FLIGHT`, takes the `unmerged/` prefix, and `main` gets a summary saying
+what crossed over.*
 
-- **A session asks the owner before filing a backlog item.** If the answer is no, the decline goes
-  in the phase's `notes.md`. → `IDM-011`, which amends `IDM-001`'s authority claim.
-- **Every phase folder carries a `for-the-owner.md`**, written *during* the phase, to a person.
-  **Anything needing a decision is asked out loud instead.** → `IDM-010`.
-- **A phase is reviewed before its merge**, under a charter, by two runs, with the subject verified
-  by `git diff` at the moment the runs start. → `IDM-009`. **Phase 13 was its first subject and it
-  stopped its own author's merge.**
+***Three things about that branch a session will otherwise get wrong:***
 
-## Five things a session will get wrong here
+- ***Its worktree holds the ONLY copy of the 2026-09-18 to `-21` corpora and the id mapping***, both
+  in gitignored `logs/`. **Removing the worktree destroys them.**
+- ***Every session and request id on it is SYNTHETIC.*** *History rewritten 2026-09-22; the
+  originals are gone from this machine.* **`git-refs-and-the-history-rewrite.md`** *in that phase
+  folder explains the mechanics, and its command blocks name the branch by its pre-rename name on
+  purpose.*
+- ***Its own `status.md` and `prompt.md` are an archive's copies.*** **This file and `main`'s
+  `status.md` are the live ones.**
 
-- **Never hand-type inside a generated table.** `backlog.md`, `backlog-done.md` and
-  `reference/branches.md` all carry one. Edit the item or the description and re-run `--write`.
-  *`--write` refuses while any problem is outstanding, so fix the problem first.*
-- **Never write a `BKL-NNNN` that does not exist — not even as an example.** Ids are allocated in
-  order and never reused, so an invented id is the **next** one to be handed out; the moment an item
-  claims it, a sentence about something imaginary becomes a citation of a real and unrelated item
-  and `--check` starts **passing** on it. *Describe it instead: "a synthetic id one past the
-  highest."* → `IDM-011`.
-- **A green check is a claim, not evidence.** Phase 13 shipped **three** checks that passed while
-  testing nothing, and none was found by reading — a count assertion blind to the case it was built
-  for, a table column named by two documents and written by no code, and a test whose header-row
-  exclusion skipped the rows it existed to find. **Make the thing go wrong and see whether the check
-  notices**, and have the harness report "mutation applied" separately from "check failed".
-- **`link-check.py`'s count is a property of the worktree.** **92 broken on `main` today.** Compare
-  against a run in the *same* tree or not at all.
-- **Push state cannot be checked from here — ask, do not infer.** `origin` is configured, this clone
-  holds **no remote-tracking refs**, and `git branch -r` is empty. *The owner reported the branch
-  pushed on 2026-09-17; that is a report, not a check.*
+## What Phase 14 settled, in one paragraph
 
-## Open, and none of it blocks
+***`BUG-001` is resolved and the cause was this repository's own `README.md`.***
+**`CLAUDE_CODE_ATTRIBUTION_HEADER=0`** *suppresses an attribution block Claude Code sends in its
+request body, and Anthropic refuses a non-streamed `/v1/messages` that arrives without one.* **The
+router was never at fault.** *Do not put that variable back into any command block; five documents
+carried it and Phase 1's evidence is annotated rather than edited.*
 
-- **Nobody has driven the corpus tools by hand.** Named as the owner's first job at Phase 11's
-  handoff; still not done, four phases later.
-- **`BUG-001` is still unreported** to either upstream issue.
-- **Failure mode 3 is undischarged** — whether archiving *slows* a call. `BKL-0017`.
-- **`EPD-001` and `EPD-002` are both waiting on a decision**, not on work.
-- **Phase 14 is allocated** to the Anthropic rate-limit response headers — `BKL-0034`, and
-  `milestone-2-corpus/implementation-plan.md` holds what its plan cannot skip.
-- **`for-the-owner.md` entry 1 is an open errand:** run `git fetch origin` once, so push state
-  becomes checkable at all.
-- **The Milestone 2 phase count went stale a fifth time at this very merge**, in the paragraph that
-  describes itself going stale. `BKL-0007` has the evidence and needs the decision, not more
-  examples.
+## What is next, and none of it is chosen
 
-## What the last session finished, so nothing is half-done
+**`status.md`'s "What is next" is the list.** *Three items, and the owner picks.*
 
-**Phase 13 is closed out completely.** Its merge landed in three steps — `--no-ff`, the hash
-recorded in `plan.md` and the milestone plan, then `branch-index.py --write` on the trunk. **Both
-worktrees are clean and every check is green**: `backlog-index --check`, `branch-index --check`,
-`evidence/register-check.py`, and `link-check.py` at 92.
+***Two things Phase 14 left open by name:***
 
-**Nothing from that phase is left open for a session to pick up.** *The five findings that stopped
-its merge were all answered by the owner and fixed; the eighteen below them were fixed; the register
-check was written, found vacuous, fixed and mutation-tested.* **What remains is in `backlog.md`
-under permanent ids, and in the list above.**
+- ***No run has produced a BLOCKED verdict from auto mode's classifier through the router.***
+  **Every classifier call measured came back at stage 1**, so *the allow path is demonstrated and
+  the block path is assumed.* **`BUG-000`.** *It needs no adversarial content — only a command auto
+  mode declines to run.*
+- ***Where the rate-limit headers durably live.*** **They reach `router.log` and nowhere else** —
+  `BKL-0043`, *and one of its three options needs settled position 6 overturned, which is the
+  owner's alone.*
+
+**Also open:** *`BKL-0040` (the dropped `content-length`, a latent HTTP defect), `BKL-0041`,
+`BKL-0042`, `BKL-0044`, `BKL-0017`, `BKL-0007`, `EPD-001` and `EPD-002`.*
+
+## Five things a session will still get wrong here
+
+- ***`link-check.py`'s count is a property of the worktree.*** **92 in `main`**; *the phase-14
+  archive reads 112.* **Compare within one tree or not at all.**
+- ***`branch-index.py --write` used to delete a row it must not delete.*** **Fixed 2026-09-22** —
+  *a branch that is a worktree pin or an archive is now **declared** in `NOT_IN_FLIGHT`, because a
+  pin fast-forwarded to the trunk and a branch cut from the trunk's head are topologically
+  identical.* **`BKL-0041` is the general guard and is not done.**
+- ***A fresh worktree has neither a venv nor `logs/`.*** *`uv run python` does not work in a new
+  tree until one is made there.*
+- ***The backlog's ids ascend within a SECTION, not across the file.*** *Amended 2026-09-19;
+  before it, there was exactly one legal position for a new item and it was under "Not on this
+  list, and why".*
+- ***There is no reflog anywhere in this repository.*** **Expired and pruned 2026-09-22** to finish
+  the sanitization, *so `git reset --hard` has no undo until new entries accumulate.*
+
+## Push state, measured rather than reported
+
+***`git ls-remote origin` reads the remote and writes nothing.*** **This clone has no
+remote-tracking refs because `origin` carries no fetch refspec** — *`git branch -r` being empty is
+not evidence about what is pushed, and `status.md` recorded the opposite for two weeks.*
+
+**As of 2026-09-22 the owner deleted the old remote branch and pushed the renamed one.** *A session
+that needs the current state runs `ls-remote` rather than reading this line.*
 
 ## The working agreement still applies
 
-`CLAUDE.md`, in full. Two earned their place in Phase 13, both the hard way:
+`CLAUDE.md`, in full. **Two earned their keep again in Phase 14:**
 
-**Exercise it before committing.** Three instruments passed while testing nothing, and a mutation
-harness silently never ran its mutations — which looks identical to a clean pass.
+***Ask before inferring.*** *The owner supplied what no log could — the environment variable, and
+then the confirmation that both halves of the A/B carried it.* **Without that second answer the pair
+was not a controlled experiment.**
 
-**Raise it rather than burying it, and say it is wrong rather than working around it.** Three of the
-five findings that stopped the merge were found, written down, and then **not put to the owner**
-until a later session went looking. A finding that stops a merge and is then not raised is worse
-than one nobody found.
+***Exercise it before committing.*** *The test run caught a ported test that was named for one
+feature and asserted on another.* **Reading the name would not have found it.**
