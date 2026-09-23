@@ -1,11 +1,17 @@
 # ilirium_llm_router
 
-## TL;DR
+## Summary
 
 **Claude Code accepts exactly one `ANTHROPIC_BASE_URL`.** Point it at Anthropic and you give up your
 local models; point it at LM Studio and you give up Haiku, Sonnet, Opus and Fable. This router sits
 in front of both and dispatches per request on the model name, so **one session reaches both** —
 switch with `/model`, and there is no model list to maintain.
+
+Additionally:
+
+- Save the corpus: all requests and responses.
+- Save telemetry for observability for each call.
+- Effective corpus compression with ZSTD and a dictionary per day.  
 
 ## What it does, and what it does not
 
