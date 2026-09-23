@@ -9,6 +9,7 @@ switch with `/model`, and there is no model list to maintain.
 
 Additionally:
 
+- Compatible with your Anthropic subscriptions: the router just passes through your credentials.
 - Save the corpus: all requests and responses.
 - Save telemetry for observability for each call.
 - Effective corpus compression with ZSTD and a dictionary per day.  
